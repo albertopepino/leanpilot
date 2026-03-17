@@ -1,0 +1,38 @@
+{
+  "goodMorning": "Bonjour",
+  "goodAfternoon": "Bon apres-midi",
+  "goodEvening": "Bonsoir",
+  "loadingData": "Chargement des donnees...",
+
+  "yesterdaySummary": "Resume d'hier",
+  "kpiOEE": "TRS",
+  "kpiProduction": "Production",
+  "kpiQuality": "Taux de qualite",
+  "kpiAndon": "Alertes actives",
+  "kpiAndonSub": "Alertes Andon actives",
+
+  "quickActions": "Actions rapides",
+  "actionProduction": "Saisie production",
+  "actionProductionDesc": "Enregistrer les donnees",
+  "actionOEE": "Tableau de bord TRS",
+  "actionOEEDesc": "Voir les indicateurs",
+  "actionKaizen": "Nouvelle idee Kaizen",
+  "actionKaizenDesc": "Proposer une amelioration",
+  "actionGemba": "Gemba Walk",
+  "actionGembaDesc": "Demarrer une visite terrain",
+  "actionAndon": "Panneau Andon",
+  "actionAndonDesc": "Voir les alertes actives",
+  "actionCopilot": "Copilote Usine",
+  "actionCopilotDesc": "Demander a l'assistant IA",
+
+  "recentActivity": "Activite recente",
+  "recentActivityDesc": "Dernieres actions sur tous les outils",
+  "noActivity": "Aucune activite recente",
+
+  "openActions": "Actions ouvertes",
+  "openActionsDesc": "Elements necessitant une attention",
+  "capaActions": "Actions CAPA",
+  "kaizenItems": "Kaizen en cours",
+  "ncrOpen": "NCR ouvertes",
+  "gembaFindings": "Observations Gemba"
+}

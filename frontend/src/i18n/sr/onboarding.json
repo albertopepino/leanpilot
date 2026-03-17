@@ -1,0 +1,61 @@
+{
+  "catWelcome": "Prvi koraci",
+  "catDefine": "Definiši",
+  "catMeasure": "Meri",
+  "catAnalyze": "Analiziraj",
+  "catImprove": "Unapredi",
+  "catControl": "Kontroliši",
+
+  "skipTutorial": "Preskoči vodič",
+  "tryItNow": "Isprobaj odmah",
+  "getStarted": "Počnimo!",
+  "keyboardHint": "Koristi tastere ← → za navigaciju, Esc za preskakanje",
+
+  "welcomeTitle": "Dobrodošli u LeanPilot, {name}!",
+  "welcomeDesc": "LeanPilot je vaša sveobuhvatna platforma za Lean Manufacturing.\nPomaže vam da pratite proizvodnju, rešavate probleme i pokrenete kontinualno unapređenje — sve na jednom mestu.\n\nHajde da napravimo kratku turu kroz glavne alate.",
+
+  "dmaicTitle": "DMAIC metodologija",
+  "dmaicDesc": "LeanPilot je organizovan oko DMAIC okvira — okosnice Lean Six Sigma:\n\n• Definiši — Podesite proizvodne linije, proizvode i naloge\n• Meri — Pratite OEE, kvalitet i časovnu proizvodnju\n• Analiziraj — Pronađite osnovne uzroke pomoću 5 Why, Ishikawa i Gemba walks\n• Unapredi — Pokrenite promene pomoću Kaizen, SMED i TPM\n• Kontroliši — Održite rezultate pomoću 6S audita i politika kvaliteta",
+
+  "assessmentTitle": "Lean Assessment",
+  "assessmentDesc": "Počnite ovde! Lean Assessment procenjuje vašu fabriku u 6 ključnih oblasti i generiše personalizovanu mapu za unapređenje.\n\nOdgovorite na 18 pitanja da biste otkrili vaš nivo Lean zrelosti i dobili prioritetne preporuke.",
+
+  "productionOrdersTitle": "Proizvodni nalozi",
+  "productionOrdersDesc": "Kreirajte i upravljajte proizvodnim nalozima sa potpunom sledljivošću.\nPratite planirane u odnosu na stvarne količine, pratite status naloga od nacrta do završetka i povežite naloge sa sastavnicom materijala.",
+
+  "productionInputTitle": "Unos proizvodnih podataka",
+  "productionInputDesc": "Beležite dnevne proizvodne podatke za svaku liniju: vreme rada, planirano vreme, ukupan broj komada, dobri komadi i defekti.\n\nLeanPilot automatski izračunava vaš OEE (Raspoloživost × Performanse × Kvalitet) iz ovih podataka.",
+
+  "oeeDashboardTitle": "OEE kontrolna tabla",
+  "oeeDashboardDesc": "Vaš komandni centar za proizvodne performanse.\nPregledajte OEE u realnom vremenu sa razloženim prikazom raspoloživosti, performansi i kvaliteta.\n\nInteraktivni grafikoni prikazuju trendove tokom vremena, pomažući vam da uočite obrasce i odredite prioritete za unapređenja.",
+
+  "hourlyTitle": "Časovno praćenje proizvodnje",
+  "hourlyDesc": "Pratite proizvodnju sat po sat u odnosu na ciljeve.\nBrzo identifikujte kada i gde proizvodnja zaostaje, kako bi nadzornici mogli da preduzmu hitne korektivne mere.",
+
+  "qcChecksTitle": "Kontrole kvaliteta",
+  "qcChecksDesc": "Sprovedite standardizovane inspekcije kvaliteta na kritičnim tačkama vašeg procesa.\nBeležite merenja, rezultate prolazi/ne prolazi i priložite fotografije.\n\nKontrole kvaliteta su integrisane sa NCR i CAPA procesima za potpunu sledljivost.",
+
+  "fiveWhyTitle": "5 Why analiza osnovnih uzroka",
+  "fiveWhyDesc": "Kada se pojave problemi, postavite pitanje 'Zašto?' pet puta da biste došli do osnovnog uzroka.\n\nLeanPilot vas vodi kroz svaki nivo, povezujući uzroke sa posledicama, tako da rešite pravi problem — ne samo simptom.",
+
+  "ishikawaTitle": "Ishikawa dijagram (riblja kost)",
+  "ishikawaDesc": "Vizuelno mapirajte sve potencijalne uzroke problema kroz 6M kategorije:\nČovek, Mašina, Metod, Materijal, Merenje i Okruženje.\n\nMoćan alat za brainstorming za multifunkcionalne timove.",
+
+  "kaizenTitle": "Kaizen tabla",
+  "kaizenDesc": "Prikupljajte i pratite ideje za unapređenje od svih zaposlenih u fabrici.\nKanban tabla sa kolonama Za uraditi, U toku i Završeno.\n\nDodelite odgovorne osobe, postavite rokove i proslavite ostvarena unapređenja.",
+
+  "smedTitle": "SMED Tracker",
+  "smedDesc": "Smanjite vreme zamene alata pomoću SMED metodologije (Single-Minute Exchange of Dies).\nDokumentujte svaki korak, klasifikujte kao interni ili eksterni i pratite napredak unapređenja tokom vremena.",
+
+  "tpmTitle": "TPM kontrolna tabla",
+  "tpmDesc": "TPM (Total Productive Maintenance) vam pomaže da sprečite kvarove pre nego što se dogode.\nPratite stanje opreme, planirajte preventivno održavanje i nadgledajte MTBF i MTTR metrike.",
+
+  "sixSTitle": "6S Audit",
+  "sixSDesc": "Sprovedite standardizovane audite radnog mesta: Sortiraj, Sistematiziraj, Sijaj, Standardizuj, Samodisciplina i Sigurnost.\n30 pitanja ocenjenih od 0 do 5, sa praćenjem trendova za merenje unapređenja tokom vremena.",
+
+  "copilotTitle": "Factory Copilot (AI)",
+  "copilotDesc": "Vaš asistent za proizvodnju pokretan veštačkom inteligencijom.\nPostavljajte pitanja o Lean metodologiji, zatražite pomoć u tumačenju vaših OEE podataka ili osmislite ideje za unapređenje.\n\nCopilot razume kontekst vaše fabrike i govori vaš jezik.",
+
+  "finishTitle": "Sve je spremno! 🎉",
+  "finishDesc": "Sada poznajete glavne alate u LeanPilot-u.\n\nPočnite sa Lean Assessment-om da biste otkrili prioritete za unapređenje, a zatim istražite svaki alat sopstvenim tempom.\n\nUvek možete ponovo pokrenuti ovaj vodič iz Podešavanja."
+}

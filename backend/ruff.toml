@@ -1,0 +1,33 @@
+# Ruff linter configuration for LeanPilot backend
+# https://docs.astral.sh/ruff/configuration/
+
+target-version = "py311"
+line-length = 120
+
+exclude = [
+    "migrations/",
+    "__pycache__/",
+    ".venv/",
+]
+
+[lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (import sorting)
+    "S",   # flake8-bandit (security)
+    "B",   # flake8-bugbear
+]
+
+ignore = [
+    "E501",  # line too long — enforced by formatter, lenient here
+    "S101",  # assert usage — acceptable in tests
+    "S106",  # hardcoded passwords — acceptable in test fixtures
+]
+
+[lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "S106"]
+
+[lint.isort]
+known-first-party = ["app"]

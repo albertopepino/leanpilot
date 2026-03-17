@@ -1,0 +1,38 @@
+{
+  "goodMorning": "Good morning",
+  "goodAfternoon": "Good afternoon",
+  "goodEvening": "Good evening",
+  "loadingData": "Loading latest data...",
+
+  "yesterdaySummary": "Yesterday's Summary",
+  "kpiOEE": "OEE",
+  "kpiProduction": "Production Output",
+  "kpiQuality": "Quality Rate",
+  "kpiAndon": "Active Alerts",
+  "kpiAndonSub": "Active Andon alerts",
+
+  "quickActions": "Quick Actions",
+  "actionProduction": "Production Input",
+  "actionProductionDesc": "Log production data",
+  "actionOEE": "OEE Dashboard",
+  "actionOEEDesc": "View performance metrics",
+  "actionKaizen": "New Kaizen Idea",
+  "actionKaizenDesc": "Submit improvement idea",
+  "actionGemba": "Gemba Walk",
+  "actionGembaDesc": "Start a floor walk",
+  "actionAndon": "Andon Board",
+  "actionAndonDesc": "View active alerts",
+  "actionCopilot": "Factory Copilot",
+  "actionCopilotDesc": "Ask the AI assistant",
+
+  "recentActivity": "Recent Activity",
+  "recentActivityDesc": "Latest actions across all tools",
+  "noActivity": "No recent activity found",
+
+  "openActions": "Open Actions",
+  "openActionsDesc": "Items requiring attention",
+  "capaActions": "CAPA Actions",
+  "kaizenItems": "Kaizen In Progress",
+  "ncrOpen": "Open NCRs",
+  "gembaFindings": "Gemba Findings"
+}

@@ -1,0 +1,18 @@
+{
+  "title": "Privatnost i Saglasnost za Obradu Podataka",
+  "subtitle": "Uskla\u0111enost sa GDPR",
+  "description": "Pre nego \u0161to nastavite, pregledajte i prihvatite potrebne ugovore o obradi podataka.",
+  "privacyPolicy": "Prihvatam Politiku Privatnosti",
+  "privacyPolicyDesc": "Pro\u010ditao/la sam i saglasan/na sam sa obradom mojih li\u010dnih podataka kako je opisano u Politici Privatnosti.",
+  "termsOfService": "Prihvatam Uslove Kori\u0161\u0107enja",
+  "termsOfServiceDesc": "Prihvatam Uslove Kori\u0161\u0107enja koji regulišu upotrebu LeanPilot platforme.",
+  "aiProcessing": "AI Analiza (opciono)",
+  "aiProcessingDesc": "Sagalsan/na sam da se anonimizovani proizvodni podaci obra\u0111uju AI modelima radi generisanja predloga za unapre\u0111enje. Ovo mo\u017eete promeniti u bilo kom trenutku.",
+  "marketing": "A\u017euriranja Proizvoda (opciono)",
+  "marketingDesc": "\u017delim da primam a\u017euriranja proizvoda, savete i uvide o lean proizvodnji putem e-po\u0161te.",
+  "gdprNote": "Obavezna polja su ozna\u010dena sa *. Va\u0161i podaci se obra\u0111uju prema \u010dl. 6(1)(b) GDPR za pru\u017eanje usluga. Opcione saglasnosti mogu se povu\u0107i u bilo kom trenutku u Pode\u0161avanjima.",
+  "accept": "Prihvati i Nastavi",
+  "decline": "Odjavi se",
+  "submitting": "\u010cuvanje...",
+  "error": "Nije uspelo \u010duvanje saglasnosti. Poku\u0161ajte ponovo."
+}

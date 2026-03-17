@@ -1,0 +1,18 @@
+{
+  "title": "Prywatno\u015b\u0107 i Zgoda na Przetwarzanie Danych",
+  "subtitle": "Zgodno\u015b\u0107 z RODO",
+  "description": "Przed kontynuacj\u0105 prosimy o zapoznanie si\u0119 i zaakceptowanie wymaganych um\u00f3w dotycz\u0105cych przetwarzania danych.",
+  "privacyPolicy": "Akceptuj\u0119 Polityk\u0119 Prywatno\u015bci",
+  "privacyPolicyDesc": "Zapozna\u0142em/am si\u0119 i wyra\u017cam zgod\u0119 na przetwarzanie moich danych osobowych zgodnie z Polityk\u0105 Prywatno\u015bci.",
+  "termsOfService": "Akceptuj\u0119 Regulamin",
+  "termsOfServiceDesc": "Akceptuj\u0119 Regulamin korzystania z platformy LeanPilot.",
+  "aiProcessing": "Analiza AI (opcjonalnie)",
+  "aiProcessingDesc": "Wyra\u017cam zgod\u0119 na przetwarzanie zanonimizowanych danych produkcyjnych przez modele AI w celu generowania sugestii usprawnie\u0144. Mo\u017cesz to zmieni\u0107 w dowolnym momencie.",
+  "marketing": "Aktualizacje Produktu (opcjonalnie)",
+  "marketingDesc": "Chc\u0119 otrzymywa\u0107 aktualizacje produktu, wskaz\u00f3wki i informacje o lean manufacturing drog\u0105 mailow\u0105.",
+  "gdprNote": "Pola wymagane oznaczone s\u0105 *. Twoje dane s\u0105 przetwarzane na podstawie Art. 6(1)(b) RODO w celu \u015bwiadczenia us\u0142ug. Opcjonalne zgody mo\u017cna wycofa\u0107 w dowolnym momencie w Ustawieniach.",
+  "accept": "Akceptuj i Kontynuuj",
+  "decline": "Wyloguj si\u0119",
+  "submitting": "Zapisywanie...",
+  "error": "Nie uda\u0142o si\u0119 zapisa\u0107 zgody. Spr\u00f3buj ponownie."
+}

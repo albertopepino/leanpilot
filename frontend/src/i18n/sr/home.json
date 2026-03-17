@@ -1,0 +1,38 @@
+{
+  "goodMorning": "Dobro jutro",
+  "goodAfternoon": "Dobar dan",
+  "goodEvening": "Dobro vece",
+  "loadingData": "Ucitavanje podataka...",
+
+  "yesterdaySummary": "Jucerasnji pregled",
+  "kpiOEE": "OEE",
+  "kpiProduction": "Proizvodnja",
+  "kpiQuality": "Stopa kvaliteta",
+  "kpiAndon": "Aktivni alarmi",
+  "kpiAndonSub": "Aktivni Andon alarmi",
+
+  "quickActions": "Brze akcije",
+  "actionProduction": "Unos proizvodnje",
+  "actionProductionDesc": "Evidentiraj podatke o proizvodnji",
+  "actionOEE": "OEE kontrolna tabla",
+  "actionOEEDesc": "Pregledaj metrike performansi",
+  "actionKaizen": "Nova Kaizen ideja",
+  "actionKaizenDesc": "Predlozi poboljsanje",
+  "actionGemba": "Gemba Walk",
+  "actionGembaDesc": "Zapocni obilazak pogona",
+  "actionAndon": "Andon tabla",
+  "actionAndonDesc": "Pregledaj aktivne alarme",
+  "actionCopilot": "Fabricki kopilot",
+  "actionCopilotDesc": "Pitaj AI asistenta",
+
+  "recentActivity": "Nedavna aktivnost",
+  "recentActivityDesc": "Poslednje akcije iz svih alata",
+  "noActivity": "Nema nedavne aktivnosti",
+
+  "openActions": "Otvorene akcije",
+  "openActionsDesc": "Stavke koje zahtevaju paznju",
+  "capaActions": "CAPA akcije",
+  "kaizenItems": "Kaizen u toku",
+  "ncrOpen": "Otvoreni NCR",
+  "gembaFindings": "Gemba nalazi"
+}

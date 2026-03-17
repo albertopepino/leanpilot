@@ -1,0 +1,18 @@
+{
+  "title": "Datenschutz & Einwilligung",
+  "subtitle": "DSGVO-Konformit\u00e4t",
+  "description": "Bevor Sie fortfahren, lesen und akzeptieren Sie bitte die erforderlichen Datenverarbeitungsvereinbarungen.",
+  "privacyPolicy": "Ich akzeptiere die Datenschutzerkl\u00e4rung",
+  "privacyPolicyDesc": "Ich habe die Datenschutzerkl\u00e4rung gelesen und stimme der Verarbeitung meiner personenbezogenen Daten zu.",
+  "termsOfService": "Ich akzeptiere die Nutzungsbedingungen",
+  "termsOfServiceDesc": "Ich stimme den Nutzungsbedingungen f\u00fcr die Nutzung der LeanPilot-Plattform zu.",
+  "aiProcessing": "KI-gest\u00fctzte Analyse (optional)",
+  "aiProcessingDesc": "Ich stimme zu, dass anonymisierte Produktionsdaten von KI-Modellen verarbeitet werden, um Verbesserungsvorschl\u00e4ge zu generieren. Sie k\u00f6nnen dies jederzeit \u00e4ndern.",
+  "marketing": "Produkt-Updates (optional)",
+  "marketingDesc": "Ich m\u00f6chte Produkt-Updates, Tipps und Lean-Manufacturing-Einblicke per E-Mail erhalten.",
+  "gdprNote": "Pflichtfelder sind mit * gekennzeichnet. Ihre Daten werden gem\u00e4\u00df Art. 6(1)(b) DSGVO zur Dienstleistungserbringung verarbeitet. Optionale Einwilligungen k\u00f6nnen jederzeit in den Einstellungen widerrufen werden.",
+  "accept": "Akzeptieren & Fortfahren",
+  "decline": "Abmelden",
+  "submitting": "Wird gespeichert...",
+  "error": "Einwilligung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut."
+}

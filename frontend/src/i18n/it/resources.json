@@ -1,0 +1,45 @@
+{
+  "title": "Libreria Risorse Lean",
+  "subtitle": "Link selezionati alle migliori fonti di conoscenza sulla Lean Manufacturing",
+
+  "sectionBooks": "Libri Fondamentali",
+  "sectionOrganizations": "Organizzazioni e Istituti",
+  "sectionLearning": "Formazione Online",
+  "sectionStandards": "Standard e Metodologie",
+
+  "bookToyotaWay": "The Toyota Way",
+  "bookToyotaWayDesc": "I 14 principi di management del più grande produttore al mondo",
+  "bookLeanThinking": "Lean Thinking",
+  "bookLeanThinkingDesc": "Come eliminare gli sprechi e creare valore nella tua organizzazione",
+  "bookTPS": "Toyota Production System",
+  "bookTPSDesc": "Oltre la produzione di massa — il testo originale del TPS",
+  "bookLearningToSee": "Learning to See",
+  "bookLearningToSeeDesc": "Il riferimento per la Mappatura del Flusso di Valore",
+
+  "orgLEI": "Lean Enterprise Institute (LEI)",
+  "orgLEIDesc": "Fondato da James Womack — centro globale per ricerca e formazione Lean",
+  "orgLEA": "Lean Enterprise Academy (UK)",
+  "orgLEADesc": "Centro europeo per il pensiero e la pratica Lean",
+  "orgAME": "Association for Manufacturing Excellence (AME)",
+  "orgAMEDesc": "Rete di professionisti che condividono le migliori pratiche nell'eccellenza manifatturiera",
+  "orgShingo": "Shingo Institute",
+  "orgShingoDesc": "Sede dello Shingo Prize — il Nobel della Manifattura",
+
+  "learnLEI": "LEI Online Learning",
+  "learnLEIDesc": "Corsi autogestiti su A3, VSM, kata e altro",
+  "learnGemba": "Gemba Academy",
+  "learnGembaDesc": "Formazione video su Lean e Six Sigma",
+  "learnKata": "Toyota Kata Practice",
+  "learnKataDesc": "Routine di pratica per il modello di pensiero scientifico",
+  "learnTools": "Lean Manufacturing Tools",
+  "learnToolsDesc": "Riferimento gratuito per tutti i principali strumenti e tecniche Lean",
+
+  "stdOEE": "OEE Foundation",
+  "stdOEEDesc": "Risorsa completa per l'Overall Equipment Effectiveness",
+  "stdTPM": "TPM / WCM Reference",
+  "stdTPMDesc": "Japan Institute of Plant Maintenance — origini del TPM",
+  "stdISO": "ISO 56002 Innovation Management",
+  "stdISODesc": "Standard per sistemi di miglioramento continuo",
+  "stdIndustry4": "Industria 4.0 + Lean",
+  "stdIndustry4Desc": "Lean manufacturing digitale nella quarta rivoluzione industriale"
+}

@@ -1,0 +1,18 @@
+{
+  "title": "Confidentialit\u00e9 & Consentement",
+  "subtitle": "Conformit\u00e9 RGPD",
+  "description": "Avant de continuer, veuillez lire et accepter les accords de traitement des donn\u00e9es requis.",
+  "privacyPolicy": "J'accepte la Politique de Confidentialit\u00e9",
+  "privacyPolicyDesc": "J'ai lu et j'accepte le traitement de mes donn\u00e9es personnelles tel que d\u00e9crit dans la Politique de Confidentialit\u00e9.",
+  "termsOfService": "J'accepte les Conditions d'Utilisation",
+  "termsOfServiceDesc": "J'accepte les Conditions d'Utilisation r\u00e9gissant l'utilisation de la plateforme LeanPilot.",
+  "aiProcessing": "Analyse par IA (optionnel)",
+  "aiProcessingDesc": "Je consens \u00e0 ce que les donn\u00e9es de production anonymis\u00e9es soient trait\u00e9es par des mod\u00e8les d'IA pour g\u00e9n\u00e9rer des suggestions d'am\u00e9lioration. Vous pouvez modifier cela \u00e0 tout moment.",
+  "marketing": "Mises \u00e0 jour Produit (optionnel)",
+  "marketingDesc": "Je souhaite recevoir des mises \u00e0 jour produit, des conseils et des informations sur le lean manufacturing par e-mail.",
+  "gdprNote": "Les champs obligatoires sont marqu\u00e9s d'un *. Vos donn\u00e9es sont trait\u00e9es conform\u00e9ment \u00e0 l'Art. 6(1)(b) du RGPD pour la fourniture du service. Les consentements optionnels peuvent \u00eatre retir\u00e9s \u00e0 tout moment dans les Param\u00e8tres.",
+  "accept": "Accepter & Continuer",
+  "decline": "Se D\u00e9connecter",
+  "submitting": "Enregistrement...",
+  "error": "\u00c9chec de l'enregistrement du consentement. Veuillez r\u00e9essayer."
+}

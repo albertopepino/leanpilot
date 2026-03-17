@@ -1,0 +1,70 @@
+{
+  "title": "Impostazioni",
+  "subtitle": "Gestisci il tuo profilo, aspetto, sicurezza e preferenze sulla privacy",
+
+  "profile": "Profilo",
+  "fullName": "Nome Completo",
+  "email": "Email",
+  "role": "Ruolo",
+  "factoryName": "Stabilimento",
+  "roleAdmin": "Amministratore",
+  "rolePlantManager": "Responsabile di Stabilimento",
+  "roleLineSupervisor": "Supervisore di Linea",
+  "roleOperator": "Operatore",
+  "roleViewer": "Visualizzatore",
+
+  "appearance": "Aspetto",
+  "language": "Lingua",
+  "theme": "Tema",
+  "themeLight": "Chiaro",
+  "themeDark": "Scuro",
+  "switchToDark": "Passa alla modalità scura",
+  "switchToLight": "Passa alla modalità chiara",
+
+  "security": "Sicurezza",
+  "currentPassword": "Password Attuale",
+  "newPassword": "Nuova Password",
+  "confirmPassword": "Conferma Password",
+  "changePassword": "Cambia Password",
+  "passwordChanged": "Password cambiata con successo",
+  "passwordMismatch": "Le password non corrispondono",
+  "passwordRequirements": "Minimo 12 caratteri, con maiuscola, minuscola, numero e carattere speciale",
+
+  "privacy": "Privacy e Consenso",
+  "aiConsentLabel": "Elaborazione Dati con AI",
+  "aiConsentDesc": "Consenti a LeanPilot di elaborare i tuoi dati di produzione con l'AI per analisi, identificazione cause radice e raccomandazioni. I dati vengono anonimizzati prima dell'elaborazione.",
+  "marketingConsentLabel": "Aggiornamenti e Suggerimenti",
+  "marketingConsentDesc": "Ricevi email occasionali su nuove funzionalita', suggerimenti sul lean manufacturing e aggiornamenti del prodotto. Puoi annullare l'iscrizione in qualsiasi momento.",
+  "savePreferences": "Salva Preferenze",
+
+  "dataExport": "Dati e Privacy",
+  "dataExportDesc": "Scarica tutti i tuoi dati in formato JSON. Include il tuo profilo, registri di produzione, analisi lean e log di audit (GDPR Art. 20 — Diritto alla portabilita' dei dati).",
+  "downloadMyData": "Scarica i Miei Dati",
+
+  "about": "Informazioni su LeanPilot",
+  "version": "Versione",
+  "plan": "Piano",
+  "userId": "ID Utente",
+  "factoryId": "ID Stabilimento",
+
+  "notifications": "Notifiche",
+  "emailNotifications": "Notifiche Email",
+  "emailNotificationsDesc": "Ricevi avvisi email per eventi Andon critici, azioni scadute e controlli qualita' falliti",
+  "timezone": "Fuso Orario",
+  "dateFormat": "Formato Data",
+
+  "currency": "Valuta",
+  "currencyDesc": "Seleziona la valuta utilizzata per risparmi, costi e valori finanziari nell'app",
+
+  "companyBranding": "Branding Aziendale",
+  "logoHint": "Il logo della tua azienda appare nelle intestazioni dei report e nella barra laterale. PNG, JPG o SVG, max 2 MB.",
+  "removeLogo": "Rimuovi Logo",
+  "uploadLogo": "Trascina il tuo logo qui, oppure clicca per sfogliare",
+  "logoUploading": "Caricamento...",
+  "logoErrorType": "Sono consentiti solo file PNG, JPG o SVG",
+  "logoErrorSize": "Il file e' troppo grande. Massimo 2 MB.",
+
+  "tutorial": "Tutorial",
+  "tutorialDesc": "Ripeti il tutorial di onboarding per scoprire tutti gli strumenti disponibili.",
+  "replayTutorial": "Ripeti Tutorial"
+}

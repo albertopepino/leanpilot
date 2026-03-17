@@ -1,0 +1,61 @@
+{
+  "catWelcome": "Getting Started",
+  "catDefine": "Define",
+  "catMeasure": "Measure",
+  "catAnalyze": "Analyze",
+  "catImprove": "Improve",
+  "catControl": "Control",
+
+  "skipTutorial": "Skip tutorial",
+  "tryItNow": "Try it now",
+  "getStarted": "Get started!",
+  "keyboardHint": "Use ← → arrow keys to navigate, Esc to skip",
+
+  "welcomeTitle": "Welcome to LeanPilot, {name}!",
+  "welcomeDesc": "LeanPilot is your all-in-one Lean Manufacturing platform.\nIt helps you monitor production, solve problems, and drive continuous improvement — all in one place.\n\nLet's take a quick tour of the main tools.",
+
+  "dmaicTitle": "The DMAIC Methodology",
+  "dmaicDesc": "LeanPilot is organized around the DMAIC framework — the backbone of Lean Six Sigma:\n\n• Define — Set up your production lines, products, and orders\n• Measure — Track OEE, quality, and hourly output\n• Analyze — Find root causes with 5 Why, Ishikawa, and Gemba walks\n• Improve — Drive change with Kaizen, SMED, and TPM\n• Control — Sustain gains with 6S audits and quality policies",
+
+  "assessmentTitle": "Lean Assessment",
+  "assessmentDesc": "Start here! The Lean Assessment evaluates your factory across 6 key areas and generates a personalized improvement roadmap.\n\nAnswer 18 questions to discover your Lean maturity level and get prioritized recommendations.",
+
+  "productionOrdersTitle": "Production Orders",
+  "productionOrdersDesc": "Create and manage production orders with full traceability.\nTrack planned vs. actual quantities, monitor order status from draft to completed, and link orders to your Bill of Materials.",
+
+  "productionInputTitle": "Production Data Input",
+  "productionInputDesc": "Log daily production data for each line: run time, planned time, total pieces, good pieces, and defects.\n\nLeanPilot automatically calculates your OEE (Availability × Performance × Quality) from this data.",
+
+  "oeeDashboardTitle": "OEE Dashboard",
+  "oeeDashboardDesc": "Your command center for production performance.\nView real-time OEE with availability, performance, and quality breakdowns.\n\nInteractive charts show trends over time, helping you spot patterns and prioritize improvements.",
+
+  "hourlyTitle": "Hourly Production Tracking",
+  "hourlyDesc": "Track production output hour by hour against targets.\nQuickly identify when and where production falls behind, so supervisors can take immediate corrective action.",
+
+  "qcChecksTitle": "Quality Control Checks",
+  "qcChecksDesc": "Perform standardized quality inspections at critical points in your process.\nRecord measurements, pass/fail results, and attach photos.\n\nQC checks integrate with NCR and CAPA workflows for full traceability.",
+
+  "fiveWhyTitle": "5 Why Root Cause Analysis",
+  "fiveWhyDesc": "When problems occur, ask \"Why?\" five times to drill down to the root cause.\n\nLeanPilot guides you through each level, linking causes to effects, so you fix the real problem — not just the symptom.",
+
+  "ishikawaTitle": "Ishikawa (Fishbone) Diagram",
+  "ishikawaDesc": "Visually map all potential causes of a problem across the 6M categories:\nMan, Machine, Method, Material, Measurement, and Mother Nature.\n\nA powerful brainstorming tool for cross-functional teams.",
+
+  "kaizenTitle": "Kaizen Board",
+  "kaizenDesc": "Capture and track improvement ideas from anyone in the factory.\nKanban-style board with To Do, Doing, and Done columns.\n\nAssign owners, set due dates, and celebrate completed improvements.",
+
+  "smedTitle": "SMED Tracker",
+  "smedDesc": "Reduce changeover times with the Single-Minute Exchange of Dies methodology.\nDocument each step, classify as internal or external, and track your improvement progress over time.",
+
+  "tpmTitle": "TPM Dashboard",
+  "tpmDesc": "Total Productive Maintenance helps you prevent breakdowns before they happen.\nTrack equipment health, schedule preventive maintenance, and monitor MTBF and MTTR metrics.",
+
+  "sixSTitle": "6S Audit",
+  "sixSDesc": "Conduct standardized workplace audits across Sort, Set in Order, Shine, Standardize, Sustain, and Safety.\n30 questions scored 0-5, with trend tracking to measure improvement over time.",
+
+  "copilotTitle": "Factory Copilot (AI)",
+  "copilotDesc": "Your AI-powered manufacturing assistant.\nAsk questions about Lean methodology, get help interpreting your OEE data, or brainstorm improvement ideas.\n\nThe Copilot understands your factory context and speaks your language.",
+
+  "finishTitle": "You're all set! 🎉",
+  "finishDesc": "You now know the main tools in LeanPilot.\n\nStart with the Lean Assessment to discover your improvement priorities, then explore each tool at your own pace.\n\nYou can always replay this tutorial from Settings."
+}

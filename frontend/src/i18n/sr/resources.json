@@ -1,0 +1,45 @@
+{
+  "title": "Biblioteka Lean resursa",
+  "subtitle": "Odabrani linkovi ka najboljim izvorima znanja o Lean proizvodnji",
+
+  "sectionBooks": "Osnovne knjige",
+  "sectionOrganizations": "Organizacije i instituti",
+  "sectionLearning": "Onlajn učenje",
+  "sectionStandards": "Standardi i metodologije",
+
+  "bookToyotaWay": "The Toyota Way",
+  "bookToyotaWayDesc": "14 principa upravljanja iza najvećeg svetskog proizvođača",
+  "bookLeanThinking": "Lean Thinking",
+  "bookLeanThinkingDesc": "Kako eliminisati gubitke i stvoriti vrednost u vašoj organizaciji",
+  "bookTPS": "Toyota Production System",
+  "bookTPSDesc": "Izvan velike serijske proizvodnje — originalni TPS tekst",
+  "bookLearningToSee": "Learning to See",
+  "bookLearningToSeeDesc": "Zlatni standard za mapiranje toka vrednosti (VSM)",
+
+  "orgLEI": "Lean Enterprise Institute (LEI)",
+  "orgLEIDesc": "Osnovao James Womack — globalno središte za Lean istraživanje i edukaciju",
+  "orgLEA": "Lean Enterprise Academy (UK)",
+  "orgLEADesc": "Evropski centar za Lean razmišljanje i praksu",
+  "orgAME": "Association for Manufacturing Excellence (AME)",
+  "orgAMEDesc": "Mreža praktičara koji dele najbolje prakse u proizvodnoj izvrsnosti",
+  "orgShingo": "Shingo Institute",
+  "orgShingoDesc": "Dom Shingo nagrade — Nobelova nagrada proizvodnje",
+
+  "learnLEI": "LEI onlajn učenje",
+  "learnLEIDesc": "Kursevi za samostalno učenje o A3, VSM, kata i više",
+  "learnGemba": "Gemba Academy",
+  "learnGembaDesc": "Video obuke za Lean i Six Sigma",
+  "learnKata": "Toyota Kata praksa",
+  "learnKataDesc": "Rutine vežbanja za obrazac naučnog razmišljanja",
+  "learnTools": "Lean proizvodni alati",
+  "learnToolsDesc": "Besplatna referenca za sve glavne Lean alate i tehnike",
+
+  "stdOEE": "OEE Foundation",
+  "stdOEEDesc": "Sveobuhvatan resurs za ukupnu efikasnost opreme (OEE)",
+  "stdTPM": "TPM / WCM referenca",
+  "stdTPMDesc": "Japanski institut za održavanje postrojenja — izvor TPM-a",
+  "stdISO": "ISO 56002 Upravljanje inovacijama",
+  "stdISODesc": "Standardi za sisteme kontinuiranog poboljšanja",
+  "stdIndustry4": "Industrija 4.0 + Lean",
+  "stdIndustry4Desc": "Digitalna Lean proizvodnja u četvrtoj industrijskoj revoluciji"
+}

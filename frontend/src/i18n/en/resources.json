@@ -1,0 +1,45 @@
+{
+  "title": "Lean Resources Library",
+  "subtitle": "Curated links to the best Lean Manufacturing knowledge sources",
+
+  "sectionBooks": "Foundational Books",
+  "sectionOrganizations": "Organizations & Institutes",
+  "sectionLearning": "Online Learning",
+  "sectionStandards": "Standards & Methodologies",
+
+  "bookToyotaWay": "The Toyota Way",
+  "bookToyotaWayDesc": "The 14 management principles behind the world's greatest manufacturer",
+  "bookLeanThinking": "Lean Thinking",
+  "bookLeanThinkingDesc": "How to banish waste and create wealth in your organization",
+  "bookTPS": "Toyota Production System",
+  "bookTPSDesc": "Beyond large-scale production — the original TPS text",
+  "bookLearningToSee": "Learning to See",
+  "bookLearningToSeeDesc": "The gold standard for Value Stream Mapping",
+
+  "orgLEI": "Lean Enterprise Institute (LEI)",
+  "orgLEIDesc": "Founded by James Womack — global hub for Lean research and education",
+  "orgLEA": "Lean Enterprise Academy (UK)",
+  "orgLEADesc": "European center for Lean thinking and practice",
+  "orgAME": "Association for Manufacturing Excellence (AME)",
+  "orgAMEDesc": "Practitioner network sharing best practices in manufacturing excellence",
+  "orgShingo": "Shingo Institute",
+  "orgShingoDesc": "Home of the Shingo Prize — the Nobel of Manufacturing",
+
+  "learnLEI": "LEI Online Learning",
+  "learnLEIDesc": "Self-paced courses on A3, VSM, kata, and more",
+  "learnGemba": "Gemba Academy",
+  "learnGembaDesc": "Video-based Lean and Six Sigma training",
+  "learnKata": "Toyota Kata Practice",
+  "learnKataDesc": "Practice routines for scientific thinking pattern",
+  "learnTools": "Lean Manufacturing Tools",
+  "learnToolsDesc": "Free reference for all major Lean tools and techniques",
+
+  "stdOEE": "OEE Foundation",
+  "stdOEEDesc": "Comprehensive resource for Overall Equipment Effectiveness",
+  "stdTPM": "TPM / WCM Reference",
+  "stdTPMDesc": "Japan Institute of Plant Maintenance — TPM origins",
+  "stdISO": "ISO 56002 Innovation Management",
+  "stdISODesc": "Standards for continuous improvement systems",
+  "stdIndustry4": "Industry 4.0 + Lean",
+  "stdIndustry4Desc": "Digital lean manufacturing in the fourth industrial revolution"
+}

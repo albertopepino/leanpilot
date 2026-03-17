@@ -1,0 +1,38 @@
+{
+  "goodMorning": "Guten Morgen",
+  "goodAfternoon": "Guten Tag",
+  "goodEvening": "Guten Abend",
+  "loadingData": "Daten werden geladen...",
+
+  "yesterdaySummary": "Zusammenfassung von Gestern",
+  "kpiOEE": "OEE",
+  "kpiProduction": "Produktionsleistung",
+  "kpiQuality": "Qualitaetsrate",
+  "kpiAndon": "Aktive Alarme",
+  "kpiAndonSub": "Aktive Andon-Alarme",
+
+  "quickActions": "Schnellaktionen",
+  "actionProduction": "Produktionseingabe",
+  "actionProductionDesc": "Produktionsdaten erfassen",
+  "actionOEE": "OEE Dashboard",
+  "actionOEEDesc": "Leistungskennzahlen anzeigen",
+  "actionKaizen": "Neue Kaizen-Idee",
+  "actionKaizenDesc": "Verbesserungsidee einreichen",
+  "actionGemba": "Gemba Walk",
+  "actionGembaDesc": "Rundgang starten",
+  "actionAndon": "Andon-Tafel",
+  "actionAndonDesc": "Aktive Alarme anzeigen",
+  "actionCopilot": "Fabrik-Copilot",
+  "actionCopilotDesc": "KI-Assistent fragen",
+
+  "recentActivity": "Letzte Aktivitaeten",
+  "recentActivityDesc": "Neueste Aktionen aus allen Tools",
+  "noActivity": "Keine aktuellen Aktivitaeten",
+
+  "openActions": "Offene Aktionen",
+  "openActionsDesc": "Elemente, die Aufmerksamkeit erfordern",
+  "capaActions": "CAPA-Aktionen",
+  "kaizenItems": "Kaizen in Bearbeitung",
+  "ncrOpen": "Offene NCRs",
+  "gembaFindings": "Gemba-Befunde"
+}

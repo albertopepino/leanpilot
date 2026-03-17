@@ -1,0 +1,61 @@
+{
+  "catWelcome": "Premiers pas",
+  "catDefine": "Définir",
+  "catMeasure": "Mesurer",
+  "catAnalyze": "Analyser",
+  "catImprove": "Améliorer",
+  "catControl": "Contrôler",
+
+  "skipTutorial": "Passer le tutoriel",
+  "tryItNow": "Essayer maintenant",
+  "getStarted": "C'est parti !",
+  "keyboardHint": "Utilisez les touches ← → pour naviguer, Échap pour passer",
+
+  "welcomeTitle": "Bienvenue sur LeanPilot, {name} !",
+  "welcomeDesc": "LeanPilot est votre plateforme tout-en-un de Lean Manufacturing.\nElle vous aide à surveiller la production, résoudre les problèmes et piloter l'amélioration continue — le tout en un seul endroit.\n\nFaisons un tour rapide des principaux outils.",
+
+  "dmaicTitle": "La méthodologie DMAIC",
+  "dmaicDesc": "LeanPilot est organisé autour du cadre DMAIC — la colonne vertébrale du Lean Six Sigma :\n\n• Définir — Configurez vos lignes de production, produits et ordres\n• Mesurer — Suivez l'OEE, la qualité et la production horaire\n• Analyser — Trouvez les causes racines avec 5 Why, Ishikawa et Gemba walks\n• Améliorer — Pilotez le changement avec Kaizen, SMED et TPM\n• Contrôler — Pérennisez les gains avec les audits 6S et les politiques qualité",
+
+  "assessmentTitle": "Lean Assessment",
+  "assessmentDesc": "Commencez ici ! Le Lean Assessment évalue votre usine dans 6 domaines clés et génère une feuille de route d'amélioration personnalisée.\n\nRépondez à 18 questions pour découvrir votre niveau de maturité Lean et obtenir des recommandations priorisées.",
+
+  "productionOrdersTitle": "Ordres de production",
+  "productionOrdersDesc": "Créez et gérez des ordres de production avec une traçabilité complète.\nSuivez les quantités planifiées vs. réelles, surveillez le statut des ordres du brouillon à l'achèvement et liez les ordres à votre nomenclature.",
+
+  "productionInputTitle": "Saisie des données de production",
+  "productionInputDesc": "Enregistrez les données de production quotidiennes pour chaque ligne : temps de fonctionnement, temps planifié, pièces totales, pièces conformes et défauts.\n\nLeanPilot calcule automatiquement votre OEE (Disponibilité × Performance × Qualité) à partir de ces données.",
+
+  "oeeDashboardTitle": "Tableau de bord OEE",
+  "oeeDashboardDesc": "Votre centre de commandement pour la performance de production.\nVisualisez l'OEE en temps réel avec la décomposition en disponibilité, performance et qualité.\n\nDes graphiques interactifs montrent les tendances dans le temps, vous aidant à repérer les schémas et prioriser les améliorations.",
+
+  "hourlyTitle": "Suivi de production horaire",
+  "hourlyDesc": "Suivez la production heure par heure par rapport aux objectifs.\nIdentifiez rapidement quand et où la production prend du retard, afin que les superviseurs puissent prendre des mesures correctives immédiates.",
+
+  "qcChecksTitle": "Contrôles qualité",
+  "qcChecksDesc": "Effectuez des inspections qualité standardisées aux points critiques de votre processus.\nEnregistrez les mesures, les résultats conforme/non-conforme et joignez des photos.\n\nLes contrôles qualité s'intègrent aux workflows NCR et CAPA pour une traçabilité complète.",
+
+  "fiveWhyTitle": "Analyse des causes racines 5 Why",
+  "fiveWhyDesc": "Quand des problèmes surviennent, posez la question « Pourquoi ? » cinq fois pour remonter à la cause racine.\n\nLeanPilot vous guide à chaque niveau, en reliant les causes aux effets, pour que vous corrigiez le vrai problème — pas seulement le symptôme.",
+
+  "ishikawaTitle": "Diagramme d'Ishikawa (arêtes de poisson)",
+  "ishikawaDesc": "Cartographiez visuellement toutes les causes potentielles d'un problème selon les 6 catégories M :\nMain-d'œuvre, Machine, Méthode, Matériau, Mesure et Milieu.\n\nUn outil puissant de brainstorming pour les équipes pluridisciplinaires.",
+
+  "kaizenTitle": "Tableau Kaizen",
+  "kaizenDesc": "Capturez et suivez les idées d'amélioration de tous les collaborateurs de l'usine.\nTableau de type Kanban avec les colonnes À faire, En cours et Terminé.\n\nAttribuez des responsables, fixez des échéances et célébrez les améliorations réalisées.",
+
+  "smedTitle": "SMED Tracker",
+  "smedDesc": "Réduisez les temps de changement avec la méthodologie SMED (Single-Minute Exchange of Dies).\nDocumentez chaque étape, classez-la comme interne ou externe et suivez votre progression d'amélioration dans le temps.",
+
+  "tpmTitle": "Tableau de bord TPM",
+  "tpmDesc": "Le TPM (Total Productive Maintenance) vous aide à prévenir les pannes avant qu'elles ne surviennent.\nSuivez l'état des équipements, planifiez la maintenance préventive et surveillez les indicateurs MTBF et MTTR.",
+
+  "sixSTitle": "Audit 6S",
+  "sixSDesc": "Réalisez des audits standardisés du poste de travail : Trier, Ranger, Nettoyer, Standardiser, Pérenniser et Sécurité.\n30 questions notées de 0 à 5, avec suivi des tendances pour mesurer l'amélioration dans le temps.",
+
+  "copilotTitle": "Factory Copilot (IA)",
+  "copilotDesc": "Votre assistant de fabrication propulsé par l'IA.\nPosez des questions sur la méthodologie Lean, obtenez de l'aide pour interpréter vos données OEE ou brainstormez des idées d'amélioration.\n\nLe Copilot comprend le contexte de votre usine et parle votre langue.",
+
+  "finishTitle": "Vous êtes prêt ! 🎉",
+  "finishDesc": "Vous connaissez maintenant les principaux outils de LeanPilot.\n\nCommencez par le Lean Assessment pour découvrir vos priorités d'amélioration, puis explorez chaque outil à votre rythme.\n\nVous pouvez toujours relancer ce tutoriel depuis les Paramètres."
+}

@@ -1,0 +1,45 @@
+{
+  "title": "Biblioteka zasobów Lean",
+  "subtitle": "Wyselekcjonowane linki do najlepszych źródeł wiedzy o Lean Manufacturing",
+
+  "sectionBooks": "Książki podstawowe",
+  "sectionOrganizations": "Organizacje i instytuty",
+  "sectionLearning": "Nauka online",
+  "sectionStandards": "Standardy i metodologie",
+
+  "bookToyotaWay": "The Toyota Way",
+  "bookToyotaWayDesc": "14 zasad zarządzania stojących za największym producentem na świecie",
+  "bookLeanThinking": "Lean Thinking",
+  "bookLeanThinkingDesc": "Jak eliminować marnotrawstwo i tworzyć wartość w organizacji",
+  "bookTPS": "Toyota Production System",
+  "bookTPSDesc": "Poza produkcją masową — oryginalny tekst TPS",
+  "bookLearningToSee": "Learning to See",
+  "bookLearningToSeeDesc": "Złoty standard mapowania strumienia wartości",
+
+  "orgLEI": "Lean Enterprise Institute (LEI)",
+  "orgLEIDesc": "Założony przez Jamesa Womacka — globalny ośrodek badań i edukacji Lean",
+  "orgLEA": "Lean Enterprise Academy (Wielka Brytania)",
+  "orgLEADesc": "Europejskie centrum myślenia i praktyki Lean",
+  "orgAME": "Association for Manufacturing Excellence (AME)",
+  "orgAMEDesc": "Sieć praktyków dzieląca się najlepszymi praktykami w doskonałości produkcyjnej",
+  "orgShingo": "Shingo Institute",
+  "orgShingoDesc": "Siedziba Nagrody Shingo — Nobla w dziedzinie produkcji",
+
+  "learnLEI": "LEI — nauka online",
+  "learnLEIDesc": "Kursy własnym tempem z A3, VSM, kata i innymi zagadnieniami",
+  "learnGemba": "Gemba Academy",
+  "learnGembaDesc": "Szkolenia Lean i Six Sigma oparte na wideo",
+  "learnKata": "Toyota Kata Practice",
+  "learnKataDesc": "Rutyny ćwiczeń dla wzorca myślenia naukowego",
+  "learnTools": "Narzędzia Lean Manufacturing",
+  "learnToolsDesc": "Bezpłatne odniesienie do wszystkich głównych narzędzi i technik Lean",
+
+  "stdOEE": "OEE Foundation",
+  "stdOEEDesc": "Kompleksowy zasób dotyczący Overall Equipment Effectiveness",
+  "stdTPM": "TPM / WCM — materiały referencyjne",
+  "stdTPMDesc": "Japan Institute of Plant Maintenance — źródła TPM",
+  "stdISO": "ISO 56002 — Zarządzanie innowacjami",
+  "stdISODesc": "Standardy systemów ciągłego doskonalenia",
+  "stdIndustry4": "Przemysł 4.0 + Lean",
+  "stdIndustry4Desc": "Cyfrowa produkcja Lean w czwartej rewolucji przemysłowej"
+}

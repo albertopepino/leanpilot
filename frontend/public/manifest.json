@@ -1,0 +1,21 @@
+{
+  "name": "LeanPilot - Lean Manufacturing Platform",
+  "short_name": "LeanPilot",
+  "description": "Lean manufacturing management tools for SME factories",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "en",
+  "dir": "ltr"
+}

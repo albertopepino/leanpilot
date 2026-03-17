@@ -1,0 +1,45 @@
+{
+  "title": "Biblioteca de Recursos Lean",
+  "subtitle": "Enlaces seleccionados a las mejores fuentes de conocimiento de Manufactura Lean",
+
+  "sectionBooks": "Libros Fundamentales",
+  "sectionOrganizations": "Organizaciones e Institutos",
+  "sectionLearning": "Aprendizaje en Línea",
+  "sectionStandards": "Estándares y Metodologías",
+
+  "bookToyotaWay": "The Toyota Way",
+  "bookToyotaWayDesc": "Los 14 principios de gestión detrás del fabricante más grande del mundo",
+  "bookLeanThinking": "Lean Thinking",
+  "bookLeanThinkingDesc": "Cómo eliminar el desperdicio y crear riqueza en su organización",
+  "bookTPS": "Toyota Production System",
+  "bookTPSDesc": "Más allá de la producción a gran escala — el texto original del TPS",
+  "bookLearningToSee": "Learning to See",
+  "bookLearningToSeeDesc": "El estándar de oro para el Mapeo de Flujo de Valor",
+
+  "orgLEI": "Lean Enterprise Institute (LEI)",
+  "orgLEIDesc": "Fundado por James Womack — centro global de investigación y educación Lean",
+  "orgLEA": "Lean Enterprise Academy (UK)",
+  "orgLEADesc": "Centro europeo para el pensamiento y la práctica Lean",
+  "orgAME": "Association for Manufacturing Excellence (AME)",
+  "orgAMEDesc": "Red de profesionales que comparten mejores prácticas en excelencia manufacturera",
+  "orgShingo": "Shingo Institute",
+  "orgShingoDesc": "Sede del Premio Shingo — el Nobel de la Manufactura",
+
+  "learnLEI": "Aprendizaje en Línea LEI",
+  "learnLEIDesc": "Cursos a su ritmo sobre A3, VSM, kata y más",
+  "learnGemba": "Gemba Academy",
+  "learnGembaDesc": "Capacitación en Lean y Six Sigma basada en video",
+  "learnKata": "Toyota Kata Practice",
+  "learnKataDesc": "Rutinas de práctica para el patrón de pensamiento científico",
+  "learnTools": "Lean Manufacturing Tools",
+  "learnToolsDesc": "Referencia gratuita para todas las principales herramientas y técnicas Lean",
+
+  "stdOEE": "OEE Foundation",
+  "stdOEEDesc": "Recurso integral sobre Efectividad Global del Equipo",
+  "stdTPM": "Referencia TPM / WCM",
+  "stdTPMDesc": "Japan Institute of Plant Maintenance — origen del TPM",
+  "stdISO": "ISO 56002 Gestión de la Innovación",
+  "stdISODesc": "Estándares para sistemas de mejora continua",
+  "stdIndustry4": "Industria 4.0 + Lean",
+  "stdIndustry4Desc": "Manufactura lean digital en la cuarta revolución industrial"
+}

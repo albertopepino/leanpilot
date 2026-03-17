@@ -1,0 +1,38 @@
+{
+  "goodMorning": "Dzien dobry",
+  "goodAfternoon": "Dzien dobry",
+  "goodEvening": "Dobry wieczor",
+  "loadingData": "Ladowanie danych...",
+
+  "yesterdaySummary": "Podsumowanie wczoraj",
+  "kpiOEE": "OEE",
+  "kpiProduction": "Produkcja",
+  "kpiQuality": "Wskaznik jakosci",
+  "kpiAndon": "Aktywne alarmy",
+  "kpiAndonSub": "Aktywne alarmy Andon",
+
+  "quickActions": "Szybkie akcje",
+  "actionProduction": "Wpis produkcji",
+  "actionProductionDesc": "Rejestruj dane produkcyjne",
+  "actionOEE": "Dashboard OEE",
+  "actionOEEDesc": "Zobacz wskazniki wydajnosci",
+  "actionKaizen": "Nowy pomysl Kaizen",
+  "actionKaizenDesc": "Zglos pomysl na usprawnienie",
+  "actionGemba": "Gemba Walk",
+  "actionGembaDesc": "Rozpocznij obchod",
+  "actionAndon": "Tablica Andon",
+  "actionAndonDesc": "Zobacz aktywne alarmy",
+  "actionCopilot": "Copilot fabryczny",
+  "actionCopilotDesc": "Zapytaj asystenta AI",
+
+  "recentActivity": "Ostatnia aktywnosc",
+  "recentActivityDesc": "Ostatnie akcje ze wszystkich narzedzi",
+  "noActivity": "Brak ostatniej aktywnosci",
+
+  "openActions": "Otwarte akcje",
+  "openActionsDesc": "Elementy wymagajace uwagi",
+  "capaActions": "Akcje CAPA",
+  "kaizenItems": "Kaizen w toku",
+  "ncrOpen": "Otwarte NCR",
+  "gembaFindings": "Ustalenia Gemba"
+}

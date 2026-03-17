@@ -1,0 +1,365 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Legacy (keep for backward compat) */
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --border: #e2e8f0;
+
+  /* Theme surfaces */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f4f4f5;
+  --bg-hover: #f1f5f9;
+
+  /* Theme text */
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+
+  /* Theme borders */
+  --border-primary: #e4e4e7;
+  --border-secondary: #f4f4f5;
+
+  /* Theme cards */
+  --card-bg: #ffffff;
+  --card-border: #e4e4e7;
+
+  /* Theme inputs */
+  --input-bg: #ffffff;
+  --input-border: #d1d5db;
+  --input-focus: #6366f1;
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --border: #334155;
+
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --bg-hover: #334155;
+
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #64748b;
+
+  --border-primary: #334155;
+  --border-secondary: #1e293b;
+
+  --card-bg: #1e293b;
+  --card-border: #334155;
+
+  --input-bg: #1e293b;
+  --input-border: #475569;
+  --input-focus: #818cf8;
+}
+
+html {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* ===== Tablet / Touch Optimization ===== */
+
+/* Touch-friendly tap targets — minimum 44px (WCAG 2.5.5) */
+@media (pointer: coarse) {
+  button,
+  a,
+  select,
+  [role="button"],
+  [role="tab"],
+  [role="option"],
+  [role="menuitem"],
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  input[type="date"],
+  input[type="time"],
+  textarea,
+  select {
+    min-height: 48px;
+    font-size: 16px !important; /* Prevent iOS zoom on focus */
+    padding: 10px 12px;
+  }
+
+  /* Larger touch targets for score buttons (6S audit) */
+  .touch-score-btn {
+    min-height: 56px;
+    min-width: 56px;
+    font-size: 1.125rem;
+  }
+
+  /* Larger checkboxes for CILT checklist */
+  .touch-check {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  /* More spacing between tappable items in lists */
+  .touch-list > * + * {
+    margin-top: 8px;
+  }
+}
+
+/* Tablet landscape layout (768-1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .tablet-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .tablet-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Focus visible styles for keyboard navigation (ARIA) */
+*:focus-visible {
+  outline: 3px solid var(--input-focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Screen reader only — utility for ARIA labels */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Live region for announcements */
+[aria-live] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+[aria-live].visible {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* ===== OEE Dashboard Premium Animations ===== */
+
+@keyframes gauge-fill {
+  from { stroke-dashoffset: var(--gauge-circumference); }
+  to { stroke-dashoffset: var(--gauge-offset); }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
+  50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.4); }
+}
+
+@keyframes glow-pulse-amber {
+  0%, 100% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.15); }
+  50% { box-shadow: 0 0 30px rgba(245, 158, 11, 0.3); }
+}
+
+@keyframes glow-pulse-red {
+  0%, 100% { box-shadow: 0 0 20px rgba(244, 63, 94, 0.15); }
+  50% { box-shadow: 0 0 30px rgba(244, 63, 94, 0.3); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.oee-gauge-track {
+  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.3));
+}
+
+.oee-gauge-track-amber {
+  filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.3));
+}
+
+.oee-gauge-track-red {
+  filter: drop-shadow(0 0 6px rgba(244, 63, 94, 0.3));
+}
+
+.kpi-card-premium {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-card-premium:hover {
+  transform: translateY(-2px) scale(1.01);
+}
+
+.kpi-card-premium::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.kpi-card-premium:hover::before {
+  opacity: 1;
+}
+
+.dark .oee-dashboard-card {
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border-color: rgba(51, 65, 85, 0.6);
+}
+
+.dark .oee-hero-section {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.03) 0%, transparent 60%);
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== Print Styles ===== */
+@media print {
+  /* Hide non-printable elements */
+  .no-print,
+  nav,
+  aside,
+  .sidebar,
+  .export-toolbar,
+  button:not(.print-keep),
+  [data-no-print] {
+    display: none !important;
+  }
+
+  /* Reset to light mode for print */
+  :root {
+    --bg-primary: #ffffff !important;
+    --bg-secondary: #ffffff !important;
+    --bg-tertiary: #f4f4f5 !important;
+    --text-primary: #111827 !important;
+    --text-secondary: #374151 !important;
+    --text-tertiary: #6b7280 !important;
+    --border-primary: #d1d5db !important;
+    --card-bg: #ffffff !important;
+    --input-bg: #ffffff !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt;
+    line-height: 1.4;
+  }
+
+  /* Print header — injected by useExport */
+  .print-header {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #111827;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    page-break-after: avoid;
+  }
+
+  .print-header-logo {
+    font-size: 18pt;
+    font-weight: 800;
+    color: #111827;
+  }
+
+  .print-header-meta {
+    font-size: 9pt;
+    color: #374151;
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  .print-footer {
+    display: block !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 8pt;
+    color: #9ca3af;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 4px;
+  }
+
+  /* Make gradients printable */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Full-width print area */
+  .print-area {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Page settings */
+  @page {
+    size: A4 landscape;
+    margin: 15mm 12mm 20mm 12mm;
+  }
+
+  /* Prevent awkward breaks */
+  table, .chart-container, svg {
+    page-break-inside: avoid;
+  }
+
+  tr {
+    page-break-inside: avoid;
+  }
+}

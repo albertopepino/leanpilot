@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeanPilot — Interactive Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== CSS RESET & VARIABLES ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#4f46e5;--primary-light:#6366f1;--primary-dark:#4338ca;
+  --purple:#7c3aed;--purple-light:#8b5cf6;
+  --amber:#f59e0b;--amber-dark:#d97706;--amber-light:#fbbf24;
+  --green:#22c55e;--green-dark:#16a34a;--green-light:#4ade80;
+  --red:#ef4444;--red-dark:#dc2626;--red-light:#f87171;
+  --yellow:#eab308;--blue:#3b82f6;--cyan:#06b6d4;
+  --sidebar-w:260px;--banner-h:44px;
+  --font:'Inter',system-ui,-apple-system,sans-serif;
+  --radius:16px;--radius-sm:8px;--radius-xs:4px;
+  --shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 15px rgba(0,0,0,.1),0 4px 6px rgba(0,0,0,.05);
+  --transition:all .2s ease;
+}
+/* Light theme */
+[data-theme="light"]{
+  --bg:#f8fafc;--surface:#ffffff;--surface-alt:#f1f5f9;
+  --text:#0f172a;--text-secondary:#475569;--text-muted:#94a3b8;
+  --border:#e2e8f0;--border-light:#f1f5f9;
+  --card-bg:#ffffff;--card-border:#e2e8f0;
+  --input-bg:#ffffff;--input-border:#cbd5e1;
+  --hover-bg:#f1f5f9;
+}
+/* Dark theme */
+[data-theme="dark"]{
+  --bg:#0f172a;--surface:#1e293b;--surface-alt:#334155;
+  --text:#f1f5f9;--text-secondary:#94a3b8;--text-muted:#64748b;
+  --border:#334155;--border-light:#1e293b;
+  --card-bg:#1e293b;--card-border:#334155;
+  --input-bg:#1e293b;--input-border:#475569;
+  --hover-bg:#334155;
+}
+html{font-size:14px;scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);
+  line-height:1.5;overflow-x:hidden;transition:background .3s,color .3s}
+a{color:var(--primary);text-decoration:none}
+a:hover{text-decoration:underline}
+input,select,textarea,button{font-family:inherit;font-size:inherit}
+input,select,textarea{background:var(--input-bg);color:var(--text);
+  border:1px solid var(--input-border);border-radius:var(--radius-sm);
+  padding:8px 12px;transition:var(--transition)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(79,70,229,.15)}
+button{cursor:pointer;border:none;border-radius:var(--radius-sm);
+  padding:8px 16px;font-weight:500;transition:var(--transition)}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+th{font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--text-secondary);background:var(--surface-alt)}
+
+/* ===== LAYOUT ===== */
+.app{display:flex;min-height:100vh}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);
+  background:linear-gradient(180deg,#1e1b4b 0%,#312e81 50%,#3730a3 100%);
+  color:#e0e7ff;z-index:100;display:flex;flex-direction:column;
+  overflow-y:auto;overflow-x:hidden;transition:transform .3s ease}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;
+  padding-top:var(--banner-h);transition:margin-left .3s ease}
+.content{padding:24px;max-width:1400px;margin:0 auto}
+
+/* ===== STICKY BANNER ===== */
+.demo-banner{position:fixed;top:0;left:var(--sidebar-w);right:0;
+  height:var(--banner-h);z-index:90;
+  background:linear-gradient(135deg,#f59e0b,#d97706,#b45309);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  gap:12px;font-size:.85rem;font-weight:500;
+  box-shadow:0 2px 8px rgba(217,119,6,.3);transition:left .3s ease}
+.demo-banner a{color:#fff;font-weight:700;
+  background:rgba(255,255,255,.2);padding:4px 14px;
+  border-radius:20px;transition:var(--transition);white-space:nowrap}
+.demo-banner a:hover{background:rgba(255,255,255,.35);text-decoration:none}
+
+/* ===== SIDEBAR COMPONENTS ===== */
+.sidebar-brand{padding:20px 20px 16px;display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-brand .logo{width:36px;height:36px;background:linear-gradient(135deg,var(--primary-light),var(--purple));
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:1.1rem;color:#fff}
+.sidebar-brand h1{font-size:1.15rem;font-weight:700;color:#fff}
+.sidebar-brand span{font-size:.65rem;font-weight:500;color:#a5b4fc;
+  background:rgba(165,180,252,.15);padding:2px 6px;border-radius:4px;margin-left:4px}
+.sidebar-nav{flex:1;padding:12px 0}
+.nav-section{margin-bottom:4px}
+.nav-section-title{padding:8px 20px 4px;font-size:.65rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.1em;color:#818cf8;opacity:.7}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;
+  cursor:pointer;transition:var(--transition);font-size:.87rem;
+  color:#c7d2fe;border-left:3px solid transparent;position:relative}
+.nav-item:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.1);color:#fff;
+  border-left-color:#818cf8;font-weight:600}
+.nav-item .icon{width:20px;text-align:center;font-size:1rem;opacity:.8}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1)}
+.sidebar-toggles{display:flex;gap:8px;margin-bottom:12px}
+.toggle-btn{flex:1;padding:6px;border-radius:var(--radius-sm);
+  background:rgba(255,255,255,.08);color:#c7d2fe;font-size:.75rem;
+  font-weight:500;text-align:center;cursor:pointer;transition:var(--transition);border:none}
+.toggle-btn:hover{background:rgba(255,255,255,.15)}
+.toggle-btn.active{background:rgba(129,140,248,.3);color:#fff}
+.demo-user{display:flex;align-items:center;gap:10px}
+.demo-user .avatar{width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,#818cf8,#6366f1);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:.8rem;color:#fff}
+.demo-user .info{font-size:.78rem}
+.demo-user .name{color:#fff;font-weight:600}
+.demo-user .role{color:#a5b4fc;font-size:.7rem}
+
+/* ===== HAMBURGER (mobile) ===== */
+.hamburger{display:none;position:fixed;top:52px;left:12px;z-index:110;
+  width:40px;height:40px;border-radius:10px;background:var(--primary);
+  color:#fff;align-items:center;justify-content:center;font-size:1.3rem;
+  box-shadow:var(--shadow-md);border:none;cursor:pointer}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:95}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .demo-banner{left:0}
+  .hamburger{display:flex}
+  .overlay.active{display:block}
+  .content{padding:16px}
+}
+</style>
+<style>
+/* ===== CARDS & COMMON COMPONENTS ===== */
+.card{background:var(--card-bg);border:1px solid var(--card-border);
+  border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);
+  transition:var(--transition)}
+.card:hover{box-shadow:var(--shadow-md)}
+.card-header{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.card-title{font-size:1.1rem;font-weight:700;color:var(--text)}
+.card-subtitle{font-size:.8rem;color:var(--text-muted);margin-top:2px}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;
+  border-radius:20px;font-size:.72rem;font-weight:600;gap:4px}
+.badge-green{background:#dcfce7;color:#166534}
+.badge-red{background:#fee2e2;color:#991b1b}
+.badge-yellow{background:#fef3c7;color:#92400e}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.badge-purple{background:#ede9fe;color:#5b21b6}
+.badge-gray{background:#f1f5f9;color:#475569}
+[data-theme="dark"] .badge-green{background:rgba(34,197,94,.15);color:#4ade80}
+[data-theme="dark"] .badge-red{background:rgba(239,68,68,.15);color:#f87171}
+[data-theme="dark"] .badge-yellow{background:rgba(234,179,8,.15);color:#fbbf24}
+[data-theme="dark"] .badge-blue{background:rgba(59,130,246,.15);color:#60a5fa}
+[data-theme="dark"] .badge-purple{background:rgba(139,92,246,.15);color:#a78bfa}
+[data-theme="dark"] .badge-gray{background:rgba(100,116,139,.2);color:#94a3b8}
+.btn-primary{background:var(--primary);color:#fff;font-weight:600;
+  padding:10px 20px;border-radius:var(--radius-sm)}
+.btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--primary);font-weight:600;
+  padding:8px 16px;border:1.5px solid var(--primary);border-radius:var(--radius-sm)}
+.btn-outline:hover{background:var(--primary);color:#fff}
+.btn-sm{padding:5px 12px;font-size:.78rem;border-radius:var(--radius-xs)}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:1024px){.grid-3,.grid-4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}}
+.kpi-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.kpi-card{flex:1;min-width:140px;background:var(--card-bg);border:1px solid var(--card-border);
+  border-radius:var(--radius);padding:16px;text-align:center;box-shadow:var(--shadow)}
+.kpi-value{font-size:1.8rem;font-weight:800;color:var(--primary)}
+.kpi-label{font-size:.75rem;color:var(--text-muted);font-weight:500;margin-top:2px}
+.kpi-card.green .kpi-value{color:var(--green)}
+.kpi-card.red .kpi-value{color:var(--red)}
+.kpi-card.yellow .kpi-value{color:var(--yellow)}
+.kpi-card.blue .kpi-value{color:var(--blue)}
+.tool-view{display:none}
+.tool-view.active{display:block}
+.page-title{font-size:1.5rem;font-weight:800;margin-bottom:4px}
+.page-desc{color:var(--text-secondary);font-size:.9rem;margin-bottom:20px}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.8rem;font-weight:600;
+  color:var(--text-secondary);margin-bottom:4px}
+.form-row{display:flex;gap:12px;flex-wrap:wrap}
+.form-row .form-group{flex:1;min-width:180px}
+.tab-bar{display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--border);
+  padding-bottom:0;overflow-x:auto}
+.tab-btn{padding:8px 16px;font-weight:600;font-size:.82rem;color:var(--text-muted);
+  background:none;border:none;border-bottom:2px solid transparent;
+  margin-bottom:-2px;cursor:pointer;transition:var(--transition);white-space:nowrap}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
+
+/* ===== GAUGE ===== */
+.gauge-container{text-align:center}
+.gauge{position:relative;width:110px;height:110px;margin:0 auto 8px}
+.gauge svg{transform:rotate(-90deg)}
+.gauge circle{fill:none;stroke-width:10}
+.gauge .bg{stroke:var(--border)}
+.gauge .fg{stroke-linecap:round;transition:stroke-dashoffset .8s ease}
+.gauge .value{position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;font-size:1.3rem;font-weight:800;transform:none}
+.gauge-label{font-size:.75rem;font-weight:600;color:var(--text-secondary)}
+
+/* ===== CSS BAR CHARTS ===== */
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:160px;
+  padding:0 4px;border-bottom:2px solid var(--border)}
+.bar-chart .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar-chart .bar{width:100%;border-radius:4px 4px 0 0;transition:height .5s ease;
+  min-width:20px;position:relative}
+.bar-chart .bar-label{font-size:.65rem;color:var(--text-muted);font-weight:500}
+.bar-chart .bar-val{font-size:.68rem;font-weight:700;color:var(--text)}
+
+/* ===== PARETO CHART ===== */
+.pareto-chart{position:relative;height:240px;display:flex;align-items:flex-end;
+  gap:4px;padding:0 4px;border-bottom:2px solid var(--border);border-left:2px solid var(--border)}
+.pareto-bar{flex:1;border-radius:4px 4px 0 0;transition:height .5s ease;position:relative;
+  display:flex;flex-direction:column;justify-content:flex-end;align-items:center;min-width:30px}
+.pareto-bar span{font-size:.6rem;font-weight:700;padding:2px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.pareto-labels{display:flex;gap:4px;padding:4px;margin-top:4px}
+.pareto-labels span{flex:1;text-align:center;font-size:.6rem;color:var(--text-muted);min-width:30px}
+.threshold-line{position:absolute;left:0;right:0;border-top:2px dashed var(--red);z-index:2}
+.threshold-label{position:absolute;right:4px;font-size:.6rem;color:var(--red);font-weight:700}
+
+/* ===== ANDON GRID ===== */
+.andon-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:700px){.andon-grid{grid-template-columns:repeat(2,1fr)}}
+.andon-station{border-radius:var(--radius);padding:20px;text-align:center;
+  color:#fff;font-weight:700;box-shadow:var(--shadow-md);transition:var(--transition)}
+.andon-station .name{font-size:.9rem;margin-bottom:4px}
+.andon-station .status{font-size:.72rem;font-weight:600;opacity:.9}
+.andon-station .time{font-size:.65rem;opacity:.7;margin-top:4px}
+.andon-running{background:linear-gradient(135deg,#16a34a,#22c55e)}
+.andon-caution{background:linear-gradient(135deg,#ca8a04,#eab308)}
+.andon-stopped{background:linear-gradient(135deg,#dc2626,#ef4444)}
+.andon-changeover{background:linear-gradient(135deg,#2563eb,#3b82f6)}
+
+/* ===== HOURLY BOARD ===== */
+.hourly-table{width:100%;border-collapse:collapse}
+.hourly-table th{background:var(--surface-alt);font-size:.75rem;padding:8px 10px}
+.hourly-table td{padding:8px 10px;font-size:.85rem}
+.hourly-table .win{background:rgba(34,197,94,.08)}
+.hourly-table .loss{background:rgba(239,68,68,.08)}
+.hourly-table .header-win{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff}
+.hourly-table .header-loss{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff}
+.hourly-table input{width:70px;padding:4px 6px;font-size:.82rem;text-align:center}
+.hourly-table .notes-input{width:100%;min-width:100px}
+
+/* ===== 5WHY ===== */
+.why-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;
+  padding:12px 16px;border-radius:var(--radius-sm);transition:var(--transition)}
+.why-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-weight:800;color:#fff;font-size:.85rem;flex-shrink:0}
+.why-row input{flex:1;padding:10px 14px;font-size:.9rem}
+
+/* ===== ISHIKAWA ===== */
+.ishikawa-container{overflow-x:auto;padding:10px 0}
+.ishikawa-svg{max-width:100%;height:auto}
+.ishi-branch{cursor:pointer;transition:opacity .3s}
+.ishi-branch:hover{opacity:.85}
+.ishi-branch.dimmed{opacity:.25}
+
+/* ===== KAIZEN BOARD ===== */
+.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;min-height:400px}
+@media(max-width:900px){.kanban{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.kanban{grid-template-columns:1fr}}
+.kanban-col{background:var(--surface-alt);border-radius:var(--radius);padding:12px;
+  border:1px solid var(--border)}
+.kanban-col-title{font-size:.82rem;font-weight:700;margin-bottom:10px;
+  display:flex;align-items:center;justify-content:space-between}
+.kanban-col-title .count{background:var(--primary);color:#fff;
+  width:22px;height:22px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:.7rem}
+.kanban-card{background:var(--card-bg);border:1px solid var(--card-border);
+  border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;
+  box-shadow:var(--shadow);cursor:pointer;transition:var(--transition)}
+.kanban-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.kanban-card .title{font-weight:600;font-size:.85rem;margin-bottom:6px}
+.kanban-card .meta{display:flex;gap:6px;flex-wrap:wrap;font-size:.72rem}
+
+/* ===== VSM ===== */
+.vsm-flow{overflow-x:auto;padding:20px 0}
+.vsm-container{display:flex;align-items:flex-start;gap:0;min-width:800px;position:relative}
+.vsm-entity{text-align:center;padding:10px}
+.vsm-entity .box{background:var(--card-bg);border:2px solid var(--border);
+  border-radius:var(--radius-sm);padding:12px;min-width:110px;position:relative}
+.vsm-entity .box.highlight{border-color:var(--red);border-width:3px}
+.vsm-entity .label{font-weight:700;font-size:.82rem;margin-bottom:6px}
+.vsm-entity .metrics{font-size:.68rem;color:var(--text-secondary);line-height:1.6}
+.vsm-arrow{display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem;color:var(--text-muted);padding:0 4px;align-self:center}
+.vsm-wip{background:var(--amber);color:#fff;font-size:.65rem;font-weight:700;
+  padding:2px 8px;border-radius:4px;margin-top:4px;display:inline-block}
+.vsm-timeline{margin-top:16px;border-top:2px solid var(--border);padding-top:12px;
+  display:flex;gap:0;min-width:800px}
+.vsm-time-block{flex:1;text-align:center;font-size:.68rem;padding:4px;
+  border-right:1px solid var(--border)}
+.vsm-time-block:last-child{border-right:none}
+.vsm-time-block .val{font-weight:700;font-size:.82rem}
+.kaizen-burst{position:absolute;top:-12px;right:-8px;width:28px;height:28px;
+  background:var(--amber);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+  display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:800;color:#fff}
+
+/* ===== SMED ===== */
+.smed-table{width:100%}
+.smed-table .internal{background:rgba(239,68,68,.08)}
+.smed-table .external{background:rgba(34,197,94,.08)}
+.smed-table .externalizable{background:rgba(234,179,8,.08)}
+.smed-bar-compare{display:flex;gap:20px;align-items:flex-end;height:120px;
+  justify-content:center;margin:20px 0}
+.smed-bar{width:80px;border-radius:6px 6px 0 0;text-align:center;color:#fff;
+  font-weight:700;font-size:.82rem;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px}
+
+/* ===== A3 REPORT ===== */
+.a3-layout{display:grid;grid-template-columns:1fr 1fr;gap:1px;
+  background:var(--border);border:2px solid var(--border);border-radius:var(--radius)}
+.a3-section{background:var(--card-bg);padding:16px}
+.a3-section.full-width{grid-column:1/-1}
+.a3-section-title{font-size:.78rem;font-weight:700;color:var(--primary);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;
+  padding-bottom:4px;border-bottom:2px solid var(--primary)}
+.a3-section p{font-size:.82rem;color:var(--text-secondary);line-height:1.6}
+@media(max-width:700px){.a3-layout{grid-template-columns:1fr}}
+
+/* ===== GEMBA WALK ===== */
+.observation-card{display:flex;gap:12px;padding:14px;border:1px solid var(--card-border);
+  border-radius:var(--radius-sm);margin-bottom:8px;background:var(--card-bg)}
+.observation-card .type-badge{writing-mode:vertical-lr;text-orientation:mixed;
+  font-size:.65rem;font-weight:700;padding:4px;border-radius:4px;
+  display:flex;align-items:center;justify-content:center;min-width:24px}
+.obs-positive{background:#dcfce7;color:#166534}
+.obs-concern{background:#fee2e2;color:#991b1b}
+.obs-idea{background:#dbeafe;color:#1e40af}
+.obs-safety{background:#fef3c7;color:#92400e}
+
+/* ===== 6S AUDIT ===== */
+.audit-question{display:flex;align-items:center;gap:12px;padding:10px 0;
+  border-bottom:1px solid var(--border-light)}
+.audit-question .q-text{flex:1;font-size:.85rem}
+.score-buttons{display:flex;gap:4px}
+.score-btn{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);
+  background:var(--surface);color:var(--text);font-weight:700;font-size:.8rem;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition)}
+.score-btn:hover{border-color:var(--primary);background:rgba(79,70,229,.1)}
+.score-btn.selected{background:var(--primary);color:#fff;border-color:var(--primary)}
+.radar-chart{max-width:300px;margin:0 auto}
+
+/* ===== TPM ===== */
+.tpm-table td,.tpm-table th{font-size:.8rem;padding:8px 10px}
+.status-badge{padding:3px 10px;border-radius:12px;font-size:.7rem;font-weight:600;display:inline-block}
+.status-running{background:#dcfce7;color:#166534}
+.status-maintenance{background:#dbeafe;color:#1e40af}
+.status-breakdown{background:#fee2e2;color:#991b1b}
+[data-theme="dark"] .status-running{background:rgba(34,197,94,.15);color:#4ade80}
+[data-theme="dark"] .status-maintenance{background:rgba(59,130,246,.15);color:#60a5fa}
+[data-theme="dark"] .status-breakdown{background:rgba(239,68,68,.15);color:#f87171}
+.pillar-bar{height:8px;border-radius:4px;background:var(--border);overflow:hidden;margin-top:4px}
+.pillar-fill{height:100%;border-radius:4px;transition:width .5s ease}
+.pm-alert{background:rgba(245,158,11,.1);border-left:3px solid var(--amber);
+  padding:8px 12px;border-radius:0 var(--radius-xs) var(--radius-xs) 0;
+  margin-bottom:6px;font-size:.82rem}
+
+/* ===== CILT ===== */
+.cilt-item{display:flex;align-items:center;gap:10px;padding:10px 0;
+  border-bottom:1px solid var(--border-light);flex-wrap:wrap}
+.cilt-item .desc{flex:1;min-width:200px}
+.cilt-item .desc .title{font-weight:600;font-size:.85rem}
+.cilt-item .desc .std{font-size:.72rem;color:var(--text-muted)}
+.cilt-buttons{display:flex;gap:4px}
+.cilt-btn{padding:5px 14px;border-radius:var(--radius-xs);font-weight:600;
+  font-size:.75rem;border:2px solid var(--border);background:var(--surface);
+  color:var(--text);cursor:pointer;transition:var(--transition)}
+.cilt-btn.ok{border-color:var(--green);color:var(--green)}
+.cilt-btn.ok.selected{background:var(--green);color:#fff}
+.cilt-btn.nok{border-color:var(--red);color:var(--red)}
+.cilt-btn.nok.selected{background:var(--red);color:#fff}
+.cilt-btn.skip{border-color:var(--text-muted);color:var(--text-muted)}
+.cilt-btn.skip.selected{background:var(--text-muted);color:#fff}
+.progress-bar{height:10px;background:var(--border);border-radius:5px;overflow:hidden}
+.progress-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--primary),var(--purple));transition:width .5s ease}
+
+/* ===== ASSESSMENT RESULTS ===== */
+.maturity-score{text-align:center;padding:20px}
+.maturity-score .score{font-size:3rem;font-weight:800;color:var(--primary)}
+.maturity-score .level{font-size:1.1rem;font-weight:600;color:var(--text-secondary)}
+.roadmap-timeline{position:relative;padding-left:30px;margin-top:16px}
+.roadmap-item{position:relative;padding-bottom:20px;padding-left:20px;
+  border-left:2px solid var(--border)}
+.roadmap-item:last-child{border-left-color:transparent}
+.roadmap-item::before{content:'';position:absolute;left:-8px;top:0;
+  width:14px;height:14px;border-radius:50%;background:var(--primary);border:3px solid var(--bg)}
+.roadmap-item .period{font-size:.72rem;font-weight:700;color:var(--primary);margin-bottom:2px}
+.roadmap-item .task{font-size:.85rem;color:var(--text)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HAMBURGER -->
+<button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">&#9776;</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo">LP</div>
+    <div><h1>LeanPilot</h1></div>
+    <span>DEMO</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <div class="nav-section-title" data-t="nav_getting_started">Getting Started</div>
+      <div class="nav-item" data-tool="assessment" onclick="showTool('assessment')">
+        <span class="icon">&#x1F4CA;</span><span data-t="tool_assessment">Lean Assessment</span>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title" data-t="nav_overview">Overview</div>
+      <div class="nav-item active" data-tool="oee" onclick="showTool('oee')">
+        <span class="icon">&#x1F4C8;</span><span data-t="tool_oee">OEE Dashboard</span>
+      </div>
+      <div class="nav-item" data-tool="hourly" onclick="showTool('hourly')">
+        <span class="icon">&#x23F0;</span><span data-t="tool_hourly">Hourly Production</span>
+      </div>
+      <div class="nav-item" data-tool="andon" onclick="showTool('andon')">
+        <span class="icon">&#x1F6A6;</span><span data-t="tool_andon">Andon Board</span>
+      </div>
+      <div class="nav-item" data-tool="production" onclick="showTool('production')">
+        <span class="icon">&#x1F4DD;</span><span data-t="tool_production">Production Input</span>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title" data-t="nav_problem_solving">Problem Solving</div>
+      <div class="nav-item" data-tool="fivewhy" onclick="showTool('fivewhy')">
+        <span class="icon">&#x2753;</span><span data-t="tool_5why">5 WHY Analysis</span>
+      </div>
+      <div class="nav-item" data-tool="ishikawa" onclick="showTool('ishikawa')">
+        <span class="icon">&#x1F41F;</span><span data-t="tool_ishikawa">Ishikawa Diagram</span>
+      </div>
+      <div class="nav-item" data-tool="pareto" onclick="showTool('pareto')">
+        <span class="icon">&#x1F4CA;</span><span data-t="tool_pareto">Pareto Analysis</span>
+      </div>
+      <div class="nav-item" data-tool="a3" onclick="showTool('a3')">
+        <span class="icon">&#x1F4C4;</span><span data-t="tool_a3">A3 Report</span>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title" data-t="nav_improvement">Continuous Improvement</div>
+      <div class="nav-item" data-tool="kaizen" onclick="showTool('kaizen')">
+        <span class="icon">&#x1F4A1;</span><span data-t="tool_kaizen">Kaizen Board</span>
+      </div>
+      <div class="nav-item" data-tool="vsm" onclick="showTool('vsm')">
+        <span class="icon">&#x1F500;</span><span data-t="tool_vsm">Value Stream Map</span>
+      </div>
+      <div class="nav-item" data-tool="smed" onclick="showTool('smed')">
+        <span class="icon">&#x23F1;</span><span data-t="tool_smed">SMED Tracker</span>
+      </div>
+      <div class="nav-item" data-tool="gemba" onclick="showTool('gemba')">
+        <span class="icon">&#x1F6B6;</span><span data-t="tool_gemba">Gemba Walk</span>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title" data-t="nav_maintenance">Maintenance &amp; Standards</div>
+      <div class="nav-item" data-tool="sixs" onclick="showTool('sixs')">
+        <span class="icon">&#x2728;</span><span data-t="tool_6s">6S Audit</span>
+      </div>
+      <div class="nav-item" data-tool="tpm" onclick="showTool('tpm')">
+        <span class="icon">&#x1F527;</span><span data-t="tool_tpm">TPM Dashboard</span>
+      </div>
+      <div class="nav-item" data-tool="cilt" onclick="showTool('cilt')">
+        <span class="icon">&#x2705;</span><span data-t="tool_cilt">CILT Checklist</span>
+      </div>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-toggles">
+      <button class="toggle-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+      <button class="toggle-btn" id="btn-it" onclick="setLang('it')">IT</button>
+      <button class="toggle-btn" id="btn-light" onclick="setTheme('light')">&#x2600;</button>
+      <button class="toggle-btn active" id="btn-dark-toggle" onclick="setTheme('dark')">&#x1F319;</button>
+    </div>
+    <div class="demo-user">
+      <div class="avatar">MR</div>
+      <div class="info">
+        <div class="name">Marco Rossi</div>
+        <div class="role" data-t="demo_role">Demo User &middot; Plant Manager</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- DEMO BANNER -->
+<div class="demo-banner" id="demoBanner">
+  <span data-t="banner_text">&#x1F680; You're exploring the Live Demo &mdash; all data is sample data</span>
+  <a href="/landing" data-t="banner_cta">Start Free Trial &rarr;</a>
+</div>
+
+<!-- MAIN CONTENT -->
+<main class="main" id="mainContent">
+<div class="content">
+<!-- ===== LEAN ASSESSMENT (Results) ===== -->
+<div class="tool-view" id="view-assessment">
+  <h2 class="page-title" data-t="assessment_title">Lean Assessment Results</h2>
+  <p class="page-desc" data-t="assessment_desc">Your factory's lean maturity analysis based on the assessment survey.</p>
+  <div class="grid-2" style="margin-bottom:20px">
+    <div class="card">
+      <div class="maturity-score">
+        <div class="score">52%</div>
+        <div class="level" data-t="maturity_developing">Developing</div>
+        <p style="font-size:.82rem;color:var(--text-muted);margin-top:8px" data-t="maturity_desc">Your organization shows foundational lean practices with significant improvement opportunities.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" data-t="dimension_scores">Dimension Scores</div>
+      <div id="radarAssessment" style="max-width:280px;margin:10px auto">
+        <svg viewBox="0 0 300 280" class="radar-chart"></svg>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title" data-t="top_recommendations">Top 3 Recommended Tools</div>
+    <div class="grid-3" style="margin-top:12px">
+      <div class="card" style="border-left:4px solid var(--red)">
+        <div style="font-weight:700;margin-bottom:4px">OEE Dashboard</div>
+        <p style="font-size:.8rem;color:var(--text-secondary)" data-t="rec_oee">Track equipment effectiveness to identify your biggest production losses.</p>
+        <button class="btn-primary btn-sm" style="margin-top:10px" onclick="showTool('oee')" data-t="go_to_tool">Go to Tool &rarr;</button>
+      </div>
+      <div class="card" style="border-left:4px solid var(--amber)">
+        <div style="font-weight:700;margin-bottom:4px">6S Audit</div>
+        <p style="font-size:.8rem;color:var(--text-secondary)" data-t="rec_6s">Establish workplace organization as the foundation for all lean initiatives.</p>
+        <button class="btn-primary btn-sm" style="margin-top:10px" onclick="showTool('sixs')" data-t="go_to_tool">Go to Tool &rarr;</button>
+      </div>
+      <div class="card" style="border-left:4px solid var(--green)">
+        <div style="font-weight:700;margin-bottom:4px">Gemba Walk</div>
+        <p style="font-size:.8rem;color:var(--text-secondary)" data-t="rec_gemba">Build a habit of going to the shop floor to observe and improve processes.</p>
+        <button class="btn-primary btn-sm" style="margin-top:10px" onclick="showTool('gemba')" data-t="go_to_tool">Go to Tool &rarr;</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title" data-t="roadmap_90">90-Day Roadmap</div>
+    <div class="roadmap-timeline" style="margin-top:16px">
+      <div class="roadmap-item"><div class="period" data-t="days_1_30">Days 1-30: Foundation</div><div class="task" data-t="roadmap_1">Implement 6S in pilot area, begin OEE tracking on critical equipment, conduct weekly Gemba Walks</div></div>
+      <div class="roadmap-item"><div class="period" data-t="days_31_60">Days 31-60: Problem Solving</div><div class="task" data-t="roadmap_2">Use Pareto analysis on top losses, run 5WHY on recurring issues, start Kaizen board for improvement ideas</div></div>
+      <div class="roadmap-item"><div class="period" data-t="days_61_90">Days 61-90: Standardization</div><div class="task" data-t="roadmap_3">Create CILT checklists for key equipment, implement TPM basics, conduct first SMED workshop</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== OEE DASHBOARD ===== -->
+<div class="tool-view active" id="view-oee">
+  <h2 class="page-title" data-t="oee_title">OEE Dashboard</h2>
+  <p class="page-desc" data-t="oee_desc">Overall Equipment Effectiveness across production lines.</p>
+  <div class="kpi-row">
+    <div class="kpi-card green"><div class="kpi-value">78.2%</div><div class="kpi-label" data-t="plant_oee">Plant OEE</div></div>
+    <div class="kpi-card blue"><div class="kpi-value">89.5%</div><div class="kpi-label" data-t="availability">Availability</div></div>
+    <div class="kpi-card yellow"><div class="kpi-value">87.4%</div><div class="kpi-label" data-t="performance">Performance</div></div>
+    <div class="kpi-card green"><div class="kpi-value">96.8%</div><div class="kpi-label" data-t="quality">Quality</div></div>
+    <div class="kpi-card red"><div class="kpi-value">-6.8%</div><div class="kpi-label" data-t="gap_wc">Gap to World Class</div></div>
+  </div>
+  <div class="grid-3" style="margin-bottom:20px" id="oeeLines">
+    <!-- Generated by JS -->
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title" data-t="oee_trend_7d">OEE Trend (Last 7 Days)</div></div>
+    <div class="bar-chart" id="oeeTrend"><!-- Generated by JS --></div>
+  </div>
+</div>
+
+<!-- ===== HOURLY PRODUCTION BOARD ===== -->
+<div class="tool-view" id="view-hourly">
+  <h2 class="page-title" data-t="hourly_title">Hourly Production Board</h2>
+  <p class="page-desc" data-t="hourly_desc">Track production output hour by hour against targets.</p>
+  <div class="kpi-row" id="hourlyKpis"><!-- Generated by JS --></div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Line A &mdash; <span data-t="shift_morning">Morning Shift</span></div>
+      <div class="badge badge-blue" data-t="target">Target: 50/hr</div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="hourly-table" id="hourlyTable">
+        <thead id="hourlyHeader"><tr>
+          <th data-t="hour">Hour</th><th data-t="target_qty">Target</th>
+          <th data-t="actual_qty">Actual</th><th data-t="delta">Delta</th>
+          <th data-t="cumul_delta">Cumul.</th><th data-t="wl">W/L</th>
+          <th data-t="notes">Notes</th>
+        </tr></thead>
+        <tbody id="hourlyBody"><!-- Generated by JS --></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!-- ===== ANDON BOARD ===== -->
+<div class="tool-view" id="view-andon">
+  <h2 class="page-title" data-t="andon_title">Andon Board</h2>
+  <p class="page-desc" data-t="andon_desc">Real-time production line status and alerts.</p>
+  <div class="kpi-row">
+    <div class="kpi-card" style="flex:none;min-width:200px"><div class="kpi-value" id="liveClock" style="font-size:1.5rem;font-family:monospace">--:--:--</div><div class="kpi-label" data-t="live_time">Live Time</div></div>
+    <div class="kpi-card green"><div class="kpi-value">5</div><div class="kpi-label" data-t="running">Running</div></div>
+    <div class="kpi-card yellow"><div class="kpi-value">1</div><div class="kpi-label" data-t="caution">Caution</div></div>
+    <div class="kpi-card red"><div class="kpi-value">1</div><div class="kpi-label" data-t="stopped">Stopped</div></div>
+    <div class="kpi-card blue"><div class="kpi-value">1</div><div class="kpi-label" data-t="changeover">Changeover</div></div>
+  </div>
+  <div class="card" style="margin-bottom:20px">
+    <div class="andon-grid" id="andonGrid"><!-- Generated by JS --></div>
+  </div>
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title" data-t="active_stoppages">Active Stoppages</div>
+    <div style="margin-top:12px" id="andonStoppages"><!-- Generated by JS --></div>
+  </div>
+  <div class="card">
+    <div class="card-title" data-t="legend">Legend</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px">
+      <div style="display:flex;align-items:center;gap:6px"><div style="width:16px;height:16px;border-radius:4px;background:#22c55e"></div><span style="font-size:.82rem" data-t="running">Running</span></div>
+      <div style="display:flex;align-items:center;gap:6px"><div style="width:16px;height:16px;border-radius:4px;background:#eab308"></div><span style="font-size:.82rem" data-t="caution">Caution</span></div>
+      <div style="display:flex;align-items:center;gap:6px"><div style="width:16px;height:16px;border-radius:4px;background:#ef4444"></div><span style="font-size:.82rem" data-t="stopped">Stopped</span></div>
+      <div style="display:flex;align-items:center;gap:6px"><div style="width:16px;height:16px;border-radius:4px;background:#3b82f6"></div><span style="font-size:.82rem" data-t="changeover">Changeover</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PRODUCTION INPUT ===== -->
+<div class="tool-view" id="view-production">
+  <h2 class="page-title" data-t="production_title">Production Input</h2>
+  <p class="page-desc" data-t="production_desc">Log production data and instantly calculate OEE.</p>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title" data-t="production_data">Production Data</div>
+      <div style="margin-top:14px">
+        <div class="form-row">
+          <div class="form-group"><label data-t="prod_line">Production Line</label>
+            <select id="prodLine"><option>Line A — CNC Machining</option><option>Line B — Assembly</option><option>Line C — Packaging</option></select></div>
+          <div class="form-group"><label data-t="date">Date</label><input type="date" id="prodDate" value="2026-03-13"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label data-t="planned_time">Planned Time (min)</label><input type="number" id="prodPlanned" value="480" oninput="calcOEE()"></div>
+          <div class="form-group"><label data-t="actual_run">Actual Run Time (min)</label><input type="number" id="prodRun" value="432" oninput="calcOEE()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label data-t="total_pieces">Total Pieces</label><input type="number" id="prodTotal" value="420" oninput="calcOEE()"></div>
+          <div class="form-group"><label data-t="good_pieces">Good Pieces</label><input type="number" id="prodGood" value="406" oninput="calcOEE()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label data-t="ideal_cycle">Ideal Cycle Time (sec)</label><input type="number" id="prodCycle" value="55" oninput="calcOEE()"></div>
+          <div class="form-group"><label data-t="notes">Notes</label><input type="text" id="prodNotes" placeholder="Optional notes..." value="Tool change at 10:30"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+      <div class="card-title" data-t="live_oee_preview">Live OEE Preview</div>
+      <div class="gauge" style="width:150px;height:150px;margin:20px 0">
+        <svg viewBox="0 0 120 120" width="150" height="150">
+          <circle class="bg" cx="60" cy="60" r="50"></circle>
+          <circle class="fg" id="oeePreviewArc" cx="60" cy="60" r="50" stroke="var(--primary)" stroke-dasharray="314" stroke-dashoffset="314"></circle>
+        </svg>
+        <div class="value" id="oeePreviewVal" style="font-size:1.8rem">--</div>
+      </div>
+      <div class="grid-3" style="width:100%;text-align:center;gap:8px">
+        <div><div style="font-size:1.2rem;font-weight:800" id="prevAvail">--</div><div class="kpi-label" data-t="availability">Availability</div></div>
+        <div><div style="font-size:1.2rem;font-weight:800" id="prevPerf">--</div><div class="kpi-label" data-t="performance">Performance</div></div>
+        <div><div style="font-size:1.2rem;font-weight:800" id="prevQual">--</div><div class="kpi-label" data-t="quality">Quality</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 5 WHY ANALYSIS ===== -->
+<div class="tool-view" id="view-fivewhy">
+  <h2 class="page-title" data-t="fivewhy_title">5 WHY Analysis</h2>
+  <p class="page-desc" data-t="fivewhy_desc">Drill down to the root cause of a problem with iterative questioning.</p>
+  <div class="card">
+    <div class="form-group">
+      <label data-t="problem_statement">Problem Statement</label>
+      <input type="text" style="width:100%;font-size:1rem;padding:12px;font-weight:600" value="CNC machine producing out-of-tolerance parts" data-t-placeholder="fivewhy_problem_ph">
+    </div>
+    <div style="margin:20px 0">
+      <div class="why-row" style="background:rgba(239,68,68,.08)">
+        <div class="why-num" style="background:#ef4444">1</div>
+        <label style="font-weight:700;color:var(--red);min-width:50px" data-t="why">Why?</label>
+        <input type="text" value="Tool wear exceeded tolerance limits" style="flex:1">
+      </div>
+      <div class="why-row" style="background:rgba(249,115,22,.08)">
+        <div class="why-num" style="background:#f97316">2</div>
+        <label style="font-weight:700;color:#f97316;min-width:50px" data-t="why">Why?</label>
+        <input type="text" value="Tool wear was not detected in time" style="flex:1">
+      </div>
+      <div class="why-row" style="background:rgba(234,179,8,.08)">
+        <div class="why-num" style="background:#eab308">3</div>
+        <label style="font-weight:700;color:#eab308;min-width:50px" data-t="why">Why?</label>
+        <input type="text" value="No automatic tool wear monitoring system installed" style="flex:1">
+      </div>
+      <div class="why-row" style="background:rgba(34,197,94,.08)">
+        <div class="why-num" style="background:#22c55e">4</div>
+        <label style="font-weight:700;color:#22c55e;min-width:50px" data-t="why">Why?</label>
+        <input type="text" value="Capital request for monitoring was not prioritized" style="flex:1">
+      </div>
+      <div class="why-row" style="background:rgba(16,185,129,.08)">
+        <div class="why-num" style="background:#10b981">5</div>
+        <label style="font-weight:700;color:#10b981;min-width:50px" data-t="why">Why?</label>
+        <input type="text" value="Quality cost data was not linked to equipment investment decisions" style="flex:1">
+      </div>
+    </div>
+    <div class="form-group" style="border-top:2px solid var(--green);padding-top:14px">
+      <label style="color:var(--green);font-weight:700" data-t="countermeasure">&#x2705; Root Cause Countermeasure</label>
+      <textarea rows="2" style="width:100%;margin-top:6px" data-t-placeholder="countermeasure_ph">Implement quality cost tracking system and link scrap/rework costs to equipment CAPEX proposals. Install tool wear monitoring on CNC #3 within 30 days.</textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ISHIKAWA DIAGRAM ===== -->
+<div class="tool-view" id="view-ishikawa">
+  <h2 class="page-title" data-t="ishikawa_title">Ishikawa Diagram</h2>
+  <p class="page-desc" data-t="ishikawa_desc">Fishbone cause-and-effect analysis using the 6M framework.</p>
+  <div class="card">
+    <div class="card-header"><div class="card-title" data-t="ishi_problem">Problem: Out-of-tolerance CNC parts</div>
+      <span style="font-size:.78rem;color:var(--text-muted)" data-t="ishi_click_hint">Click a category to highlight</span></div>
+    <div class="ishikawa-container">
+      <svg viewBox="0 0 900 420" class="ishikawa-svg" id="ishikawaSvg">
+        <!-- Spine -->
+        <line x1="80" y1="210" x2="820" y2="210" stroke="var(--text-muted)" stroke-width="3"/>
+        <!-- Fish head -->
+        <rect x="780" y="175" width="110" height="70" rx="12" fill="var(--red)" opacity=".9"/>
+        <text x="835" y="205" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Out-of-tolerance</text>
+        <text x="835" y="222" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">CNC parts</text>
+
+        <!-- MAN (top-left) -->
+        <g class="ishi-branch" data-cat="man" onclick="highlightIshi('man')">
+          <line x1="200" y1="210" x2="200" y2="60" stroke="#ef4444" stroke-width="2"/>
+          <rect x="155" y="30" width="90" height="28" rx="6" fill="#ef4444"/>
+          <text x="200" y="49" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Man</text>
+          <line x1="200" y1="90" x2="140" y2="70" stroke="#ef4444" stroke-width="1.5"/>
+          <text x="135" y="66" text-anchor="end" fill="var(--text-secondary)" font-size="9">Insufficient training</text>
+          <line x1="200" y1="120" x2="130" y2="100" stroke="#ef4444" stroke-width="1.5"/>
+          <text x="125" y="96" text-anchor="end" fill="var(--text-secondary)" font-size="9">Operator fatigue</text>
+          <line x1="200" y1="150" x2="140" y2="130" stroke="#ef4444" stroke-width="1.5"/>
+          <text x="135" y="126" text-anchor="end" fill="var(--text-secondary)" font-size="9">New employee</text>
+        </g>
+        <!-- MACHINE (top-center) -->
+        <g class="ishi-branch" data-cat="machine" onclick="highlightIshi('machine')">
+          <line x1="370" y1="210" x2="370" y2="60" stroke="#f97316" stroke-width="2"/>
+          <rect x="320" y="30" width="100" height="28" rx="6" fill="#f97316"/>
+          <text x="370" y="49" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Machine</text>
+          <line x1="370" y1="90" x2="310" y2="70" stroke="#f97316" stroke-width="1.5"/>
+          <text x="305" y="66" text-anchor="end" fill="var(--text-secondary)" font-size="9">Tool wear</text>
+          <line x1="370" y1="120" x2="300" y2="100" stroke="#f97316" stroke-width="1.5"/>
+          <text x="295" y="96" text-anchor="end" fill="var(--text-secondary)" font-size="9">Spindle vibration</text>
+          <line x1="370" y1="150" x2="310" y2="130" stroke="#f97316" stroke-width="1.5"/>
+          <text x="305" y="126" text-anchor="end" fill="var(--text-secondary)" font-size="9">Calibration drift</text>
+        </g>
+        <!-- METHOD (top-right) -->
+        <g class="ishi-branch" data-cat="method" onclick="highlightIshi('method')">
+          <line x1="540" y1="210" x2="540" y2="60" stroke="#eab308" stroke-width="2"/>
+          <rect x="493" y="30" width="94" height="28" rx="6" fill="#eab308"/>
+          <text x="540" y="49" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Method</text>
+          <line x1="540" y1="90" x2="480" y2="70" stroke="#eab308" stroke-width="1.5"/>
+          <text x="475" y="66" text-anchor="end" fill="var(--text-secondary)" font-size="9">Wrong feed rate</text>
+          <line x1="540" y1="130" x2="470" y2="110" stroke="#eab308" stroke-width="1.5"/>
+          <text x="465" y="106" text-anchor="end" fill="var(--text-secondary)" font-size="9">No SOP followed</text>
+        </g>
+        <!-- MATERIAL (bottom-left) -->
+        <g class="ishi-branch" data-cat="material" onclick="highlightIshi('material')">
+          <line x1="200" y1="210" x2="200" y2="360" stroke="#22c55e" stroke-width="2"/>
+          <rect x="152" y="362" width="96" height="28" rx="6" fill="#22c55e"/>
+          <text x="200" y="381" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Material</text>
+          <line x1="200" y1="280" x2="130" y2="300" stroke="#22c55e" stroke-width="1.5"/>
+          <text x="125" y="306" text-anchor="end" fill="var(--text-secondary)" font-size="9">Hardness variation</text>
+          <line x1="200" y1="310" x2="140" y2="330" stroke="#22c55e" stroke-width="1.5"/>
+          <text x="135" y="336" text-anchor="end" fill="var(--text-secondary)" font-size="9">Wrong material batch</text>
+        </g>
+        <!-- MEASUREMENT (bottom-center) -->
+        <g class="ishi-branch" data-cat="measurement" onclick="highlightIshi('measurement')">
+          <line x1="370" y1="210" x2="370" y2="360" stroke="#3b82f6" stroke-width="2"/>
+          <rect x="310" y="362" width="120" height="28" rx="6" fill="#3b82f6"/>
+          <text x="370" y="381" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Measurement</text>
+          <line x1="370" y1="280" x2="300" y2="300" stroke="#3b82f6" stroke-width="1.5"/>
+          <text x="295" y="306" text-anchor="end" fill="var(--text-secondary)" font-size="9">CMM not calibrated</text>
+          <line x1="370" y1="320" x2="310" y2="340" stroke="#3b82f6" stroke-width="1.5"/>
+          <text x="305" y="346" text-anchor="end" fill="var(--text-secondary)" font-size="9">Gauge R&amp;R fail</text>
+        </g>
+        <!-- ENVIRONMENT (bottom-right) -->
+        <g class="ishi-branch" data-cat="environment" onclick="highlightIshi('environment')">
+          <line x1="540" y1="210" x2="540" y2="360" stroke="#8b5cf6" stroke-width="2"/>
+          <rect x="482" y="362" width="116" height="28" rx="6" fill="#8b5cf6"/>
+          <text x="540" y="381" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Environment</text>
+          <line x1="540" y1="280" x2="470" y2="300" stroke="#8b5cf6" stroke-width="1.5"/>
+          <text x="465" y="306" text-anchor="end" fill="var(--text-secondary)" font-size="9">Temperature swings</text>
+          <line x1="540" y1="320" x2="480" y2="340" stroke="#8b5cf6" stroke-width="1.5"/>
+          <text x="475" y="346" text-anchor="end" fill="var(--text-secondary)" font-size="9">Coolant contamination</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+</div>
+<!-- ===== PARETO ANALYSIS ===== -->
+<div class="tool-view" id="view-pareto">
+  <h2 class="page-title" data-t="pareto_title">Pareto Analysis</h2>
+  <p class="page-desc" data-t="pareto_desc">Identify the vital few causes that drive the majority of losses.</p>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title" data-t="downtime_causes">Top Downtime Causes</div>
+      <div style="display:flex;gap:4px">
+        <button class="btn-sm btn-primary" id="paretoFreqBtn" onclick="setParetoView('freq')" data-t="frequency">Frequency</button>
+        <button class="btn-sm btn-outline" id="paretoDurBtn" onclick="setParetoView('dur')" data-t="duration">Duration</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <span class="badge badge-red" data-t="vital_few">Vital Few (80%)</span>
+      <span class="badge badge-gray" data-t="useful_many">Useful Many</span>
+    </div>
+    <div style="position:relative">
+      <div class="pareto-chart" id="paretoChart"><!-- Generated by JS --></div>
+      <div class="pareto-labels" id="paretoLabels"><!-- Generated by JS --></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== A3 REPORT ===== -->
+<div class="tool-view" id="view-a3">
+  <h2 class="page-title" data-t="a3_title">A3 Report</h2>
+  <p class="page-desc" data-t="a3_desc">Structured problem-solving on a single page following the A3 methodology.</p>
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-header">
+      <div><div class="card-title" data-t="a3_report_title">A3: Reduce CNC Scrap Rate by 50%</div>
+        <div class="card-subtitle">Owner: Marco Rossi &middot; 2026-03-01</div></div>
+      <button class="btn-sm btn-outline" onclick="document.getElementById('view-a3').classList.toggle('print-mode')" data-t="print_view">Print View</button>
+    </div>
+  </div>
+  <div class="a3-layout">
+    <div class="a3-section">
+      <div class="a3-section-title" data-t="a3_background">1. Background</div>
+      <p data-t="a3_bg_text">CNC Line A scrap rate has increased from 2.1% to 4.8% over the past quarter, resulting in approximately EUR 12,000/month in wasted material and rework costs. Customer complaints have risen 40%.</p>
+    </div>
+    <div class="a3-section">
+      <div class="a3-section-title" data-t="a3_current">2. Current Condition</div>
+      <p data-t="a3_current_text">Average scrap rate: 4.8%. Primary defects: dimensional out-of-tolerance (62%), surface finish (23%), burrs (15%). CNC #3 accounts for 70% of scrap. No tool wear monitoring in place.</p>
+    </div>
+    <div class="a3-section">
+      <div class="a3-section-title" data-t="a3_goal">3. Goal / Target</div>
+      <p data-t="a3_goal_text">Reduce scrap rate from 4.8% to 2.4% (50% reduction) within 60 days. Target: save EUR 6,000/month in material waste. Zero customer complaints related to dimensional accuracy.</p>
+    </div>
+    <div class="a3-section">
+      <div class="a3-section-title" data-t="a3_root_cause">4. Root Cause Analysis</div>
+      <p data-t="a3_rca_text">5-WHY analysis revealed: tool wear monitoring absent, no preventive replacement schedule, quality cost data not linked to CAPEX decisions. Pareto shows 62% of defects are dimensional — directly linked to tool condition.</p>
+    </div>
+    <div class="a3-section">
+      <div class="a3-section-title" data-t="a3_countermeasures">5. Countermeasures</div>
+      <p data-t="a3_cm_text">1) Install tool wear sensor on CNC #3 (Week 1-2). 2) Create tool replacement schedule based on cut count (Week 2). 3) Implement in-process SPC checks every 25 parts (Week 3). 4) Train operators on new monitoring dashboard (Week 3-4).</p>
+    </div>
+    <div class="a3-section">
+      <div class="a3-section-title" data-t="a3_implementation">6. Implementation Plan</div>
+      <p data-t="a3_impl_text">Week 1-2: Sensor procurement and installation. Week 3: SPC setup and operator training. Week 4: Go-live with full monitoring. Week 5-8: Monitor results, fine-tune thresholds. Budget: EUR 3,500 for sensor + EUR 500 training.</p>
+    </div>
+    <div class="a3-section full-width">
+      <div class="a3-section-title" data-t="a3_followup">7. Follow-up</div>
+      <p data-t="a3_followup_text">Weekly scrap rate review in production meeting. 30-day checkpoint: target 3.5% scrap rate. 60-day checkpoint: target 2.4%. Monthly quality cost report to management. Success criteria: sustained scrap &lt; 2.5% for 4 consecutive weeks.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== KAIZEN BOARD ===== -->
+<div class="tool-view" id="view-kaizen">
+  <h2 class="page-title" data-t="kaizen_title">Kaizen Board</h2>
+  <p class="page-desc" data-t="kaizen_desc">Track continuous improvement ideas from conception to completion.</p>
+  <div class="kpi-row">
+    <div class="kpi-card blue"><div class="kpi-value" id="kaizenTotal">12</div><div class="kpi-label" data-t="total_ideas">Total Ideas</div></div>
+    <div class="kpi-card yellow"><div class="kpi-value">3</div><div class="kpi-label" data-t="in_progress">In Progress</div></div>
+    <div class="kpi-card green"><div class="kpi-value">4</div><div class="kpi-label" data-t="completed">Completed</div></div>
+    <div class="kpi-card green"><div class="kpi-value">&euro;18.5K</div><div class="kpi-label" data-t="savings_realized">Savings Realized</div></div>
+  </div>
+  <div class="kanban" id="kaizenBoard"><!-- Generated by JS --></div>
+</div>
+<!-- ===== VALUE STREAM MAP ===== -->
+<div class="tool-view" id="view-vsm">
+  <h2 class="page-title" data-t="vsm_title">Value Stream Map</h2>
+  <p class="page-desc" data-t="vsm_desc">Visualize material and information flow from supplier to customer.</p>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header">
+      <div class="card-title" data-t="vsm_current_state">Current State Map</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="badge badge-yellow" data-t="pce">PCE: 4.2%</span>
+        <span class="badge badge-red" data-t="lead_time">Lead Time: 23.5 days</span>
+      </div>
+    </div>
+    <div class="vsm-flow">
+      <div class="vsm-container" id="vsmFlow">
+        <div class="vsm-entity"><div class="box" style="background:var(--surface-alt)"><div class="label">&#x1F69A; Supplier</div><div class="metrics">Weekly delivery<br>Lot size: 500</div></div></div>
+        <div class="vsm-arrow">&#x27A1;</div>
+        <div class="vsm-entity"><div class="vsm-wip">WIP: 200</div><div class="box"><div class="label">Receiving</div><div class="metrics">C/T: 5 min<br>C/O: 0<br>Up: 100%<br>Op: 1</div></div></div>
+        <div class="vsm-arrow">&#x27A1;</div>
+        <div class="vsm-entity"><div class="vsm-wip">WIP: 850</div><div class="box highlight"><div class="label">CNC Machining</div><div class="metrics">C/T: 55 sec<br>C/O: 45 min<br>Up: 82%<br>Op: 2</div><div class="kaizen-burst">K</div></div></div>
+        <div class="vsm-arrow">&#x27A1;</div>
+        <div class="vsm-entity"><div class="vsm-wip">WIP: 120</div><div class="box"><div class="label">Deburring</div><div class="metrics">C/T: 20 sec<br>C/O: 5 min<br>Up: 95%<br>Op: 1</div></div></div>
+        <div class="vsm-arrow">&#x27A1;</div>
+        <div class="vsm-entity"><div class="vsm-wip">WIP: 300</div><div class="box"><div class="label">Assembly</div><div class="metrics">C/T: 90 sec<br>C/O: 15 min<br>Up: 90%<br>Op: 3</div></div></div>
+        <div class="vsm-arrow">&#x27A1;</div>
+        <div class="vsm-entity"><div class="vsm-wip">WIP: 60</div><div class="box"><div class="label">QC / Pack</div><div class="metrics">C/T: 30 sec<br>C/O: 0<br>Up: 99%<br>Op: 1</div></div></div>
+        <div class="vsm-arrow">&#x27A1;</div>
+        <div class="vsm-entity"><div class="box" style="background:var(--surface-alt)"><div class="label">&#x1F3E2; Customer</div><div class="metrics">Demand: 400/day<br>Takt: 72 sec</div></div></div>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <div class="vsm-timeline">
+        <div class="vsm-time-block"><div style="color:var(--red)">Wait</div><div class="val">5 days</div></div>
+        <div class="vsm-time-block"><div style="color:var(--green)">Process</div><div class="val">5 min</div></div>
+        <div class="vsm-time-block"><div style="color:var(--red)">Wait</div><div class="val">8.5 days</div></div>
+        <div class="vsm-time-block"><div style="color:var(--green)">Process</div><div class="val">55 sec</div></div>
+        <div class="vsm-time-block"><div style="color:var(--red)">Wait</div><div class="val">3 days</div></div>
+        <div class="vsm-time-block"><div style="color:var(--green)">Process</div><div class="val">20 sec</div></div>
+        <div class="vsm-time-block"><div style="color:var(--red)">Wait</div><div class="val">5 days</div></div>
+        <div class="vsm-time-block"><div style="color:var(--green)">Process</div><div class="val">90 sec</div></div>
+        <div class="vsm-time-block"><div style="color:var(--red)">Wait</div><div class="val">2 days</div></div>
+        <div class="vsm-time-block"><div style="color:var(--green)">Process</div><div class="val">30 sec</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SMED TRACKER ===== -->
+<div class="tool-view" id="view-smed">
+  <h2 class="page-title" data-t="smed_title">SMED Tracker</h2>
+  <p class="page-desc" data-t="smed_desc">Analyze and reduce changeover times by converting internal to external activities.</p>
+  <div class="kpi-row" id="smedKpis">
+    <div class="kpi-card red"><div class="kpi-value">38 min</div><div class="kpi-label" data-t="current_internal">Current Internal</div></div>
+    <div class="kpi-card green"><div class="kpi-value">12 min</div><div class="kpi-label" data-t="current_external">Current External</div></div>
+    <div class="kpi-card yellow"><div class="kpi-value">18 min</div><div class="kpi-label" data-t="potential_reduction">Potential Reduction</div></div>
+    <div class="kpi-card green"><div class="kpi-value">47%</div><div class="kpi-label" data-t="reduction_pct">Reduction %</div></div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title" data-t="changeover_steps">Changeover Steps — CNC Lathe #1</div>
+    <div style="overflow-x:auto;margin-top:12px">
+      <table class="smed-table">
+        <thead><tr><th>#</th><th data-t="step_name">Step</th><th data-t="duration_min">Duration (min)</th><th data-t="phase">Phase</th><th data-t="can_externalize">Can Externalize?</th></tr></thead>
+        <tbody id="smedBody"><!-- Generated by JS --></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title" data-t="smed_comparison">Current vs. Potential Changeover Time</div>
+    <div class="smed-bar-compare" id="smedBars">
+      <div style="text-align:center"><div class="smed-bar" style="height:100px;background:linear-gradient(180deg,#ef4444,#dc2626)">50 min</div><div style="font-size:.78rem;color:var(--text-secondary);margin-top:6px" data-t="current">Current</div></div>
+      <div style="text-align:center"><div class="smed-bar" style="height:53px;background:linear-gradient(180deg,#22c55e,#16a34a)">32 min</div><div style="font-size:.78rem;color:var(--text-secondary);margin-top:6px" data-t="potential">Potential</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== GEMBA WALK ===== -->
+<div class="tool-view" id="view-gemba">
+  <h2 class="page-title" data-t="gemba_title">Gemba Walk</h2>
+  <p class="page-desc" data-t="gemba_desc">Record observations from the shop floor to identify improvement opportunities.</p>
+  <div class="kpi-row" id="gembaKpis">
+    <div class="kpi-card green"><div class="kpi-value">2</div><div class="kpi-label" data-t="positive">Positive</div></div>
+    <div class="kpi-card red"><div class="kpi-value">2</div><div class="kpi-label" data-t="concern">Concern</div></div>
+    <div class="kpi-card blue"><div class="kpi-value">1</div><div class="kpi-label" data-t="idea">Idea</div></div>
+    <div class="kpi-card yellow"><div class="kpi-value">1</div><div class="kpi-label" data-t="safety">Safety</div></div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header"><div class="card-title" data-t="observations">Observations</div>
+      <button class="btn-sm btn-primary" onclick="document.getElementById('gembaForm').style.display=document.getElementById('gembaForm').style.display==='none'?'block':'none'" data-t="add_observation">+ Add Observation</button></div>
+    <div id="gembaForm" style="display:none;margin-bottom:16px;padding:16px;background:var(--surface-alt);border-radius:var(--radius-sm)">
+      <div class="form-row">
+        <div class="form-group"><label data-t="type">Type</label><select><option>Positive</option><option>Concern</option><option>Idea</option><option>Safety</option></select></div>
+        <div class="form-group"><label data-t="area">Area</label><input type="text" placeholder="e.g., CNC Area"></div>
+      </div>
+      <div class="form-group"><label data-t="description">Description</label><textarea rows="2" style="width:100%"></textarea></div>
+      <button class="btn-primary btn-sm" data-t="save">Save</button>
+    </div>
+    <div id="gembaList"><!-- Generated by JS --></div>
+  </div>
+</div>
+<!-- ===== 6S AUDIT ===== -->
+<div class="tool-view" id="view-sixs">
+  <h2 class="page-title" data-t="sixs_title">6S Audit</h2>
+  <p class="page-desc" data-t="sixs_desc">Score workplace organization across the 6 pillars of lean housekeeping.</p>
+  <div class="grid-2" style="margin-bottom:20px">
+    <div class="card">
+      <div class="card-header"><div class="card-title" data-t="overall_score">Overall Score</div><div class="badge badge-yellow" id="sixsMaturity" data-t="developing">Developing</div></div>
+      <div style="text-align:center;margin:10px 0"><span style="font-size:2.5rem;font-weight:800;color:var(--primary)" id="sixsTotalScore">68%</span></div>
+      <div class="progress-bar" style="margin-top:10px"><div class="progress-fill" id="sixsProgress" style="width:68%"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title" data-t="category_scores">Category Scores</div>
+      <div id="radar6S" style="max-width:260px;margin:10px auto">
+        <svg viewBox="0 0 280 260" class="radar-chart" id="radar6SSvg"></svg>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="tab-bar" id="sixsTabs">
+      <button class="tab-btn active" onclick="show6STab(0)">Sort</button>
+      <button class="tab-btn" onclick="show6STab(1)">Set in Order</button>
+      <button class="tab-btn" onclick="show6STab(2)">Shine</button>
+      <button class="tab-btn" onclick="show6STab(3)">Standardize</button>
+      <button class="tab-btn" onclick="show6STab(4)">Sustain</button>
+      <button class="tab-btn" onclick="show6STab(5)">Safety</button>
+    </div>
+    <div id="sixsQuestions"><!-- Generated by JS --></div>
+  </div>
+</div>
+
+<!-- ===== TPM DASHBOARD ===== -->
+<div class="tool-view" id="view-tpm">
+  <h2 class="page-title" data-t="tpm_title">TPM Dashboard</h2>
+  <p class="page-desc" data-t="tpm_desc">Total Productive Maintenance overview — equipment health and maintenance planning.</p>
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header"><div class="card-title" data-t="pm_alerts">PM Alerts (Due Within 7 Days)</div></div>
+    <div id="pmAlerts"><!-- Generated by JS --></div>
+  </div>
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title" data-t="equipment_registry">Equipment Registry</div>
+    <div style="overflow-x:auto;margin-top:12px">
+      <table class="tpm-table">
+        <thead><tr>
+          <th data-t="equipment">Equipment</th><th>OEE%</th><th>MTBF (hrs)</th>
+          <th>MTTR (min)</th><th data-t="criticality">Criticality</th>
+          <th data-t="status">Status</th><th data-t="next_pm">Next PM</th>
+        </tr></thead>
+        <tbody id="tpmBody"><!-- Generated by JS --></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title" data-t="tpm_pillars">8 TPM Pillars Progress</div>
+    <div class="grid-2" style="margin-top:12px" id="tpmPillars"><!-- Generated by JS --></div>
+  </div>
+</div>
+
+<!-- ===== CILT CHECKLIST ===== -->
+<div class="tool-view" id="view-cilt">
+  <h2 class="page-title" data-t="cilt_title">CILT Checklist</h2>
+  <p class="page-desc" data-t="cilt_desc">Cleaning, Inspection, Lubrication, and Tightening for autonomous maintenance.</p>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header">
+      <div><div class="card-title">CNC Lathe #1</div><div class="card-subtitle" data-t="cilt_shift">Morning Shift — March 13, 2026</div></div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:.8rem;color:var(--text-secondary)" data-t="completion">Completion:</div>
+        <div style="width:120px"><div class="progress-bar"><div class="progress-fill" id="ciltProgress" style="width:0%"></div></div></div>
+        <span style="font-weight:700;font-size:.9rem" id="ciltPct">0%</span>
+      </div>
+    </div>
+    <div class="tab-bar" id="ciltTabs">
+      <button class="tab-btn active" onclick="showCiltTab('cleaning')" data-t="cleaning">Cleaning</button>
+      <button class="tab-btn" onclick="showCiltTab('inspection')" data-t="inspection">Inspection</button>
+      <button class="tab-btn" onclick="showCiltTab('lubrication')" data-t="lubrication">Lubrication</button>
+      <button class="tab-btn" onclick="showCiltTab('tightening')" data-t="tightening">Tightening</button>
+    </div>
+    <div id="ciltItems"><!-- Generated by JS --></div>
+  </div>
+</div>
+
+<!-- Close content and main -->
+</div></main>
+</div>
+<script>
+/* ===== TRANSLATIONS ===== */
+const T = {
+en: {
+  banner_text: "\uD83D\uDE80 You're exploring the Live Demo \u2014 all data is sample data",
+  banner_cta: "Start Free Trial \u2192",
+  nav_getting_started: "Getting Started", nav_overview: "Overview",
+  nav_problem_solving: "Problem Solving", nav_improvement: "Continuous Improvement",
+  nav_maintenance: "Maintenance & Standards",
+  tool_assessment: "Lean Assessment", tool_oee: "OEE Dashboard", tool_hourly: "Hourly Production",
+  tool_andon: "Andon Board", tool_production: "Production Input", tool_5why: "5 WHY Analysis",
+  tool_ishikawa: "Ishikawa Diagram", tool_pareto: "Pareto Analysis", tool_a3: "A3 Report",
+  tool_kaizen: "Kaizen Board", tool_vsm: "Value Stream Map", tool_smed: "SMED Tracker",
+  tool_gemba: "Gemba Walk", tool_6s: "6S Audit", tool_tpm: "TPM Dashboard", tool_cilt: "CILT Checklist",
+  demo_role: "Demo User \u00B7 Plant Manager",
+  assessment_title: "Lean Assessment Results", assessment_desc: "Your factory's lean maturity analysis based on the assessment survey.",
+  maturity_developing: "Developing", maturity_desc: "Your organization shows foundational lean practices with significant improvement opportunities.",
+  dimension_scores: "Dimension Scores", top_recommendations: "Top 3 Recommended Tools",
+  rec_oee: "Track equipment effectiveness to identify your biggest production losses.",
+  rec_6s: "Establish workplace organization as the foundation for all lean initiatives.",
+  rec_gemba: "Build a habit of going to the shop floor to observe and improve processes.",
+  go_to_tool: "Go to Tool \u2192", roadmap_90: "90-Day Roadmap",
+  days_1_30: "Days 1-30: Foundation", days_31_60: "Days 31-60: Problem Solving", days_61_90: "Days 61-90: Standardization",
+  roadmap_1: "Implement 6S in pilot area, begin OEE tracking on critical equipment, conduct weekly Gemba Walks",
+  roadmap_2: "Use Pareto analysis on top losses, run 5WHY on recurring issues, start Kaizen board for improvement ideas",
+  roadmap_3: "Create CILT checklists for key equipment, implement TPM basics, conduct first SMED workshop",
+  oee_title: "OEE Dashboard", oee_desc: "Overall Equipment Effectiveness across production lines.",
+  plant_oee: "Plant OEE", availability: "Availability", performance: "Performance", quality: "Quality",
+  gap_wc: "Gap to World Class", oee_trend_7d: "OEE Trend (Last 7 Days)",
+  hourly_title: "Hourly Production Board", hourly_desc: "Track production output hour by hour against targets.",
+  shift_morning: "Morning Shift", target: "Target: 50/hr",
+  hour: "Hour", target_qty: "Target", actual_qty: "Actual", delta: "Delta", cumul_delta: "Cumul.", wl: "W/L", notes: "Notes",
+  andon_title: "Andon Board", andon_desc: "Real-time production line status and alerts.",
+  live_time: "Live Time", running: "Running", caution: "Caution", stopped: "Stopped", changeover: "Changeover",
+  active_stoppages: "Active Stoppages", legend: "Legend",
+  production_title: "Production Input", production_desc: "Log production data and instantly calculate OEE.",
+  production_data: "Production Data", prod_line: "Production Line", date: "Date",
+  planned_time: "Planned Time (min)", actual_run: "Actual Run Time (min)",
+  total_pieces: "Total Pieces", good_pieces: "Good Pieces", ideal_cycle: "Ideal Cycle Time (sec)",
+  live_oee_preview: "Live OEE Preview",
+  fivewhy_title: "5 WHY Analysis", fivewhy_desc: "Drill down to the root cause of a problem with iterative questioning.",
+  problem_statement: "Problem Statement", why: "Why?", countermeasure: "\u2705 Root Cause Countermeasure",
+  ishikawa_title: "Ishikawa Diagram", ishikawa_desc: "Fishbone cause-and-effect analysis using the 6M framework.",
+  ishi_problem: "Problem: Out-of-tolerance CNC parts", ishi_click_hint: "Click a category to highlight",
+  pareto_title: "Pareto Analysis", pareto_desc: "Identify the vital few causes that drive the majority of losses.",
+  downtime_causes: "Top Downtime Causes", frequency: "Frequency", duration: "Duration",
+  vital_few: "Vital Few (80%)", useful_many: "Useful Many",
+  a3_title: "A3 Report", a3_desc: "Structured problem-solving on a single page following the A3 methodology.",
+  a3_report_title: "A3: Reduce CNC Scrap Rate by 50%", print_view: "Print View",
+  a3_background: "1. Background", a3_current: "2. Current Condition", a3_goal: "3. Goal / Target",
+  a3_root_cause: "4. Root Cause Analysis", a3_countermeasures: "5. Countermeasures",
+  a3_implementation: "6. Implementation Plan", a3_followup: "7. Follow-up",
+  a3_bg_text: "CNC Line A scrap rate has increased from 2.1% to 4.8% over the past quarter, resulting in approximately EUR 12,000/month in wasted material and rework costs. Customer complaints have risen 40%.",
+  a3_current_text: "Average scrap rate: 4.8%. Primary defects: dimensional out-of-tolerance (62%), surface finish (23%), burrs (15%). CNC #3 accounts for 70% of scrap. No tool wear monitoring in place.",
+  a3_goal_text: "Reduce scrap rate from 4.8% to 2.4% (50% reduction) within 60 days. Target: save EUR 6,000/month in material waste. Zero customer complaints related to dimensional accuracy.",
+  a3_rca_text: "5-WHY analysis revealed: tool wear monitoring absent, no preventive replacement schedule, quality cost data not linked to CAPEX decisions. Pareto shows 62% of defects are dimensional \u2014 directly linked to tool condition.",
+  a3_cm_text: "1) Install tool wear sensor on CNC #3 (Week 1-2). 2) Create tool replacement schedule based on cut count (Week 2). 3) Implement in-process SPC checks every 25 parts (Week 3). 4) Train operators on new monitoring dashboard (Week 3-4).",
+  a3_impl_text: "Week 1-2: Sensor procurement and installation. Week 3: SPC setup and operator training. Week 4: Go-live with full monitoring. Week 5-8: Monitor results, fine-tune thresholds. Budget: EUR 3,500 for sensor + EUR 500 training.",
+  a3_followup_text: "Weekly scrap rate review in production meeting. 30-day checkpoint: target 3.5% scrap rate. 60-day checkpoint: target 2.4%. Monthly quality cost report to management. Success criteria: sustained scrap < 2.5% for 4 consecutive weeks.",
+  kaizen_title: "Kaizen Board", kaizen_desc: "Track continuous improvement ideas from conception to completion.",
+  total_ideas: "Total Ideas", in_progress: "In Progress", completed: "Completed", savings_realized: "Savings Realized",
+  vsm_title: "Value Stream Map", vsm_desc: "Visualize material and information flow from supplier to customer.",
+  vsm_current_state: "Current State Map", pce: "PCE: 4.2%", lead_time: "Lead Time: 23.5 days",
+  smed_title: "SMED Tracker", smed_desc: "Analyze and reduce changeover times by converting internal to external activities.",
+  current_internal: "Current Internal", current_external: "Current External",
+  potential_reduction: "Potential Reduction", reduction_pct: "Reduction %",
+  changeover_steps: "Changeover Steps \u2014 CNC Lathe #1", step_name: "Step",
+  duration_min: "Duration (min)", phase: "Phase", can_externalize: "Can Externalize?",
+  smed_comparison: "Current vs. Potential Changeover Time", current: "Current", potential: "Potential",
+  gemba_title: "Gemba Walk", gemba_desc: "Record observations from the shop floor to identify improvement opportunities.",
+  positive: "Positive", concern: "Concern", idea: "Idea", safety: "Safety",
+  observations: "Observations", add_observation: "+ Add Observation",
+  type: "Type", area: "Area", description: "Description", save: "Save",
+  sixs_title: "6S Audit", sixs_desc: "Score workplace organization across the 6 pillars of lean housekeeping.",
+  overall_score: "Overall Score", developing: "Developing", category_scores: "Category Scores",
+  tpm_title: "TPM Dashboard", tpm_desc: "Total Productive Maintenance overview \u2014 equipment health and maintenance planning.",
+  pm_alerts: "PM Alerts (Due Within 7 Days)", equipment_registry: "Equipment Registry",
+  equipment: "Equipment", criticality: "Criticality", status: "Status", next_pm: "Next PM",
+  tpm_pillars: "8 TPM Pillars Progress",
+  cilt_title: "CILT Checklist", cilt_desc: "Cleaning, Inspection, Lubrication, and Tightening for autonomous maintenance.",
+  cilt_shift: "Morning Shift \u2014 March 13, 2026", completion: "Completion:",
+  cleaning: "Cleaning", inspection: "Inspection", lubrication: "Lubrication", tightening: "Tightening"
+},
+it: {
+  banner_text: "\uD83D\uDE80 Stai esplorando la Demo Live \u2014 tutti i dati sono di esempio",
+  banner_cta: "Prova Gratuita \u2192",
+  nav_getting_started: "Per Iniziare", nav_overview: "Panoramica",
+  nav_problem_solving: "Problem Solving", nav_improvement: "Miglioramento Continuo",
+  nav_maintenance: "Manutenzione e Standard",
+  tool_assessment: "Valutazione Lean", tool_oee: "Dashboard OEE", tool_hourly: "Produzione Oraria",
+  tool_andon: "Tabellone Andon", tool_production: "Input Produzione", tool_5why: "Analisi 5 Perch\u00E9",
+  tool_ishikawa: "Diagramma Ishikawa", tool_pareto: "Analisi Pareto", tool_a3: "Report A3",
+  tool_kaizen: "Board Kaizen", tool_vsm: "Value Stream Map", tool_smed: "SMED Tracker",
+  tool_gemba: "Gemba Walk", tool_6s: "Audit 6S", tool_tpm: "Dashboard TPM", tool_cilt: "Checklist CILT",
+  demo_role: "Utente Demo \u00B7 Direttore Stabilimento",
+  assessment_title: "Risultati Valutazione Lean", assessment_desc: "Analisi della maturit\u00E0 lean del tuo stabilimento basata sul questionario.",
+  maturity_developing: "In Sviluppo", maturity_desc: "La tua organizzazione mostra pratiche lean di base con significative opportunit\u00E0 di miglioramento.",
+  dimension_scores: "Punteggi per Dimensione", top_recommendations: "Top 3 Strumenti Consigliati",
+  rec_oee: "Monitora l'efficienza degli impianti per identificare le maggiori perdite produttive.",
+  rec_6s: "Stabilisci l'organizzazione del posto di lavoro come fondamento per tutte le iniziative lean.",
+  rec_gemba: "Costruisci l'abitudine di andare in reparto per osservare e migliorare i processi.",
+  go_to_tool: "Vai allo Strumento \u2192", roadmap_90: "Roadmap 90 Giorni",
+  days_1_30: "Giorni 1-30: Fondamenta", days_31_60: "Giorni 31-60: Problem Solving", days_61_90: "Giorni 61-90: Standardizzazione",
+  roadmap_1: "Implementare le 6S nell'area pilota, iniziare il monitoraggio OEE sugli impianti critici, condurre Gemba Walk settimanali",
+  roadmap_2: "Usare l'analisi Pareto sulle principali perdite, eseguire 5 Perch\u00E9 sui problemi ricorrenti, avviare il board Kaizen",
+  roadmap_3: "Creare checklist CILT per gli impianti chiave, implementare le basi del TPM, condurre il primo workshop SMED",
+  oee_title: "Dashboard OEE", oee_desc: "Efficienza Complessiva degli Impianti sulle linee produttive.",
+  plant_oee: "OEE Stabilimento", availability: "Disponibilit\u00E0", performance: "Prestazione", quality: "Qualit\u00E0",
+  gap_wc: "Gap vs World Class", oee_trend_7d: "Trend OEE (Ultimi 7 Giorni)",
+  hourly_title: "Tabellone Produzione Oraria", hourly_desc: "Monitora la produzione ora per ora rispetto agli obiettivi.",
+  shift_morning: "Turno Mattina", target: "Obiettivo: 50/ora",
+  hour: "Ora", target_qty: "Obiettivo", actual_qty: "Effettivo", delta: "Delta", cumul_delta: "Cumul.", wl: "V/P", notes: "Note",
+  andon_title: "Tabellone Andon", andon_desc: "Stato in tempo reale delle linee produttive e allarmi.",
+  live_time: "Ora Attuale", running: "In Marcia", caution: "Attenzione", stopped: "Fermo", changeover: "Cambio Formato",
+  active_stoppages: "Fermate Attive", legend: "Legenda",
+  production_title: "Input Produzione", production_desc: "Registra i dati di produzione e calcola l'OEE istantaneamente.",
+  production_data: "Dati Produzione", prod_line: "Linea Produttiva", date: "Data",
+  planned_time: "Tempo Pianificato (min)", actual_run: "Tempo Effettivo (min)",
+  total_pieces: "Pezzi Totali", good_pieces: "Pezzi Buoni", ideal_cycle: "Tempo Ciclo Ideale (sec)",
+  live_oee_preview: "Anteprima OEE Live",
+  fivewhy_title: "Analisi 5 Perch\u00E9", fivewhy_desc: "Scava fino alla causa radice di un problema con domande iterative.",
+  problem_statement: "Descrizione del Problema", why: "Perch\u00E9?", countermeasure: "\u2705 Contromisura Causa Radice",
+  ishikawa_title: "Diagramma Ishikawa", ishikawa_desc: "Analisi causa-effetto a lisca di pesce con il framework 6M.",
+  ishi_problem: "Problema: Pezzi CNC fuori tolleranza", ishi_click_hint: "Clicca una categoria per evidenziarla",
+  pareto_title: "Analisi Pareto", pareto_desc: "Identifica le poche cause vitali che generano la maggior parte delle perdite.",
+  downtime_causes: "Principali Cause di Fermo", frequency: "Frequenza", duration: "Durata",
+  vital_few: "Pochi Vitali (80%)", useful_many: "Molti Utili",
+  a3_title: "Report A3", a3_desc: "Problem solving strutturato su una singola pagina secondo la metodologia A3.",
+  a3_report_title: "A3: Ridurre il Tasso di Scarto CNC del 50%", print_view: "Vista Stampa",
+  a3_background: "1. Contesto", a3_current: "2. Condizione Attuale", a3_goal: "3. Obiettivo",
+  a3_root_cause: "4. Analisi Causa Radice", a3_countermeasures: "5. Contromisure",
+  a3_implementation: "6. Piano Implementazione", a3_followup: "7. Follow-up",
+  a3_bg_text: "Il tasso di scarto della Linea CNC A \u00E8 aumentato dal 2,1% al 4,8% nell'ultimo trimestre, con circa EUR 12.000/mese di sprechi e rilavorazioni. I reclami dei clienti sono aumentati del 40%.",
+  a3_current_text: "Tasso di scarto medio: 4,8%. Difetti principali: fuori tolleranza dimensionale (62%), finitura superficiale (23%), bave (15%). Il CNC #3 genera il 70% degli scarti. Nessun monitoraggio usura utensili.",
+  a3_goal_text: "Ridurre il tasso di scarto dal 4,8% al 2,4% (riduzione 50%) entro 60 giorni. Obiettivo: risparmiare EUR 6.000/mese in sprechi di materiale. Zero reclami clienti per accuratezza dimensionale.",
+  a3_rca_text: "L'analisi 5 Perch\u00E9 ha rivelato: assenza di monitoraggio usura utensili, nessun piano di sostituzione preventiva, costi qualit\u00E0 non collegati alle decisioni CAPEX. Pareto mostra 62% difetti dimensionali.",
+  a3_cm_text: "1) Installare sensore usura utensile su CNC #3 (Settimana 1-2). 2) Creare piano sostituzione basato su conteggio tagli (Sett. 2). 3) Implementare controlli SPC ogni 25 pezzi (Sett. 3). 4) Formare operatori sul nuovo cruscotto (Sett. 3-4).",
+  a3_impl_text: "Sett. 1-2: Approvvigionamento e installazione sensore. Sett. 3: Setup SPC e formazione. Sett. 4: Go-live monitoraggio completo. Sett. 5-8: Monitoraggio risultati. Budget: EUR 3.500 sensore + EUR 500 formazione.",
+  a3_followup_text: "Revisione settimanale del tasso di scarto. Checkpoint 30 giorni: obiettivo 3,5%. Checkpoint 60 giorni: obiettivo 2,4%. Report mensile costi qualit\u00E0. Criterio successo: scarto < 2,5% per 4 settimane consecutive.",
+  kaizen_title: "Board Kaizen", kaizen_desc: "Gestisci le idee di miglioramento continuo dalla concezione al completamento.",
+  total_ideas: "Idee Totali", in_progress: "In Corso", completed: "Completate", savings_realized: "Risparmi Realizzati",
+  vsm_title: "Value Stream Map", vsm_desc: "Visualizza il flusso di materiali e informazioni dal fornitore al cliente.",
+  vsm_current_state: "Mappa Stato Attuale", pce: "PCE: 4,2%", lead_time: "Lead Time: 23,5 giorni",
+  smed_title: "SMED Tracker", smed_desc: "Analizza e riduci i tempi di cambio formato convertendo attivit\u00E0 interne in esterne.",
+  current_internal: "Interno Attuale", current_external: "Esterno Attuale",
+  potential_reduction: "Riduzione Potenziale", reduction_pct: "Riduzione %",
+  changeover_steps: "Fasi Cambio Formato \u2014 Tornio CNC #1", step_name: "Fase",
+  duration_min: "Durata (min)", phase: "Fase", can_externalize: "Esternalizzabile?",
+  smed_comparison: "Tempo Cambio Formato: Attuale vs. Potenziale", current: "Attuale", potential: "Potenziale",
+  gemba_title: "Gemba Walk", gemba_desc: "Registra osservazioni dal reparto per identificare opportunit\u00E0 di miglioramento.",
+  positive: "Positivo", concern: "Criticit\u00E0", idea: "Idea", safety: "Sicurezza",
+  observations: "Osservazioni", add_observation: "+ Aggiungi Osservazione",
+  type: "Tipo", area: "Area", description: "Descrizione", save: "Salva",
+  sixs_title: "Audit 6S", sixs_desc: "Valuta l'organizzazione del posto di lavoro sui 6 pilastri.",
+  overall_score: "Punteggio Complessivo", developing: "In Sviluppo", category_scores: "Punteggi per Categoria",
+  tpm_title: "Dashboard TPM", tpm_desc: "Panoramica Manutenzione Produttiva Totale \u2014 salute impianti e pianificazione manutenzione.",
+  pm_alerts: "Avvisi PM (Scadenza Entro 7 Giorni)", equipment_registry: "Registro Impianti",
+  equipment: "Impianto", criticality: "Criticit\u00E0", status: "Stato", next_pm: "Prossima PM",
+  tpm_pillars: "Progressi 8 Pilastri TPM",
+  cilt_title: "Checklist CILT", cilt_desc: "Pulizia, Ispezione, Lubrificazione e Serraggio per la manutenzione autonoma.",
+  cilt_shift: "Turno Mattina \u2014 13 Marzo 2026", completion: "Completamento:",
+  cleaning: "Pulizia", inspection: "Ispezione", lubrication: "Lubrificazione", tightening: "Serraggio"
+}
+};
+let currentLang = 'en';
+function t(key) { return T[currentLang][key] || key; }
+
+/* ===== CORE APP LOGIC ===== */
+function setLang(lang) {
+  currentLang = lang;
+  document.getElementById('btn-en').classList.toggle('active', lang==='en');
+  document.getElementById('btn-it').classList.toggle('active', lang==='it');
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const key = el.getAttribute('data-t');
+    if (T[lang][key]) el.textContent = T[lang][key];
+  });
+}
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('btn-light').classList.toggle('active', theme==='light');
+  document.getElementById('btn-dark-toggle').classList.toggle('active', theme==='dark');
+}
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('active');
+}
+function showTool(id) {
+  document.querySelectorAll('.tool-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const view = document.getElementById('view-' + id);
+  if (view) view.classList.add('active');
+  const nav = document.querySelector('.nav-item[data-tool="' + id + '"]');
+  if (nav) nav.classList.add('active');
+  // Close mobile sidebar
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+/* ===== GAUGES ===== */
+function createGauge(container, value, label, color) {
+  const pct = Math.min(100, Math.max(0, value));
+  const circ = 2 * Math.PI * 50;
+  const offset = circ - (pct / 100) * circ;
+  const c = color || (pct >= 85 ? '#22c55e' : pct >= 65 ? '#eab308' : '#ef4444');
+  container.innerHTML = `<div class="gauge"><svg viewBox="0 0 120 120" width="110" height="110">
+    <circle class="bg" cx="60" cy="60" r="50"></circle>
+    <circle class="fg" cx="60" cy="60" r="50" stroke="${c}" stroke-dasharray="${circ}" stroke-dashoffset="${offset}"></circle>
+    </svg><div class="value" style="color:${c}">${pct.toFixed(1)}%</div></div>
+    <div class="gauge-label">${label}</div>`;
+}
+
+/* ===== OEE LINES ===== */
+function renderOEELines() {
+  const lines = [
+    {name:'Line A — CNC Machining', oee:82.1, avail:91.2, perf:89.5, qual:97.8},
+    {name:'Line B — Assembly', oee:74.5, avail:88.0, perf:86.2, qual:95.1},
+    {name:'Line C — Packaging', oee:69.3, avail:85.5, perf:83.0, qual:93.2}
+  ];
+  const container = document.getElementById('oeeLines');
+  container.innerHTML = lines.map(l => {
+    const c = l.oee >= 85 ? 'var(--green)' : l.oee >= 65 ? 'var(--amber)' : 'var(--red)';
+    return `<div class="card"><div class="card-header"><div class="card-title" style="font-size:.95rem">${l.name}</div>
+      <span class="badge ${l.oee>=85?'badge-green':l.oee>=65?'badge-yellow':'badge-red'}">${l.oee>=85?'World Class':l.oee>=65?'Good':'Needs Improvement'}</span></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center">
+        <div class="gauge-container" id="g-${l.name.replace(/\s/g,'')}"></div>
+        <div><div style="font-size:1.3rem;font-weight:800;color:${l.avail>=90?'var(--green)':'var(--amber)'}">${l.avail}%</div><div class="gauge-label">${t('availability')}</div></div>
+        <div><div style="font-size:1.3rem;font-weight:800;color:${l.perf>=88?'var(--green)':'var(--amber)'}">${l.perf}%</div><div class="gauge-label">${t('performance')}</div></div>
+        <div><div style="font-size:1.3rem;font-weight:800;color:${l.qual>=96?'var(--green)':'var(--amber)'}">${l.qual}%</div><div class="gauge-label">${t('quality')}</div></div>
+      </div></div>`;
+  }).join('');
+  lines.forEach(l => {
+    const el = document.getElementById('g-' + l.name.replace(/\s/g, ''));
+    if (el) createGauge(el, l.oee, 'OEE');
+  });
+}
+
+/* ===== OEE TREND BAR CHART ===== */
+function renderOEETrend() {
+  const data = [{d:'Mon',v:76},{d:'Tue',v:79},{d:'Wed',v:82},{d:'Thu',v:75},{d:'Fri',v:81},{d:'Sat',v:78},{d:'Sun',v:80}];
+  const max = 100;
+  document.getElementById('oeeTrend').innerHTML = data.map(d => {
+    const h = (d.v / max) * 140;
+    const c = d.v >= 85 ? 'var(--green)' : d.v >= 65 ? 'var(--primary)' : 'var(--red)';
+    return `<div class="bar-col"><div class="bar-val">${d.v}%</div><div class="bar" style="height:${h}px;background:${c}"></div><div class="bar-label">${d.d}</div></div>`;
+  }).join('');
+}
+
+/* ===== HOURLY BOARD ===== */
+function renderHourlyBoard() {
+  const hours = [
+    {h:'06:00',t:50,a:52,n:'Good start'},
+    {h:'07:00',t:50,a:48,n:'Material delay'},
+    {h:'08:00',t:50,a:53,n:''},
+    {h:'09:00',t:50,a:45,n:'Tool change'},
+    {h:'10:00',t:50,a:51,n:''},
+    {h:'11:00',t:50,a:null,n:''},
+    {h:'12:00',t:50,a:null,n:''},
+    {h:'13:00',t:50,a:null,n:''}
+  ];
+  let cumDelta = 0; let wins = 0; let filled = 0; let totalActual = 0;
+  const rows = hours.map((r,i) => {
+    const delta = r.a !== null ? r.a - r.t : null;
+    if (delta !== null) { cumDelta += delta; filled++; totalActual += r.a; if (delta >= 0) wins++; }
+    const cls = delta === null ? '' : delta >= 0 ? 'win' : 'loss';
+    const wl = delta === null ? '' : delta >= 0 ? '<span style="color:var(--green);font-weight:700">W</span>' : '<span style="color:var(--red);font-weight:700">L</span>';
+    return `<tr class="${cls}"><td style="font-weight:600">${r.h}</td><td>${r.t}</td>
+      <td><input type="number" value="${r.a !== null ? r.a : ''}" onchange="recalcHourly()" class="hourly-actual" data-idx="${i}"></td>
+      <td style="font-weight:700;color:${delta===null?'':delta>=0?'var(--green)':'var(--red)'}">${delta !== null ? (delta>=0?'+':'')+delta : ''}</td>
+      <td style="font-weight:700;color:${cumDelta>=0?'var(--green)':'var(--red)'}">${r.a !== null ? (cumDelta>=0?'+':'')+cumDelta : ''}</td>
+      <td>${wl}</td><td><input type="text" class="notes-input" value="${r.n}"></td></tr>`;
+  }).join('');
+  document.getElementById('hourlyBody').innerHTML = rows;
+  const hdrCls = cumDelta >= 0 ? 'header-win' : 'header-loss';
+  document.getElementById('hourlyHeader').querySelector('tr').className = hdrCls;
+  const totalTarget = filled * 50;
+  const winRate = filled > 0 ? Math.round(wins / filled * 100) : 0;
+  document.getElementById('hourlyKpis').innerHTML = `
+    <div class="kpi-card blue"><div class="kpi-value">${totalTarget}</div><div class="kpi-label">${t('target_qty')}</div></div>
+    <div class="kpi-card ${totalActual>=totalTarget?'green':'red'}"><div class="kpi-value">${totalActual}</div><div class="kpi-label">${t('actual_qty')}</div></div>
+    <div class="kpi-card ${cumDelta>=0?'green':'red'}"><div class="kpi-value">${cumDelta>=0?'+':''}${cumDelta}</div><div class="kpi-label">${t('delta')}</div></div>
+    <div class="kpi-card"><div class="kpi-value">${winRate}%</div><div class="kpi-label">Win Rate</div></div>
+    <div class="kpi-card"><div class="kpi-value">${wins}/${filled}</div><div class="kpi-label">W/L</div></div>`;
+}
+function recalcHourly() { renderHourlyBoard(); }
+
+/* ===== ANDON ===== */
+function renderAndon() {
+  const stations = [
+    {name:'Station 1',status:'running',detail:'Part #A-2847'},
+    {name:'Station 2',status:'running',detail:'Part #B-1923'},
+    {name:'Station 3',status:'caution',detail:'Speed reduced 80%'},
+    {name:'Station 4',status:'running',detail:'Part #A-2848'},
+    {name:'Station 5',status:'stopped',detail:'Jam at conveyor'},
+    {name:'Station 6',status:'running',detail:'Part #C-0412'},
+    {name:'Station 7',status:'changeover',detail:'Setup for Part #D'},
+    {name:'Station 8',status:'running',detail:'Part #A-2849'}
+  ];
+  const statusLabels = {running:t('running'),caution:t('caution'),stopped:t('stopped'),changeover:t('changeover')};
+  document.getElementById('andonGrid').innerHTML = stations.map(s =>
+    `<div class="andon-station andon-${s.status}"><div class="name">${s.name}</div>
+    <div class="status">${statusLabels[s.status]}</div><div class="time">${s.detail}</div></div>`
+  ).join('');
+  document.getElementById('andonStoppages').innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span class="badge badge-red">STOPPED</span><strong>Station 5</strong><span style="color:var(--text-secondary);font-size:.82rem">Jam at conveyor belt — since 09:42</span>
+      <span style="margin-left:auto;font-size:.78rem;color:var(--text-muted)">Duration: 18 min</span></div>
+    <div style="display:flex;gap:8px;align-items:center;padding:8px 0">
+      <span class="badge badge-yellow">CAUTION</span><strong>Station 3</strong><span style="color:var(--text-secondary);font-size:.82rem">Speed reduced to 80% — sensor alert</span>
+      <span style="margin-left:auto;font-size:.78rem;color:var(--text-muted)">Duration: 7 min</span></div>`;
+}
+
+/* ===== PRODUCTION INPUT - OEE CALC ===== */
+function calcOEE() {
+  const planned = parseFloat(document.getElementById('prodPlanned').value) || 0;
+  const run = parseFloat(document.getElementById('prodRun').value) || 0;
+  const total = parseFloat(document.getElementById('prodTotal').value) || 0;
+  const good = parseFloat(document.getElementById('prodGood').value) || 0;
+  const cycle = parseFloat(document.getElementById('prodCycle').value) || 0;
+  if (planned === 0 || run === 0) return;
+  const avail = (run / planned) * 100;
+  const perf = ((total * cycle / 60) / run) * 100;
+  const qual = total > 0 ? (good / total) * 100 : 0;
+  const oee = (avail * perf * qual) / 10000;
+  document.getElementById('prevAvail').textContent = avail.toFixed(1) + '%';
+  document.getElementById('prevPerf').textContent = perf.toFixed(1) + '%';
+  document.getElementById('prevQual').textContent = qual.toFixed(1) + '%';
+  document.getElementById('oeePreviewVal').textContent = oee.toFixed(1) + '%';
+  const circ = 2 * Math.PI * 50;
+  const offset = circ - (Math.min(100, oee) / 100) * circ;
+  const c = oee >= 85 ? '#22c55e' : oee >= 65 ? '#eab308' : '#ef4444';
+  const arc = document.getElementById('oeePreviewArc');
+  arc.style.stroke = c;
+  arc.style.strokeDashoffset = offset;
+  document.getElementById('oeePreviewVal').style.color = c;
+}
+
+/* ===== ISHIKAWA HIGHLIGHT ===== */
+let ishiActive = null;
+function highlightIshi(cat) {
+  const branches = document.querySelectorAll('.ishi-branch');
+  if (ishiActive === cat) {
+    branches.forEach(b => b.classList.remove('dimmed'));
+    ishiActive = null;
+  } else {
+    branches.forEach(b => {
+      b.classList.toggle('dimmed', b.getAttribute('data-cat') !== cat);
+    });
+    ishiActive = cat;
+  }
+}
+
+/* ===== PARETO ===== */
+const paretoData = {
+  freq: [
+    {label:'Tool Wear',val:42},{label:'Material Jam',val:28},{label:'Sensor Fail',val:18},
+    {label:'Calibration',val:14},{label:'Setup Error',val:9},{label:'Power Outage',val:5},
+    {label:'Software Bug',val:3},{label:'Other',val:2}
+  ],
+  dur: [
+    {label:'Tool Wear',val:180},{label:'Calibration',val:120},{label:'Material Jam',val:95},
+    {label:'Power Outage',val:80},{label:'Sensor Fail',val:60},{label:'Setup Error',val:45},
+    {label:'Software Bug',val:20},{label:'Other',val:10}
+  ]
+};
+let paretoView = 'freq';
+function setParetoView(view) {
+  paretoView = view;
+  document.getElementById('paretoFreqBtn').className = view==='freq' ? 'btn-sm btn-primary' : 'btn-sm btn-outline';
+  document.getElementById('paretoDurBtn').className = view==='dur' ? 'btn-sm btn-primary' : 'btn-sm btn-outline';
+  renderPareto();
+}
+function renderPareto() {
+  const data = paretoData[paretoView];
+  const total = data.reduce((s, d) => s + d.val, 0);
+  const maxH = 200;
+  let cumPct = 0;
+  const chart = document.getElementById('paretoChart');
+  const labels = document.getElementById('paretoLabels');
+  chart.innerHTML = '';
+  labels.innerHTML = '';
+  // 80% threshold line
+  chart.innerHTML += `<div class="threshold-line" style="bottom:${maxH*0.8}px"><span class="threshold-label" style="top:-14px">80%</span></div>`;
+  data.forEach((d, i) => {
+    const pct = d.val / total * 100;
+    cumPct += pct;
+    const h = (d.val / data[0].val) * maxH * 0.9;
+    const isVital = cumPct <= 80;
+    chart.innerHTML += `<div class="pareto-bar" style="height:${h}px;background:${isVital?'var(--primary)':'#94a3b8'}"><span>${d.val}</span></div>`;
+    labels.innerHTML += `<span>${d.label}</span>`;
+  });
+}
+
+/* ===== KAIZEN BOARD ===== */
+function renderKaizen() {
+  const cols = [
+    {title:'Ideas',key:'ideas',color:'var(--blue)',items:[
+      {title:'Automated tool measurement',priority:'high',cat:'Quality',savings:'\u20AC5,200'},
+      {title:'Visual management boards',priority:'medium',cat:'6S',savings:'\u20AC800'},
+      {title:'Kanban for raw materials',priority:'low',cat:'Logistics',savings:'\u20AC2,100'}
+    ]},
+    {title:'Planned',key:'planned',color:'var(--purple)',items:[
+      {title:'SMED on CNC Lathe #1',priority:'high',cat:'SMED',savings:'\u20AC3,400'},
+      {title:'Error-proofing jig design',priority:'medium',cat:'Quality',savings:'\u20AC1,800'}
+    ]},
+    {title:'In Progress',key:'progress',color:'var(--amber)',items:[
+      {title:'OEE monitoring screen',priority:'high',cat:'OEE',savings:'\u20AC4,500'},
+      {title:'CILT checklist rollout',priority:'medium',cat:'TPM',savings:'\u20AC1,200'},
+      {title:'Gemba Walk schedule',priority:'low',cat:'Culture',savings:'\u20AC600'}
+    ]},
+    {title:'Completed',key:'done',color:'var(--green)',items:[
+      {title:'6S in CNC area',priority:'high',cat:'6S',savings:'\u20AC6,800'},
+      {title:'Andon light system',priority:'high',cat:'Andon',savings:'\u20AC8,200'},
+      {title:'Tool crib reorganization',priority:'medium',cat:'6S',savings:'\u20AC2,100'},
+      {title:'Daily standup meeting',priority:'low',cat:'Culture',savings:'\u20AC1,400'}
+    ]}
+  ];
+  const priorityBadge = p => `<span class="badge badge-${p==='high'?'red':p==='medium'?'yellow':'blue'}">${p}</span>`;
+  document.getElementById('kaizenBoard').innerHTML = cols.map(col =>
+    `<div class="kanban-col"><div class="kanban-col-title"><span>${col.title}</span><span class="count">${col.items.length}</span></div>
+    ${col.items.map(item => `<div class="kanban-card"><div class="title">${item.title}</div>
+      <div class="meta">${priorityBadge(item.priority)}<span class="badge badge-gray">${item.cat}</span>
+      <span class="badge badge-green">${item.savings}</span></div></div>`).join('')}</div>`
+  ).join('');
+}
+
+/* ===== SMED ===== */
+function renderSMED() {
+  const steps = [
+    {name:'Stop machine & secure',dur:3,phase:'Internal',ext:false},
+    {name:'Remove current tooling',dur:8,phase:'Internal',ext:false},
+    {name:'Clean mounting surface',dur:4,phase:'Internal',ext:true},
+    {name:'Retrieve new tooling from storage',dur:6,phase:'Internal',ext:true},
+    {name:'Install new tooling',dur:10,phase:'Internal',ext:false},
+    {name:'Adjust tool offsets',dur:5,phase:'Internal',ext:false},
+    {name:'Load new program',dur:2,phase:'Internal',ext:true},
+    {name:'First piece trial run',dur:7,phase:'Internal',ext:false},
+    {name:'Quality check first piece',dur:3,phase:'Internal',ext:true},
+    {name:'Prepare documentation',dur:2,phase:'External',ext:false}
+  ];
+  document.getElementById('smedBody').innerHTML = steps.map((s, i) => {
+    const cls = s.phase==='External' ? 'external' : s.ext ? 'externalizable' : 'internal';
+    return `<tr class="${cls}"><td>${i+1}</td><td>${s.name}</td><td style="text-align:center;font-weight:600">${s.dur}</td>
+      <td><span class="badge ${s.phase==='External'?'badge-green':'badge-red'}">${s.phase}</span></td>
+      <td style="text-align:center">${s.phase==='Internal'?`<input type="checkbox" ${s.ext?'checked':''} disabled>`:'\u2014'}</td></tr>`;
+  }).join('');
+}
+
+/* ===== GEMBA WALK ===== */
+function renderGemba() {
+  const obs = [
+    {type:'Positive',area:'CNC Area',desc:'Operator proactively organized tool crib and labeled all drawers. Excellent 6S behavior.',cls:'obs-positive'},
+    {type:'Concern',area:'Assembly Line B',desc:'WIP accumulating between stations 3 and 4. Estimated 2-hour buffer exceeds standard.',cls:'obs-concern'},
+    {type:'Idea',area:'Packaging',desc:'Install visual timer display showing time-to-ship deadline for current batch.',cls:'obs-idea'},
+    {type:'Safety',area:'Warehouse',desc:'Forklift path markings faded near dock door #2. Re-painting needed urgently.',cls:'obs-safety'},
+    {type:'Positive',area:'Quality Lab',desc:'New CMM calibration procedure reduced measurement time by 30%. Well documented.',cls:'obs-positive'},
+    {type:'Concern',area:'CNC Area',desc:'Coolant level on Machine #5 below minimum mark. No inspection record for this week.',cls:'obs-concern'}
+  ];
+  document.getElementById('gembaList').innerHTML = obs.map(o =>
+    `<div class="observation-card"><div class="type-badge ${o.cls}">${o.type}</div>
+    <div style="flex:1"><div style="font-weight:600;font-size:.85rem;margin-bottom:2px">${o.area}</div>
+    <div style="font-size:.82rem;color:var(--text-secondary)">${o.desc}</div></div></div>`
+  ).join('');
+}
+
+/* ===== 6S AUDIT ===== */
+const sixsData = {
+  categories: ['Sort','Set in Order','Shine','Standardize','Sustain','Safety'],
+  questions: [
+    ['Are unnecessary items removed?','Is red-tag area maintained?','Are work areas free of clutter?','Is scrap removed promptly?','Are personal items stored properly?'],
+    ['Is there a place for everything?','Are tools within arm\'s reach?','Are locations clearly labeled?','Are pathways marked and clear?','Are shadow boards in use?'],
+    ['Are machines clean?','Is the floor swept daily?','Are cleaning tools available?','Are leak sources identified?','Is waste properly sorted?'],
+    ['Are procedures posted visibly?','Is 6S schedule displayed?','Are color codes standardized?','Are roles clearly assigned?','Is there a visual standard?'],
+    ['Are audits done regularly?','Is management engaged?','Are improvements tracked?','Are best practices shared?','Is training up-to-date?'],
+    ['Is PPE worn correctly?','Are emergency exits clear?','Are guards in place?','Is lockout/tagout followed?','Are hazards marked visibly?']
+  ],
+  scores: [[4,3,4,3,5],[4,5,3,4,3],[3,2,4,3,3],[4,3,3,2,3],[2,3,2,3,2],[4,4,5,3,4]]
+};
+let active6STab = 0;
+function show6STab(idx) {
+  active6STab = idx;
+  document.querySelectorAll('#sixsTabs .tab-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+  render6SQuestions();
+}
+function render6SQuestions() {
+  const idx = active6STab;
+  const qs = sixsData.questions[idx];
+  const scores = sixsData.scores[idx];
+  document.getElementById('sixsQuestions').innerHTML = qs.map((q,i) =>
+    `<div class="audit-question"><div class="q-text">${q}</div>
+    <div class="score-buttons">${[1,2,3,4,5].map(s =>
+      `<button class="score-btn ${scores[i]===s?'selected':''}" onclick="set6SScore(${idx},${i},${s})">${s}</button>`
+    ).join('')}</div></div>`
+  ).join('');
+  update6STotal();
+}
+function set6SScore(catIdx, qIdx, score) {
+  sixsData.scores[catIdx][qIdx] = score;
+  render6SQuestions();
+  render6SRadar();
+}
+function update6STotal() {
+  const allScores = sixsData.scores.flat();
+  const total = allScores.reduce((s,v) => s+v, 0);
+  const max = allScores.length * 5;
+  const pct = Math.round(total / max * 100);
+  document.getElementById('sixsTotalScore').textContent = pct + '%';
+  document.getElementById('sixsProgress').style.width = pct + '%';
+  const level = pct >= 80 ? 'World Class' : pct >= 60 ? 'Developing' : 'Beginning';
+  document.getElementById('sixsMaturity').textContent = level;
+}
+
+/* ===== RADAR CHART (SVG) ===== */
+function drawRadar(svgEl, labels, values, maxVal) {
+  const cx=140, cy=130, r=100, n=labels.length;
+  let html = '';
+  // Grid circles
+  for (let level=1; level<=5; level++) {
+    const lr = r * level/5;
+    let points = [];
+    for (let i=0; i<n; i++) {
+      const angle = (Math.PI*2*i/n) - Math.PI/2;
+      points.push(`${cx+lr*Math.cos(angle)},${cy+lr*Math.sin(angle)}`);
+    }
+    html += `<polygon points="${points.join(' ')}" fill="none" stroke="var(--border)" stroke-width="1" opacity=".5"/>`;
+  }
+  // Axes + labels
+  for (let i=0; i<n; i++) {
+    const angle = (Math.PI*2*i/n) - Math.PI/2;
+    const x2 = cx + r*Math.cos(angle);
+    const y2 = cy + r*Math.sin(angle);
+    html += `<line x1="${cx}" y1="${cy}" x2="${x2}" y2="${y2}" stroke="var(--border)" stroke-width="1"/>`;
+    const lx = cx + (r+18)*Math.cos(angle);
+    const ly = cy + (r+18)*Math.sin(angle);
+    html += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="var(--text-secondary)" font-size="9" font-weight="600">${labels[i]}</text>`;
+  }
+  // Data polygon
+  let dPoints = [];
+  for (let i=0; i<n; i++) {
+    const angle = (Math.PI*2*i/n) - Math.PI/2;
+    const vr = r * (values[i] / maxVal);
+    dPoints.push(`${cx+vr*Math.cos(angle)},${cy+vr*Math.sin(angle)}`);
+  }
+  html += `<polygon points="${dPoints.join(' ')}" fill="rgba(79,70,229,.15)" stroke="var(--primary)" stroke-width="2"/>`;
+  // Data dots
+  for (let i=0; i<n; i++) {
+    const angle = (Math.PI*2*i/n) - Math.PI/2;
+    const vr = r * (values[i] / maxVal);
+    html += `<circle cx="${cx+vr*Math.cos(angle)}" cy="${cy+vr*Math.sin(angle)}" r="4" fill="var(--primary)"/>`;
+  }
+  svgEl.innerHTML = html;
+}
+function render6SRadar() {
+  const svg = document.getElementById('radar6SSvg');
+  const catScores = sixsData.scores.map(cat => cat.reduce((s,v)=>s+v,0) / cat.length);
+  drawRadar(svg, sixsData.categories, catScores, 5);
+}
+function renderAssessmentRadar() {
+  const svg = document.querySelector('#view-assessment .radar-chart');
+  if (!svg) return;
+  const labels = ['Leadership','Operations','Quality','Maintenance','Culture','Flow'];
+  const values = [3.2, 2.8, 2.5, 2.1, 3.0, 1.8];
+  drawRadar(svg, labels, values, 5);
+}
+
+/* ===== TPM ===== */
+function renderTPM() {
+  const equipment = [
+    {name:'CNC Lathe #1',oee:82,mtbf:120,mttr:35,crit:'A',status:'running',pm:'2026-03-15'},
+    {name:'CNC Lathe #2',oee:78,mtbf:95,mttr:42,crit:'A',status:'running',pm:'2026-03-18'},
+    {name:'CNC Mill #1',oee:71,mtbf:80,mttr:55,crit:'A',status:'maintenance',pm:'2026-03-13'},
+    {name:'Press #1',oee:85,mtbf:200,mttr:25,crit:'B',status:'running',pm:'2026-03-25'},
+    {name:'Conveyor A',oee:92,mtbf:500,mttr:15,crit:'C',status:'running',pm:'2026-04-01'},
+    {name:'Assembly Robot #1',oee:68,mtbf:60,mttr:65,crit:'A',status:'breakdown',pm:'2026-03-14'}
+  ];
+  document.getElementById('tpmBody').innerHTML = equipment.map(e => {
+    const statusCls = e.status==='running'?'status-running':e.status==='maintenance'?'status-maintenance':'status-breakdown';
+    const statusLbl = e.status.charAt(0).toUpperCase() + e.status.slice(1);
+    const critColor = e.crit==='A'?'badge-red':e.crit==='B'?'badge-yellow':'badge-green';
+    return `<tr><td style="font-weight:600">${e.name}</td>
+      <td style="font-weight:700;color:${e.oee>=85?'var(--green)':e.oee>=70?'var(--amber)':'var(--red)'}">${e.oee}%</td>
+      <td>${e.mtbf}h</td><td>${e.mttr}m</td>
+      <td><span class="badge ${critColor}">${e.crit}</span></td>
+      <td><span class="status-badge ${statusCls}">${statusLbl}</span></td>
+      <td>${e.pm}</td></tr>`;
+  }).join('');
+  // PM alerts
+  const today = new Date('2026-03-13');
+  const alerts = equipment.filter(e => {
+    const pm = new Date(e.pm);
+    const diff = (pm - today) / (1000*60*60*24);
+    return diff <= 7 && diff >= 0;
+  });
+  document.getElementById('pmAlerts').innerHTML = alerts.length > 0 ? alerts.map(e =>
+    `<div class="pm-alert"><strong>${e.name}</strong> — PM due <strong>${e.pm}</strong> (${e.crit} criticality)</div>`
+  ).join('') : '<div style="color:var(--text-muted);padding:8px">No PM alerts.</div>';
+  // TPM Pillars
+  const pillars = [
+    {name:'Autonomous Maintenance',pct:65},{name:'Planned Maintenance',pct:45},
+    {name:'Quality Maintenance',pct:55},{name:'Focused Improvement',pct:70},
+    {name:'Early Equipment Management',pct:30},{name:'Training & Education',pct:50},
+    {name:'Safety, Health & Environment',pct:75},{name:'Office TPM',pct:20}
+  ];
+  document.getElementById('tpmPillars').innerHTML = pillars.map(p => {
+    const c = p.pct >= 70 ? 'var(--green)' : p.pct >= 40 ? 'var(--amber)' : 'var(--red)';
+    return `<div><div style="display:flex;justify-content:space-between;font-size:.8rem"><span>${p.name}</span><span style="font-weight:700;color:${c}">${p.pct}%</span></div>
+      <div class="pillar-bar"><div class="pillar-fill" style="width:${p.pct}%;background:${c}"></div></div></div>`;
+  }).join('');
+}
+
+/* ===== CILT CHECKLIST ===== */
+const ciltData = {
+  cleaning: [
+    {desc:'Clean machine exterior surfaces',std:'No visible chips/oil',freq:'Daily',time:'5 min'},
+    {desc:'Clean chuck and jaws',std:'Free of debris',freq:'Every shift',time:'3 min'},
+    {desc:'Empty chip bin',std:'Below 75% full',freq:'Every shift',time:'4 min'},
+    {desc:'Wipe down control panel',std:'Clean, readable buttons',freq:'Daily',time:'2 min'}
+  ],
+  inspection: [
+    {desc:'Check coolant level',std:'Above MIN mark',freq:'Every shift',time:'1 min'},
+    {desc:'Inspect belts and hoses',std:'No cracks or wear',freq:'Weekly',time:'5 min'},
+    {desc:'Verify way covers intact',std:'No gaps or damage',freq:'Daily',time:'2 min'},
+    {desc:'Check spindle runout',std:'< 0.005mm',freq:'Weekly',time:'10 min'}
+  ],
+  lubrication: [
+    {desc:'Lubricate way guides',std:'Thin film visible',freq:'Weekly',time:'5 min'},
+    {desc:'Check hydraulic oil level',std:'In green zone',freq:'Daily',time:'1 min'},
+    {desc:'Grease tailstock quill',std:'Smooth movement',freq:'Monthly',time:'3 min'}
+  ],
+  tightening: [
+    {desc:'Check tool holder clamping bolts',std:'Torque 25 Nm',freq:'Weekly',time:'5 min'},
+    {desc:'Verify chuck mounting bolts',std:'Torque 40 Nm',freq:'Monthly',time:'8 min'},
+    {desc:'Check guard fasteners',std:'Finger-tight minimum',freq:'Weekly',time:'3 min'}
+  ]
+};
+let ciltStatus = {};
+let activeCiltTab = 'cleaning';
+function showCiltTab(cat) {
+  activeCiltTab = cat;
+  document.querySelectorAll('#ciltTabs .tab-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.toLowerCase() === cat || t(cat).toLowerCase() === b.textContent.toLowerCase());
+  });
+  renderCiltItems();
+}
+function renderCiltItems() {
+  const items = ciltData[activeCiltTab];
+  document.getElementById('ciltItems').innerHTML = items.map((item, i) => {
+    const key = activeCiltTab + '-' + i;
+    const st = ciltStatus[key] || '';
+    return `<div class="cilt-item">
+      <div class="desc"><div class="title">${item.desc}</div>
+        <div class="std">${item.std} &middot; ${item.freq} &middot; ${item.time}</div></div>
+      <div class="cilt-buttons">
+        <button class="cilt-btn ok ${st==='ok'?'selected':''}" onclick="setCilt('${key}','ok')">OK</button>
+        <button class="cilt-btn nok ${st==='nok'?'selected':''}" onclick="setCilt('${key}','nok')">NOK</button>
+        <button class="cilt-btn skip ${st==='skip'?'selected':''}" onclick="setCilt('${key}','skip')">Skip</button>
+      </div></div>`;
+  }).join('');
+  updateCiltProgress();
+}
+function setCilt(key, val) {
+  ciltStatus[key] = val;
+  if (val === 'nok') {
+    // Could show a note prompt; simplified for demo
+  }
+  renderCiltItems();
+}
+function updateCiltProgress() {
+  const allItems = Object.keys(ciltData).reduce((sum, cat) => sum + ciltData[cat].length, 0);
+  const done = Object.keys(ciltStatus).length;
+  const pct = allItems > 0 ? Math.round(done / allItems * 100) : 0;
+  document.getElementById('ciltProgress').style.width = pct + '%';
+  document.getElementById('ciltPct').textContent = pct + '%';
+}
+
+/* ===== LIVE CLOCK ===== */
+function updateClock() {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  const ss = String(now.getSeconds()).padStart(2,'0');
+  const el = document.getElementById('liveClock');
+  if (el) el.textContent = hh + ':' + mm + ':' + ss;
+}
+
+/* ===== INIT ===== */
+document.addEventListener('DOMContentLoaded', function() {
+  // Set initial theme toggle state (light is default)
+  document.getElementById('btn-light').classList.add('active');
+  document.getElementById('btn-dark-toggle').classList.remove('active');
+  
+  // Render all views
+  renderOEELines();
+  renderOEETrend();
+  renderHourlyBoard();
+  renderAndon();
+  calcOEE();
+  renderPareto();
+  renderKaizen();
+  renderSMED();
+  renderGemba();
+  render6SQuestions();
+  render6SRadar();
+  renderAssessmentRadar();
+  renderTPM();
+  renderCiltItems();
+  
+  // Live clock
+  updateClock();
+  setInterval(updateClock, 1000);
+});
+</script>
+</body>
+</html>

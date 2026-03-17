@@ -1,0 +1,18 @@
+{
+  "title": "Privacidad y Consentimiento de Datos",
+  "subtitle": "Conformidad con el RGPD",
+  "description": "Antes de continuar, revise y acepte los acuerdos de procesamiento de datos requeridos.",
+  "privacyPolicy": "Acepto la Pol\u00edtica de Privacidad",
+  "privacyPolicyDesc": "He le\u00eddo y acepto el procesamiento de mis datos personales seg\u00fan lo descrito en la Pol\u00edtica de Privacidad.",
+  "termsOfService": "Acepto los T\u00e9rminos de Servicio",
+  "termsOfServiceDesc": "Acepto los T\u00e9rminos de Servicio que rigen el uso de la plataforma LeanPilot.",
+  "aiProcessing": "An\u00e1lisis con IA (opcional)",
+  "aiProcessingDesc": "Consiento que los datos de producci\u00f3n anonimizados sean procesados por modelos de IA para generar sugerencias de mejora. Puede cambiar esto en cualquier momento.",
+  "marketing": "Actualizaciones del Producto (opcional)",
+  "marketingDesc": "Me gustar\u00eda recibir actualizaciones del producto, consejos e informaci\u00f3n sobre lean manufacturing por correo electr\u00f3nico.",
+  "gdprNote": "Los campos obligatorios est\u00e1n marcados con *. Sus datos se procesan seg\u00fan el Art. 6(1)(b) del RGPD para la prestaci\u00f3n del servicio. Los consentimientos opcionales pueden retirarse en cualquier momento en Configuraci\u00f3n.",
+  "accept": "Aceptar y Continuar",
+  "decline": "Cerrar Sesi\u00f3n",
+  "submitting": "Guardando...",
+  "error": "No se pudo guardar el consentimiento. Int\u00e9ntelo de nuevo."
+}

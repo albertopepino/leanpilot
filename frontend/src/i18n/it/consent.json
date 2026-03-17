@@ -1,0 +1,18 @@
+{
+  "title": "Privacy e Consenso Dati",
+  "subtitle": "Conformità GDPR",
+  "description": "Prima di continuare, rivedi e accetta gli accordi richiesti per il trattamento dei dati.",
+  "privacyPolicy": "Accetto la Privacy Policy",
+  "privacyPolicyDesc": "Ho letto e acconsento al trattamento dei miei dati personali come descritto nella Privacy Policy.",
+  "termsOfService": "Accetto i Termini di Servizio",
+  "termsOfServiceDesc": "Accetto i Termini di Servizio che regolano l'utilizzo della piattaforma LeanPilot.",
+  "aiProcessing": "Analisi AI (opzionale)",
+  "aiProcessingDesc": "Acconsento all'elaborazione anonimizzata dei dati di produzione tramite modelli AI per generare suggerimenti di miglioramento.",
+  "marketing": "Aggiornamenti Prodotto (opzionale)",
+  "marketingDesc": "Desidero ricevere aggiornamenti sul prodotto, consigli e approfondimenti sulla lean manufacturing via email.",
+  "gdprNote": "Campi obbligatori contrassegnati con *. I tuoi dati sono trattati ai sensi dell'Art. 6(1)(b) GDPR. I consensi opzionali possono essere ritirati in qualsiasi momento nelle Impostazioni.",
+  "accept": "Accetta e Continua",
+  "decline": "Esci",
+  "submitting": "Salvataggio...",
+  "error": "Impossibile salvare il consenso. Riprova."
+}

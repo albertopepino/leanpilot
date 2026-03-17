@@ -1,0 +1,49 @@
+<!-- Open this file in a browser and right-click the canvases to save as PNG -->
+<!-- Or use any image editor to create 192x192 and 512x512 icons -->
+<html>
+<body style="background:#f0f0f0;padding:20px;font-family:sans-serif">
+<h2>LeanPilot PWA Icons — Right-click each canvas → Save Image As</h2>
+<div style="display:flex;gap:20px;align-items:end">
+<div>
+<p>icon-192.png</p>
+<canvas id="c192" width="192" height="192"></canvas>
+</div>
+<div>
+<p>icon-512.png</p>
+<canvas id="c512" width="512" height="512"></canvas>
+</div>
+</div>
+<script>
+function drawIcon(canvas) {
+  const ctx = canvas.getContext('2d');
+  const s = canvas.width;
+  // Background gradient
+  const grad = ctx.createLinearGradient(0, 0, s, s);
+  grad.addColorStop(0, '#4f46e5');
+  grad.addColorStop(1, '#7c3aed');
+  // Rounded rect
+  const r = s * 0.18;
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.lineTo(s-r, 0);
+  ctx.quadraticCurveTo(s, 0, s, r);
+  ctx.lineTo(s, s-r);
+  ctx.quadraticCurveTo(s, s, s-r, s);
+  ctx.lineTo(r, s);
+  ctx.quadraticCurveTo(0, s, 0, s-r);
+  ctx.lineTo(0, r);
+  ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.fillStyle = grad;
+  ctx.fill();
+  // LP text
+  ctx.fillStyle = 'white';
+  ctx.font = `bold ${s*0.38}px system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('LP', s/2, s/2);
+}
+drawIcon(document.getElementById('c192'));
+drawIcon(document.getElementById('c512'));
+</script>
+</body>
+</html>
