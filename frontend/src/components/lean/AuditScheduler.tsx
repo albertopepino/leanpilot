@@ -97,10 +97,10 @@ export default function AuditScheduler() {
 
   return (
     <div className="p-4 md:p-6 space-y-6">
-      <PageHeader titleKey="auditScheduler.title" subtitleKey="auditScheduler.subtitle" icon={CalendarCheck}
+      <PageHeader titleKey="scheduling.title" subtitleKey="scheduling.subtitle" icon={CalendarCheck}
         actions={
           <button onClick={() => setCreateMode(true)} className="flex items-center gap-2 px-3 py-1.5 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-500 transition">
-            <Plus size={14} /> {t('auditScheduler.newSchedule') || 'New Schedule'}
+            <Plus size={14} /> {t('scheduling.newSchedule') || 'New Schedule'}
           </button>
         }
       />
@@ -121,7 +121,7 @@ export default function AuditScheduler() {
       {/* Overdue section */}
       {overdue.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-rose-600 flex items-center gap-2"><AlertTriangle size={14} /> {t('auditScheduler.overdue') || 'Overdue'} ({overdue.length})</h3>
+          <h3 className="text-sm font-semibold text-rose-600 flex items-center gap-2"><AlertTriangle size={14} /> {t('scheduling.overdue') || 'Overdue'} ({overdue.length})</h3>
           <div className="space-y-2">
             {overdue.map(s => (
               <AuditCard key={s.id} schedule={s} overdue onComplete={() => markComplete(s.id)} onDelete={() => deleteSchedule(s.id)} t={t} />
@@ -132,7 +132,7 @@ export default function AuditScheduler() {
 
       {/* Upcoming */}
       <div className="space-y-2">
-        <h3 className="text-sm font-semibold text-th-text flex items-center gap-2"><Clock size={14} /> {t('auditScheduler.upcoming') || 'Upcoming'} ({upcoming.length})</h3>
+        <h3 className="text-sm font-semibold text-th-text flex items-center gap-2"><Clock size={14} /> {t('scheduling.upcoming') || 'Upcoming'} ({upcoming.length})</h3>
         {upcoming.length === 0 && !loading && <p className="text-sm text-th-text-3 italic">{t('common.noData') || 'No scheduled audits'}</p>}
         <div className="space-y-2">
           {upcoming.map(s => (
@@ -145,9 +145,9 @@ export default function AuditScheduler() {
       {createMode && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setCreateMode(false)}>
           <div className="bg-th-card rounded-xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-th-text">{t('auditScheduler.newSchedule') || 'New Audit Schedule'}</h3>
+            <h3 className="text-lg font-bold text-th-text">{t('scheduling.newSchedule') || 'New Audit Schedule'}</h3>
             <div>
-              <label className="text-xs text-th-text-3 block mb-1">{t('auditScheduler.auditType') || 'Audit Type'}</label>
+              <label className="text-xs text-th-text-3 block mb-1">{t('scheduling.auditType') || 'Audit Type'}</label>
               <select value={form.audit_type} onChange={e => setForm(p => ({ ...p, audit_type: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm">
                 {AUDIT_TYPES.map(at => <option key={at} value={at}>{at.replace('_', ' ').toUpperCase()}</option>)}
               </select>
@@ -158,18 +158,18 @@ export default function AuditScheduler() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-th-text-3 block mb-1">{t('auditScheduler.frequency') || 'Frequency'}</label>
+                <label className="text-xs text-th-text-3 block mb-1">{t('scheduling.frequency') || 'Frequency'}</label>
                 <select value={form.frequency} onChange={e => setForm(p => ({ ...p, frequency: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm">
                   {FREQUENCIES.map(f => <option key={f} value={f}>{f}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-xs text-th-text-3 block mb-1">{t('auditScheduler.nextDue') || 'Next Due Date'}</label>
+                <label className="text-xs text-th-text-3 block mb-1">{t('scheduling.nextDue') || 'Next Due Date'}</label>
                 <input type="date" value={form.next_due_date} onChange={e => setForm(p => ({ ...p, next_due_date: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm" />
               </div>
             </div>
             <div>
-              <label className="text-xs text-th-text-3 block mb-1">{t('auditScheduler.assignedTo') || 'Assigned To'}</label>
+              <label className="text-xs text-th-text-3 block mb-1">{t('scheduling.assignedTo') || 'Assigned To'}</label>
               <input value={form.assigned_to} onChange={e => setForm(p => ({ ...p, assigned_to: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm" />
             </div>
             <div className="flex gap-2 pt-2">
@@ -203,7 +203,7 @@ function AuditCard({ schedule, overdue, dueSoon, onComplete, onDelete, t }: {
         </div>
       </div>
       <div className="flex items-center gap-1">
-        <button onClick={onComplete} className="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition" title={t('auditScheduler.markComplete') || 'Mark Complete'}>
+        <button onClick={onComplete} className="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition" title={t('scheduling.markComplete') || 'Mark Complete'}>
           <CheckCircle size={16} />
         </button>
         <button onClick={onDelete} className="p-2 text-th-text-3 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition" title={t('common.delete') || 'Delete'}>

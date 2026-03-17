@@ -14,5 +14,7 @@
   "monthly": "Monatlich",
   "quarterly": "Vierteljährlich",
   "assignedTo": "Zugewiesen an",
-  "noSchedules": "Keine Audit-Zeitpläne"
+  "noSchedules": "Keine Audit-Zeitpläne",
+  "newSchedule": "Neuer Zeitplan",
+  "upcoming": "Anstehend"
 }

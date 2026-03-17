@@ -178,6 +178,9 @@ export default function TPMDashboard() {
   const [logLoading, setLogLoading] = useState(false);
   const [logError, setLogError] = useState<string | null>(null);
 
+  // Overdue PM alerts
+  const [overdueList, setOverdueList] = useState<{id: number; name: string; location: string | null; criticality: string; next_planned_maintenance: string | null; maintenance_interval_days: number | null; last_maintenance_date: string | null}[]>([]);
+
   // Equipment detail view
   const [detailEqId, setDetailEqId] = useState<number | null>(null);
 
@@ -189,12 +192,17 @@ export default function TPMDashboard() {
     setLoading(true);
     setError(null);
     try {
-      const res = await advancedLeanApi.listEquipment();
-      const items: Equipment[] = res.data?.data ?? res.data ?? [];
+      const [eqRes, overdueRes] = await Promise.all([
+        advancedLeanApi.listEquipment(),
+        advancedLeanApi.getOverdueEquipment().catch(() => ({ data: [] })),
+      ]);
+      const items: Equipment[] = eqRes.data?.data ?? eqRes.data ?? [];
       setEquipment(items);
+      setOverdueList(overdueRes.data?.data ?? overdueRes.data ?? []);
     } catch {
       setEquipment([]);
       setMaintenanceLogs([]);
+      setOverdueList([]);
     } finally {
       setLoading(false);
     }
@@ -359,6 +367,8 @@ export default function TPMDashboard() {
         return { ...eq, last_maintenance: todayIso, next_pm: nextPm };
       }),
     );
+    // Remove from overdue list since maintenance was just logged
+    setOverdueList((prev) => prev.filter((eq) => eq.id !== logEqId));
     setNewLog({ type: "PM", description: "", duration_hours: 1, technician: "", parts_replaced: "" });
     setShowLogForm(false);
     setLogEqId(null);
@@ -568,6 +578,50 @@ export default function TPMDashboard() {
           <button onClick={() => setError(null)} className="ml-auto text-red-500 hover:text-red-700 dark:hover:text-red-300 transition">
             <X className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {/* ── Overdue PM Alerts ── */}
+      {!loading && overdueList.length > 0 && (
+        <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 shadow-sm p-5 space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
+              <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">
+                {t("maintenance.tpmOverdueAlerts") || "Overdue PM Alerts"}
+              </h3>
+              <p className="text-xs text-red-600 dark:text-red-400/80">
+                {overdueList.length} {overdueList.length === 1
+                  ? (t("maintenance.tpmEquipmentOverdue") || "equipment has overdue preventive maintenance")
+                  : (t("maintenance.tpmEquipmentOverduePlural") || "equipment have overdue preventive maintenance")}
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {overdueList.map((eq) => (
+              <div
+                key={eq.id}
+                className="flex items-center gap-3 rounded-lg border border-red-200 dark:border-red-800 bg-white dark:bg-red-950/30 px-3 py-2 cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/40 transition"
+                onClick={() => { setSelectedTab("equipment"); setDetailEqId(eq.id); }}
+              >
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold text-red-700 dark:text-red-400 truncate">{eq.name}</div>
+                  <div className="text-xs text-red-500 dark:text-red-400/70">
+                    {t("maintenance.tpmDueSince") || "Due since"} {eq.next_planned_maintenance ? formatDate(eq.next_planned_maintenance) : "\u2014"}
+                  </div>
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); openLogForEquipment(eq.id); }}
+                  className="text-xs px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700 transition flex-shrink-0"
+                >
+                  {t("maintenance.tpmLogMaintenance") || "Log PM"}
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

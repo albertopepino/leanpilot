@@ -14,5 +14,7 @@
   "monthly": "Miesięcznie",
   "quarterly": "Kwartalnie",
   "assignedTo": "Przypisano do",
-  "noSchedules": "Brak zaplanowanych audytów"
+  "noSchedules": "Brak zaplanowanych audytów",
+  "newSchedule": "Nowy Harmonogram",
+  "upcoming": "Nadchodzące"
 }

@@ -46,6 +46,7 @@ from app.models.notification import Notification
 from app.models.leader_standard_work import LeaderStandardWork, LSWCompletion
 from app.models.audit_schedule import AuditSchedule
 from app.models.horizontal_deploy import HorizontalDeployment
+from app.models.safety import SafetyIncident
 
 __all__ = [
     "User",
@@ -109,4 +110,5 @@ __all__ = [
     "LSWCompletion",
     "AuditSchedule",
     "HorizontalDeployment",
+    "SafetyIncident",
 ]

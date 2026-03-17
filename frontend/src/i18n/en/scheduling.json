@@ -14,5 +14,7 @@
   "monthly": "Monthly",
   "quarterly": "Quarterly",
   "assignedTo": "Assigned To",
-  "noSchedules": "No audit schedules"
+  "noSchedules": "No audit schedules",
+  "newSchedule": "New Schedule",
+  "upcoming": "Upcoming"
 }

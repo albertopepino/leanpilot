@@ -14,5 +14,7 @@
   "monthly": "Mesečno",
   "quarterly": "Kvartalno",
   "assignedTo": "Dodeljeno",
-  "noSchedules": "Nema zakazanih audita"
+  "noSchedules": "Nema zakazanih audita",
+  "newSchedule": "Нови распоред",
+  "upcoming": "Предстојећи"
 }

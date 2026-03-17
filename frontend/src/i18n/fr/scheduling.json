@@ -14,5 +14,7 @@
   "monthly": "Mensuel",
   "quarterly": "Trimestriel",
   "assignedTo": "Attribué à",
-  "noSchedules": "Aucun audit planifié"
+  "noSchedules": "Aucun audit planifié",
+  "newSchedule": "Nouveau Calendrier",
+  "upcoming": "À venir"
 }

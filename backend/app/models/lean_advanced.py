@@ -140,6 +140,12 @@ class A3Report(TimestampMixin, Base):
     follow_up = Column(Text)
     results = Column(Text)
 
+    # Mentor review
+    mentor_name = Column(String, nullable=True)
+    mentor_date = Column(String, nullable=True)
+    mentor_feedback = Column(Text, nullable=True)
+    mentor_status = Column(String, nullable=True, default="draft")  # draft, reviewed, approved
+
     # Links to other analyses
     five_why_id = Column(Integer, ForeignKey("five_why_analyses.id"), nullable=True)
     ishikawa_id = Column(Integer, ForeignKey("ishikawa_analyses.id"), nullable=True)
@@ -218,6 +224,7 @@ class TPMEquipment(TimestampMixin, Base):
     criticality = Column(String, default="medium")  # low, medium, high, critical
     mtbf_hours = Column(Float)  # Mean Time Between Failures
     mttr_hours = Column(Float)  # Mean Time To Repair
+    maintenance_interval_days = Column(Integer, default=30)  # PM interval in days
     last_maintenance_date = Column(DateTime(timezone=True))
     next_planned_maintenance = Column(DateTime(timezone=True))
 

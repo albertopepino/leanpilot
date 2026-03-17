@@ -299,6 +299,11 @@ export interface A3ReportCreate {
   owner?: string | null;
   date?: string | null;
   status?: string | null;
+  // Mentor review fields
+  mentor_name?: string | null;
+  mentor_date?: string | null;
+  mentor_feedback?: string | null;
+  mentor_status?: string | null;
 }
 
 export interface GembaActionCreate {
@@ -858,6 +863,60 @@ export interface GroupUpdate {
   description?: string;
   color?: string;
   is_active?: boolean;
+}
+
+// ─── Safety Incidents ───────────────────────────────────────────────────────
+
+export interface SafetyIncidentCreate {
+  production_line_id?: number | null;
+  incident_type: string;
+  severity: string;
+  title: string;
+  description?: string | null;
+  location?: string | null;
+  date: string;
+  reported_by?: string | null;
+  status?: string;
+  corrective_action?: string | null;
+}
+
+export interface SafetyIncidentUpdate {
+  production_line_id?: number | null;
+  incident_type?: string | null;
+  severity?: string | null;
+  title?: string | null;
+  description?: string | null;
+  location?: string | null;
+  date?: string | null;
+  reported_by?: string | null;
+  status?: string | null;
+  corrective_action?: string | null;
+}
+
+export interface SafetyIncidentResponse {
+  id: number;
+  factory_id: number;
+  production_line_id: number | null;
+  created_by_id: number;
+  incident_type: string;
+  severity: string;
+  title: string;
+  description: string | null;
+  location: string | null;
+  date: string;
+  reported_by: string | null;
+  status: string;
+  corrective_action: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SafetyStats {
+  days_without_incident: number;
+  total_incidents: number;
+  open_count: number;
+  by_type: Record<string, number>;
+  by_severity: Record<string, number>;
 }
 
 // ─── Horizontal Deployment ──────────────────────────────────────────────────

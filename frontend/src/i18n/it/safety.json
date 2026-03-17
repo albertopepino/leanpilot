@@ -20,6 +20,10 @@
   "severityLieve": "Lieve",
   "severityNearMiss": "Near Miss",
   "severityFirstAid": "Primo Soccorso",
+  "severityCritical": "Critico",
+  "severitySerious": "Grave",
+  "severityModerate": "Moderato",
+  "severityMinor": "Lieve",
   "productionLine": "Linea di Produzione",
   "areaZone": "Area / Zona",
   "incidentDescription": "Descrizione",
@@ -67,5 +71,16 @@
   "areaMaintenance": "Area Manutenzione",
 
   "deleteConfirm": "Eliminare questo evento?",
-  "deleted": "Evento eliminato"
+  "deleted": "Evento eliminato",
+
+  "incidentType": "Tipo Evento",
+  "incidentTitle": "Titolo",
+  "incidentTitlePlaceholder": "Breve titolo per l'evento...",
+  "incidentsByType": "Infortuni per Tipo",
+
+  "typeInjury": "Infortunio",
+  "typeNearMiss": "Near Miss",
+  "typeFirstAid": "Primo Soccorso",
+  "typePropertyDamage": "Danno Materiale",
+  "typeEnvironmental": "Ambientale"
 }

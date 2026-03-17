@@ -129,9 +129,15 @@ class A3ReportCreate(BaseModel):
     countermeasures: str | None = None
     implementation_plan: str | None = None
     follow_up: str | None = None
+    results: str | None = None
     target_date: datetime | None = None
     five_why_id: int | None = None
     ishikawa_id: int | None = None
+    # Mentor review fields
+    mentor_name: str | None = None
+    mentor_date: str | None = None
+    mentor_feedback: str | None = None
+    mentor_status: str | None = None
 
 
 class A3ReportResponse(BaseModel):
@@ -147,6 +153,11 @@ class A3ReportResponse(BaseModel):
     follow_up: str | None
     results: str | None
     target_date: datetime | None
+    # Mentor review fields
+    mentor_name: str | None = None
+    mentor_date: str | None = None
+    mentor_feedback: str | None = None
+    mentor_status: str | None = None
     created_at: datetime
 
     @field_validator("status", mode="before")
@@ -216,6 +227,7 @@ class TPMEquipmentCreate(BaseModel):
     criticality: str = "medium"
     mtbf_hours: float | None = None
     mttr_hours: float | None = None
+    maintenance_interval_days: int = 30
 
 
 class TPMMaintenanceCreate(BaseModel):

@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from app.models.lean_advanced import (
     SixSAudit, SixSAuditItem, SixSCategory,
@@ -148,9 +148,14 @@ class A3Service:
             countermeasures=data.get("countermeasures"),
             implementation_plan=data.get("implementation_plan"),
             follow_up=data.get("follow_up"),
+            results=data.get("results"),
             target_date=data.get("target_date"),
             five_why_id=data.get("five_why_id"),
             ishikawa_id=data.get("ishikawa_id"),
+            mentor_name=data.get("mentor_name"),
+            mentor_date=data.get("mentor_date"),
+            mentor_feedback=data.get("mentor_feedback"),
+            mentor_status=data.get("mentor_status"),
         )
         db.add(report)
         await db.flush()
@@ -223,6 +228,7 @@ class GembaService:
 class TPMService:
     @staticmethod
     async def create_equipment(db: AsyncSession, factory_id: int, data: dict) -> TPMEquipment:
+        interval_days = data.get("maintenance_interval_days", 30)
         equipment = TPMEquipment(
             factory_id=factory_id,
             production_line_id=data.get("production_line_id"),
@@ -232,6 +238,9 @@ class TPMService:
             criticality=data.get("criticality", "medium"),
             mtbf_hours=data.get("mtbf_hours"),
             mttr_hours=data.get("mttr_hours"),
+            maintenance_interval_days=interval_days,
+            last_maintenance_date=datetime.now(timezone.utc),
+            next_planned_maintenance=datetime.now(timezone.utc) + timedelta(days=interval_days),
         )
         db.add(equipment)
         await db.flush()
@@ -246,17 +255,17 @@ class TPMService:
 
     @staticmethod
     async def log_maintenance(db: AsyncSession, user_id: int, data: dict, factory_id: int | None = None) -> TPMMaintenanceRecord:
-        # Verify equipment belongs to the user's factory (tenant isolation)
-        if factory_id:
-            eq_result = await db.execute(
-                select(TPMEquipment).where(
-                    TPMEquipment.id == data["equipment_id"],
-                    TPMEquipment.factory_id == factory_id,
-                )
+        # Verify equipment belongs to the user's factory and fetch it for auto-scheduling
+        eq_result = await db.execute(
+            select(TPMEquipment).where(
+                TPMEquipment.id == data["equipment_id"],
+                *([TPMEquipment.factory_id == factory_id] if factory_id else []),
             )
-            if not eq_result.scalar_one_or_none():
-                from fastapi import HTTPException
-                raise HTTPException(status_code=403, detail="Equipment not found in your factory")
+        )
+        equipment = eq_result.scalar_one_or_none()
+        if factory_id and not equipment:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=403, detail="Equipment not found in your factory")
 
         record = TPMMaintenanceRecord(
             equipment_id=data["equipment_id"],
@@ -272,7 +281,28 @@ class TPMService:
         )
         db.add(record)
         await db.flush()
+
+        # Auto-schedule next PM: update equipment dates
+        if equipment:
+            now = datetime.now(timezone.utc)
+            equipment.last_maintenance_date = now
+            interval = equipment.maintenance_interval_days or 30
+            equipment.next_planned_maintenance = now + timedelta(days=interval)
+            await db.flush()
+
         return record
+
+    @staticmethod
+    async def get_overdue_equipment(db: AsyncSession, factory_id: int):
+        """Return equipment where next_planned_maintenance is in the past."""
+        now = datetime.now(timezone.utc)
+        result = await db.execute(
+            select(TPMEquipment).where(
+                TPMEquipment.factory_id == factory_id,
+                TPMEquipment.next_planned_maintenance < now,
+            ).order_by(TPMEquipment.next_planned_maintenance.asc())
+        )
+        return result.scalars().all()
 
 
 class CILTService:

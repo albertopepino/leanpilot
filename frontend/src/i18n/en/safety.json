@@ -20,6 +20,10 @@
   "severityLieve": "Minor",
   "severityNearMiss": "Near Miss",
   "severityFirstAid": "First Aid",
+  "severityCritical": "Critical",
+  "severitySerious": "Serious",
+  "severityModerate": "Moderate",
+  "severityMinor": "Minor",
   "productionLine": "Production Line",
   "areaZone": "Area / Zone",
   "incidentDescription": "Description",
@@ -67,5 +71,16 @@
   "areaMaintenance": "Maintenance Bay",
 
   "deleteConfirm": "Delete this incident?",
-  "deleted": "Incident deleted"
+  "deleted": "Incident deleted",
+
+  "incidentType": "Incident Type",
+  "incidentTitle": "Title",
+  "incidentTitlePlaceholder": "Brief title for the incident...",
+  "incidentsByType": "Incidents by Type",
+
+  "typeInjury": "Injury",
+  "typeNearMiss": "Near Miss",
+  "typeFirstAid": "First Aid",
+  "typePropertyDamage": "Property Damage",
+  "typeEnvironmental": "Environmental"
 }

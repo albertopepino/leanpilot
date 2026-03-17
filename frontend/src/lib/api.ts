@@ -23,6 +23,7 @@ import type {
   ShiftHandoverCreate, ShiftHandoverUpdate,
   LSWCreate, LSWUpdate, LSWCompletionCreate,
   AuditScheduleCreate, AuditScheduleUpdate,
+  SafetyIncidentCreate, SafetyIncidentUpdate,
 } from "./types";
 
 const api = axios.create({
@@ -164,6 +165,7 @@ export const advancedLeanApi = {
   createEquipment: (data: TPMEquipmentCreate) => api.post("/lean-advanced/tpm/equipment", data),
   listEquipment: () => api.get("/lean-advanced/tpm/equipment"),
   logMaintenance: (data: TPMMaintenanceCreate) => api.post("/lean-advanced/tpm/maintenance", data),
+  getOverdueEquipment: () => api.get("/lean-advanced/tpm/overdue"),
   getEquipmentMetrics: (equipmentId: number) => api.get(`/lean-advanced/tpm/equipment/${equipmentId}/metrics`),
   // CILT
   createCILTStandard: (data: CILTStandardCreate) => api.post("/lean-advanced/cilt/standards", data),
@@ -484,6 +486,23 @@ export const horizontalDeployApi = {
     api.get("/horizontal-deploy", { params }),
   complete: (id: number, data: { line_id: number; notes?: string }) =>
     api.patch(`/horizontal-deploy/${id}/complete`, data),
+};
+
+// Safety Incident APIs
+export const safetyApi = {
+  listIncidents: (params?: {
+    incident_type?: string;
+    severity?: string;
+    status?: string;
+    line_id?: number;
+    date_from?: string;
+    date_to?: string;
+    limit?: number;
+  }) => api.get("/safety/incidents", { params }),
+  createIncident: (data: SafetyIncidentCreate) => api.post("/safety/incidents", data),
+  updateIncident: (id: number, data: SafetyIncidentUpdate) => api.patch(`/safety/incidents/${id}`, data),
+  deleteIncident: (id: number) => api.delete(`/safety/incidents/${id}`),
+  getStats: (params?: { line_id?: number }) => api.get("/safety/stats", { params }),
 };
 
 export const featuresApi = {

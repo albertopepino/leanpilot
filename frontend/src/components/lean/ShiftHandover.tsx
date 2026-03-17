@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useI18n } from '@/stores/useI18n';
+import { adminApi } from '@/lib/api';
 import { ArrowRightLeft, Zap, CheckCircle, AlertTriangle, Clock, Package, Percent, Wrench, ChevronDown, ChevronUp } from 'lucide-react';
 import PageHeader from '@/components/ui/PageHeader';
 
@@ -29,7 +30,8 @@ export default function ShiftHandover() {
   const { t } = useI18n();
   const [handovers, setHandovers] = useState<Handover[]>([]);
   const [loading, setLoading] = useState(true);
-  const [lineId, setLineId] = useState(1);
+  const [productionLines, setProductionLines] = useState<{id: number; name: string}[]>([]);
+  const [lineId, setLineId] = useState(0);
   const [generating, setGenerating] = useState(false);
   const [createMode, setCreateMode] = useState(false);
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -39,7 +41,20 @@ export default function ShiftHandover() {
     equipment_issues: '', material_issues: '', pending_actions: '',
   });
 
-  useEffect(() => { fetchHandovers(); }, [lineId]);
+  // Fetch production lines from API
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await adminApi.getFactory();
+        const factory = res.data ?? res;
+        const lines = factory?.production_lines ?? [];
+        setProductionLines(lines);
+        if (lines.length > 0) setLineId(lines[0].id);
+      } catch { /* ignore */ }
+    })();
+  }, []);
+
+  useEffect(() => { if (lineId) fetchHandovers(); }, [lineId]);
 
   async function fetchHandovers() {
     setLoading(true);
@@ -113,7 +128,8 @@ export default function ShiftHandover() {
       <div className="flex items-center gap-3">
         <label className="text-sm text-th-text-3">{t('common.line') || 'Line'}:</label>
         <select value={lineId} onChange={e => setLineId(parseInt(e.target.value))} className="px-3 py-1.5 rounded-lg border border-th-border bg-th-card text-th-text text-sm">
-          {[1, 2, 3, 4, 5].map(l => <option key={l} value={l}>Line {l}</option>)}
+          {productionLines.length === 0 && <option value={0}>{t('common.loading') || 'Loading...'}</option>}
+          {productionLines.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
         </select>
       </div>
 

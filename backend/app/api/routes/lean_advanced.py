@@ -164,6 +164,28 @@ async def log_tpm_maintenance(
     return {"id": record.id}
 
 
+@router.get("/tpm/overdue")
+async def get_overdue_equipment(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Return equipment where next PM date is past due."""
+    fid = require_factory(user)
+    items = await TPMService.get_overdue_equipment(db, fid)
+    return [
+        {
+            "id": eq.id,
+            "name": eq.name,
+            "location": eq.location,
+            "criticality": eq.criticality,
+            "next_planned_maintenance": eq.next_planned_maintenance.isoformat() if eq.next_planned_maintenance else None,
+            "maintenance_interval_days": eq.maintenance_interval_days,
+            "last_maintenance_date": eq.last_maintenance_date.isoformat() if eq.last_maintenance_date else None,
+        }
+        for eq in items
+    ]
+
+
 @router.get("/tpm/equipment/{equipment_id}/metrics")
 async def get_equipment_metrics(
     equipment_id: int,

@@ -37,7 +37,7 @@ from app.services.data_retention import (
 from app.api.routes import auth, production, oee, lean, ai, lean_advanced
 from app.api.routes import privacy, admin, manufacturing, qc, totp, groups, calendar, waste
 from app.api.routes import sqcdp, shift_handover, notifications, lsw, audit_schedule, reports
-from app.api.routes import ws, horizontal_deploy
+from app.api.routes import ws, horizontal_deploy, safety
 from app.api.routes.company_settings import (
     admin_router as company_admin_router,
     public_router as company_public_router,
@@ -150,6 +150,7 @@ app.include_router(audit_schedule.router, prefix="/api/v1")
 app.include_router(reports.router, prefix="/api/v1")
 app.include_router(ws.router)
 app.include_router(horizontal_deploy.router, prefix="/api/v1")
+app.include_router(safety.router, prefix="/api/v1")
 
 
 @app.get("/api/health")

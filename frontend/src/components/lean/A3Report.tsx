@@ -106,6 +106,10 @@ interface SavedA3 extends A3Data {
   id: number;
   created_at?: string;
   updated_at?: string;
+  mentor_name?: string | null;
+  mentor_date?: string | null;
+  mentor_feedback?: string | null;
+  mentor_status?: string | null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -312,7 +316,13 @@ export default function A3Report() {
     }
     setSaving(true);
     try {
-      const res = await advancedLeanApi.createA3(data);
+      const res = await advancedLeanApi.createA3({
+        ...data,
+        mentor_name: mentorReview.reviewerName || null,
+        mentor_date: mentorReview.reviewDate || null,
+        mentor_feedback: mentorReview.comments || null,
+        mentor_status: mentorReview.approvalStatus || null,
+      });
       const saved: SavedA3 = res.data;
       setActiveId(saved.id);
       flash("ok", t("problem-solving.saved"));
@@ -358,6 +368,12 @@ export default function A3Report() {
       results: report.results,
     });
     setActiveId(report.id);
+    setMentorReview({
+      reviewerName: report.mentor_name ?? "",
+      reviewDate: report.mentor_date ?? new Date().toISOString().slice(0, 10),
+      comments: report.mentor_feedback ?? "",
+      approvalStatus: (report.mentor_status as "draft" | "reviewed" | "approved") ?? "draft",
+    });
     setShowList(false);
   };
 
@@ -365,6 +381,12 @@ export default function A3Report() {
   const handleNew = () => {
     setData(emptyA3());
     setActiveId(null);
+    setMentorReview({
+      reviewerName: "",
+      reviewDate: new Date().toISOString().slice(0, 10),
+      comments: "",
+      approvalStatus: "draft",
+    });
   };
 
   /* ---- Fetch on mount ------------------------------------------- */

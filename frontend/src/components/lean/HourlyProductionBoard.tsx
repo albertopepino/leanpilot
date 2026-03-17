@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useI18n } from "@/stores/useI18n";
-import { advancedLeanApi, adminApi, manufacturingApi } from "@/lib/api";
+import { advancedLeanApi, adminApi, manufacturingApi, productionApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
 import {
@@ -71,6 +71,20 @@ const MISS_REASONS: MissReason[] = [
   "planned",
   "other",
 ];
+
+// Map miss reasons to DowntimeEvent categories for OEE loss waterfall
+const MISS_REASON_TO_DOWNTIME_CATEGORY: Record<string, string> = {
+  equipment: "unplanned",
+  material: "material",
+  quality: "quality",
+  personnel: "other",
+  changeover: "changeover",
+  breakdown: "maintenance",
+  speed_loss: "unplanned",
+  minor_stop: "unplanned",
+  planned: "planned",
+  other: "other",
+};
 
 const DEFAULT_SHIFT_HOURS = [
   "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
@@ -255,6 +269,28 @@ export default function HourlyProductionBoard() {
     });
   };
 
+  // --- Create DowntimeEvent from miss reason --------------------------------
+  const createDowntimeFromMiss = async (lineId: number, date: string, slot: HourlySlot) => {
+    if (!slot.reasonCode || slot.actual === null || slot.actual >= slot.target) return;
+    const category = MISS_REASON_TO_DOWNTIME_CATEGORY[slot.reasonCode] ?? "other";
+    const hourNum = parseInt(slot.hour.split(":")[0], 10);
+    const startTime = `${date}T${String(hourNum).padStart(2, "0")}:00:00`;
+    const endTime = `${date}T${String(hourNum + 1).padStart(2, "0")}:00:00`;
+    try {
+      await productionApi.createDowntime({
+        production_line_id: lineId,
+        start_time: startTime,
+        end_time: endTime,
+        duration_minutes: 60,
+        category,
+        reason: slot.reasonCode,
+        notes: slot.notes || `Hourly board miss: target ${slot.target}, actual ${slot.actual}`,
+      });
+    } catch {
+      // Non-blocking: hourly data is already saved; downtime is best-effort
+    }
+  };
+
   // --- Save single row -----------------------------------------------------
   const saveSlot = async (slot: HourlySlot) => {
     if (selectedLineId === null) return;
@@ -269,6 +305,8 @@ export default function HourlyProductionBoard() {
         notes: slot.notes,
         reasonCode: slot.reasonCode || null,
       });
+      // Also create a DowntimeEvent for OEE loss waterfall
+      await createDowntimeFromMiss(selectedLineId, selectedDate, slot);
       setSlots((prev) =>
         prev.map((s) => (s.hour === slot.hour ? { ...s, dirty: false } : s))
       );
@@ -298,6 +336,8 @@ export default function HourlyProductionBoard() {
           notes: slot.notes,
           reasonCode: slot.reasonCode || null,
         });
+        // Also create a DowntimeEvent for OEE loss waterfall
+        await createDowntimeFromMiss(selectedLineId, selectedDate, slot);
         setSlots((prev) =>
           prev.map((s) => (s.hour === slot.hour ? { ...s, dirty: false } : s))
         );
