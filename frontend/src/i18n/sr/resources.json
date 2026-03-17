@@ -41,5 +41,14 @@
   "stdISO": "ISO 56002 Upravljanje inovacijama",
   "stdISODesc": "Standardi za sisteme kontinuiranog poboljšanja",
   "stdIndustry4": "Industrija 4.0 + Lean",
-  "stdIndustry4Desc": "Digitalna Lean proizvodnja u četvrtoj industrijskoj revoluciji"
+  "stdIndustry4Desc": "Digitalna Lean proizvodnja u četvrtoj industrijskoj revoluciji",
+
+  "leanThinking": "Lean Thinking",
+  "leanThinkingDesc": "Kako eliminisati gubitke i stvoriti vrednost u vašoj organizaciji",
+  "toyotaWay": "The Toyota Way",
+  "toyotaWayDesc": "14 principa upravljanja iza najvećeg svetskog proizvođača",
+  "gembaKaizen": "Gemba Kaizen",
+  "gembaKaizenDesc": "Praktičan pristup strategiji kontinuiranog poboljšanja",
+  "leanStartup": "The Lean Startup",
+  "leanStartupDesc": "Kako savremeni preduzetnici koriste kontinuiranu inovaciju za stvaranje uspešnih poslova"
 }

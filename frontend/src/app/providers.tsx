@@ -7,6 +7,7 @@ import { useCurrency } from "@/stores/useCurrency";
 export default function Providers({ children }: { children: React.ReactNode }) {
   const initTheme = useTheme((s) => s.initTheme);
   const initLocale = useI18n((s) => s.initLocale);
+  const locale = useI18n((s) => s.locale);
   const initCurrency = useCurrency((s) => s.initCurrency);
 
   useEffect(() => {
@@ -21,6 +22,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       });
     }
   }, [initTheme, initLocale, initCurrency]);
+
+  // Sync <html lang> attribute with current locale (WCAG 3.1.1)
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   return <>{children}</>;
 }

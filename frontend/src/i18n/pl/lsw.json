@@ -1,0 +1,19 @@
+{
+  "title": "Praca Standardowa Lidera",
+  "subtitle": "Codzienne listy kontrolne według roli i śledzenie postępów",
+  "createTemplate": "Utwórz szablon",
+  "role": "Rola",
+  "operator": "Operator",
+  "supervisor": "Brygadzista",
+  "manager": "Kierownik",
+  "frequency": "Częstotliwość",
+  "daily": "Dziennie",
+  "weekly": "Tygodniowo",
+  "monthly": "Miesięcznie",
+  "tasks": "Zadania",
+  "addTask": "Dodaj zadanie",
+  "todayTasks": "Dzisiejsze zadania",
+  "completionHistory": "Historia realizacji",
+  "completion": "Realizacja",
+  "noTemplates": "Nie utworzono jeszcze szablonów"
+}

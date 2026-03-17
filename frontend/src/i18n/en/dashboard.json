@@ -252,5 +252,15 @@
   "productNamePlaceholder": "e.g. Crankshaft",
   "cancel": "Cancel",
   "creating": "Creating...",
-  "create": "Create"
+  "create": "Create",
+
+  "units": "units",
+  "totalTime": "Total Time",
+  "availabilityLoss": "Availability Loss",
+  "performanceLoss": "Performance Loss",
+  "qualityLoss": "Quality Loss",
+  "oeeWaterfallDesc": "How your total available time breaks down into OEE",
+
+  "weeklyHeatmap": "Weekly Production Heatmap",
+  "noData": "No data"
 }

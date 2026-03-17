@@ -1,0 +1,18 @@
+{
+  "title": "Harmonogram audytów",
+  "subtitle": "Planuj i śledź audyty 6S, TPM, QC, Gemba i Bezpieczeństwa",
+  "createSchedule": "Utwórz harmonogram",
+  "auditType": "Typ audytu",
+  "frequency": "Częstotliwość",
+  "nextDue": "Następny termin",
+  "lastCompleted": "Ostatnio ukończony",
+  "overdue": "Przeterminowany",
+  "markComplete": "Oznacz jako ukończony",
+  "daily": "Dziennie",
+  "weekly": "Tygodniowo",
+  "biweekly": "Co dwa tygodnie",
+  "monthly": "Miesięcznie",
+  "quarterly": "Kwartalnie",
+  "assignedTo": "Przypisano do",
+  "noSchedules": "Brak zaplanowanych audytów"
+}

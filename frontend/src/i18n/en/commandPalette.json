@@ -1,0 +1,17 @@
+{
+  "title": "Command Palette",
+  "placeholder": "Search pages, actions...",
+  "searchLabel": "Search commands",
+  "results": "Results",
+  "noResults": "No results found.",
+  "recent": "Recent",
+  "quickActions": "Quick Actions",
+  "navigation": "Navigation",
+  "hintNavigate": "navigate",
+  "hintSelect": "select",
+  "hintClose": "close",
+  "newKaizen": "New Kaizen Event",
+  "logProduction": "Log Production Data",
+  "reportIssue": "Report Issue (NCR)",
+  "startGemba": "Start Gemba Walk"
+}

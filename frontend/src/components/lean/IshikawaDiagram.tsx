@@ -4,6 +4,31 @@ import { useI18n } from "@/stores/useI18n";
 import { leanApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
+import {
+  Fish,
+  Users,
+  Settings,
+  Package,
+  ClipboardList,
+  Thermometer,
+  Leaf,
+  Target,
+  Plus,
+  Trash2,
+  X,
+  Save,
+  FilePlus,
+  History,
+  Pencil,
+  MessageSquareText,
+  Loader2,
+  ChevronDown,
+  CircleDot,
+  Eye,
+  ThumbsUp,
+  Star,
+  Trophy,
+} from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -17,6 +42,7 @@ interface SubCause {
 interface Cause {
   text: string;
   isRoot: boolean;
+  votes: number;
   subCauses: SubCause[];
 }
 
@@ -59,6 +85,15 @@ const LOWER_KEYS: CategoryKey[] = ["machine", "measurement", "environment"];
 
 const TOAST_DURATION_MS = 4000;
 
+const CATEGORY_ICON: Record<CategoryKey, React.ComponentType<{ className?: string; size?: string | number }>> = {
+  man: Users,
+  machine: Settings,
+  method: ClipboardList,
+  material: Package,
+  measurement: Thermometer,
+  environment: Leaf,
+};
+
 const CATEGORY_BADGE_CLASSES: Record<CategoryKey, string> = {
   man:         "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
   machine:     "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
@@ -68,43 +103,34 @@ const CATEGORY_BADGE_CLASSES: Record<CategoryKey, string> = {
   environment: "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20",
 };
 
-const CATEGORY_CARD_CLASSES: Record<CategoryKey, string> = {
-  man:         "bg-blue-50/80 border-blue-200/60 dark:bg-blue-500/5 dark:border-blue-500/15 hover:border-blue-300 dark:hover:border-blue-500/30",
-  machine:     "bg-purple-50/80 border-purple-200/60 dark:bg-purple-500/5 dark:border-purple-500/15 hover:border-purple-300 dark:hover:border-purple-500/30",
-  method:      "bg-teal-50/80 border-teal-200/60 dark:bg-teal-500/5 dark:border-teal-500/15 hover:border-teal-300 dark:hover:border-teal-500/30",
-  material:    "bg-amber-50/80 border-amber-200/60 dark:bg-amber-500/5 dark:border-amber-500/15 hover:border-amber-300 dark:hover:border-amber-500/30",
-  measurement: "bg-rose-50/80 border-rose-200/60 dark:bg-rose-500/5 dark:border-rose-500/15 hover:border-rose-300 dark:hover:border-rose-500/30",
-  environment: "bg-green-50/80 border-green-200/60 dark:bg-green-500/5 dark:border-green-500/15 hover:border-green-300 dark:hover:border-green-500/30",
-};
-
 /* ------------------------------------------------------------------ */
-/*  SVG Layout Constants — 1200 x 600 fishbone                        */
+/*  SVG Layout Constants — 1200 x 420 fishbone (compact)               */
 /* ------------------------------------------------------------------ */
 
 const SVG_W = 1200;
-const SVG_H = 600;
-const SPINE_Y = 300;               // horizontal center
+const SVG_H = 520;
+const SPINE_Y = 260;               // horizontal center
 const SPINE_X_START = 80;          // tail
 const SPINE_X_END = 950;           // where head begins
 const HEAD_X = 960;                // fish head box start
 const HEAD_W = 210;
-const HEAD_H = 80;
+const HEAD_H = 72;
 
 // Bone attachment points on spine — 3 evenly spaced
 const BONE_ATTACH_X = [250, 500, 750];
 
 // Bone geometry
-const BONE_TOP_Y = 60;             // top category labels Y
-const BONE_BOTTOM_Y = 540;         // bottom category labels Y
-const BONE_TOP_END_Y = 80;         // where top bones end (near label)
-const BONE_BOTTOM_END_Y = 520;     // where bottom bones end
+const BONE_TOP_Y = 50;             // top category labels Y
+const BONE_BOTTOM_Y = 470;         // bottom category labels Y
+const BONE_TOP_END_Y = 70;         // where top bones end (near label)
+const BONE_BOTTOM_END_Y = 450;     // where bottom bones end
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
 function emptyCause(): Cause {
-  return { text: "", isRoot: false, subCauses: [] };
+  return { text: "", isRoot: false, votes: 0, subCauses: [] };
 }
 
 function emptyCategories(): Record<CategoryKey, Cause[]> {
@@ -345,6 +371,15 @@ export default function IshikawaDiagram() {
     setHighlightedCategory((prev) => (prev === key ? null : key));
   }, []);
 
+  // --- vote on cause ---
+  const voteCause = useCallback((catKey: CategoryKey, idx: number, delta: number) => {
+    setCategories((prev) => {
+      const arr = [...prev[catKey]];
+      arr[idx] = { ...arr[idx], votes: Math.max(0, (arr[idx].votes || 0) + delta) };
+      return { ...prev, [catKey]: arr };
+    });
+  }, []);
+
   /* ---------------------------------------------------------------- */
   /*  Derived counts                                                   */
   /* ---------------------------------------------------------------- */
@@ -363,6 +398,25 @@ export default function IshikawaDiagram() {
     }, 0);
   }, [categories]);
 
+  // Top-voted causes across all categories (top 3 with votes > 0)
+  const topVotedCauses = useMemo(() => {
+    const all: { catKey: CategoryKey; causeIdx: number; text: string; votes: number; isRoot: boolean }[] = [];
+    for (const cat of CATEGORIES) {
+      const causes = categories[cat.key as CategoryKey] ?? [];
+      causes.forEach((c, i) => {
+        if (c.text.trim() && (c.votes || 0) > 0) {
+          all.push({ catKey: cat.key as CategoryKey, causeIdx: i, text: c.text, votes: c.votes || 0, isRoot: c.isRoot });
+        }
+      });
+    }
+    return all.sort((a, b) => b.votes - a.votes).slice(0, 3);
+  }, [categories]);
+
+  // Set of top-3 voted cause keys for highlighting in the form
+  const topVotedSet = useMemo(() => {
+    return new Set(topVotedCauses.map((c) => `${c.catKey}-${c.causeIdx}`));
+  }, [topVotedCauses]);
+
   /* ---------------------------------------------------------------- */
   /*  SVG Fishbone Bone Renderer                                       */
   /* ---------------------------------------------------------------- */
@@ -374,7 +428,6 @@ export default function IshikawaDiagram() {
       const dir = side === "upper" ? -1 : 1;
 
       // The bone goes from the spine diagonally to near the category label
-      // Angle: the bone slants backward (toward the tail)
       const endX = attachX - 50;
       const endY = side === "upper" ? BONE_TOP_END_Y : BONE_BOTTOM_END_Y;
 
@@ -392,10 +445,8 @@ export default function IshikawaDiagram() {
 
       // Sub-causes: small horizontal lines branching off the diagonal bone
       const causeElements = activeCauses.map((cause, i) => {
-        // Distribute causes evenly along the bone
         const totalSlots = activeCauses.length + 1;
         const frac = (i + 1) / totalSlots;
-        // Position along the bone line
         const cx = attachX + (endX - attachX) * frac;
         const cy = SPINE_Y + (endY - SPINE_Y) * frac;
 
@@ -414,7 +465,6 @@ export default function IshikawaDiagram() {
             const sFrac = arr.length === 1 ? 0.5 : (si + 1) / (arr.length + 1);
             const sx = cx + (bx - cx) * sFrac;
             const sy = by;
-            // Small vertical tick
             const tickLen = 35;
             const tickEndY = sy + dir * tickLen;
 
@@ -600,43 +650,47 @@ export default function IshikawaDiagram() {
   /* ---------------------------------------------------------------- */
 
   return (
-    <div className="space-y-6" data-print-area="true">
+    <div className="max-w-[1400px] mx-auto space-y-3" data-print-area="true">
       {/* === Toast === */}
       {toast && (
         <div
-          className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-xl shadow-lg shadow-black/10 text-sm font-medium text-white backdrop-blur-sm transition-all animate-slide-in ${
+          className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-5 py-3 rounded-xl shadow-sm text-sm font-medium text-white backdrop-blur-sm transition-all animate-slide-in ${
             toast.type === "success" ? "bg-emerald-500/90 border border-emerald-400/30" : "bg-red-500/90 border border-red-400/30"
           }`}
         >
-          <span className="mr-2">{toast.type === "success" ? "\u2713" : "\u2717"}</span>
+          {toast.type === "success" ? (
+            <CircleDot className="h-4 w-4" />
+          ) : (
+            <X className="h-4 w-4" />
+          )}
           {toast.message}
         </div>
       )}
 
       {/* === Top bar: Title + Actions === */}
-      <div className="bg-th-bg-2 backdrop-blur-sm p-5 rounded-2xl shadow-card border border-th-border transition-all">
-        <div className="flex flex-wrap items-center gap-4">
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-3 transition-all">
+        <div className="flex flex-wrap items-center gap-3">
           {/* Icon + title */}
           <div className="flex items-center gap-3 flex-1 min-w-[200px]">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-glow flex-shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" /></svg>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-sm flex-shrink-0">
+              <Fish className="h-4 w-4" />
             </div>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2.5 border rounded-xl bg-th-input text-th-text text-sm font-semibold border-th-border focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+              className="w-full px-3 py-1.5 border rounded-lg bg-th-input text-th-text text-sm font-semibold border-th-border focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
               placeholder={t("problem-solving.analysisTitle") || "Analysis title\u2026"}
             />
           </div>
 
           {/* Stats pills */}
           <div className="flex items-center gap-2">
-            <span className="text-xs px-2.5 py-1 rounded-full bg-th-bg-3 text-th-text-2 font-medium border border-th-border/50">
+            <span className="text-xs px-2.5 py-1 rounded-lg bg-th-bg-3 text-th-text-2 font-medium border border-th-border/50">
               {totalCauses} {t("problem-solving.cause") || "causes"}
             </span>
             {rootCauses > 0 && (
-              <span className="text-xs px-2.5 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 font-medium border border-red-500/20">
+              <span className="text-xs px-2.5 py-1 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 font-medium border border-red-500/20">
                 {rootCauses} RC
               </span>
             )}
@@ -696,16 +750,22 @@ export default function IshikawaDiagram() {
             <button
               onClick={save}
               disabled={saving}
-              className="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-5 py-2.5 rounded-xl hover:from-brand-600 hover:to-brand-700 hover:shadow-glow disabled:opacity-50 text-sm font-medium transition-all"
+              className="inline-flex items-center gap-1.5 bg-gradient-to-r from-brand-500 to-brand-600 text-white px-3 py-1.5 rounded-lg hover:from-brand-600 hover:to-brand-700 disabled:opacity-50 text-xs font-medium transition-all"
             >
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
               {saving
                 ? t("problem-solving.saving") || "Saving\u2026"
                 : t("problem-solving.saveIshikawa") || "Save"}
             </button>
             <button
               onClick={resetForm}
-              className="bg-th-bg-2 text-th-text-2 px-4 py-2.5 rounded-xl hover:bg-th-bg-3 border border-th-border text-sm font-medium transition-all"
+              className="inline-flex items-center gap-1.5 bg-th-bg-2 text-th-text-2 px-3 py-1.5 rounded-lg hover:bg-th-bg-3 border border-th-border text-xs font-medium transition-all"
             >
+              <FilePlus className="h-3.5 w-3.5" />
               {t("problem-solving.newAnalysis") || "New Analysis"}
             </button>
             <button
@@ -713,8 +773,9 @@ export default function IshikawaDiagram() {
                 setShowHistory((p) => !p);
                 if (!showHistory) loadHistory();
               }}
-              className="bg-th-bg-2 text-th-text-2 px-4 py-2.5 rounded-xl hover:bg-th-bg-3 border border-th-border text-sm font-medium transition-all"
+              className="inline-flex items-center gap-1.5 bg-th-bg-2 text-th-text-2 px-3 py-1.5 rounded-lg hover:bg-th-bg-3 border border-th-border text-xs font-medium transition-all"
             >
+              <History className="h-3.5 w-3.5" />
               {t("problem-solving.history") || "History"}
             </button>
           </div>
@@ -723,22 +784,22 @@ export default function IshikawaDiagram() {
 
       {/* === History Panel === */}
       {showHistory && (
-        <div className="bg-th-bg-2 backdrop-blur-sm rounded-2xl border border-th-border shadow-card overflow-hidden transition-all animate-slide-in">
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden transition-all animate-slide-in">
           <div className="p-4 border-b border-th-border flex items-center justify-between">
             <h3 className="font-bold text-th-text text-sm flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-brand-500" />
+              <History className="h-3.5 w-3.5 text-brand-500" />
               {t("problem-solving.savedAnalyses") || "Saved Analyses"}
             </h3>
             <button
               onClick={() => setShowHistory(false)}
               className="w-7 h-7 rounded-lg flex items-center justify-center text-th-text-3 hover:text-th-text hover:bg-th-bg-3 transition-all"
             >
-              &times;
+              <X className="h-4 w-4" />
             </button>
           </div>
           {loadingList ? (
             <div className="p-6 flex items-center justify-center gap-2 text-th-text-3 text-sm">
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+              <Loader2 className="h-4 w-4 animate-spin" />
               {t("problem-solving.loading") || "Loading\u2026"}
             </div>
           ) : savedAnalyses.length === 0 ? (
@@ -746,7 +807,7 @@ export default function IshikawaDiagram() {
               {t("problem-solving.noAnalyses") || "No saved analyses yet."}
             </p>
           ) : (
-            <ul className="divide-y divide-gray-100 dark:divide-white/5 max-h-64 overflow-y-auto">
+            <ul className="divide-y divide-th-border max-h-64 overflow-y-auto">
               {savedAnalyses.map((a) => (
                 <li key={a.id} className="flex items-center justify-between px-4 py-3 hover:bg-th-bg-3 transition-all">
                   <button
@@ -765,10 +826,10 @@ export default function IshikawaDiagram() {
                       e.stopPropagation();
                       deleteAnalysis(a.id);
                     }}
-                    className="ml-2 w-7 h-7 rounded-lg flex items-center justify-center text-th-text-3 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 text-xs transition-all"
+                    className="ml-2 w-7 h-7 rounded-lg flex items-center justify-center text-th-text-3 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
                     title={t("problem-solving.delete") || "Delete"}
                   >
-                    &times;
+                    <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </li>
               ))}
@@ -778,10 +839,11 @@ export default function IshikawaDiagram() {
       )}
 
       {/* === SVG Fishbone Diagram === */}
-      <div className="bg-th-bg-2 backdrop-blur-sm p-6 rounded-2xl shadow-card border border-th-border transition-all">
-        <div className="flex items-center justify-between mb-4">
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-3 transition-all">
+        <div className="flex items-center justify-between mb-2">
           <div>
-            <h3 className="text-lg font-bold text-th-text">
+            <h3 className="text-sm font-bold text-th-text flex items-center gap-1.5">
+              <Fish className="h-4 w-4 text-th-text-2" />
               {t("problem-solving.ishikawaTitle") || "Ishikawa Diagram"}
             </h3>
             <p className="text-xs text-th-text-3 mt-0.5">
@@ -792,8 +854,9 @@ export default function IshikawaDiagram() {
             {highlightedCategory && (
               <button
                 onClick={() => setHighlightedCategory(null)}
-                className="text-xs text-th-text-3 hover:text-th-text px-3 py-1.5 rounded-lg border border-th-border hover:bg-th-bg-3 transition-all"
+                className="inline-flex items-center gap-1.5 text-xs text-th-text-3 hover:text-th-text px-3 py-1.5 rounded-lg border border-th-border hover:bg-th-bg-3 transition-all"
               >
+                <Eye className="h-3.5 w-3.5" />
                 {t("problem-solving.showAll") || "Show all branches"}
               </button>
             )}
@@ -814,17 +877,16 @@ export default function IshikawaDiagram() {
           </div>
         </div>
 
-        <div className="w-full overflow-x-auto rounded-xl bg-th-bg-3 border border-th-border p-3">
+        <div className="w-full overflow-x-auto rounded-lg bg-th-bg-3 border border-th-border p-1.5">
           <svg
             viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-            className="w-full h-auto min-w-[800px]"
+            className="w-full h-auto min-w-[700px] max-h-[480px]"
             xmlns="http://www.w3.org/2000/svg"
             role="img"
             aria-label={t("problem-solving.ishikawaTitle") || "Ishikawa Diagram"}
           >
-            {/* Defs — gradients, filters, markers */}
+            {/* Defs */}
             <defs>
-              {/* Spine arrow marker */}
               <marker
                 id="spine-arrow"
                 markerWidth="14" markerHeight="12"
@@ -835,25 +897,21 @@ export default function IshikawaDiagram() {
                 <path d="M 0 1 L 12 6 L 0 11 Z" fill="#475569" />
               </marker>
 
-              {/* Effect box gradient */}
               <linearGradient id="effectGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#dc2626" />
                 <stop offset="100%" stopColor="#991b1b" />
               </linearGradient>
 
-              {/* Spine gradient */}
               <linearGradient id="spineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor="#94a3b8" stopOpacity="0.3" />
                 <stop offset="30%" stopColor="#64748b" stopOpacity="0.8" />
                 <stop offset="100%" stopColor="#475569" stopOpacity="1" />
               </linearGradient>
 
-              {/* Shadow for fish head */}
               <filter id="headShadow" x="-15%" y="-15%" width="140%" height="150%">
                 <feDropShadow dx="2" dy="3" stdDeviation="4" floodColor="#00000040" />
               </filter>
 
-              {/* Glow filter for highlighted bones */}
               <filter id="boneGlow">
                 <feGaussianBlur stdDeviation="2" result="blur" />
                 <feMerge>
@@ -862,7 +920,6 @@ export default function IshikawaDiagram() {
                 </feMerge>
               </filter>
 
-              {/* Subtle grid pattern for background */}
               <pattern id="gridPattern" width="40" height="40" patternUnits="userSpaceOnUse">
                 <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.3" opacity="0.06" />
               </pattern>
@@ -893,7 +950,7 @@ export default function IshikawaDiagram() {
               markerEnd="url(#spine-arrow)"
             />
 
-            {/* Spine junction dots at bone attachment points */}
+            {/* Spine junction dots */}
             {BONE_ATTACH_X.map((x, i) => (
               <circle key={`spine-dot-${i}`} cx={x} cy={SPINE_Y} r={4} fill="#64748b" opacity={0.5} />
             ))}
@@ -906,7 +963,6 @@ export default function IshikawaDiagram() {
 
             {/* === Fish Head — Effect/Problem Box === */}
             <g>
-              {/* Fish head shape: a rounded rectangle with a pointed left side */}
               <path
                 d={`
                   M ${HEAD_X} ${SPINE_Y - HEAD_H / 2 + 10}
@@ -1024,59 +1080,58 @@ export default function IshikawaDiagram() {
       </div>
 
       {/* === Cause Input Form === */}
-      <div className="bg-th-bg-2 backdrop-blur-sm p-6 rounded-2xl shadow-card border border-th-border transition-all">
-        <div className="flex items-center gap-2 mb-5">
-          <div className="w-6 h-6 rounded-lg bg-brand-500/10 dark:bg-brand-500/20 flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-brand-600 dark:text-brand-400" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-3 transition-all">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-5 h-5 rounded-md bg-brand-500/10 dark:bg-brand-500/20 flex items-center justify-center">
+            <Pencil className="h-3 w-3 text-brand-600 dark:text-brand-400" />
           </div>
-          <h3 className="text-sm font-bold text-th-text uppercase tracking-wider">
+          <h3 className="text-xs font-bold text-th-text uppercase tracking-wider">
             {t("problem-solving.editCauses") || "Edit Causes"}
           </h3>
         </div>
 
         {/* Effect / Problem input */}
-        <div className="mb-6">
-          <label className="block text-xs font-semibold text-th-text-2 uppercase tracking-wider mb-1.5">
+        <div className="mb-3">
+          <label className="flex items-center gap-1.5 text-[10px] font-semibold text-th-text-2 uppercase tracking-wider mb-1">
+            <Target className="h-3 w-3" />
             {t("problem-solving.effectProblem") || "Effect / Problem Statement"}
           </label>
           <input
             type="text"
             value={effect}
             onChange={(e) => setEffect(e.target.value)}
-            className="w-full px-4 py-2.5 border rounded-xl bg-th-input text-th-text text-sm border-th-border focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+            className="w-full px-3 py-1.5 border rounded-lg bg-th-input text-th-text text-xs border-th-border focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
             placeholder={t("problem-solving.effectPlaceholder") || "Describe the effect or problem\u2026"}
           />
         </div>
 
         {/* 6M Categories grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
           {CATEGORIES.map((cat) => {
             const catKey = cat.key as CategoryKey;
             const label = t(`problem-solving.${cat.labelKey}`) || cat.key;
             const isActive = highlightedCategory === null || highlightedCategory === cat.key;
             const causesForCat = categories[catKey] ?? [];
             const filledCount = causesForCat.filter((c) => c.text.trim()).length;
+            const CatIcon = CATEGORY_ICON[catKey];
 
             return (
               <div
                 key={cat.key}
-                className={`p-4 rounded-xl border transition-all duration-300 ${CATEGORY_CARD_CLASSES[catKey]} ${
+                className={`p-2.5 rounded-lg border border-th-border bg-th-bg-2 shadow-sm transition-all duration-300 ${
                   isActive ? "opacity-100" : "opacity-40"
                 }`}
               >
                 {/* Category header */}
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-2">
                   <button
                     className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-xs font-bold border transition-all ${CATEGORY_BADGE_CLASSES[catKey]}`}
                     onClick={() => toggleHighlight(cat.key)}
                   >
-                    <span
-                      className="inline-block w-2.5 h-2.5 rounded-full"
-                      style={{ backgroundColor: cat.stroke }}
-                    />
+                    <CatIcon className="h-3.5 w-3.5" />
                     {label}
                   </button>
-                  <span className="text-[10px] text-th-text-3 font-medium bg-th-bg-3 px-1.5 py-0.5 rounded">
+                  <span className="text-[10px] text-th-text-3 font-medium bg-th-bg-3 px-1.5 py-0.5 rounded-lg">
                     {filledCount}
                   </span>
                 </div>
@@ -1085,16 +1140,42 @@ export default function IshikawaDiagram() {
                 {causesForCat.map((cause, idx) => (
                   <div key={idx} className="mb-2">
                     {/* Main cause row */}
-                    <div className="flex items-center gap-1">
+                    <div className={`flex items-center gap-0.5 ${topVotedSet.has(`${catKey}-${idx}`) ? "ring-1 ring-amber-400/50 rounded-lg p-0.5 bg-amber-500/5" : ""}`}>
+                      {topVotedSet.has(`${catKey}-${idx}`) && (
+                        <Star className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                      )}
                       <input
                         type="text"
                         value={cause.text}
                         onChange={(e) => updateCauseText(catKey, idx, e.target.value)}
-                        className="flex-1 px-2.5 py-1.5 border rounded-lg text-sm bg-th-input text-th-text border-th-border focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all"
+                        className="flex-1 px-2 py-1 border rounded-md text-xs bg-th-input text-th-text border-th-border focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all"
                         placeholder={t("problem-solving.causePlaceholder") || `Cause\u2026`}
                       />
+                      {/* Vote buttons */}
+                      <div className="flex items-center gap-0 shrink-0">
+                        <button
+                          onClick={() => voteCause(catKey, idx, -1)}
+                          disabled={(cause.votes || 0) <= 0}
+                          className="text-th-text-3 hover:text-red-500 disabled:opacity-30 disabled:cursor-not-allowed p-0.5 rounded transition-colors"
+                          title={t("problem-solving.voteDown") || "Remove vote"}
+                          aria-label="Remove vote"
+                        >
+                          <span className="text-xs font-bold leading-none">-</span>
+                        </button>
+                        <span className={`text-[10px] font-bold min-w-[18px] text-center tabular-nums ${(cause.votes || 0) > 0 ? "text-brand-600 dark:text-brand-400" : "text-th-text-3"}`}>
+                          {cause.votes || 0}
+                        </span>
+                        <button
+                          onClick={() => voteCause(catKey, idx, 1)}
+                          className="text-th-text-3 hover:text-brand-600 p-0.5 rounded transition-colors"
+                          title={t("problem-solving.voteUp") || "Add vote"}
+                          aria-label="Add vote"
+                        >
+                          <span className="text-xs font-bold leading-none">+</span>
+                        </button>
+                      </div>
                       <label
-                        className={`flex items-center gap-0.5 text-[10px] cursor-pointer whitespace-nowrap px-1.5 py-1 rounded transition-colors ${
+                        className={`flex items-center gap-0.5 text-[10px] cursor-pointer whitespace-nowrap px-1.5 py-1 rounded-lg transition-colors ${
                           cause.isRoot ? "text-red-500 bg-red-500/10" : "text-th-text-3 hover:text-red-500"
                         }`}
                         title={t("problem-solving.markRoot") || "Mark as root cause"}
@@ -1109,19 +1190,19 @@ export default function IshikawaDiagram() {
                       </label>
                       <button
                         onClick={() => addSubCause(catKey, idx)}
-                        className="text-th-text-3 hover:text-th-text text-xs px-1 transition-colors"
+                        className="text-th-text-3 hover:text-th-text p-1 rounded-lg transition-colors"
                         title={t("problem-solving.addSubCause") || "Add sub-cause"}
                       >
-                        +&darr;
+                        <ChevronDown className="h-3.5 w-3.5" />
                       </button>
                       {causesForCat.length > 1 && (
                         <button
                           onClick={() => removeCause(catKey, idx)}
-                          className="text-th-text-3 hover:text-red-500 text-xs px-1 transition-colors"
+                          className="text-th-text-3 hover:text-red-500 p-1 rounded-lg transition-colors"
                           title={t("problem-solving.removeCause") || "Remove"}
                           aria-label={`Remove cause ${idx + 1}`}
                         >
-                          &times;
+                          <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       )}
                     </div>
@@ -1140,7 +1221,7 @@ export default function IshikawaDiagram() {
                               className="flex-1 px-2 py-1 border rounded-lg text-xs bg-th-input text-th-text border-th-border focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 outline-none transition-all"
                               placeholder={t("problem-solving.subCausePlaceholder") || "Sub-cause\u2026"}
                             />
-                            <label className={`flex items-center gap-0.5 text-[9px] cursor-pointer whitespace-nowrap px-1 py-0.5 rounded transition-colors ${
+                            <label className={`flex items-center gap-0.5 text-[9px] cursor-pointer whitespace-nowrap px-1 py-0.5 rounded-lg transition-colors ${
                               sub.isRoot ? "text-red-500 bg-red-500/10" : "text-th-text-3 hover:text-red-500"
                             }`}>
                               <input
@@ -1153,10 +1234,10 @@ export default function IshikawaDiagram() {
                             </label>
                             <button
                               onClick={() => removeSubCause(catKey, idx, si)}
-                              className="text-th-text-3 hover:text-red-500 text-[10px] px-0.5 transition-colors"
+                              className="text-th-text-3 hover:text-red-500 p-0.5 rounded-lg transition-colors"
                               aria-label={`Remove sub-cause ${si + 1}`}
                             >
-                              &times;
+                              <Trash2 className="h-3 w-3" />
                             </button>
                           </div>
                         ))}
@@ -1167,9 +1248,9 @@ export default function IshikawaDiagram() {
 
                 <button
                   onClick={() => addCause(catKey)}
-                  className="text-xs text-th-text-3 hover:text-th-text mt-2 flex items-center gap-1 transition-colors"
+                  className="text-xs text-th-text-3 hover:text-th-text mt-2 flex items-center gap-1.5 transition-colors"
                 >
-                  <span className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px]">+</span>
+                  <Plus className="h-3.5 w-3.5" />
                   {t("problem-solving.addCause") || "Add cause"}
                 </button>
               </div>
@@ -1178,11 +1259,59 @@ export default function IshikawaDiagram() {
         </div>
       </div>
 
+      {/* === Top Voted Causes Summary === */}
+      {topVotedCauses.length > 0 && (
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 shadow-sm p-4 transition-all">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-6 h-6 rounded-lg bg-amber-500/15 flex items-center justify-center">
+              <Trophy className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+            </div>
+            <h3 className="text-xs font-bold text-th-text uppercase tracking-wider">
+              {t("problem-solving.topCauses") || "Top Voted Causes"}
+            </h3>
+          </div>
+          <div className="space-y-2">
+            {topVotedCauses.map((cause, rank) => {
+              const catDef = getCatDef(cause.catKey);
+              const CatIcon = CATEGORY_ICON[cause.catKey];
+              const medalColors = ["text-amber-500", "text-gray-400", "text-orange-600"];
+              return (
+                <div
+                  key={`${cause.catKey}-${cause.causeIdx}`}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-th-bg-2 border border-th-border"
+                >
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Star className={`h-4 w-4 ${medalColors[rank] || "text-th-text-3"}`} />
+                    <span className="text-sm font-black text-th-text tabular-nums">#{rank + 1}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-th-text truncate">{cause.text}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded border ${CATEGORY_BADGE_CLASSES[cause.catKey]}`}>
+                        <CatIcon className="h-3 w-3" />
+                        {t(`problem-solving.${catDef.labelKey}`) || catDef.key}
+                      </span>
+                      {cause.isRoot && (
+                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">RC</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <ThumbsUp className="h-3.5 w-3.5 text-brand-600 dark:text-brand-400" />
+                    <span className="text-sm font-bold text-brand-600 dark:text-brand-400 tabular-nums">{cause.votes}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* === Notes / Conclusion === */}
-      <div className="bg-th-bg-2 backdrop-blur-sm p-6 rounded-2xl shadow-card border border-th-border transition-all">
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6 transition-all">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-6 h-6 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clipRule="evenodd" /></svg>
+            <MessageSquareText className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
           </div>
           <h3 className="text-xs font-bold text-th-text uppercase tracking-wider">
             {t("problem-solving.conclusionNotes") || "Conclusion / Notes"}
@@ -1192,7 +1321,7 @@ export default function IshikawaDiagram() {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={4}
-          className="w-full px-4 py-3 text-sm border rounded-xl bg-th-input text-th-text border-th-border resize-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all"
+          className="w-full px-4 py-3 text-sm border rounded-lg bg-th-input text-th-text border-th-border resize-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all"
           placeholder={t("problem-solving.notesPlaceholder") || "Summary of findings, recommended next steps\u2026"}
         />
       </div>

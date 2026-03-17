@@ -4,6 +4,27 @@ import { useI18n } from "@/stores/useI18n";
 import { leanApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
+import {
+  ClipboardList,
+  Star,
+  Target,
+  TrendingUp,
+  CheckCircle,
+  AlertTriangle,
+  BarChart3,
+  Award,
+  Sparkles,
+  Eye,
+  FileText,
+  Lightbulb,
+  Search,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Check,
+  RotateCcw,
+} from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type NavId =
@@ -28,7 +49,7 @@ interface CategoryDef {
   id: string;
   titleKey: string;
   descKey: string;
-  icon: string;
+  icon: React.ReactNode;
   color: string;
   colorDark: string;
   questions: QuestionDef[];
@@ -44,6 +65,16 @@ interface AssessmentResult {
 }
 
 type WizardPhase = "loading" | "results" | "wizard";
+
+// ─── Category Icon Map (for results rendering) ──────────────────────────────
+const CATEGORY_ICON_MAP: Record<string, React.ReactNode> = {
+  workplace: <Sparkles className="w-4 h-4" />,
+  visual: <BarChart3 className="w-4 h-4" />,
+  standard: <FileText className="w-4 h-4" />,
+  improvement: <Lightbulb className="w-4 h-4" />,
+  problem: <Search className="w-4 h-4" />,
+  tpmEquip: <Settings className="w-4 h-4" />,
+};
 
 // ─── Maturity Level Helpers ──────────────────────────────────────────────────
 const MATURITY_NAMES: Record<number, { nameKey: string; color: string; bg: string; border: string }> = {
@@ -66,7 +97,7 @@ const CATEGORIES: CategoryDef[] = [
     id: "workplace",
     titleKey: "catWorkplace",
     descKey: "catWorkplaceDesc",
-    icon: "\u2728",
+    icon: <Sparkles className="w-5 h-5" />,
     color: "text-amber-600",
     colorDark: "dark:text-amber-400",
     questions: [
@@ -107,7 +138,7 @@ const CATEGORIES: CategoryDef[] = [
     id: "visual",
     titleKey: "catVisual",
     descKey: "catVisualDesc",
-    icon: "\uD83D\uDCCA",
+    icon: <BarChart3 className="w-5 h-5" />,
     color: "text-blue-600",
     colorDark: "dark:text-blue-400",
     questions: [
@@ -149,7 +180,7 @@ const CATEGORIES: CategoryDef[] = [
     id: "standard",
     titleKey: "catStandard",
     descKey: "catStandardDesc",
-    icon: "\uD83D\uDCCB",
+    icon: <FileText className="w-5 h-5" />,
     color: "text-violet-600",
     colorDark: "dark:text-violet-400",
     questions: [
@@ -190,7 +221,7 @@ const CATEGORIES: CategoryDef[] = [
     id: "improvement",
     titleKey: "catImprovement",
     descKey: "catImprovementDesc",
-    icon: "\uD83D\uDCA1",
+    icon: <Lightbulb className="w-5 h-5" />,
     color: "text-emerald-600",
     colorDark: "dark:text-emerald-400",
     questions: [
@@ -232,7 +263,7 @@ const CATEGORIES: CategoryDef[] = [
     id: "problem",
     titleKey: "catProblem",
     descKey: "catProblemDesc",
-    icon: "\uD83D\uDD0D",
+    icon: <Search className="w-5 h-5" />,
     color: "text-rose-600",
     colorDark: "dark:text-rose-400",
     questions: [
@@ -275,7 +306,7 @@ const CATEGORIES: CategoryDef[] = [
     id: "tpmEquip",
     titleKey: "catTPM",
     descKey: "catTPMDesc",
-    icon: "\u2699\uFE0F",
+    icon: <Settings className="w-5 h-5" />,
     color: "text-cyan-600",
     colorDark: "dark:text-cyan-400",
     questions: [
@@ -555,7 +586,7 @@ export default function LeanAssessment() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <Loader2 className="w-8 h-8 text-th-accent animate-spin" />
           <span className="text-sm text-th-text-3">{t("assessment.loading")}</span>
         </div>
       </div>
@@ -566,7 +597,7 @@ export default function LeanAssessment() {
   if (phase === "results" && result) {
     const overall = MATURITY_NAMES[result.overallLevel] || MATURITY_NAMES[1];
     return (
-      <div className="max-w-4xl mx-auto space-y-6 p-4 sm:p-6" data-print-area="true">
+      <div className="max-w-[1400px] mx-auto space-y-6 p-4 sm:p-6" data-print-area="true">
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="flex justify-end">
@@ -609,19 +640,23 @@ export default function LeanAssessment() {
               })}
             />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-th-text">
-            {t("assessment.resultsTitle")}
-          </h1>
+          <div className="flex items-center justify-center gap-2">
+            <ClipboardList className="w-6 h-6 text-th-accent" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-th-text">
+              {t("assessment.resultsTitle")}
+            </h1>
+          </div>
           <p className="text-sm text-th-text-3">
             {t("assessment.completedOn", { date: new Date(result.completedAt).toLocaleDateString() })}
           </p>
         </div>
 
         {/* Overall Score Card */}
-        <div className={`rounded-2xl p-6 sm:p-8 border-2 ${overall.bg} ${overall.border}`}>
+        <div className={`rounded-xl border ${overall.border} ${overall.bg} p-6 sm:p-8 shadow-sm`}>
           <div className="flex flex-col sm:flex-row items-center gap-6">
-            <div className="flex-shrink-0 w-28 h-28 rounded-full border-4 border-current flex items-center justify-center ${overall.color}">
+            <div className={`flex-shrink-0 w-28 h-28 rounded-full border-4 ${overall.border} flex items-center justify-center`}>
               <div className="text-center">
+                <Award className={`w-6 h-6 mx-auto mb-1 ${overall.color}`} />
                 <div className={`text-3xl font-bold ${overall.color}`}>
                   {result.overallScore.toFixed(1)}
                 </div>
@@ -642,10 +677,13 @@ export default function LeanAssessment() {
         {/* Category Scores + Radar */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Score bars */}
-          <div className="bg-th-bg-2 rounded-2xl border border-th-border p-5 shadow-card">
-            <h2 className="text-lg font-semibold text-th-text mb-4">
-              {t("assessment.categoryScores")}
-            </h2>
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Star className="w-4 h-4 text-th-accent" />
+              <h2 className="text-lg font-semibold text-th-text">
+                {t("assessment.categoryScores")}
+              </h2>
+            </div>
             <div className="space-y-4">
               {(result.categoryScores || []).map((cs) => {
                 const cat = CATEGORIES.find((c) => c.id === cs.id);
@@ -656,7 +694,7 @@ export default function LeanAssessment() {
                   <div key={cs.id}>
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-sm font-medium text-th-text flex items-center gap-1.5">
-                        <span>{cat.icon}</span>
+                        <span className={`${cat.color} ${cat.colorDark}`}>{CATEGORY_ICON_MAP[cs.id] || <Target className="w-4 h-4" />}</span>
                         {t(`assessment.${cs.titleKey}`)}
                       </span>
                       <span className={`text-xs font-semibold ${lvl.color}`}>
@@ -679,7 +717,7 @@ export default function LeanAssessment() {
           </div>
 
           {/* Radar chart */}
-          <div className="bg-th-bg-2 rounded-2xl border border-th-border p-5 shadow-card flex items-center justify-center">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5 flex items-center justify-center">
             <RadarChart
               scores={(result.categoryScores || []).map((cs) => cs.score)}
               labels={(result.categoryScores || []).map((cs) => {
@@ -696,10 +734,13 @@ export default function LeanAssessment() {
         </div>
 
         {/* Prioritized Recommendations */}
-        <div className="bg-th-bg-2 rounded-2xl border border-th-border p-5 shadow-card">
-          <h2 className="text-lg font-semibold text-th-text mb-4">
-            {t("assessment.recommendations")}
-          </h2>
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="w-4 h-4 text-th-accent" />
+            <h2 className="text-lg font-semibold text-th-text">
+              {t("assessment.recommendations")}
+            </h2>
+          </div>
           <p className="text-sm text-th-text-3 mb-4">
             {t("assessment.recommendationsDesc")}
           </p>
@@ -717,8 +758,12 @@ export default function LeanAssessment() {
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="text-xl flex-shrink-0 mt-0.5">
-                      {isPriority ? "\uD83D\uDEA8" : rec.icon}
+                    <div className="flex-shrink-0 mt-0.5">
+                      {isPriority ? (
+                        <AlertTriangle className="w-5 h-5 text-red-500 dark:text-red-400" />
+                      ) : (
+                        <span className={`${rec.color} ${rec.colorDark}`}>{rec.icon}</span>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -756,8 +801,9 @@ export default function LeanAssessment() {
         <div className="text-center pt-2 pb-4">
           <button
             onClick={handleRetake}
-            className="px-6 py-2.5 rounded-xl text-sm font-semibold border border-th-border text-th-text-2 bg-th-bg-2 hover:bg-th-bg-3 transition"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold border border-th-border text-th-text-2 bg-th-bg-2 hover:bg-th-bg-3 transition"
           >
+            <RotateCcw className="w-4 h-4" />
             {t("assessment.retake")}
           </button>
         </div>
@@ -767,19 +813,22 @@ export default function LeanAssessment() {
 
   // ── Wizard view ──────────────────────────────────────────────────────────
   return (
-    <div className="max-w-3xl mx-auto p-4 sm:p-6 space-y-5">
+    <div className="max-w-[1400px] mx-auto p-4 sm:p-6 space-y-6">
       {/* Title */}
       <div className="text-center space-y-1">
-        <h1 className="text-2xl font-bold text-th-text">
-          {t("assessment.title")}
-        </h1>
+        <div className="flex items-center justify-center gap-2">
+          <ClipboardList className="w-6 h-6 text-th-accent" />
+          <h1 className="text-2xl font-bold text-th-text">
+            {t("assessment.title")}
+          </h1>
+        </div>
         <p className="text-sm text-th-text-3 max-w-lg mx-auto">
           {t("assessment.subtitle")}
         </p>
       </div>
 
       {/* Progress bar */}
-      <div className="bg-th-bg-2 rounded-2xl border border-th-border p-4 shadow-card">
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-4">
         {/* Step indicators */}
         <div className="flex items-center justify-between mb-3">
           {CATEGORIES.map((cat, idx) => {
@@ -805,7 +854,7 @@ export default function LeanAssessment() {
                         : "bg-th-bg-3 text-th-text-3"
                   }`}
                 >
-                  {isDone ? "\u2713" : cat.icon}
+                  {isDone ? <Check className="w-4 h-4" /> : cat.icon}
                 </div>
                 <span className={`text-[10px] leading-tight text-center hidden sm:block ${
                   isActive ? "text-indigo-600 dark:text-indigo-400 font-semibold" : "text-th-text-3"
@@ -833,7 +882,7 @@ export default function LeanAssessment() {
 
       {/* Section header */}
       <div className="flex items-center gap-3">
-        <span className={`text-2xl ${currentCategory.color} ${currentCategory.colorDark}`}>
+        <span className={`${currentCategory.color} ${currentCategory.colorDark}`}>
           {currentCategory.icon}
         </span>
         <div>
@@ -854,7 +903,7 @@ export default function LeanAssessment() {
         {currentCategory.questions.map((q, qi) => {
           const selected = answers[q.id];
           return (
-            <div key={q.id} className="bg-th-bg-2 rounded-2xl border border-th-border p-5 shadow-card">
+            <div key={q.id} className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5">
               <div className="flex items-start gap-3 mb-4">
                 <span className="flex-shrink-0 w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center">
                   {currentStep * 3 + qi + 1}
@@ -871,7 +920,7 @@ export default function LeanAssessment() {
                     <button
                       key={opt.level}
                       onClick={() => handleAnswer(q.id, opt.level)}
-                      className={`w-full text-left rounded-xl p-3.5 border-2 transition-all ${
+                      className={`w-full text-left rounded-lg p-3.5 border-2 transition-all ${
                         isSelected
                           ? "border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/20 shadow-sm"
                           : "border-th-border bg-th-bg-2 hover:border-indigo-200 dark:hover:border-indigo-700 hover:bg-th-bg-3"
@@ -884,7 +933,7 @@ export default function LeanAssessment() {
                             ? "border-indigo-500 bg-indigo-500 text-white"
                             : "border-th-border text-th-text-3"
                         }`}>
-                          {opt.level}
+                          {isSelected ? <Check className="w-3 h-3" /> : opt.level}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className={`text-sm font-medium ${
@@ -908,7 +957,8 @@ export default function LeanAssessment() {
 
       {/* Error message */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-3 text-sm text-red-700 dark:text-red-400">
+        <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-3 text-sm text-red-700 dark:text-red-400 flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
           {error}
         </div>
       )}
@@ -918,12 +968,13 @@ export default function LeanAssessment() {
         <button
           onClick={goPrev}
           disabled={currentStep === 0}
-          className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition ${
+          className={`inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold transition ${
             currentStep === 0
               ? "opacity-30 cursor-not-allowed text-th-text-3"
               : "text-th-text-2 bg-th-bg-2 border border-th-border hover:bg-th-bg-3"
           }`}
         >
+          <ChevronLeft className="w-4 h-4" />
           {t("assessment.prevSection")}
         </button>
 
@@ -931,31 +982,35 @@ export default function LeanAssessment() {
           <button
             onClick={goNext}
             disabled={!sectionComplete}
-            className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition ${
+            className={`inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold transition ${
               sectionComplete
                 ? "bg-indigo-500 text-white hover:bg-indigo-600 shadow-sm"
                 : "opacity-40 cursor-not-allowed bg-indigo-500/50 text-white/70"
             }`}
           >
             {t("assessment.nextSection")}
+            <ChevronRight className="w-4 h-4" />
           </button>
         ) : (
           <button
             onClick={handleSubmit}
             disabled={!allAnswered || saving}
-            className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition ${
+            className={`inline-flex items-center gap-1.5 px-6 py-2.5 rounded-lg text-sm font-semibold transition ${
               allAnswered && !saving
                 ? "bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm"
                 : "opacity-40 cursor-not-allowed bg-emerald-500/50 text-white/70"
             }`}
           >
             {saving ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
                 {t("assessment.saving")}
-              </span>
+              </>
             ) : (
-              t("assessment.seeResults")
+              <>
+                <CheckCircle className="w-4 h-4" />
+                {t("assessment.seeResults")}
+              </>
             )}
           </button>
         )}

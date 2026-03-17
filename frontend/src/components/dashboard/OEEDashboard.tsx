@@ -87,27 +87,17 @@ const COLOR = {
 } as const;
 
 /* ------------------------------------------------------------------ */
-/*  Demo / fallback data                                               */
+/*  Empty defaults                                                     */
 /* ------------------------------------------------------------------ */
 
-const DEMO_SUMMARY: OEESummary = {
-  avg_oee: 68.5,
-  avg_availability: 84.2,
-  avg_performance: 87.1,
-  avg_quality: 93.4,
-  total_downtime_min: 2840,
-  record_count: 28,
+const EMPTY_SUMMARY: OEESummary = {
+  avg_oee: 0,
+  avg_availability: 0,
+  avg_performance: 0,
+  avg_quality: 0,
+  total_downtime_min: 0,
+  record_count: 0,
 };
-
-const DEMO_TREND: OEETrendPoint[] = [
-  { date: "2026-03-08", oee: 72, availability: 88, performance: 85, quality: 96 },
-  { date: "2026-03-09", oee: 68, availability: 82, performance: 87, quality: 95 },
-  { date: "2026-03-10", oee: 75, availability: 90, performance: 86, quality: 97 },
-  { date: "2026-03-11", oee: 71, availability: 85, performance: 88, quality: 95 },
-  { date: "2026-03-12", oee: 64, availability: 80, performance: 84, quality: 95 },
-  { date: "2026-03-13", oee: 78, availability: 91, performance: 89, quality: 96 },
-  { date: "2026-03-14", oee: 69, availability: 83, performance: 86, quality: 97 },
-];
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -135,6 +125,27 @@ function getAccentBorder(value: number): string {
   if (value >= 85) return "border-l-emerald-500";
   if (value >= 60) return "border-l-amber-500";
   return "border-l-rose-500";
+}
+
+function TrendArrow({ delta }: { delta: number }) {
+  if (Math.abs(delta) < 0.3) return null;
+  const isUp = delta > 0;
+  return (
+    <span
+      className={`inline-flex items-center gap-0.5 text-xs font-semibold ${
+        isUp ? "text-emerald-500" : "text-rose-500"
+      }`}
+    >
+      {isUp ? "\u2191" : "\u2193"}
+      {Math.abs(delta).toFixed(1)}%
+    </span>
+  );
+}
+
+function getOeeBgClass(value: number): string {
+  if (value >= 85) return "bg-emerald-500/10 border-emerald-500/20";
+  if (value >= 60) return "bg-amber-500/10 border-amber-500/20";
+  return "bg-rose-500/10 border-rose-500/20";
 }
 
 function formatDateLabel(dateStr: string): string {
@@ -204,8 +215,8 @@ function useProductionLines() {
 /* ------------------------------------------------------------------ */
 
 function useOEEData(lineId: number, days: number) {
-  const [summary, setSummary] = useState<OEESummary>(DEMO_SUMMARY);
-  const [trend, setTrend] = useState<OEETrendPoint[]>(DEMO_TREND);
+  const [summary, setSummary] = useState<OEESummary>(EMPTY_SUMMARY);
+  const [trend, setTrend] = useState<OEETrendPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [usingFallback, setUsingFallback] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -224,11 +235,7 @@ function useOEEData(lineId: number, days: number) {
         ]);
 
         setSummary(summaryRes.data);
-        if (Array.isArray(trendRes.data) && trendRes.data.length > 0) {
-          setTrend(trendRes.data);
-        } else {
-          setTrend(DEMO_TREND);
-        }
+        setTrend(Array.isArray(trendRes.data) ? trendRes.data : []);
         setUsingFallback(false);
       } catch (err: any) {
         const msg =
@@ -236,8 +243,8 @@ function useOEEData(lineId: number, days: number) {
           err?.message ??
           "Failed to load OEE data";
         setError(msg);
-        setSummary(DEMO_SUMMARY);
-        setTrend(DEMO_TREND);
+        setSummary(EMPTY_SUMMARY);
+        setTrend([]);
         setUsingFallback(true);
       } finally {
         setLoading(false);
@@ -308,7 +315,7 @@ function RadialGauge({
           fill="none"
           stroke="currentColor"
           strokeWidth={strokeWidth}
-          className="text-th-text-3"
+          className="text-th-border"
         />
         {/* Colored arc */}
         <circle
@@ -357,7 +364,7 @@ function DarkTooltip({ active, payload, label }: any) {
             style={{ backgroundColor: entry.color }}
           />
           <span className="text-th-text">{entry.name}:</span>
-          <span className="font-semibold text-white tabular-nums">{entry.value?.toFixed(1)}%</span>
+          <span className="font-semibold text-th-text tabular-nums">{entry.value?.toFixed(1)}%</span>
         </div>
       ))}
     </div>
@@ -435,7 +442,7 @@ function KPICard({
       </div>
       <p className="text-sm text-th-text-2 font-medium mb-1">{label}</p>
       <div className="flex items-baseline gap-1">
-        <span className="text-3xl font-bold text-th-text tabular-nums">{value}</span>
+        <span className="text-2xl font-bold text-th-text tabular-nums">{value}</span>
         {unit && <span className="text-sm text-th-text-2 font-medium">{unit}</span>}
       </div>
     </div>
@@ -530,6 +537,21 @@ export default function OEEDashboard({ onNavigate }: { onNavigate?: (view: strin
     [trend],
   );
 
+  // Compute trend direction by comparing first half vs second half of trend data
+  const trendDirection = useMemo(() => {
+    if (trend.length < 2) return { oee: 0, availability: 0, performance: 0, quality: 0 };
+    const mid = Math.floor(trend.length / 2);
+    const first = trend.slice(0, mid);
+    const second = trend.slice(mid);
+    const avg = (arr: number[]) => arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+    return {
+      oee: avg(second.map((p) => p.oee)) - avg(first.map((p) => p.oee)),
+      availability: avg(second.map((p) => p.availability)) - avg(first.map((p) => p.availability)),
+      performance: avg(second.map((p) => p.performance)) - avg(first.map((p) => p.performance)),
+      quality: avg(second.map((p) => p.quality)) - avg(first.map((p) => p.quality)),
+    };
+  }, [trend]);
+
   // Downtime breakdown for donut chart
   const downtimeBreakdown = useMemo(() => {
     const losses = computeSixBigLosses(summary);
@@ -541,7 +563,7 @@ export default function OEEDashboard({ onNavigate }: { onNavigate?: (view: strin
   }, [summary]);
 
   return (
-    <div className="space-y-6" data-print-area="true" role="region" aria-label="OEE Dashboard">
+    <div className="space-y-6 max-w-[1400px] mx-auto" data-print-area="true" role="region" aria-label="OEE Dashboard">
       {/* -------- Header Controls -------- */}
       <div className="flex flex-wrap gap-3 items-center">
         {/* Line selector */}
@@ -704,19 +726,27 @@ export default function OEEDashboard({ onNavigate }: { onNavigate?: (view: strin
           {/* ================================================================ */}
           {/*  ROW 1: Hero OEE Gauge + Sub-Metrics                            */}
           {/* ================================================================ */}
-          <div className={`oee-dashboard-card oee-hero-section rounded-2xl border border-th-card-border p-8 ${getGlowAnimClass(summary.avg_oee)}`}>
+          <div className={`oee-dashboard-card oee-hero-section rounded-xl border border-th-card-border p-8 ${getGlowAnimClass(summary.avg_oee)}`}>
             {loading ? (
               <SkeletonGauge />
             ) : (
               <div className="flex flex-col items-center">
                 {/* Main OEE Gauge */}
-                <div className="mb-6">
+                <div className="mb-4">
                   <RadialGauge
                     value={summary.avg_oee}
                     size={220}
                     label={t("dashboard.overallOee")}
                     strokeWidth={14}
                   />
+                </div>
+
+                {/* OEE trend arrow */}
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <TrendArrow delta={trendDirection.oee} />
+                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${getOeeBgClass(summary.avg_oee)}`}>
+                    {t("dashboard.target") || "Target"}: {WORLD_CLASS.oee}%
+                  </span>
                 </div>
 
                 {/* World-class target reference */}
@@ -740,9 +770,12 @@ export default function OEEDashboard({ onNavigate }: { onNavigate?: (view: strin
                     <span className="mt-2 text-sm font-medium text-th-text">
                       {t("dashboard.availability")}
                     </span>
-                    <span className="text-xs text-th-text-2">
-                      {t("dashboard.target")}: {WORLD_CLASS.availability}%
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-th-text-2">
+                        {t("dashboard.target")}: {WORLD_CLASS.availability}%
+                      </span>
+                      <TrendArrow delta={trendDirection.availability} />
+                    </div>
                   </div>
                   <div className="flex flex-col items-center">
                     <RadialGauge
@@ -754,9 +787,12 @@ export default function OEEDashboard({ onNavigate }: { onNavigate?: (view: strin
                     <span className="mt-2 text-sm font-medium text-th-text">
                       {t("dashboard.performance")}
                     </span>
-                    <span className="text-xs text-th-text-2">
-                      {t("dashboard.target")}: {WORLD_CLASS.performance}%
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-th-text-2">
+                        {t("dashboard.target")}: {WORLD_CLASS.performance}%
+                      </span>
+                      <TrendArrow delta={trendDirection.performance} />
+                    </div>
                   </div>
                   <div className="flex flex-col items-center">
                     <RadialGauge
@@ -768,9 +804,12 @@ export default function OEEDashboard({ onNavigate }: { onNavigate?: (view: strin
                     <span className="mt-2 text-sm font-medium text-th-text">
                       {t("dashboard.quality")}
                     </span>
-                    <span className="text-xs text-th-text-2">
-                      {t("dashboard.target")}: {WORLD_CLASS.quality}%
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-th-text-2">
+                        {t("dashboard.target")}: {WORLD_CLASS.quality}%
+                      </span>
+                      <TrendArrow delta={trendDirection.quality} />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1000,6 +1039,82 @@ export default function OEEDashboard({ onNavigate }: { onNavigate?: (view: strin
                 </>
               )}
             </div>
+          </div>
+
+          {/* ================================================================ */}
+          {/*  OEE WATERFALL — How 100% cascades to OEE                       */}
+          {/* ================================================================ */}
+          <div className="oee-dashboard-card rounded-xl border border-th-card-border p-6">
+            <h3 className="text-lg font-semibold text-th-text mb-2">
+              {t("dashboard.oeeWaterfall") || "OEE Waterfall — Loss Cascade"}
+            </h3>
+            <p className="text-xs text-th-text-3 mb-6">
+              {t("dashboard.oeeWaterfallDesc") || "How your total available time breaks down into OEE"}
+            </p>
+            {loading ? (
+              <SkeletonChart />
+            ) : (() => {
+              const a = summary.avg_availability;
+              const p = summary.avg_performance;
+              const q = summary.avg_quality;
+              const oee = summary.avg_oee;
+              const availLoss = 100 - a;
+              const perfLoss = a * (100 - p) / 100;
+              const qualLoss = a * p * (100 - q) / 10000;
+
+              const waterfallData = [
+                { name: t("dashboard.totalTime") || "Total Time", value: 100, fill: COLOR.slate600, isTotal: true },
+                { name: t("dashboard.availabilityLoss") || "Availability Loss", value: -availLoss, fill: COLOR.rose, isTotal: false },
+                { name: t("dashboard.performanceLoss") || "Performance Loss", value: -perfLoss, fill: COLOR.amber, isTotal: false },
+                { name: t("dashboard.qualityLoss") || "Quality Loss", value: -qualLoss, fill: COLOR.purple, isTotal: false },
+                { name: "OEE", value: oee, fill: COLOR.emerald, isTotal: true },
+              ];
+
+              // Compute waterfall positions
+              let running = 100;
+              const bars = waterfallData.map((d) => {
+                if (d.isTotal && d.name !== "OEE") {
+                  return { ...d, base: 0, height: d.value, display: d.value.toFixed(1) };
+                }
+                if (d.name === "OEE") {
+                  return { ...d, base: 0, height: oee, display: oee.toFixed(1) };
+                }
+                const lossAbs = Math.abs(d.value);
+                running -= lossAbs;
+                return { ...d, base: running, height: lossAbs, display: `-${lossAbs.toFixed(1)}` };
+              });
+
+              return (
+                <div className="flex items-end justify-around gap-2 h-64 px-4">
+                  {bars.map((bar) => {
+                    const maxH = 240;
+                    const barH = (bar.height / 100) * maxH;
+                    const baseH = (bar.base / 100) * maxH;
+                    return (
+                      <div key={bar.name} className="flex flex-col items-center flex-1 min-w-0">
+                        <span className="text-xs font-bold text-th-text mb-1 tabular-nums">
+                          {bar.display}%
+                        </span>
+                        <div className="w-full relative" style={{ height: `${maxH}px` }}>
+                          <div
+                            className="absolute bottom-0 left-1 right-1 rounded-t-lg transition-all duration-700"
+                            style={{
+                              height: `${barH}px`,
+                              bottom: `${baseH}px`,
+                              backgroundColor: bar.fill,
+                              opacity: bar.isTotal ? 1 : 0.85,
+                            }}
+                          />
+                        </div>
+                        <span className="text-[10px] text-th-text-2 mt-2 text-center leading-tight font-medium truncate w-full">
+                          {bar.name}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
 
           {/* ================================================================ */}

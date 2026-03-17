@@ -1,0 +1,58 @@
+{
+  "title": "Verschwendungs-Tracker",
+  "subtitle": "Identifizieren und beseitigen Sie die 8 Verschwendungsarten (TIMWOODS)",
+  "loading": "Verschwendungsdaten werden geladen...",
+
+  "transport": "Transport",
+  "transportDesc": "Unnötige Bewegung von Materialien oder Produkten",
+  "inventory": "Bestände",
+  "inventoryDesc": "Überschüssige Produkte oder Materialien ohne Verarbeitung",
+  "motion": "Bewegung",
+  "motionDesc": "Unnötige Bewegung von Personen",
+  "waiting": "Warten",
+  "waitingDesc": "Leerlaufzeit beim Warten auf den nächsten Prozessschritt",
+  "overproduction": "Überproduktion",
+  "overproductionDesc": "Mehr produzieren als benötigt wird",
+  "overprocessing": "Überbearbeitung",
+  "overprocessingDesc": "Mehr Arbeit leisten als vom Kunden gefordert",
+  "defects": "Fehler",
+  "defectsDesc": "Nacharbeit, Ausschuss und Korrekturen",
+  "skills": "Fähigkeiten (Ungenutztes Talent)",
+  "skillsDesc": "Unternutzung von Fähigkeiten und Wissen der Mitarbeiter",
+
+  "logWaste": "Verschwendungsereignis erfassen",
+  "wasteType": "Verschwendungsart",
+  "area": "Bereich / Linie",
+  "description": "Beschreibung",
+  "estimatedCost": "Geschätzte Kosten",
+  "estimatedTime": "Geschätzter Zeitverlust (Min.)",
+  "rootCause": "Grundursache",
+  "countermeasure": "Gegenmaßnahme",
+  "severity": "Schweregrad",
+  "severityHigh": "Hoch",
+  "severityMedium": "Mittel",
+  "severityLow": "Niedrig",
+
+  "totalEvents": "Ereignisse Gesamt",
+  "totalCost": "Gesamtkostenauswirkung",
+  "totalTimeLost": "Gesamtzeitverlust",
+  "topWasteType": "Häufigste Verschwendungsart",
+
+  "byType": "Nach Art",
+  "byArea": "Nach Bereich",
+  "trend": "Trend",
+
+  "noEvents": "Noch keine Verschwendungsereignisse erfasst",
+  "noEventsHint": "Beginnen Sie mit der Identifizierung von Verschwendung in der Produktion",
+
+  "saved": "Verschwendungsereignis erfolgreich erfasst",
+  "saveError": "Verschwendungsereignis konnte nicht erfasst werden",
+  "deleted": "Verschwendungsereignis gelöscht",
+
+  "last7": "Letzte 7 Tage",
+  "last30": "Letzte 30 Tage",
+  "last90": "Letzte 90 Tage",
+  "allTime": "Gesamter Zeitraum",
+
+  "exportTitle": "Verschwendungsbericht"
+}

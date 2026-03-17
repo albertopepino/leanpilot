@@ -1,0 +1,18 @@
+{
+  "title": "Shift Handover",
+  "subtitle": "Shift-to-shift communication and production summary",
+  "autoGenerate": "Auto-Generate",
+  "acknowledge": "Acknowledge",
+  "acknowledged": "Acknowledged",
+  "safetyIssues": "Safety Issues",
+  "qualityIssues": "Quality Issues",
+  "equipmentIssues": "Equipment Issues",
+  "materialIssues": "Material Issues",
+  "pendingActions": "Pending Actions",
+  "productionSummary": "Production Summary",
+  "totalPieces": "Total Pieces",
+  "goodPieces": "Good Pieces",
+  "scrapPieces": "Scrap Pieces",
+  "oee": "OEE",
+  "downtime": "Downtime (min)"
+}

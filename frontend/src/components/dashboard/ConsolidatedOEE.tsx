@@ -4,6 +4,7 @@ import { useI18n } from "@/stores/useI18n";
 import { oeeApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
+import { AlertTriangle, ArrowDown, ArrowUp } from "lucide-react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -144,26 +145,9 @@ export default function ConsolidatedOEE() {
     } catch (err: any) {
       console.error("Consolidated OEE error:", err);
       setError(err?.response?.data?.detail || "Failed to load data");
-      // Demo fallback
-      setFactorySummary({ avg_oee: 74.8, avg_availability: 90.0, avg_performance: 86.3, avg_quality: 96.5, record_count: 42, total_downtime_min: 1850 });
-      setLines([
-        { line_id: 1, line_name: "Assembly Line A", avg_oee: 78.1, avg_availability: 92.0, avg_performance: 88.5, avg_quality: 96.0, record_count: 14, total_downtime_min: 620 },
-        { line_id: 2, line_name: "Assembly Line B", avg_oee: 72.3, avg_availability: 88.0, avg_performance: 84.2, avg_quality: 97.5, record_count: 14, total_downtime_min: 710 },
-        { line_id: 3, line_name: "Welding Cell 1", avg_oee: 68.9, avg_availability: 85.5, avg_performance: 82.1, avg_quality: 98.0, record_count: 14, total_downtime_min: 520 },
-      ]);
-      const demoTrend: TrendPoint[] = [];
-      for (let i = 29; i >= 0; i--) {
-        const d = new Date(); d.setDate(d.getDate() - i);
-        demoTrend.push({
-          date: d.toISOString().slice(0, 10),
-          oee: 65 + Math.random() * 25,
-          availability: 82 + Math.random() * 15,
-          performance: 78 + Math.random() * 18,
-          quality: 90 + Math.random() * 9,
-          line_count: 3,
-        });
-      }
-      setTrend(demoTrend);
+      setFactorySummary(null);
+      setLines([]);
+      setTrend([]);
     } finally {
       setLoading(false);
     }
@@ -345,7 +329,7 @@ export default function ConsolidatedOEE() {
 
       {error && (
         <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-3 text-amber-700 dark:text-amber-300 text-sm flex items-center justify-between">
-          <span>⚠️ {t("consolidated.demoData") || "Demo Data"} — {error}</span>
+          <span className="flex items-center gap-2"><AlertTriangle size={14} /> {t("consolidated.demoData") || "Demo Data"} — {error}</span>
           <button onClick={fetchData} className="px-3 py-1 bg-amber-600 text-white text-xs rounded-lg hover:bg-amber-700 transition-colors">
             {t("common.retry") || "Retry"}
           </button>
@@ -360,7 +344,7 @@ export default function ConsolidatedOEE() {
         <>
           {/* Factory-wide KPIs */}
           {fs && (
-            <div className="bg-th-bg-2 rounded-2xl border border-th-border p-6 shadow-card">
+            <div className="bg-th-bg-2 rounded-xl border border-th-border p-6 shadow-card">
               <h3 className="text-lg font-bold mb-4 text-th-text">
                 {t("consolidated.factoryOverview") || "Factory Overview"} — {t("consolidated.allLines") || "All Lines"}
               </h3>
@@ -395,7 +379,7 @@ export default function ConsolidatedOEE() {
           )}
 
           {/* Trend chart */}
-          <div className="bg-th-bg-2 rounded-2xl border border-th-border p-5 shadow-card">
+          <div className="bg-th-bg-2 rounded-xl border border-th-border p-5 shadow-card">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-base font-semibold text-th-text">
                 {t("consolidated.factoryTrend") || "Factory OEE Trend"}
@@ -417,7 +401,7 @@ export default function ConsolidatedOEE() {
           {/* Line comparison chart + table */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Bar chart */}
-            <div className="bg-th-bg-2 rounded-2xl border border-th-border p-5 shadow-card">
+            <div className="bg-th-bg-2 rounded-xl border border-th-border p-5 shadow-card">
               <h3 className="text-base font-semibold text-th-text mb-3">
                 {t("consolidated.lineComparison") || "Line Comparison"}
               </h3>
@@ -429,7 +413,7 @@ export default function ConsolidatedOEE() {
             </div>
 
             {/* Detailed table */}
-            <div className="bg-th-bg-2 rounded-2xl border border-th-border p-5 shadow-card overflow-x-auto">
+            <div className="bg-th-bg-2 rounded-xl border border-th-border p-5 shadow-card overflow-x-auto">
               <h3 className="text-base font-semibold text-th-text mb-3">
                 {t("consolidated.detailedBreakdown") || "Detailed Breakdown"}
               </h3>
@@ -446,7 +430,7 @@ export default function ConsolidatedOEE() {
                     ].map(col => (
                       <th key={col.key} onClick={() => toggleSort(col.key)}
                         className="py-2 px-2 text-th-text-2 font-medium cursor-pointer hover:text-th-text select-none">
-                        {col.label} {sortKey === col.key ? (sortDir === "desc" ? "↓" : "↑") : ""}
+                        <span className="flex items-center gap-1">{col.label} {sortKey === col.key ? (sortDir === "desc" ? <ArrowDown size={12} /> : <ArrowUp size={12} />) : null}</span>
                       </th>
                     ))}
                   </tr>
@@ -474,7 +458,7 @@ export default function ConsolidatedOEE() {
 
           {/* World-class benchmark */}
           {fs && (
-            <div className="bg-th-bg-2 rounded-2xl border border-th-border p-5 shadow-card">
+            <div className="bg-th-bg-2 rounded-xl border border-th-border p-5 shadow-card">
               <h3 className="text-base font-semibold text-th-text mb-3">
                 {t("consolidated.benchmark") || "World-Class Benchmark"}
               </h3>

@@ -1,0 +1,17 @@
+{
+  "title": "Paleta Komandi",
+  "placeholder": "Pretraži stranice, akcije...",
+  "searchLabel": "Pretraži komande",
+  "results": "Rezultati",
+  "noResults": "Nema pronađenih rezultata.",
+  "recent": "Nedavno",
+  "quickActions": "Brze Akcije",
+  "navigation": "Navigacija",
+  "hintNavigate": "navigiraj",
+  "hintSelect": "izaberi",
+  "hintClose": "zatvori",
+  "newKaizen": "Novi Kaizen Događaj",
+  "logProduction": "Evidentiraj Proizvodne Podatke",
+  "reportIssue": "Prijavi Problem (NCR)",
+  "startGemba": "Započni Gemba Obilazak"
+}

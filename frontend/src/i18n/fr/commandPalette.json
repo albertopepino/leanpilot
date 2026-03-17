@@ -1,0 +1,17 @@
+{
+  "title": "Palette de Commandes",
+  "placeholder": "Rechercher pages, actions...",
+  "searchLabel": "Rechercher des commandes",
+  "results": "Résultats",
+  "noResults": "Aucun résultat trouvé.",
+  "recent": "Récents",
+  "quickActions": "Actions Rapides",
+  "navigation": "Navigation",
+  "hintNavigate": "naviguer",
+  "hintSelect": "sélectionner",
+  "hintClose": "fermer",
+  "newKaizen": "Nouvel Événement Kaizen",
+  "logProduction": "Enregistrer Données de Production",
+  "reportIssue": "Signaler un Problème (NCR)",
+  "startGemba": "Démarrer Gemba Walk"
+}

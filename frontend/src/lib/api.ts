@@ -7,6 +7,7 @@ import type {
   TPMEquipmentCreate, TPMMaintenanceCreate,
   CILTStandardCreate, CILTExecutionCreate,
   AndonEventCreate, HourlyProductionCreate,
+  WasteEventCreate, WasteEventUpdate,
   CopilotChatRequest, AIRootCauseRequest,
   RegisterData, AdminUserCreate, AdminUserUpdate,
   ProductionLineCreate, ProductionLineUpdate,
@@ -18,6 +19,10 @@ import type {
   QCTemplateCreate, QCRecordCreate, QCCheckResultCreate,
   NCRCreate, NCRUpdate, CAPACreate, CAPAUpdate,
   GroupCreate, GroupUpdate, GroupPolicyItem,
+  SQCDPEntryCreate, SQCDPMeetingCreate,
+  ShiftHandoverCreate, ShiftHandoverUpdate,
+  LSWCreate, LSWUpdate, LSWCompletionCreate,
+  AuditScheduleCreate, AuditScheduleUpdate,
 } from "./types";
 
 const api = axios.create({
@@ -103,6 +108,10 @@ export const oeeApi = {
     api.get("/oee/consolidated/summary", { params }),
   getConsolidatedTrend: (params: { days?: number; start_date?: string; end_date?: string }) =>
     api.get("/oee/consolidated/trend", { params }),
+  getLossWaterfall: (lineId: number, days = 30) =>
+    api.get(`/oee/loss-waterfall/${lineId}`, { params: { days } }),
+  getAlerts: (lineId: number, thresholdPct = 10) =>
+    api.get(`/oee/alerts/${lineId}`, { params: { threshold_pct: thresholdPct } }),
 };
 
 export const leanApi = {
@@ -155,6 +164,7 @@ export const advancedLeanApi = {
   createEquipment: (data: TPMEquipmentCreate) => api.post("/lean-advanced/tpm/equipment", data),
   listEquipment: () => api.get("/lean-advanced/tpm/equipment"),
   logMaintenance: (data: TPMMaintenanceCreate) => api.post("/lean-advanced/tpm/maintenance", data),
+  getEquipmentMetrics: (equipmentId: number) => api.get(`/lean-advanced/tpm/equipment/${equipmentId}/metrics`),
   // CILT
   createCILTStandard: (data: CILTStandardCreate) => api.post("/lean-advanced/cilt/standards", data),
   listCILTStandards: () => api.get("/lean-advanced/cilt/standards"),
@@ -162,7 +172,7 @@ export const advancedLeanApi = {
   getCILTCompliance: () => api.get("/lean-advanced/cilt/compliance"),
   // Andon
   createAndonEvent: (data: AndonEventCreate) => api.post("/lean-advanced/andon", data),
-  resolveAndon: (id: number, notes?: string) => api.post(`/lean-advanced/andon/${id}/resolve`, notes ? { resolution_notes: notes } : undefined),
+  resolveAndon: (id: number, notes?: string) => api.post(`/lean-advanced/andon/${id}/resolve`, { resolution_notes: notes ?? null }),
   getAndonStatus: () => api.get("/lean-advanced/andon/status"),
   // Hourly Production
   logHourly: (data: HourlyProductionCreate) => api.post("/lean-advanced/hourly", data),
@@ -374,9 +384,106 @@ export const groupsApi = {
     api.delete(`/admin/groups/${id}/members`, { data: { user_ids: userIds } }),
 };
 
+// Waste Tracker APIs
+export const wasteApi = {
+  create: (data: WasteEventCreate) => api.post("/waste/", data),
+  list: (params?: {
+    line_id?: number;
+    waste_type?: string;
+    severity?: string;
+    status?: string;
+    date_from?: string;
+    date_to?: string;
+    skip?: number;
+    limit?: number;
+  }) => api.get("/waste/", { params }),
+  getSummary: (params?: { date_from?: string; date_to?: string; line_id?: number }) =>
+    api.get("/waste/summary", { params }),
+  update: (id: number, data: WasteEventUpdate) => api.put(`/waste/${id}`, data),
+  remove: (id: number) => api.delete(`/waste/${id}`),
+};
+
 export const calendarApi = {
   getEvents: (params: { date_from: string; date_to: string; sources?: string[]; line_id?: number }) =>
     api.get("/calendar/events", { params }).then(r => r.data?.events ?? []),
+};
+
+// SQCDP Board APIs
+export const sqcdpApi = {
+  createEntry: (data: SQCDPEntryCreate) => api.post("/sqcdp/entries", data),
+  listEntries: (params?: { target_date?: string; line_id?: number; tier_level?: number }) =>
+    api.get("/sqcdp/entries", { params }),
+  getBoard: (params?: { target_date?: string; line_id?: number; tier_level?: number }) =>
+    api.get("/sqcdp/board", { params }),
+  updateEntry: (id: number, data: Partial<SQCDPEntryCreate>) => api.patch(`/sqcdp/entries/${id}`, data),
+  deleteEntry: (id: number) => api.delete(`/sqcdp/entries/${id}`),
+  createMeeting: (data: SQCDPMeetingCreate) => api.post("/sqcdp/meetings", data),
+  listMeetings: (params?: { tier_level?: number; limit?: number }) =>
+    api.get("/sqcdp/meetings", { params }),
+};
+
+// Shift Handover APIs
+export const handoverApi = {
+  create: (data: ShiftHandoverCreate) => api.post("/shift-handover/", data),
+  autoGenerate: (lineId: number, date?: string) =>
+    api.post("/shift-handover/auto-generate", null, { params: { line_id: lineId, target_date: date } }),
+  list: (params?: { line_id?: number; target_date?: string; limit?: number }) =>
+    api.get("/shift-handover/", { params }),
+  update: (id: number, data: ShiftHandoverUpdate) => api.patch(`/shift-handover/${id}`, data),
+  acknowledge: (id: number) => api.post(`/shift-handover/${id}/acknowledge`),
+};
+
+// Notification APIs
+export const notificationApi = {
+  list: (params?: { unread_only?: boolean; limit?: number; skip?: number }) =>
+    api.get("/notifications/", { params }),
+  getCount: () => api.get("/notifications/count"),
+  markRead: (id: number) => api.post(`/notifications/${id}/read`),
+  markAllRead: () => api.post("/notifications/read-all"),
+  remove: (id: number) => api.delete(`/notifications/${id}`),
+};
+
+// Leader Standard Work APIs
+export const lswApi = {
+  create: (data: LSWCreate) => api.post("/lsw/", data),
+  list: (params?: { role?: string; active_only?: boolean }) => api.get("/lsw/", { params }),
+  update: (id: number, data: LSWUpdate) => api.patch(`/lsw/${id}`, data),
+  remove: (id: number) => api.delete(`/lsw/${id}`),
+  logCompletion: (data: LSWCompletionCreate) => api.post("/lsw/completions", data),
+  listCompletions: (params?: { lsw_id?: number; target_date?: string; limit?: number }) =>
+    api.get("/lsw/completions", { params }),
+};
+
+// Audit Schedule APIs
+export const auditScheduleApi = {
+  create: (data: AuditScheduleCreate) => api.post("/audit-schedules/", data),
+  list: (params?: { audit_type?: string; active_only?: boolean; overdue_only?: boolean }) =>
+    api.get("/audit-schedules/", { params }),
+  update: (id: number, data: AuditScheduleUpdate) => api.patch(`/audit-schedules/${id}`, data),
+  markComplete: (id: number) => api.post(`/audit-schedules/${id}/complete`),
+  remove: (id: number) => api.delete(`/audit-schedules/${id}`),
+};
+
+// Reports APIs
+export const reportsApi = {
+  oeeMonthly: (params: { month: number; year: number; line_id?: number }) =>
+    api.get("/reports/oee-monthly", { params }),
+  qcSummary: (params: { start_date: string; end_date: string }) =>
+    api.get("/reports/qc-summary", { params }),
+  kaizenSavings: (params: { start_date: string; end_date: string }) =>
+    api.get("/reports/kaizen-savings", { params }),
+  sqcdpSummary: (params: { month: number; year: number }) =>
+    api.get("/reports/sqcdp-summary", { params }),
+};
+
+// Horizontal Deployment APIs
+export const horizontalDeployApi = {
+  create: (data: { source_type: string; source_id: number; description: string; target_lines: number[] }) =>
+    api.post("/horizontal-deploy", data),
+  list: (params?: { status?: string; source_type?: string }) =>
+    api.get("/horizontal-deploy", { params }),
+  complete: (id: number, data: { line_id: number; notes?: string }) =>
+    api.patch(`/horizontal-deploy/${id}/complete`, data),
 };
 
 export const featuresApi = {

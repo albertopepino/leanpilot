@@ -252,5 +252,15 @@
   "productNamePlaceholder": "es. Albero Motore",
   "cancel": "Annulla",
   "creating": "Creazione...",
-  "create": "Crea"
+  "create": "Crea",
+
+  "units": "unita'",
+  "totalTime": "Tempo Totale",
+  "availabilityLoss": "Perdita Disponibilita'",
+  "performanceLoss": "Perdita Prestazione",
+  "qualityLoss": "Perdita Qualita'",
+  "oeeWaterfallDesc": "Come il tempo totale disponibile si ripartisce in OEE",
+
+  "weeklyHeatmap": "Mappa di Calore Produzione Settimanale",
+  "noData": "Nessun dato"
 }

@@ -1,0 +1,37 @@
+{
+  "title": "Scorecard Lean",
+  "subtitle": "La madurez lean de tu fábrica de un vistazo",
+  "loading": "Cargando scorecard...",
+  "demoNote": "Mostrando datos demo — completa la Evaluación Lean para obtener resultados reales",
+
+  "overallMaturity": "Madurez General",
+  "rawScore": "Puntuación bruta: {score} / 4.0",
+  "dmaicPhases": "Fases DMAIC",
+  "moduleUsage": "Uso de Módulos",
+  "improvementTrend": "Tendencia de Mejora",
+  "trendNote": "Puntuación mensual de madurez lean basada en evaluación y actividad de módulos",
+  "quickWins": "Victorias Rápidas",
+  "quickWinsDesc": "Enfócate en estas áreas para el mayor impacto de mejora",
+  "topPriority": "MÁXIMA PRIORIDAD",
+  "categoryBreakdown": "Desglose por Categoría",
+
+  "levelBeginner": "Principiante",
+  "levelDeveloping": "En Desarrollo",
+  "levelProficient": "Competente",
+  "levelAdvanced": "Avanzado",
+
+  "kaizenEvents": "Eventos Kaizen",
+  "gembaWalks": "Gemba Walks",
+  "sixSAudits": "Auditorías 6S",
+  "fiveWhyAnalyses": "Análisis 5 Por Qué",
+  "a3Reports": "Informes A3",
+  "vsmMaps": "Mapas VSM",
+
+  "suggestWorkplace": "Comienza con una auditoría 6S para establecer estándares base de organización del puesto de trabajo",
+  "suggestVisual": "Instala tableros de seguimiento de producción por hora y configura el Dashboard OEE",
+  "suggestStandard": "Documenta tus 5 procedimientos operativos críticos principales y hazlos accesibles en las estaciones de trabajo",
+  "suggestImprovement": "Lanza un tablero Kaizen y programa tu primer evento de mejora",
+  "suggestProblem": "Usa el análisis 5 Por Qué en tu próximo problema de calidad para desarrollar habilidades de análisis de causa raíz",
+  "suggestTPM": "Registra los equipos críticos en el Dashboard TPM y crea las listas de verificación CILT",
+  "suggestDefault": "Revisa esta área e identifica una mejora concreta"
+}

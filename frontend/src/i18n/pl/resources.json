@@ -41,5 +41,14 @@
   "stdISO": "ISO 56002 — Zarządzanie innowacjami",
   "stdISODesc": "Standardy systemów ciągłego doskonalenia",
   "stdIndustry4": "Przemysł 4.0 + Lean",
-  "stdIndustry4Desc": "Cyfrowa produkcja Lean w czwartej rewolucji przemysłowej"
+  "stdIndustry4Desc": "Cyfrowa produkcja Lean w czwartej rewolucji przemysłowej",
+
+  "leanThinking": "Lean Thinking",
+  "leanThinkingDesc": "Jak eliminować marnotrawstwo i tworzyć wartość w organizacji",
+  "toyotaWay": "The Toyota Way",
+  "toyotaWayDesc": "14 zasad zarządzania stojących za największym producentem na świecie",
+  "gembaKaizen": "Gemba Kaizen",
+  "gembaKaizenDesc": "Praktyczne podejście do strategii ciągłego doskonalenia",
+  "leanStartup": "The Lean Startup",
+  "leanStartupDesc": "Jak współcześni przedsiębiorcy wykorzystują ciągłą innowację do tworzenia udanych firm"
 }

@@ -9,6 +9,21 @@ import { useCompanyBranding } from "@/stores/useCompanyBranding";
 import LogoUpload from "@/components/settings/LogoUpload";
 import TwoFactorSetup from "@/components/settings/TwoFactorSetup";
 import { resetOnboarding } from "@/components/onboarding/OnboardingTutorial";
+import {
+  Settings,
+  User,
+  Palette,
+  Globe,
+  Sun,
+  Moon,
+  Building,
+  Lock,
+  Shield,
+  Package,
+  GraduationCap,
+  Info,
+  Download,
+} from "lucide-react";
 
 export default function SettingsPage() {
   const { user, loadUser } = useAuth();
@@ -53,6 +68,7 @@ export default function SettingsPage() {
   }, [user]);
 
   const handleDeleteLogo = async () => {
+    if (!confirm(t("settings.confirmRemoveLogo"))) return;
     try {
       await adminApi.deleteLogo();
       clearLogo();
@@ -131,55 +147,67 @@ export default function SettingsPage() {
     viewer: t("settings.roleViewer"),
   };
 
+  const inputCls = "w-full px-3 py-2 rounded-lg border border-th-border bg-th-input text-th-text focus:ring-2 focus:ring-brand-500 outline-none";
+  const disabledInputCls = "w-full px-3 py-2 rounded-lg border border-th-border bg-th-bg-3 text-th-text-2 cursor-not-allowed";
+  const cardCls = "rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6 space-y-4";
+  const btnPrimaryCls = "px-5 py-2 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-50 transition";
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-[1400px] mx-auto space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-th-text">{t("settings.title")}</h1>
-        <p className="text-sm text-th-text-2 mt-1">{t("settings.subtitle")}</p>
+      <div className="flex items-center gap-3">
+        <Settings className="w-6 h-6 text-th-text" />
+        <div>
+          <h1 className="text-2xl font-bold text-th-text">{t("settings.title")}</h1>
+          <p className="text-sm text-th-text-2 mt-1">{t("settings.subtitle")}</p>
+        </div>
       </div>
 
       {/* Profile Section */}
-      <section className="bg-th-bg-2 rounded-2xl border border-th-border p-6 space-y-4">
+      <section className={cardCls}>
         <h2 className="text-lg font-semibold text-th-text flex items-center gap-2">
-          <span className="text-xl">👤</span> {t("settings.profile")}
+          <User className="w-5 h-5 text-th-text-2" /> {t("settings.profile")}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-th-text-2 mb-1">{t("settings.fullName")}</label>
+            <label htmlFor="settings-fullname" className="block text-sm font-medium text-th-text-2 mb-1">{t("settings.fullName")}</label>
             <input
+              id="settings-fullname"
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="w-full px-3 py-2 bg-th-bg border border-th-border rounded-xl text-th-text focus:ring-2 focus:ring-brand-500 outline-none"
+              className={inputCls}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-th-text-2 mb-1">{t("settings.email")}</label>
+            <label htmlFor="settings-email" className="block text-sm font-medium text-th-text-2 mb-1">{t("settings.email")}</label>
             <input
+              id="settings-email"
               type="text"
               value={user?.email || ""}
               disabled
-              className="w-full px-3 py-2 bg-th-bg-3 border border-th-border rounded-xl text-th-text-2 cursor-not-allowed"
+              className={disabledInputCls}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-th-text-2 mb-1">{t("settings.role")}</label>
+            <label htmlFor="settings-role" className="block text-sm font-medium text-th-text-2 mb-1">{t("settings.role")}</label>
             <input
+              id="settings-role"
               type="text"
               value={roleLabels[user?.role || ""] || user?.role || ""}
               disabled
-              className="w-full px-3 py-2 bg-th-bg-3 border border-th-border rounded-xl text-th-text-2 cursor-not-allowed"
+              className={disabledInputCls}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-th-text-2 mb-1">{t("settings.factoryName")}</label>
+            <label htmlFor="settings-factory" className="block text-sm font-medium text-th-text-2 mb-1">{t("settings.factoryName")}</label>
             <input
+              id="settings-factory"
               type="text"
               value={factoryName}
               disabled
-              className="w-full px-3 py-2 bg-th-bg-3 border border-th-border rounded-xl text-th-text-2 cursor-not-allowed"
+              className={disabledInputCls}
             />
           </div>
         </div>
@@ -188,7 +216,7 @@ export default function SettingsPage() {
           <button
             onClick={saveProfile}
             disabled={profileSaving}
-            className="px-5 py-2 bg-brand-600 text-white rounded-xl font-medium hover:bg-brand-700 disabled:opacity-50 transition"
+            className={btnPrimaryCls}
           >
             {profileSaving ? t("common.saving") : t("common.save")}
           </button>
@@ -201,24 +229,27 @@ export default function SettingsPage() {
       </section>
 
       {/* Appearance Section */}
-      <section className="bg-th-bg-2 rounded-2xl border border-th-border p-6 space-y-4">
+      <section className={cardCls}>
         <h2 className="text-lg font-semibold text-th-text flex items-center gap-2">
-          <span className="text-xl">🎨</span> {t("settings.appearance")}
+          <Palette className="w-5 h-5 text-th-text-2" /> {t("settings.appearance")}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Language */}
           <div>
-            <label className="block text-sm font-medium text-th-text-2 mb-2">{t("settings.language")}</label>
+            <label className="block text-sm font-medium text-th-text-2 mb-2">
+              <Globe className="w-4 h-4 inline-block mr-1 -mt-0.5" />
+              {t("settings.language")}
+            </label>
             <div className="flex gap-2 flex-wrap">
               {([
-                { code: "en" as Locale, flag: "🇬🇧", label: "English" },
-                { code: "it" as Locale, flag: "🇮🇹", label: "Italiano" },
-                { code: "de" as Locale, flag: "🇩🇪", label: "Deutsch" },
-                { code: "es" as Locale, flag: "🇪🇸", label: "Espanol" },
-                { code: "fr" as Locale, flag: "🇫🇷", label: "Francais" },
-                { code: "pl" as Locale, flag: "🇵🇱", label: "Polski" },
-                { code: "sr" as Locale, flag: "🇷🇸", label: "Srpski" },
+                { code: "en" as Locale, label: "English" },
+                { code: "it" as Locale, label: "Italiano" },
+                { code: "de" as Locale, label: "Deutsch" },
+                { code: "es" as Locale, label: "Espanol" },
+                { code: "fr" as Locale, label: "Francais" },
+                { code: "pl" as Locale, label: "Polski" },
+                { code: "sr" as Locale, label: "Srpski" },
               ]).map((lang) => (
                 <button
                   key={lang.code}
@@ -226,13 +257,13 @@ export default function SettingsPage() {
                     setLanguage(lang.code);
                     setLocale(lang.code);
                   }}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition font-medium ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 transition font-medium ${
                     locale === lang.code
                       ? "border-brand-500 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300"
                       : "border-th-border bg-th-bg text-th-text-2 hover:border-brand-300"
                   }`}
                 >
-                  <span className="text-lg">{lang.flag}</span>
+                  <span className="text-xs uppercase font-bold text-th-text-3">{lang.code}</span>
                   <span>{lang.label}</span>
                 </button>
               ))}
@@ -244,19 +275,19 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium text-th-text-2 mb-2">{t("settings.theme")}</label>
             <div className="flex gap-2">
               {([
-                { id: "light" as const, icon: "☀️", labelKey: "settings.themeLight" },
-                { id: "dark" as const, icon: "🌙", labelKey: "settings.themeDark" },
+                { id: "light" as const, icon: Sun, labelKey: "settings.themeLight" },
+                { id: "dark" as const, icon: Moon, labelKey: "settings.themeDark" },
               ]).map((opt) => (
                 <button
                   key={opt.id}
                   onClick={() => setTheme(opt.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition font-medium ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 transition font-medium ${
                     theme === opt.id
                       ? "border-brand-500 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300"
                       : "border-th-border bg-th-bg text-th-text-2 hover:border-brand-300"
                   }`}
                 >
-                  <span className="text-lg">{opt.icon}</span>
+                  <opt.icon className="w-5 h-5" />
                   <span>{t(opt.labelKey)}</span>
                 </button>
               ))}
@@ -266,12 +297,13 @@ export default function SettingsPage() {
 
         {/* Currency */}
         <div className="pt-2">
-          <label className="block text-sm font-medium text-th-text-2 mb-1">{t("settings.currency")}</label>
+          <label htmlFor="settings-currency" className="block text-sm font-medium text-th-text-2 mb-1">{t("settings.currency")}</label>
           <p className="text-xs text-th-text-3 mb-2">{t("settings.currencyDesc")}</p>
           <select
+            id="settings-currency"
             value={currency.code}
             onChange={(e) => setCurrency(e.target.value)}
-            className="w-full max-w-xs px-3 py-2 bg-th-bg border border-th-border rounded-xl text-th-text focus:ring-2 focus:ring-brand-500 outline-none"
+            className="w-full max-w-xs px-3 py-2 rounded-lg border border-th-border bg-th-input text-th-text focus:ring-2 focus:ring-brand-500 outline-none"
           >
             {CURRENCIES.map((c) => (
               <option key={c.code} value={c.code}>
@@ -284,9 +316,9 @@ export default function SettingsPage() {
 
       {/* Company Branding — admin only */}
       {user?.role === "admin" && (
-        <section className="bg-th-bg-2 rounded-2xl border border-th-border p-6 space-y-4">
+        <section className={cardCls}>
           <h2 className="text-lg font-semibold text-th-text flex items-center gap-2">
-            <span className="text-xl">{"\u{1F3ED}"}</span> {t("settings.companyBranding")}
+            <Building className="w-5 h-5 text-th-text-2" /> {t("settings.companyBranding")}
           </h2>
           <p className="text-sm text-th-text-3">{t("settings.logoHint")}</p>
           {logoUrl && (
@@ -309,37 +341,40 @@ export default function SettingsPage() {
       )}
 
       {/* Password Section */}
-      <section className="bg-th-bg-2 rounded-2xl border border-th-border p-6 space-y-4">
+      <section className={cardCls}>
         <h2 className="text-lg font-semibold text-th-text flex items-center gap-2">
-          <span className="text-xl">🔒</span> {t("settings.security")}
+          <Lock className="w-5 h-5 text-th-text-2" /> {t("settings.security")}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-th-text-2 mb-1">{t("settings.currentPassword")}</label>
+            <label htmlFor="settings-current-pw" className="block text-sm font-medium text-th-text-2 mb-1">{t("settings.currentPassword")}</label>
             <input
+              id="settings-current-pw"
               type="password"
               value={currentPw}
               onChange={(e) => setCurrentPw(e.target.value)}
-              className="w-full px-3 py-2 bg-th-bg border border-th-border rounded-xl text-th-text focus:ring-2 focus:ring-brand-500 outline-none"
+              className={inputCls}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-th-text-2 mb-1">{t("settings.newPassword")}</label>
+            <label htmlFor="settings-new-pw" className="block text-sm font-medium text-th-text-2 mb-1">{t("settings.newPassword")}</label>
             <input
+              id="settings-new-pw"
               type="password"
               value={newPw}
               onChange={(e) => setNewPw(e.target.value)}
-              className="w-full px-3 py-2 bg-th-bg border border-th-border rounded-xl text-th-text focus:ring-2 focus:ring-brand-500 outline-none"
+              className={inputCls}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-th-text-2 mb-1">{t("settings.confirmPassword")}</label>
+            <label htmlFor="settings-confirm-pw" className="block text-sm font-medium text-th-text-2 mb-1">{t("settings.confirmPassword")}</label>
             <input
+              id="settings-confirm-pw"
               type="password"
               value={confirmPw}
               onChange={(e) => setConfirmPw(e.target.value)}
-              className="w-full px-3 py-2 bg-th-bg border border-th-border rounded-xl text-th-text focus:ring-2 focus:ring-brand-500 outline-none"
+              className={inputCls}
             />
           </div>
         </div>
@@ -350,7 +385,7 @@ export default function SettingsPage() {
           <button
             onClick={changePassword}
             disabled={pwSaving || !currentPw || !newPw || !confirmPw}
-            className="px-5 py-2 bg-brand-600 text-white rounded-xl font-medium hover:bg-brand-700 disabled:opacity-50 transition"
+            className={btnPrimaryCls}
           >
             {pwSaving ? t("common.saving") : t("settings.changePassword")}
           </button>
@@ -366,9 +401,9 @@ export default function SettingsPage() {
       <TwoFactorSetup />
 
       {/* Privacy & Consent Section */}
-      <section className="bg-th-bg-2 rounded-2xl border border-th-border p-6 space-y-4">
+      <section className={cardCls}>
         <h2 className="text-lg font-semibold text-th-text flex items-center gap-2">
-          <span className="text-xl">🛡️</span> {t("settings.privacy")}
+          <Shield className="w-5 h-5 text-th-text-2" /> {t("settings.privacy")}
         </h2>
 
         <div className="space-y-3">
@@ -403,7 +438,7 @@ export default function SettingsPage() {
           <button
             onClick={saveConsent}
             disabled={consentSaving}
-            className="px-5 py-2 bg-brand-600 text-white rounded-xl font-medium hover:bg-brand-700 disabled:opacity-50 transition"
+            className={btnPrimaryCls}
           >
             {consentSaving ? t("common.saving") : t("settings.savePreferences")}
           </button>
@@ -416,37 +451,38 @@ export default function SettingsPage() {
       </section>
 
       {/* Data & Export Section */}
-      <section className="bg-th-bg-2 rounded-2xl border border-th-border p-6 space-y-4">
+      <section className={cardCls}>
         <h2 className="text-lg font-semibold text-th-text flex items-center gap-2">
-          <span className="text-xl">📦</span> {t("settings.dataExport")}
+          <Package className="w-5 h-5 text-th-text-2" /> {t("settings.dataExport")}
         </h2>
         <p className="text-sm text-th-text-2">{t("settings.dataExportDesc")}</p>
         <button
           onClick={exportData}
-          className="px-5 py-2 bg-th-bg border border-th-border text-th-text rounded-xl font-medium hover:bg-th-bg-3 transition"
+          className="flex items-center gap-2 px-5 py-2 bg-th-bg border border-th-border text-th-text rounded-lg font-medium hover:bg-th-bg-3 transition"
         >
+          <Download className="w-4 h-4" />
           {t("settings.downloadMyData")}
         </button>
       </section>
 
       {/* Tutorial */}
-      <section className="bg-th-bg-2 rounded-2xl border border-th-border p-6 space-y-4">
+      <section className={cardCls}>
         <h2 className="text-lg font-semibold text-th-text flex items-center gap-2">
-          <span className="text-xl">🎓</span> {t("settings.tutorial") || "Tutorial"}
+          <GraduationCap className="w-5 h-5 text-th-text-2" /> {t("settings.tutorial") || "Tutorial"}
         </h2>
         <p className="text-sm text-th-text-2">{t("settings.tutorialDesc") || "Replay the onboarding tutorial to learn about all available tools."}</p>
         <button
           onClick={() => { resetOnboarding(user?.id); window.location.hash = ""; window.location.reload(); }}
-          className="px-5 py-2 bg-gradient-to-r from-brand-500 to-purple-500 text-white rounded-xl font-medium hover:shadow-lg hover:scale-[1.02] transition-all"
+          className="px-5 py-2 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 transition"
         >
           {t("settings.replayTutorial") || "Replay Tutorial"}
         </button>
       </section>
 
       {/* App Info */}
-      <section className="bg-th-bg-2 rounded-2xl border border-th-border p-6">
+      <section className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
         <h2 className="text-lg font-semibold text-th-text flex items-center gap-2 mb-3">
-          <span className="text-xl">ℹ️</span> {t("settings.about")}
+          <Info className="w-5 h-5 text-th-text-2" /> {t("settings.about")}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>

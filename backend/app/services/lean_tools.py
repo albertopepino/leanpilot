@@ -286,10 +286,31 @@ class KaizenService:
             .where(func.lower(KaizenItem.status).in_(["completed", "verified"]))
         )
         row = result.one()
+
+        # Per-category breakdown
+        cat_result = await db.execute(
+            select(
+                KaizenItem.category,
+                func.sum(KaizenItem.expected_savings_eur).label("expected"),
+                func.sum(KaizenItem.actual_savings_eur).label("actual"),
+            )
+            .where(KaizenItem.factory_id == factory_id)
+            .where(func.lower(KaizenItem.status).in_(["completed", "verified"]))
+            .group_by(KaizenItem.category)
+        )
+        by_category = {}
+        for cat_row in cat_result.all():
+            cat_name = cat_row.category or "other"
+            by_category[cat_name] = {
+                "expected": round(cat_row.expected or 0, 2),
+                "actual": round(cat_row.actual or 0, 2),
+            }
+
         return {
-            "expected_savings_eur": round(row.expected or 0, 2),
-            "actual_savings_eur": round(row.actual or 0, 2),
+            "total_expected": round(row.expected or 0, 2),
+            "total_actual": round(row.actual or 0, 2),
             "completed_count": row.total or 0,
+            "by_category": by_category,
         }
 
 

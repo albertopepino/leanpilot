@@ -18,16 +18,45 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
+import {
+  Sparkles,
+  ArrowUpDown,
+  LayoutGrid,
+  Paintbrush,
+  ClipboardCheck,
+  RefreshCw,
+  Shield,
+  AlertTriangle,
+  TrendingUp,
+  ChevronLeft,
+  ChevronRight,
+  Save,
+  RotateCcw,
+  History,
+  Eye,
+  MapPin,
+  Radar as RadarIcon,
+  type LucideIcon,
+} from "lucide-react";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
-const CATEGORY_KEYS = [
-  { id: "sort", labelKey: "catSort", shortKey: "catSortShort", icon: "\u{1F5C2}\uFE0F", color: "from-red-500 to-rose-500", solidColor: "#ef4444", descKey: "catSortDesc" },
-  { id: "set_in_order", labelKey: "catSetInOrder", shortKey: "catSetInOrderShort", icon: "\u{1F4D0}", color: "from-orange-500 to-amber-500", solidColor: "#f97316", descKey: "catSetInOrderDesc" },
-  { id: "shine", labelKey: "catShine", shortKey: "catShineShort", icon: "\u2728", color: "from-yellow-500 to-lime-500", solidColor: "#eab308", descKey: "catShineDesc" },
-  { id: "standardize", labelKey: "catStandardize", shortKey: "catStandardizeShort", icon: "\u{1F4CB}", color: "from-green-500 to-emerald-500", solidColor: "#10b981", descKey: "catStandardizeDesc" },
-  { id: "sustain", labelKey: "catSustain", shortKey: "catSustainShort", icon: "\u{1F504}", color: "from-blue-500 to-cyan-500", solidColor: "#3b82f6", descKey: "catSustainDesc" },
-  { id: "safety", labelKey: "catSafety", shortKey: "catSafetyShort", icon: "\u{1F6E1}\uFE0F", color: "from-purple-500 to-violet-500", solidColor: "#8b5cf6", descKey: "catSafetyDesc" },
+const CATEGORY_KEYS: {
+  id: string;
+  labelKey: string;
+  shortKey: string;
+  Icon: LucideIcon;
+  color: string;
+  solidColor: string;
+  descKey: string;
+  iconColor: string;
+}[] = [
+  { id: "sort", labelKey: "catSort", shortKey: "catSortShort", Icon: ArrowUpDown, color: "from-red-500 to-rose-500", solidColor: "#ef4444", descKey: "catSortDesc", iconColor: "text-red-500" },
+  { id: "set_in_order", labelKey: "catSetInOrder", shortKey: "catSetInOrderShort", Icon: LayoutGrid, color: "from-orange-500 to-amber-500", solidColor: "#f97316", descKey: "catSetInOrderDesc", iconColor: "text-orange-500" },
+  { id: "shine", labelKey: "catShine", shortKey: "catShineShort", Icon: Paintbrush, color: "from-yellow-500 to-lime-500", solidColor: "#eab308", descKey: "catShineDesc", iconColor: "text-yellow-500" },
+  { id: "standardize", labelKey: "catStandardize", shortKey: "catStandardizeShort", Icon: ClipboardCheck, color: "from-green-500 to-emerald-500", solidColor: "#10b981", descKey: "catStandardizeDesc", iconColor: "text-emerald-500" },
+  { id: "sustain", labelKey: "catSustain", shortKey: "catSustainShort", Icon: RefreshCw, color: "from-blue-500 to-cyan-500", solidColor: "#3b82f6", descKey: "catSustainDesc", iconColor: "text-blue-500" },
+  { id: "safety", labelKey: "catSafety", shortKey: "catSafetyShort", Icon: Shield, color: "from-purple-500 to-violet-500", solidColor: "#8b5cf6", descKey: "catSafetyDesc", iconColor: "text-violet-500" },
 ];
 
 const QUESTION_KEYS: Record<string, string[]> = {
@@ -274,7 +303,7 @@ export default function SixSAudit() {
   // ─── Action items: categories scoring below 3 ───────────────────────────────
 
   const actionItems = useMemo(() => {
-    const items: { category: string; icon: string; avg: number; weakQuestions: { qKey: string; qIdx: number; score: number; finding: string }[] }[] = [];
+    const items: { category: string; Icon: LucideIcon; avg: number; weakQuestions: { qKey: string; qIdx: number; score: number; finding: string }[] }[] = [];
     CATEGORY_KEYS.forEach((cat) => {
       const avg = categoryAvgMap[cat.id];
       if (avg > 0 && avg < 3) {
@@ -290,7 +319,7 @@ export default function SixSAudit() {
             });
           }
         });
-        items.push({ category: cat.id, icon: cat.icon, avg, weakQuestions });
+        items.push({ category: cat.id, Icon: cat.Icon, avg, weakQuestions });
       }
     });
     return items;
@@ -402,7 +431,7 @@ export default function SixSAudit() {
 
   if (loading && viewMode === "history") {
     return (
-      <div className="max-w-4xl mx-auto py-16 text-center">
+      <div className="max-w-[1400px] mx-auto py-16 text-center">
         <div className="inline-block w-8 h-8 border-3 border-brand-500 border-t-transparent rounded-full animate-spin mb-4" />
         <p className="text-sm text-th-text-3 animate-pulse">{t("maintenance.loading") || "Loading..."}</p>
       </div>
@@ -413,31 +442,33 @@ export default function SixSAudit() {
 
   if (viewMode === "results") {
     return (
-      <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Error banner */}
         {apiError && (
-          <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-2xl p-4 text-sm text-amber-700 dark:text-amber-300 backdrop-blur-sm">
+          <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-700 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-300 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
             {apiError}
           </div>
         )}
 
         {/* Header with overall gauge + grade */}
-        <div className="bg-th-bg-2 backdrop-blur-sm rounded-2xl p-8 border border-th-border shadow-xl">
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-8">
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <ScoreGauge score={overallScore} size={160} label="/ 100" />
             <div className="text-center sm:text-left flex-1">
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-2xl font-bold text-th-text flex items-center gap-2 justify-center sm:justify-start">
+                <Sparkles className="w-6 h-6 text-brand-500" />
                 {t("maintenance.auditResults", { area: areaName || "Area" })}
               </h2>
               <div className="flex items-center gap-3 mt-2 justify-center sm:justify-start">
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white text-sm font-bold">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-th-bg-3 border border-th-border text-th-text text-sm font-bold">
                   {t("maintenance.grade") || "Grade"}: {grade.letter}
                 </span>
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white/80 text-sm">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-th-bg-3 border border-th-border text-th-text-2 text-sm">
                   {t("maintenance.maturityLevel", { level: String(maturity.level) })}: {t(`maintenance.${maturity.labelKey}`)}
                 </span>
               </div>
-              <p className="text-white/60 text-sm mt-2">
+              <p className="text-th-text-3 text-sm mt-2">
                 {t("maintenance.overallAvg") || "Overall Avg"}: {overallAvg.toFixed(1)}/5 &middot; {completionCount}/{totalQuestions} {t("maintenance.questionsAnswered") || "questions answered"}
               </p>
             </div>
@@ -445,8 +476,9 @@ export default function SixSAudit() {
         </div>
 
         {/* Radar Chart with Recharts */}
-        <div className="bg-th-bg-2 rounded-2xl p-6 shadow-card border border-th-border backdrop-blur-sm">
-          <h3 className="font-semibold text-th-text text-center mb-4 uppercase tracking-wider text-sm">
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
+          <h3 className="font-semibold text-th-text text-center mb-4 text-sm flex items-center justify-center gap-2">
+            <RadarIcon className="w-4 h-4 text-th-text-3" />
             {t("maintenance.radarOverview")}
           </h3>
           <ResponsiveContainer width="100%" height={320}>
@@ -495,9 +527,9 @@ export default function SixSAudit() {
             return (
               <div
                 key={cat.id}
-                className="group relative bg-th-bg-2 rounded-xl p-4 shadow-card text-center border border-th-border hover:border-th-border transition-all duration-200 hover:-translate-y-0.5 backdrop-blur-sm"
+                className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-4 text-center transition-all duration-200 hover:-translate-y-0.5"
               >
-                <div className="text-2xl mb-1">{cat.icon}</div>
+                <cat.Icon className={`w-6 h-6 mx-auto mb-1 ${cat.iconColor}`} />
                 <div className="text-[10px] text-th-text-3 mb-1 font-semibold uppercase tracking-wider">
                   {t(`maintenance.${cat.shortKey}`)}
                 </div>
@@ -518,24 +550,22 @@ export default function SixSAudit() {
 
         {/* Action Items for categories below 3 */}
         {actionItems.length > 0 && (
-          <div className="bg-gradient-to-br from-red-500/10 to-rose-500/10 dark:from-red-950/30 dark:to-rose-950/30 rounded-2xl p-5 border border-red-300/50 dark:border-red-800/50 backdrop-blur-sm">
-            <h3 className="font-semibold text-red-700 dark:text-red-400 mb-3 flex items-center gap-2 uppercase tracking-wider text-sm">
-              <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-              </svg>
+          <div className="rounded-xl border border-red-300 bg-red-50 p-5 dark:border-red-800 dark:bg-red-900/10">
+            <h3 className="font-semibold text-red-700 dark:text-red-400 mb-3 flex items-center gap-2 text-sm">
+              <AlertTriangle className="w-4 h-4" />
               {t("maintenance.actionItemsTitle") || "Action Items Required"}
             </h3>
             <div className="space-y-3">
               {actionItems.map((item) => {
                 const catDef = CATEGORY_KEYS.find((c) => c.id === item.category)!;
                 return (
-                  <div key={item.category} className="bg-th-bg-2 rounded-xl p-4 border border-red-500/20 backdrop-blur-sm">
+                  <div key={item.category} className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <span>{item.icon}</span>
+                      <item.Icon className={`w-4 h-4 ${catDef.iconColor}`} />
                       <span className="font-semibold text-sm text-th-text">
                         {t(`maintenance.${catDef.labelKey}`)}
                       </span>
-                      <span className="text-xs text-red-600 dark:text-red-400 font-medium ml-auto px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/20">
+                      <span className="text-xs text-red-600 dark:text-red-400 font-medium ml-auto px-2 py-0.5 rounded-lg bg-red-500/10 border border-red-500/20">
                         {t("maintenance.avgScore") || "Avg"}: {item.avg.toFixed(1)}/5
                       </span>
                     </div>
@@ -565,8 +595,9 @@ export default function SixSAudit() {
 
         {/* Trend chart with Recharts */}
         {trendData.length >= 2 && (
-          <div className="bg-th-bg-2 rounded-2xl p-5 shadow-card border border-th-border backdrop-blur-sm">
-            <h3 className="font-semibold text-th-text text-sm mb-3 uppercase tracking-wider">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5">
+            <h3 className="font-semibold text-th-text text-sm mb-3 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-th-text-3" />
               {t("maintenance.trendTitle") || "Score Trend"}
             </h3>
             <ResponsiveContainer width="100%" height={200}>
@@ -599,20 +630,23 @@ export default function SixSAudit() {
         <div className="flex gap-3 flex-wrap">
           <button
             onClick={resetAudit}
-            className="flex-1 min-w-[140px] bg-gradient-to-r from-brand-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:opacity-90 transition shadow-glow"
+            className="flex-1 min-w-[140px] bg-brand-600 text-white py-3 rounded-lg font-semibold hover:bg-brand-700 transition flex items-center justify-center gap-2"
           >
+            <RotateCcw className="w-4 h-4" />
             {t("maintenance.newAudit") || "New Audit"}
           </button>
           <button
             onClick={() => setViewMode("history")}
-            className="flex-1 min-w-[140px] bg-th-bg-2 border border-th-border text-th-text py-3 rounded-xl font-semibold hover:bg-th-bg-3 transition backdrop-blur-sm"
+            className="flex-1 min-w-[140px] bg-th-bg-2 border border-th-border text-th-text py-3 rounded-lg font-semibold hover:bg-th-bg-3 transition flex items-center justify-center gap-2"
           >
+            <History className="w-4 h-4" />
             {t("maintenance.viewHistory") || "View History"}
           </button>
           <button
             onClick={() => setViewMode("audit")}
-            className="text-brand-600 hover:text-brand-700 dark:text-brand-400 text-sm font-medium self-center"
+            className="text-brand-600 hover:text-brand-700 dark:text-brand-400 text-sm font-medium self-center flex items-center gap-1 min-h-[44px] sm:min-h-0"
           >
+            <ChevronLeft className="w-3 h-3" />
             {t("maintenance.backToAudit")}
           </button>
         </div>
@@ -624,31 +658,34 @@ export default function SixSAudit() {
 
   if (viewMode === "history") {
     return (
-      <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="max-w-[1400px] mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-th-text uppercase tracking-wider">
+          <h2 className="text-lg font-bold text-th-text flex items-center gap-2">
+            <History className="w-5 h-5 text-th-text-3" />
             {t("maintenance.auditHistory") || "Audit History"}
           </h2>
           <button
             onClick={() => setViewMode("audit")}
-            className="text-brand-600 hover:text-brand-700 dark:text-brand-400 text-sm font-medium"
+            className="text-brand-600 hover:text-brand-700 dark:text-brand-400 text-sm font-medium flex items-center gap-1 min-h-[44px] sm:min-h-0"
           >
+            <ChevronLeft className="w-3 h-3" />
             {t("maintenance.backToAudit")}
           </button>
         </div>
 
         {/* Area filter for trend */}
         {auditHistory.length > 0 && (
-          <div className="bg-th-bg-2 rounded-xl p-4 shadow-card border border-th-border backdrop-blur-sm">
-            <label className="text-xs font-semibold text-th-text-2 block mb-2 uppercase tracking-wider">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-4">
+            <label className="text-xs font-semibold text-th-text-2 block mb-2 flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
               {t("maintenance.filterByArea") || "Filter trend by area"}
             </label>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setAreaName("")}
-                className={`text-xs px-3 py-1.5 rounded-full border transition ${
+                className={`text-xs px-3 py-1.5 rounded-lg border transition ${
                   !areaName
-                    ? "bg-brand-500/20 border-brand-500/50 text-brand-600 dark:text-brand-400 font-semibold"
+                    ? "bg-brand-500/10 border-brand-500/50 text-brand-600 dark:text-brand-400 font-semibold"
                     : "border-th-border text-th-text-3 hover:border-brand-400"
                 }`}
               >
@@ -658,9 +695,9 @@ export default function SixSAudit() {
                 <button
                   key={area}
                   onClick={() => setAreaName(area)}
-                  className={`text-xs px-3 py-1.5 rounded-full border transition ${
+                  className={`text-xs px-3 py-1.5 rounded-lg border transition ${
                     areaName === area
-                      ? "bg-brand-500/20 border-brand-500/50 text-brand-600 dark:text-brand-400 font-semibold"
+                      ? "bg-brand-500/10 border-brand-500/50 text-brand-600 dark:text-brand-400 font-semibold"
                       : "border-th-border text-th-text-3 hover:border-brand-400"
                   }`}
                 >
@@ -673,10 +710,11 @@ export default function SixSAudit() {
 
         {/* Trend with Recharts */}
         {trendData.length >= 2 && (
-          <div className="bg-th-bg-2 rounded-2xl p-5 shadow-card border border-th-border backdrop-blur-sm">
-            <h3 className="font-semibold text-th-text text-sm mb-3 uppercase tracking-wider">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5">
+            <h3 className="font-semibold text-th-text text-sm mb-3 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-th-text-3" />
               {t("maintenance.trendTitle") || "Score Trend"}
-              {areaName && <span className="text-th-text-3 font-normal ml-2 normal-case">({areaName})</span>}
+              {areaName && <span className="text-th-text-3 font-normal ml-2">({areaName})</span>}
             </h3>
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart data={trendData}>
@@ -706,7 +744,7 @@ export default function SixSAudit() {
 
         {/* History list */}
         {auditHistory.length === 0 ? (
-          <div className="bg-th-bg-2 rounded-xl p-8 text-center border border-th-border backdrop-blur-sm">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-8 text-center">
             <p className="text-th-text-3">{t("maintenance.noHistory") || "No audits recorded yet."}</p>
           </div>
         ) : (
@@ -718,7 +756,7 @@ export default function SixSAudit() {
                 return (
                   <div
                     key={audit.id}
-                    className={`bg-th-bg-2 rounded-xl p-4 shadow-card border border-th-border flex items-center gap-4 hover:border-th-border transition-all duration-200 backdrop-blur-sm ${idx % 2 === 0 ? "" : "bg-th-bg-3"}`}
+                    className={`rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-4 flex items-center gap-4 transition-all duration-200 ${idx % 2 === 0 ? "" : "bg-th-bg-3"}`}
                   >
                     <div
                       className={`w-12 h-12 rounded-lg flex items-center justify-center font-black text-xl ${g.color} bg-th-bg-3`}
@@ -753,7 +791,7 @@ export default function SixSAudit() {
   // ─── RENDER: Audit Form ────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto" data-print-area="true">
+    <div className="max-w-[1400px] mx-auto space-y-6" data-print-area="true">
       {/* Export Toolbar */}
       <ExportToolbar
         onPrint={() => printView(t("common.titleSixS"))}
@@ -777,8 +815,9 @@ export default function SixSAudit() {
       />
 
       {/* Area/Zone Selector */}
-      <div className="bg-th-bg-2 rounded-2xl p-5 shadow-card border border-th-border backdrop-blur-sm">
-        <label className="text-xs font-semibold text-th-text-2 block mb-2 uppercase tracking-wider">
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5">
+        <label className="text-xs font-semibold text-th-text-2 block mb-2 flex items-center gap-1">
+          <MapPin className="w-3 h-3" />
           {t("maintenance.auditArea")}
         </label>
         <input
@@ -786,16 +825,16 @@ export default function SixSAudit() {
           value={areaName}
           onChange={(e) => setAreaName(e.target.value)}
           placeholder={t("maintenance.auditAreaPlaceholder")}
-          className="w-full px-4 py-2.5 border border-th-border rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm bg-th-input text-th-text mb-3 transition"
+          className="w-full px-4 py-2.5 border border-th-border rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm bg-th-input text-th-text mb-3 transition"
         />
         <div className="flex flex-wrap gap-2">
           {AREA_PRESETS.map((area) => (
             <button
               key={area}
               onClick={() => setAreaName(area)}
-              className={`text-xs px-3 py-1.5 rounded-full border transition ${
+              className={`text-xs px-3 py-1.5 rounded-lg border transition ${
                 areaName === area
-                  ? "bg-brand-500/20 border-brand-500/50 text-brand-600 dark:text-brand-400 font-semibold"
+                  ? "bg-brand-500/10 border-brand-500/50 text-brand-600 dark:text-brand-400 font-semibold"
                   : "border-th-border text-th-text-3 hover:border-brand-400 hover:text-brand-600"
               }`}
             >
@@ -806,7 +845,7 @@ export default function SixSAudit() {
       </div>
 
       {/* Progress bar */}
-      <div className="bg-th-bg-2 rounded-xl p-4 shadow-card border border-th-border backdrop-blur-sm">
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-4">
         <div className="flex items-center justify-between text-xs text-th-text-2 mb-2">
           <span className="uppercase tracking-wider font-semibold">
             {t("maintenance.progress") || "Progress"}: {completionCount}/{totalQuestions}
@@ -825,8 +864,9 @@ export default function SixSAudit() {
 
       {/* Live Radar Preview (collapsed by default, shown when enough data) */}
       {completionCount >= 6 && (
-        <div className="bg-th-bg-2 rounded-2xl p-5 shadow-card border border-th-border backdrop-blur-sm">
-          <h3 className="font-semibold text-th-text text-sm text-center mb-2 uppercase tracking-wider">
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5">
+          <h3 className="font-semibold text-th-text text-sm text-center mb-2 flex items-center justify-center gap-2">
+            <RadarIcon className="w-4 h-4 text-th-text-3" />
             {t("maintenance.liveRadar") || "Live Radar Preview"}
           </h3>
           <ResponsiveContainer width="100%" height={260}>
@@ -857,21 +897,21 @@ export default function SixSAudit() {
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition whitespace-nowrap ${
+              className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 min-h-[44px] sm:min-h-0 rounded-lg text-sm font-medium transition whitespace-nowrap ${
                 isActive
-                  ? `bg-gradient-to-r ${cat.color} text-white shadow-lg`
-                  : "bg-th-bg-2 border border-th-border text-th-text-2 hover:border-th-border backdrop-blur-sm"
+                  ? "bg-brand-600 text-white shadow-sm"
+                  : "bg-th-bg-2 border border-th-border text-th-text-2 hover:bg-th-bg-3"
               }`}
             >
-              <span>{cat.icon}</span>
+              <cat.Icon className={`w-4 h-4 ${isActive ? "text-white" : cat.iconColor}`} />
               <span className="hidden sm:inline">{t(`maintenance.${cat.shortKey}`)}</span>
               <span
-                className={`text-xs px-1.5 py-0.5 rounded-full ${
+                className={`text-xs px-1.5 py-0.5 rounded-lg ${
                   isActive
                     ? "bg-white/20"
                     : answered === 5
-                    ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-                    : "bg-brand-500/20 text-brand-600 dark:text-brand-400"
+                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    : "bg-brand-500/10 text-brand-600 dark:text-brand-400"
                 }`}
               >
                 {answered}/5
@@ -882,7 +922,7 @@ export default function SixSAudit() {
       </div>
 
       {/* Category description */}
-      <div className="bg-th-bg-3 rounded-xl px-4 py-3 border border-th-border backdrop-blur-sm">
+      <div className="rounded-xl border border-th-border bg-th-bg-3 px-4 py-3">
         <p className="text-xs text-th-text-3">
           {t(`maintenance.${CATEGORY_KEYS.find((c) => c.id === activeCategory)?.descKey}`)}
         </p>
@@ -892,7 +932,7 @@ export default function SixSAudit() {
       <div className="flex items-center justify-center gap-3 text-xs text-th-text-3 flex-wrap">
         {[1, 2, 3, 4, 5].map((s) => (
           <span key={s} className="flex items-center gap-1">
-            <span className={`inline-flex w-6 h-6 items-center justify-center rounded-lg text-xs font-bold border ${SCORE_COLORS[s]}`}>
+            <span className={`inline-flex w-6 h-6 items-center justify-center rounded text-xs font-bold border ${SCORE_COLORS[s]}`}>
               {s}
             </span>
             <span>{t(`maintenance.${SCORE_LABELS[s].key}`) || SCORE_LABELS[s].fallback}</span>
@@ -907,10 +947,8 @@ export default function SixSAudit() {
           return (
             <div
               key={qIdx}
-              className={`bg-th-bg-2 rounded-xl p-5 shadow-card border transition-all duration-200 backdrop-blur-sm ${
-                currentScore > 0
-                  ? "border-th-border"
-                  : "border-th-border hover:border-th-border"
+              className={`rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5 transition-all duration-200 ${
+                currentScore > 0 ? "border-th-border" : ""
               }`}
             >
               <div className="flex items-start gap-3 mb-3">
@@ -928,17 +966,17 @@ export default function SixSAudit() {
                     onClick={() => setScore(activeCategory, qIdx, s)}
                     title={t(`maintenance.${SCORE_LABELS[s].key}`) || SCORE_LABELS[s].fallback}
                     aria-label={`${s} - ${t(`maintenance.${SCORE_LABELS[s].key}`) || SCORE_LABELS[s].fallback}`}
-                    className={`w-11 h-11 rounded-xl border-2 text-sm font-bold transition-all duration-200 touch-score-btn ${
+                    className={`w-11 h-11 rounded-lg border-2 text-sm font-bold transition-all duration-200 ${
                       currentScore === s
-                        ? `${SCORE_COLORS[s]} scale-110 shadow-lg`
-                        : "border-th-border text-th-text-3 hover:border-brand-400 hover:text-brand-600 hover:scale-105"
+                        ? `${SCORE_COLORS[s]} scale-110`
+                        : "border-th-border text-th-text-3 hover:border-brand-400 hover:text-brand-600"
                     }`}
                   >
                     {s}
                   </button>
                 ))}
                 {currentScore > 0 && (
-                  <span className={`text-xs self-center ml-2 font-semibold px-2 py-1 rounded-full ${SCORE_COLORS[currentScore]}`}>
+                  <span className={`text-xs self-center ml-2 font-semibold px-2 py-1 rounded-lg ${SCORE_COLORS[currentScore]}`}>
                     {t(`maintenance.${SCORE_LABELS[currentScore].key}`) || SCORE_LABELS[currentScore].fallback}
                   </span>
                 )}
@@ -956,7 +994,7 @@ export default function SixSAudit() {
                   }
                   aria-label={`${t(`maintenance.${qKey}`)} - ${t("maintenance.findingPlaceholder") || "Note finding"}`}
                   placeholder={t("maintenance.findingPlaceholder") || "Note finding or observation..."}
-                  className="w-full px-3 py-2 border border-th-border rounded-xl text-xs bg-th-input text-th-text focus:ring-2 focus:ring-brand-500 outline-none placeholder:text-th-text-3 transition"
+                  className="w-full px-3 py-2 border border-th-border rounded-lg text-xs bg-th-input text-th-text focus:ring-2 focus:ring-brand-500 outline-none placeholder:text-th-text-3 transition"
                 />
               </div>
             </div>
@@ -973,9 +1011,9 @@ export default function SixSAudit() {
               const idx = CATEGORY_KEYS.findIndex((c) => c.id === activeCategory);
               setActiveCategory(CATEGORY_KEYS[idx - 1].id);
             }}
-            className="px-4 py-3 bg-th-bg-2 border border-th-border text-th-text rounded-xl text-sm font-medium hover:border-th-border transition backdrop-blur-sm"
+            className="px-4 py-3 bg-th-bg-2 border border-th-border text-th-text rounded-lg text-sm font-medium hover:bg-th-bg-3 transition flex items-center gap-1"
           >
-            &larr; {t("maintenance.prevCategory") || "Previous"}
+            <ChevronLeft className="w-4 h-4" /> {t("maintenance.prevCategory") || "Previous"}
           </button>
         )}
 
@@ -987,18 +1025,20 @@ export default function SixSAudit() {
               const idx = CATEGORY_KEYS.findIndex((c) => c.id === activeCategory);
               setActiveCategory(CATEGORY_KEYS[idx + 1].id);
             }}
-            className="flex-1 bg-gradient-to-r from-brand-500/20 to-purple-500/20 dark:from-brand-900/30 dark:to-purple-900/30 border border-brand-300 dark:border-brand-700 text-brand-700 dark:text-brand-300 py-3 rounded-xl font-semibold hover:from-brand-500/30 hover:to-purple-500/30 transition"
+            className="flex-1 bg-brand-500/10 border border-brand-300 dark:border-brand-700 text-brand-700 dark:text-brand-300 py-3 rounded-lg font-semibold hover:bg-brand-500/20 transition flex items-center justify-center gap-1"
           >
-            {t("maintenance.nextCategory") || "Next"} &rarr;
+            {t("maintenance.nextCategory") || "Next"} <ChevronRight className="w-4 h-4" />
           </button>
         ) : (
           <button
             onClick={saveAudit}
             disabled={saving || completionCount === 0}
-            className="flex-1 bg-gradient-to-r from-brand-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:opacity-90 transition shadow-glow disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="flex-1 bg-brand-600 text-white py-3 rounded-lg font-semibold hover:bg-brand-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {saving && (
+            {saving ? (
               <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
             )}
             {saving
               ? t("maintenance.saving") || "Saving..."
@@ -1010,8 +1050,9 @@ export default function SixSAudit() {
         {completionCount > 0 && (
           <button
             onClick={() => setViewMode("results")}
-            className="px-4 py-3 text-brand-600 hover:text-brand-700 dark:text-brand-400 text-sm font-medium"
+            className="px-4 py-3 text-brand-600 hover:text-brand-700 dark:text-brand-400 text-sm font-medium flex items-center gap-1"
           >
+            <Eye className="w-4 h-4" />
             {t("maintenance.viewResults")}
           </button>
         )}
@@ -1019,8 +1060,9 @@ export default function SixSAudit() {
         {/* History */}
         <button
           onClick={() => setViewMode("history")}
-          className="px-4 py-3 text-th-text-3 hover:text-th-text text-sm font-medium"
+          className="px-4 py-3 text-th-text-3 hover:text-th-text text-sm font-medium flex items-center gap-1"
         >
+          <History className="w-4 h-4" />
           {t("maintenance.viewHistory") || "History"}
         </button>
       </div>

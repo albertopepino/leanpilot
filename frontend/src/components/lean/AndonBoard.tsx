@@ -4,6 +4,29 @@ import { useI18n } from "@/stores/useI18n";
 import { advancedLeanApi, adminApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
+import {
+  AlertCircle,
+  AlertTriangle,
+  BarChart3,
+  Bell,
+  BellOff,
+  CheckCircle,
+  Clock,
+  ClipboardList,
+  Factory,
+  Loader2,
+  Package,
+  PauseCircle,
+  PlayCircle,
+  Search,
+  Settings,
+  ShieldAlert,
+  User,
+  Wrench,
+  X,
+  XCircle,
+  Zap,
+} from "lucide-react";
 
 /* -- types ----------------------------------------------------------------- */
 
@@ -109,12 +132,20 @@ const SEVERITY_BADGE: Record<Severity, string> = {
   critical: "bg-red-500/10 text-red-400 border border-red-500/20",
 };
 
-const CATEGORY_ICONS: Record<Category, string> = {
-  quality: "\u{1F50D}",
-  equipment: "\u{2699}",
-  material: "\u{1F4E6}",
-  safety: "\u{26A0}",
-  other: "\u{1F4CB}",
+const CATEGORY_ICON_MAP: Record<Category, React.ReactNode> = {
+  quality: <Search className="w-4 h-4" />,
+  equipment: <Settings className="w-4 h-4" />,
+  material: <Package className="w-4 h-4" />,
+  safety: <ShieldAlert className="w-4 h-4" />,
+  other: <ClipboardList className="w-4 h-4" />,
+};
+
+const CATEGORY_ICON_LG: Record<Category, React.ReactNode> = {
+  quality: <Search className="w-5 h-5" />,
+  equipment: <Settings className="w-5 h-5" />,
+  material: <Package className="w-5 h-5" />,
+  safety: <ShieldAlert className="w-5 h-5" />,
+  other: <ClipboardList className="w-5 h-5" />,
 };
 
 const ESCALATION_YELLOW_MIN = 15;
@@ -128,75 +159,6 @@ const EMPTY_KPIS: AndonKpis = {
   open_count: 0,
   today_total: 0,
   escalated_count: 0,
-};
-
-/* -- demo data ------------------------------------------------------------- */
-
-const buildDemoEvents = (t: (k: string) => string): AndonEvent[] => {
-  const now = Date.now();
-  const ago = (m: number) => new Date(now - m * 60_000).toISOString();
-  return [
-    { id: 1, line_name: t("dashboard.demoLine1"), status: "green", created_at: ago(120) },
-    {
-      id: 2,
-      line_name: t("dashboard.demoLine2"),
-      status: "red",
-      category: "equipment",
-      severity: "high",
-      description: t("dashboard.demoIssueJig"),
-      operator: "Marco R.",
-      created_at: ago(37),
-    },
-    {
-      id: 3,
-      line_name: t("dashboard.demoWeldA"),
-      status: "yellow",
-      category: "quality",
-      severity: "medium",
-      description: t("dashboard.demoIssueWire"),
-      created_at: ago(18),
-    },
-    { id: 4, line_name: t("dashboard.demoWeldB"), status: "green", created_at: ago(90) },
-    {
-      id: 5,
-      line_name: t("dashboard.demoPaint"),
-      status: "blue",
-      category: "other",
-      severity: "low",
-      description: t("dashboard.demoIssueChangeover"),
-      created_at: ago(25),
-    },
-    { id: 6, line_name: t("dashboard.demoPackaging"), status: "green", created_at: ago(60) },
-    { id: 7, line_name: t("dashboard.demoCNC"), status: "green", created_at: ago(45) },
-    {
-      id: 8,
-      line_name: t("dashboard.demoQualityLab"),
-      status: "yellow",
-      category: "quality",
-      severity: "medium",
-      description: t("dashboard.demoIssueInspection"),
-      created_at: ago(42),
-    },
-    {
-      id: 9,
-      line_name: t("dashboard.demoLine1"),
-      status: "green",
-      category: "material",
-      severity: "low",
-      description: t("dashboard.demoIssueChangeover"),
-      resolved_at: ago(10),
-      created_at: ago(95),
-      resolution_notes: "Restocked from warehouse B",
-    },
-  ];
-};
-
-const DEMO_KPIS: AndonKpis = {
-  avg_acknowledge_min: 3.2,
-  avg_resolve_min: 18.5,
-  open_count: 3,
-  today_total: 7,
-  escalated_count: 1,
 };
 
 /* -- helpers --------------------------------------------------------------- */
@@ -308,7 +270,7 @@ export default function AndonBoard() {
   /* -- state -- */
   const [events, setEvents] = useState<AndonEvent[]>([]);
   const [kpis, setKpis] = useState<AndonKpis>(EMPTY_KPIS);
-  const [isDemo, setIsDemo] = useState(false);
+  const isDemo = false; // demo fallbacks removed
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [clock, setClock] = useState("");
@@ -368,13 +330,11 @@ export default function AndonBoard() {
 
       setEvents(lines);
       if (raw.kpis) setKpis(raw.kpis);
-      setIsDemo(false);
       setError(null);
     } catch {
-      setEvents(buildDemoEvents(t));
-      setKpis(DEMO_KPIS);
-      setIsDemo(true);
-      setError(null); // demo is a graceful fallback, not an error
+      setEvents([]);
+      setKpis(EMPTY_KPIS);
+      setError(null);
     } finally {
       setLoading(false);
     }
@@ -449,10 +409,21 @@ export default function AndonBoard() {
     if (!resolveTarget) return;
     setResolvingId(resolveTarget.id);
     try {
-      await advancedLeanApi.resolveAndon(resolveTarget.id, resolveNotes || undefined);
+      if (isDemo) {
+        // In demo mode, resolve locally (no real backend data)
+        setEvents((prev) =>
+          prev.map((e) =>
+            e.id === resolveTarget.id
+              ? { ...e, resolved_at: new Date().toISOString(), resolution_notes: resolveNotes || undefined }
+              : e,
+          ),
+        );
+      } else {
+        await advancedLeanApi.resolveAndon(resolveTarget.id, resolveNotes || undefined);
+        await fetchData();
+      }
       setResolveTarget(null);
       setResolveNotes("");
-      await fetchData();
     } catch {
       setError(t("dashboard.andonResolveError"));
       setTimeout(() => setError(null), 4000);
@@ -515,8 +486,7 @@ export default function AndonBoard() {
       <div className="flex items-center justify-center py-24">
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
-            <div className="w-16 h-16 border-4 border-slate-700 border-t-red-500 rounded-full animate-spin" />
-            <div className="absolute inset-0 w-16 h-16 rounded-full bg-red-500/10 animate-pulse" />
+            <Loader2 className="w-16 h-16 text-red-500 animate-spin" />
           </div>
           <span className="text-sm font-medium text-th-text-2 uppercase tracking-wider">{t("dashboard.andonLoading")}</span>
         </div>
@@ -528,11 +498,14 @@ export default function AndonBoard() {
      RENDER
      ========================================================================= */
   return (
-    <div className="space-y-6 max-w-7xl mx-auto" data-print-area="true" role="region" aria-label="Andon Board">
+    <div className="max-w-[1400px] mx-auto space-y-6" data-print-area="true" role="region" aria-label="Andon Board">
       {/* -- demo data banner -- */}
       {isDemo && (
-        <div className="px-4 py-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-between text-sm backdrop-blur-sm">
-          <span className="text-amber-600 dark:text-amber-400 font-medium">{"\u26A0\uFE0F"} {t("dashboard.demoDataBadge")} — {t("dashboard.usingDemoData")}</span>
+        <div className="px-4 py-3 rounded-xl border border-amber-500/20 bg-amber-500/10 flex items-center justify-between text-sm">
+          <span className="text-amber-600 dark:text-amber-400 font-medium flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4" />
+            {t("dashboard.demoDataBadge")} — {t("dashboard.usingDemoData")}
+          </span>
           <button onClick={() => fetchData()} className="text-amber-500 hover:text-amber-300 font-semibold underline transition-colors duration-300">
             {t("dashboard.retry")}
           </button>
@@ -541,27 +514,34 @@ export default function AndonBoard() {
 
       {/* -- error toast -- */}
       {error && (
-        <div role="alert" aria-live="assertive" className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 rounded-xl px-4 py-3 text-sm font-medium flex items-center justify-between backdrop-blur-sm">
-          <span>{error}</span>
+        <div role="alert" aria-live="assertive" className="rounded-xl border border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400 px-4 py-3 text-sm font-medium flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4" />
+            {error}
+          </span>
           <button onClick={() => setError(null)} className="ml-4 text-red-400 hover:text-red-300 font-bold transition-colors">
-            &times;
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* ======= CONTROL ROOM HEADER ======= */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-gray-900 to-slate-950 dark:from-slate-950 dark:via-gray-950 dark:to-black rounded-2xl p-6 text-white border border-th-border/50">
-        {/* Subtle grid overlay for control room feel */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+      {/* -- empty state -- */}
+      {!loading && events.length === 0 && !error && (
+        <div className="px-4 py-6 bg-th-bg-2 border border-th-border rounded-xl text-center text-sm text-th-text-2">
+          {t("dashboard.noAndonEvents") || "No data yet. Andon events will appear here when production lines report status."}
+        </div>
+      )}
 
-        <div className="relative z-10">
+      {/* ======= CONTROL ROOM HEADER ======= */}
+      <div className="relative overflow-hidden rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
+        <div>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-red-500/20 to-amber-500/20 rounded-xl flex items-center justify-center text-3xl select-none border border-th-border backdrop-blur-sm">
-                {"\u{1F6A6}"}
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center border border-th-border bg-th-bg text-red-500">
+                <AlertCircle className="w-7 h-7" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold tracking-tight">{t("dashboard.andonTitle")}</h2>
+                <h2 className="text-2xl font-bold tracking-tight text-th-text">{t("dashboard.andonTitle")}</h2>
                 <p className="text-sm text-th-text-2 mt-0.5">{t("dashboard.andonSubtitle")}</p>
               </div>
             </div>
@@ -570,41 +550,42 @@ export default function AndonBoard() {
               {/* Sound toggle */}
               <button
                 onClick={() => setSoundOn((p) => !p)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300 border ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300 border flex items-center gap-1.5 ${
                   soundOn
                     ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/25"
-                    : "bg-slate-800/50 text-th-text-2 border-slate-700/50 hover:bg-slate-700/50"
+                    : "bg-th-bg text-th-text-2 border-th-border hover:bg-th-bg-2"
                 }`}
                 title={soundOn ? t("dashboard.andonSoundOn") : t("dashboard.andonSoundOff")}
               >
-                {soundOn ? "\u{1F514}" : "\u{1F515}"}{" "}
+                {soundOn ? <Bell className="w-3.5 h-3.5" /> : <BellOff className="w-3.5 h-3.5" />}
                 {soundOn ? t("dashboard.andonSoundOn") : t("dashboard.andonSoundOff")}
               </button>
 
               {/* History toggle */}
               <button
                 onClick={() => setShowHistory((p) => !p)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300 border ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300 border flex items-center gap-1.5 ${
                   showHistory
                     ? "bg-blue-500/15 text-blue-400 border-blue-500/30 hover:bg-blue-500/25"
-                    : "bg-slate-800/50 text-th-text-2 border-slate-700/50 hover:bg-slate-700/50"
+                    : "bg-th-bg text-th-text-2 border-th-border hover:bg-th-bg-2"
                 }`}
               >
-                {"\u{1F4CB}"} {t("dashboard.andonHistory")}
+                <ClipboardList className="w-3.5 h-3.5" />
+                {t("dashboard.andonHistory")}
               </button>
 
               {/* Trigger Andon */}
               <button
                 onClick={() => setShowTriggerModal(true)}
-                className="px-5 py-2.5 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)]"
+                className="px-5 py-2.5 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2 shadow-sm"
               >
-                <span className="text-lg leading-none">{"\u26A0"}</span>
+                <AlertTriangle className="w-4 h-4" />
                 {t("dashboard.andonTriggerAlert")}
               </button>
 
               {/* Real-time Clock */}
               <div className="text-right ml-2">
-                <div className="text-4xl font-mono font-bold tracking-widest text-emerald-400 drop-shadow-[0_0_10px_rgba(16,185,129,0.4)]">
+                <div className="text-4xl font-mono font-bold tracking-widest text-emerald-400">
                   {clock}
                 </div>
                 <div className="text-[10px] text-th-text-2 uppercase tracking-widest mt-0.5">
@@ -665,7 +646,7 @@ export default function AndonBoard() {
             </div>
           </div>
 
-          {/* -- Dramatic Traffic Light Status Summary -- */}
+          {/* -- Traffic Light Status Summary -- */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {(["green", "yellow", "red", "blue"] as AndonStatus[]).map((s) => {
               const cfg = STATUS_CFG[s];
@@ -680,8 +661,8 @@ export default function AndonBoard() {
                     isRedAlert
                       ? "bg-red-500/15 border-red-500/40 andon-pulse-red"
                       : isActive
-                        ? `bg-th-input border-th-border ${cfg.glow}`
-                        : "bg-th-bg-3 border-th-border"
+                        ? `bg-th-bg border-th-border ${cfg.glow}`
+                        : "bg-th-bg border-th-border"
                   }`}
                 >
                   {/* Large traffic light circle */}
@@ -694,7 +675,7 @@ export default function AndonBoard() {
                       } transition-all duration-500`}
                     />
                   </div>
-                  <div className={`text-4xl font-bold ${count > 0 ? "text-white" : "text-th-text-3"} transition-colors`}>
+                  <div className={`text-4xl font-bold ${count > 0 ? "text-th-text" : "text-th-text-3"} transition-colors`}>
                     {count}
                   </div>
                   <div className={`text-[10px] font-bold uppercase tracking-[0.15em] mt-1 ${
@@ -714,32 +695,32 @@ export default function AndonBoard() {
         <KpiCard
           label={t("dashboard.andonTodayTotal")}
           value={String(kpis.today_total)}
-          icon={"\u{1F4CA}"}
+          icon={<BarChart3 className="w-5 h-5" />}
           accentColor="slate"
         />
         <KpiCard
           label={t("dashboard.andonOpenAlerts")}
           value={String(kpis.open_count)}
-          icon={"\u{1F6A8}"}
+          icon={<Zap className="w-5 h-5" />}
           accentColor="red"
           pulse={kpis.open_count > 0}
         />
         <KpiCard
           label={t("dashboard.andonAvgAck")}
           value={`${kpis.avg_acknowledge_min.toFixed(1)}m`}
-          icon={"\u{23F1}"}
+          icon={<Clock className="w-5 h-5" />}
           accentColor="blue"
         />
         <KpiCard
           label={t("dashboard.andonAvgResolve")}
           value={`${kpis.avg_resolve_min.toFixed(1)}m`}
-          icon={"\u{1F527}"}
+          icon={<Wrench className="w-5 h-5" />}
           accentColor="emerald"
         />
         <KpiCard
           label={t("dashboard.andonEscalated")}
           value={String(kpis.escalated_count)}
-          icon={"\u{26A0}"}
+          icon={<AlertTriangle className="w-5 h-5" />}
           accentColor="amber"
           pulse={kpis.escalated_count > 0}
         />
@@ -747,7 +728,7 @@ export default function AndonBoard() {
 
       {/* ======= EVENTS BY CATEGORY ======= */}
       {categoryStats.length > 0 && (
-        <div className="bg-th-bg-2 backdrop-blur-sm border border-th-border  rounded-xl p-5">
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5">
           <h3 className="text-xs font-bold text-th-text-2 uppercase tracking-[0.15em] mb-4">
             {t("dashboard.andonByCategory")}
           </h3>
@@ -755,9 +736,9 @@ export default function AndonBoard() {
             {categoryStats.map(([cat, count]) => (
               <div
                 key={cat}
-                className="flex items-center gap-3 bg-th-bg-3 hover:bg-th-bg-3 rounded-lg px-4 py-3 border border-th-border transition-all duration-300 hover:scale-[1.02]"
+                className="flex items-center gap-3 rounded-lg px-4 py-3 border border-th-border bg-th-bg transition-all duration-300 hover:scale-[1.02]"
               >
-                <span className="text-xl">{CATEGORY_ICONS[cat as Category] ?? "\u{1F4CB}"}</span>
+                <span className="text-th-text-2">{CATEGORY_ICON_LG[cat as Category] ?? <ClipboardList className="w-5 h-5" />}</span>
                 <div>
                   <div className="text-[10px] text-th-text-2 uppercase tracking-wider font-medium">
                     {t(`dashboard.andonReason${cat.charAt(0).toUpperCase() + cat.slice(1)}`)}
@@ -772,7 +753,8 @@ export default function AndonBoard() {
 
       {/* ======= LINE STATUS CARDS (monitoring panels) ======= */}
       <div>
-        <h3 className="text-xs font-bold text-th-text-2 uppercase tracking-[0.15em] mb-4">
+        <h3 className="text-xs font-bold text-th-text-2 uppercase tracking-[0.15em] mb-4 flex items-center gap-2">
+          <Factory className="w-4 h-4" />
           {t("dashboard.andonLineStatus")}
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -788,7 +770,7 @@ export default function AndonBoard() {
               return (
                 <div
                   key={ev.id}
-                  className={`group rounded-2xl overflow-hidden transition-all duration-300 border-l-4 ${cfg.borderAccent} ${
+                  className={`group rounded-xl overflow-hidden transition-all duration-300 border-l-4 ${cfg.borderAccent} ${
                     hasIssue
                       ? `bg-th-bg-2 border border-l-4 ${
                           ev.status === "red" ? "border-red-500/30 andon-border-pulse" : "border-th-border"
@@ -796,7 +778,7 @@ export default function AndonBoard() {
                       : "bg-th-bg-2 border border-l-4 border-th-border"
                   } ${tier === "red" ? "andon-pulse-red" : ""} ${
                     tier === "yellow" ? "ring-1 ring-amber-400/40" : ""
-                  } ${isNewRed ? "andon-flash-new" : ""} backdrop-blur-sm hover:scale-[1.02] hover:shadow-lg`}
+                  } ${isNewRed ? "andon-flash-new" : ""} shadow-sm hover:scale-[1.02] hover:shadow-md`}
                 >
                   {/* Status bar */}
                   <div className={`${cfg.bg} ${cfg.text} px-4 py-3 flex items-center justify-between`}>
@@ -825,15 +807,18 @@ export default function AndonBoard() {
 
                   {/* Body */}
                   <div className="p-4">
-                    <h4 className="font-bold text-th-text mb-1.5 text-sm tracking-tight">{ev.line_name}</h4>
+                    <h4 className="font-bold text-th-text mb-1.5 text-sm tracking-tight flex items-center gap-1.5">
+                      <Factory className="w-3.5 h-3.5 text-th-text-3" />
+                      {ev.line_name}
+                    </h4>
                     {hasIssue ? (
                       <div className="space-y-2.5">
                         {ev.description && (
                           <p className="text-xs text-th-text-2 line-clamp-2">{ev.description}</p>
                         )}
                         {eventCategory(ev) !== "other" && (
-                          <span className="inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full bg-th-bg-3 text-th-text font-medium border border-th-border">
-                            <span>{CATEGORY_ICONS[eventCategory(ev)]}</span>
+                          <span className="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-full bg-th-bg text-th-text font-medium border border-th-border">
+                            <span className="text-th-text-2">{CATEGORY_ICON_MAP[eventCategory(ev)]}</span>
                             {t(
                               `dashboard.andonReason${eventCategory(ev).charAt(0).toUpperCase() + eventCategory(ev).slice(1)}`,
                             )}
@@ -842,28 +827,34 @@ export default function AndonBoard() {
 
                         {/* Elapsed + escalation bar */}
                         <div className="flex items-center gap-2 text-[10px] text-th-text-2">
+                          <Clock className="w-3 h-3" />
                           <span
                             className={`font-mono font-bold text-xs ${
                               tier === "red"
-                                ? "text-red-400 drop-shadow-[0_0_4px_rgba(239,68,68,0.5)]"
+                                ? "text-red-400"
                                 : tier === "yellow"
-                                  ? "text-amber-400 drop-shadow-[0_0_4px_rgba(245,158,11,0.5)]"
+                                  ? "text-amber-400"
                                   : "text-th-text"
                             }`}
                           >
                             {fmtDuration(elapsed)}
                           </span>
-                          {ev.operator && <span className="text-th-text-2">{ev.operator}</span>}
+                          {ev.operator && (
+                            <span className="text-th-text-2 flex items-center gap-1">
+                              <User className="w-3 h-3" />
+                              {ev.operator}
+                            </span>
+                          )}
                         </div>
                         {elapsed > 0 && (
-                          <div className="w-full h-2 rounded-full bg-slate-800 dark:bg-slate-900 overflow-hidden">
+                          <div className="w-full h-2 rounded-full bg-th-bg overflow-hidden">
                             <div
                               className={`h-full rounded-full transition-all duration-500 ${
                                 tier === "red"
-                                  ? "bg-gradient-to-r from-red-600 to-red-400 shadow-[0_0_8px_rgba(239,68,68,0.4)]"
+                                  ? "bg-gradient-to-r from-red-600 to-red-400"
                                   : tier === "yellow"
-                                    ? "bg-gradient-to-r from-amber-500 to-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.4)]"
-                                    : "bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_8px_rgba(16,185,129,0.4)]"
+                                    ? "bg-gradient-to-r from-amber-500 to-amber-300"
+                                    : "bg-gradient-to-r from-emerald-500 to-teal-400"
                               }`}
                               style={{
                                 width: `${Math.min(100, (elapsed / ESCALATION_RED_MIN) * 100)}%`,
@@ -879,15 +870,24 @@ export default function AndonBoard() {
                             setResolveNotes("");
                           }}
                           disabled={resolvingId === ev.id}
-                          className="mt-1 w-full py-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 disabled:from-gray-600 disabled:to-gray-600 text-white text-xs font-bold rounded-lg transition-all duration-300 shadow-[0_0_10px_rgba(16,185,129,0.2)] hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+                          className="mt-1 w-full py-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 disabled:from-gray-600 disabled:to-gray-600 text-white text-xs font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-1.5"
                         >
-                          {resolvingId === ev.id
-                            ? t("dashboard.andonResolving")
-                            : `\u2713 ${t("dashboard.andonResolve")}`}
+                          {resolvingId === ev.id ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              {t("dashboard.andonResolving")}
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              {t("dashboard.andonResolve")}
+                            </>
+                          )}
                         </button>
                       </div>
                     ) : (
-                      <p className="text-xs text-emerald-500 dark:text-emerald-400 font-medium">
+                      <p className="text-xs text-emerald-500 dark:text-emerald-400 font-medium flex items-center gap-1.5">
+                        <PlayCircle className="w-3.5 h-3.5" />
                         {t(`dashboard.${cfg.descKey}`)}
                       </p>
                     )}
@@ -900,7 +900,7 @@ export default function AndonBoard() {
 
       {/* ======= ACTIVE ISSUES TABLE ======= */}
       {activeEvents.length > 0 ? (
-        <div className="bg-red-50 dark:bg-gradient-to-br dark:from-red-950/40 dark:to-slate-950/60 border border-red-200 dark:border-red-500/20 rounded-2xl p-6 backdrop-blur-sm">
+        <div className="rounded-xl border border-red-500/20 bg-red-500/5 shadow-sm p-6">
           <h3 className="font-bold text-red-600 dark:text-red-400 flex items-center gap-3 mb-5">
             <span className="relative flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
@@ -926,7 +926,7 @@ export default function AndonBoard() {
                   const elapsed = elapsedMin(ev.created_at);
                   const tier = escalationTier(elapsed);
                   return (
-                    <tr key={ev.id} className="border-b border-th-border/50 hover:bg-th-bg-3 transition-colors duration-200">
+                    <tr key={ev.id} className="border-b border-th-border/50 hover:bg-th-bg transition-colors duration-200">
                       <td className="py-3 pr-4">
                         <div className="flex items-center gap-2">
                           <span className="relative">
@@ -946,20 +946,23 @@ export default function AndonBoard() {
                         )}
                       </td>
                       <td className="py-3 pr-4 text-xs text-th-text-2">
-                        {CATEGORY_ICONS[eventCategory(ev)]}{" "}
-                        {t(`dashboard.andonReason${eventCategory(ev).charAt(0).toUpperCase() + eventCategory(ev).slice(1)}`)}
+                        <span className="inline-flex items-center gap-1.5">
+                          {CATEGORY_ICON_MAP[eventCategory(ev)]}
+                          {t(`dashboard.andonReason${eventCategory(ev).charAt(0).toUpperCase() + eventCategory(ev).slice(1)}`)}
+                        </span>
                       </td>
                       <td className="py-3 pr-4 text-xs text-th-text-2 max-w-[200px] truncate">
                         {ev.description ?? "-"}
                       </td>
                       <td className="py-3 pr-4">
-                        <span className={`text-xs font-mono font-bold ${
+                        <span className={`text-xs font-mono font-bold flex items-center gap-1 ${
                           tier === "red"
-                            ? "text-red-400 drop-shadow-[0_0_6px_rgba(239,68,68,0.5)]"
+                            ? "text-red-400"
                             : tier === "yellow"
-                              ? "text-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]"
+                              ? "text-amber-400"
                               : "text-th-text"
                         }`}>
+                          <Clock className="w-3 h-3" />
                           {fmtDuration(elapsed)}
                         </span>
                       </td>
@@ -970,11 +973,16 @@ export default function AndonBoard() {
                             setResolveNotes("");
                           }}
                           disabled={resolvingId === ev.id}
-                          className="px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 disabled:from-gray-600 disabled:to-gray-600 text-white text-xs font-bold rounded-lg transition-all duration-300"
+                          className="px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 disabled:from-gray-600 disabled:to-gray-600 text-white text-xs font-bold rounded-lg transition-all duration-300 inline-flex items-center gap-1.5"
                         >
+                          {resolvingId === ev.id ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <CheckCircle className="w-3 h-3" />
+                          )}
                           {resolvingId === ev.id
                             ? "..."
-                            : `\u2713 ${t("dashboard.andonResolve")}`}
+                            : t("dashboard.andonResolve")}
                         </button>
                       </td>
                     </tr>
@@ -985,12 +993,9 @@ export default function AndonBoard() {
           </div>
         </div>
       ) : (
-        <div className="bg-emerald-50 dark:bg-gradient-to-br dark:from-emerald-950/20 dark:to-slate-950/20 border border-emerald-200 dark:border-emerald-500/20 rounded-2xl p-6 text-center backdrop-blur-sm">
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 shadow-sm p-6 text-center">
           <div className="flex items-center justify-center gap-3">
-            <span className="relative flex h-4 w-4">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400/30 animate-ping" />
-              <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500" />
-            </span>
+            <CheckCircle className="w-5 h-5 text-emerald-500" />
             <p className="text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-[0.1em] text-sm">
               {t("dashboard.andonNoActiveAlerts")}
             </p>
@@ -1000,9 +1005,10 @@ export default function AndonBoard() {
 
       {/* ======= HISTORY (resolved events) ======= */}
       {showHistory && (
-        <div className="bg-th-bg-2 border border-th-border rounded-2xl p-6 backdrop-blur-sm">
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
           <h3 className="font-bold text-th-text flex items-center gap-2 mb-5 text-sm uppercase tracking-[0.1em]">
-            {"\u{1F4CB}"} {t("dashboard.andonHistory")} ({resolvedEvents.length})
+            <ClipboardList className="w-4 h-4 text-th-text-2" />
+            {t("dashboard.andonHistory")} ({resolvedEvents.length})
           </h3>
           {resolvedEvents.length === 0 ? (
             <p className="text-sm text-th-text-2 text-center py-6">
@@ -1026,17 +1032,20 @@ export default function AndonBoard() {
                       ? resolutionMin(ev.created_at, ev.resolved_at)
                       : 0;
                     return (
-                      <tr key={ev.id} className="border-b border-th-border/50 hover:bg-th-bg-3 transition-colors duration-200">
+                      <tr key={ev.id} className="border-b border-th-border/50 hover:bg-th-bg transition-colors duration-200">
                         <td className="py-3 pr-4 font-medium text-th-text">{ev.line_name}</td>
                         <td className="py-3 pr-4 text-xs text-th-text-2">
-                          {CATEGORY_ICONS[eventCategory(ev)]}{" "}
-                          {t(`dashboard.andonReason${eventCategory(ev).charAt(0).toUpperCase() + eventCategory(ev).slice(1)}`)}
+                          <span className="inline-flex items-center gap-1.5">
+                            {CATEGORY_ICON_MAP[eventCategory(ev)]}
+                            {t(`dashboard.andonReason${eventCategory(ev).charAt(0).toUpperCase() + eventCategory(ev).slice(1)}`)}
+                          </span>
                         </td>
                         <td className="py-3 pr-4 text-xs text-th-text-2 max-w-[200px] truncate">
                           {ev.description ?? "-"}
                         </td>
                         <td className="py-3 pr-4">
-                          <span className="text-xs font-mono text-emerald-400 font-bold">
+                          <span className="text-xs font-mono text-emerald-400 font-bold flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
                             {fmtDuration(resMins)}
                           </span>
                         </td>
@@ -1056,10 +1065,11 @@ export default function AndonBoard() {
       {/* ======= TRIGGER ANDON MODAL ======= */}
       {showTriggerModal && (
         <ModalOverlay onClose={() => setShowTriggerModal(false)}>
-          <div className="bg-th-bg-2 rounded-2xl shadow-2xl border border-th-border w-full max-w-lg mx-4">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm w-full max-w-lg mx-4">
             <div className="p-6 border-b border-th-border">
               <h3 className="font-bold text-th-text text-lg flex items-center gap-2">
-                <span>{"\u26A0"}</span> {t("dashboard.andonTriggerAlert")}
+                <AlertTriangle className="w-5 h-5 text-red-500" />
+                {t("dashboard.andonTriggerAlert")}
               </h3>
             </div>
 
@@ -1072,7 +1082,7 @@ export default function AndonBoard() {
                 <select
                   value={formLineId}
                   onChange={(e) => setFormLineId(Number(e.target.value))}
-                  className="w-full border border-th-border rounded-lg px-3 py-2.5 text-sm bg-th-input text-th-text focus:ring-2 focus:ring-red-500/50 focus:outline-none backdrop-blur-sm"
+                  className="w-full border border-th-border rounded-lg px-3 py-2.5 text-sm bg-th-bg text-th-text focus:ring-2 focus:ring-red-500/50 focus:outline-none"
                   autoFocus
                 >
                   {productionLines.length === 0 && (
@@ -1093,24 +1103,26 @@ export default function AndonBoard() {
                   <button
                     type="button"
                     onClick={() => setFormSeverity("red")}
-                    className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 border-2 ${
+                    className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300 border-2 flex items-center justify-center gap-2 ${
                       formSeverity === "red"
-                        ? "bg-red-500/20 text-red-400 border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.3)]"
-                        : "bg-th-input border-th-border text-th-text-2 hover:border-red-500/30"
+                        ? "bg-red-500/20 text-red-400 border-red-500/50"
+                        : "bg-th-bg border-th-border text-th-text-2 hover:border-red-500/30"
                     }`}
                   >
-                    {"\u{1F534}"} {t("dashboard.stopped")} (RED)
+                    <XCircle className="w-4 h-4" />
+                    {t("dashboard.stopped")} (RED)
                   </button>
                   <button
                     type="button"
                     onClick={() => setFormSeverity("yellow")}
-                    className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 border-2 ${
+                    className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300 border-2 flex items-center justify-center gap-2 ${
                       formSeverity === "yellow"
-                        ? "bg-amber-500/20 text-amber-400 border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.3)]"
-                        : "bg-th-input border-th-border text-th-text-2 hover:border-amber-500/30"
+                        ? "bg-amber-500/20 text-amber-400 border-amber-500/50"
+                        : "bg-th-bg border-th-border text-th-text-2 hover:border-amber-500/30"
                     }`}
                   >
-                    {"\u{1F7E1}"} {t("dashboard.caution")} (YELLOW)
+                    <PauseCircle className="w-4 h-4" />
+                    {t("dashboard.caution")} (YELLOW)
                   </button>
                 </div>
               </div>
@@ -1126,13 +1138,13 @@ export default function AndonBoard() {
                       key={c.key}
                       type="button"
                       onClick={() => setFormCategory(c.key)}
-                      className={`py-2.5 rounded-lg text-center text-xs font-semibold transition-all duration-300 border ${
+                      className={`py-2.5 rounded-lg text-center text-xs font-semibold transition-all duration-300 border flex flex-col items-center gap-1 ${
                         formCategory === c.key
                           ? "bg-blue-500/20 text-blue-400 border-blue-500/40"
-                          : "bg-th-input border-th-border text-th-text-2 hover:bg-th-bg-3"
+                          : "bg-th-bg border-th-border text-th-text-2 hover:bg-th-bg-2"
                       }`}
                     >
-                      <div className="text-lg mb-0.5">{CATEGORY_ICONS[c.key]}</div>
+                      <span>{CATEGORY_ICON_LG[c.key]}</span>
                       {t(c.labelKey)}
                     </button>
                   ))}
@@ -1148,7 +1160,7 @@ export default function AndonBoard() {
                   value={formDesc}
                   onChange={(e) => setFormDesc(e.target.value)}
                   rows={3}
-                  className="w-full border border-th-border rounded-lg px-3 py-2.5 text-sm bg-th-input text-th-text focus:ring-2 focus:ring-red-500/50 focus:outline-none resize-none backdrop-blur-sm"
+                  className="w-full border border-th-border rounded-lg px-3 py-2.5 text-sm bg-th-bg text-th-text focus:ring-2 focus:ring-red-500/50 focus:outline-none resize-none"
                   placeholder={t("dashboard.andonDescription")}
                 />
               </div>
@@ -1157,17 +1169,17 @@ export default function AndonBoard() {
             <div className="p-6 border-t border-th-border flex gap-3 justify-end">
               <button
                 onClick={() => setShowTriggerModal(false)}
-                className="px-4 py-2 rounded-lg text-sm font-semibold text-th-text-2 hover:bg-th-bg-3 transition-all duration-300"
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-th-text-2 hover:bg-th-bg transition-all duration-300"
               >
                 {t("dashboard.andonCancel")}
               </button>
               <button
                 onClick={handleTrigger}
                 disabled={!formLineId || submitting}
-                className="px-5 py-2 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 disabled:from-gray-600 disabled:to-gray-600 text-white rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2 shadow-[0_0_15px_rgba(239,68,68,0.3)]"
+                className="px-5 py-2 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 disabled:from-gray-600 disabled:to-gray-600 text-white rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2"
               >
                 {submitting && (
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 )}
                 {t("dashboard.andonSubmit")}
               </button>
@@ -1179,15 +1191,17 @@ export default function AndonBoard() {
       {/* ======= RESOLVE MODAL ======= */}
       {resolveTarget && (
         <ModalOverlay onClose={() => setResolveTarget(null)}>
-          <div className="bg-th-bg-2 rounded-2xl shadow-2xl border border-th-border w-full max-w-md mx-4">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm w-full max-w-md mx-4">
             <div className="p-6 border-b border-th-border">
               <h3 className="font-bold text-th-text text-lg flex items-center gap-2">
-                <span>{"\u2705"}</span> {t("dashboard.andonResolve")}
+                <CheckCircle className="w-5 h-5 text-emerald-500" />
+                {t("dashboard.andonResolve")}
               </h3>
               <p className="text-sm text-th-text-2 mt-1">
                 {resolveTarget.line_name} &mdash; {resolveTarget.description ?? ""}
               </p>
-              <p className="text-xs text-th-text-2 mt-1">
+              <p className="text-xs text-th-text-2 mt-1 flex items-center gap-1">
+                <Clock className="w-3 h-3" />
                 {t("dashboard.andonElapsed")}: <span className="font-mono font-bold text-amber-400">{fmtDuration(elapsedMin(resolveTarget.created_at))}</span>
               </p>
             </div>
@@ -1200,7 +1214,7 @@ export default function AndonBoard() {
                 value={resolveNotes}
                 onChange={(e) => setResolveNotes(e.target.value)}
                 rows={3}
-                className="w-full border border-th-border rounded-lg px-3 py-2.5 text-sm bg-th-input text-th-text focus:ring-2 focus:ring-emerald-500/50 focus:outline-none resize-none backdrop-blur-sm"
+                className="w-full border border-th-border rounded-lg px-3 py-2.5 text-sm bg-th-bg text-th-text focus:ring-2 focus:ring-emerald-500/50 focus:outline-none resize-none"
                 placeholder={t("dashboard.andonResolutionNotes")}
                 autoFocus
               />
@@ -1209,19 +1223,20 @@ export default function AndonBoard() {
             <div className="p-6 border-t border-th-border flex gap-3 justify-end">
               <button
                 onClick={() => setResolveTarget(null)}
-                className="px-4 py-2 rounded-lg text-sm font-semibold text-th-text-2 hover:bg-th-bg-3 transition-all duration-300"
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-th-text-2 hover:bg-th-bg transition-all duration-300"
               >
                 {t("dashboard.andonCancel")}
               </button>
               <button
                 onClick={handleResolve}
                 disabled={resolvingId === resolveTarget.id}
-                className="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 disabled:from-gray-600 disabled:to-gray-600 text-white rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                className="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 disabled:from-gray-600 disabled:to-gray-600 text-white rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2"
               >
                 {resolvingId === resolveTarget.id && (
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 )}
-                {`\u2713 ${t("dashboard.andonResolve")}`}
+                <CheckCircle className="w-4 h-4" />
+                {t("dashboard.andonResolve")}
               </button>
             </div>
           </div>
@@ -1242,7 +1257,7 @@ function KpiCard({
 }: {
   label: string;
   value: string;
-  icon: string;
+  icon: React.ReactNode;
   accentColor: "slate" | "red" | "blue" | "emerald" | "amber";
   pulse?: boolean;
 }) {
@@ -1255,11 +1270,19 @@ function KpiCard({
   };
 
   const glowColors: Record<string, string> = {
-    slate: "",
-    red: "text-red-400 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]",
-    blue: "text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.4)]",
-    emerald: "text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]",
-    amber: "text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]",
+    slate: "text-th-text",
+    red: "text-red-400",
+    blue: "text-blue-400",
+    emerald: "text-emerald-400",
+    amber: "text-amber-400",
+  };
+
+  const iconColors: Record<string, string> = {
+    slate: "text-th-text-2",
+    red: "text-red-400",
+    blue: "text-blue-400",
+    emerald: "text-emerald-400",
+    amber: "text-amber-400",
   };
 
   const pulseAnim: Record<string, string> = {
@@ -1271,8 +1294,8 @@ function KpiCard({
   };
 
   return (
-    <div className={`kpi-card-premium bg-th-bg-2 backdrop-blur-sm border border-th-border rounded-xl p-5 text-center border-l-4 ${borderColors[accentColor]} ${pulse ? pulseAnim[accentColor] : ""}`}>
-      <div className="text-2xl mb-2">{icon}</div>
+    <div className={`rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5 text-center border-l-4 ${borderColors[accentColor]} ${pulse ? pulseAnim[accentColor] : ""}`}>
+      <div className={`flex justify-center mb-2 ${iconColors[accentColor]}`}>{icon}</div>
       <div className={`text-3xl font-bold text-th-text ${glowColors[accentColor]}`}>{value}</div>
       <div className="text-[10px] text-th-text-2 font-bold mt-1 uppercase tracking-[0.1em]">{label}</div>
     </div>

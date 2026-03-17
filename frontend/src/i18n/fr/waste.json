@@ -1,0 +1,58 @@
+{
+  "title": "Suivi des Gaspillages",
+  "subtitle": "Identifiez et éliminez les 8 gaspillages (TIMWOODS)",
+  "loading": "Chargement des données de gaspillage...",
+
+  "transport": "Transport",
+  "transportDesc": "Déplacement inutile de matériaux ou de produits",
+  "inventory": "Stocks",
+  "inventoryDesc": "Excès de produits ou de matériaux non traités",
+  "motion": "Mouvement",
+  "motionDesc": "Déplacement inutile des personnes",
+  "waiting": "Attente",
+  "waitingDesc": "Temps d'inactivité en attente de l'étape suivante",
+  "overproduction": "Surproduction",
+  "overproductionDesc": "Produire plus que nécessaire",
+  "overprocessing": "Sur-traitement",
+  "overprocessingDesc": "Effectuer plus de travail que ce que le client exige",
+  "defects": "Défauts",
+  "defectsDesc": "Retouches, rebuts et corrections",
+  "skills": "Compétences (Talent non utilisé)",
+  "skillsDesc": "Sous-utilisation des capacités et connaissances des personnes",
+
+  "logWaste": "Enregistrer un Événement de Gaspillage",
+  "wasteType": "Type de Gaspillage",
+  "area": "Zone / Ligne",
+  "description": "Description",
+  "estimatedCost": "Coût Estimé",
+  "estimatedTime": "Temps Perdu Estimé (min)",
+  "rootCause": "Cause Racine",
+  "countermeasure": "Contre-mesure",
+  "severity": "Sévérité",
+  "severityHigh": "Élevée",
+  "severityMedium": "Moyenne",
+  "severityLow": "Faible",
+
+  "totalEvents": "Événements Totaux",
+  "totalCost": "Impact Coût Total",
+  "totalTimeLost": "Temps Total Perdu",
+  "topWasteType": "Type de Gaspillage Principal",
+
+  "byType": "Par Type",
+  "byArea": "Par Zone",
+  "trend": "Tendance",
+
+  "noEvents": "Aucun événement de gaspillage enregistré",
+  "noEventsHint": "Commencez à identifier les gaspillages dans l'atelier",
+
+  "saved": "Événement de gaspillage enregistré avec succès",
+  "saveError": "Échec de l'enregistrement de l'événement de gaspillage",
+  "deleted": "Événement de gaspillage supprimé",
+
+  "last7": "7 derniers jours",
+  "last30": "30 derniers jours",
+  "last90": "90 derniers jours",
+  "allTime": "Toute la Période",
+
+  "exportTitle": "Rapport de Gaspillage"
+}

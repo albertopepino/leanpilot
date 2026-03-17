@@ -252,5 +252,15 @@
   "productNamePlaceholder": "npr. Radilica",
   "cancel": "Otkaži",
   "creating": "Kreiranje...",
-  "create": "Kreiraj"
+  "create": "Kreiraj",
+
+  "units": "jedinica",
+  "totalTime": "Ukupno Vreme",
+  "availabilityLoss": "Gubitak Dostupnosti",
+  "performanceLoss": "Gubitak Performansi",
+  "qualityLoss": "Gubitak Kvaliteta",
+  "oeeWaterfallDesc": "Kako se ukupno raspoloživo vreme raspoređuje u OEE",
+
+  "weeklyHeatmap": "Nedeljni Toplotni Prikaz Proizvodnje",
+  "noData": "Nema podataka"
 }

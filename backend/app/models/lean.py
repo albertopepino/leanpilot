@@ -72,6 +72,14 @@ class FiveWhyAnalysis(TimestampMixin, Base):
     verified_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     ai_generated = Column(Boolean, default=False)
 
+    # Phase 2 enhancements
+    ishikawa_id = Column(Integer, ForeignKey("ishikawa_analyses.id"), nullable=True)  # Ishikawa→5-Why handoff
+    countermeasure_owner = Column(String, nullable=True)      # forced owner
+    countermeasure_deadline = Column(DateTime(timezone=True), nullable=True)  # forced deadline
+    horizontal_deployed = Column(Boolean, default=False)      # horizontal deployment done
+    horizontal_lines = Column(JSON, default=list)             # list of line IDs deployed to
+    verification_result = Column(Text, nullable=True)         # root cause verification
+
     steps = relationship("FiveWhyStep", back_populates="analysis", order_by="FiveWhyStep.step_number")
 
     @property
@@ -170,6 +178,17 @@ class KaizenItem(TimestampMixin, Base):
 
     ai_generated = Column(Boolean, default=False)
     ai_confidence = Column(Float)  # 0-1 confidence score from AI
+
+    # Phase 2 enhancements
+    before_photo_url = Column(String, nullable=True)
+    after_photo_url = Column(String, nullable=True)
+    effort_level = Column(String, nullable=True)   # low/medium/high (impact/effort matrix)
+    impact_level = Column(String, nullable=True)   # low/medium/high
+    is_blitz = Column(Boolean, default=False)       # Kaizen blitz flag
+    standardized = Column(Boolean, default=False)   # Has been standardized
+    source_type = Column(String, nullable=True)     # "manual", "six_s", "gemba", "oee_drop"
+    source_id = Column(Integer, nullable=True)      # ID of source item
+    linked_five_why_id = Column(Integer, ForeignKey("five_why_analyses.id"), nullable=True)
 
     @property
     def priority_normalized(self) -> str:

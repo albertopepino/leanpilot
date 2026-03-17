@@ -73,6 +73,7 @@
 
   "companyBranding": "Company Branding",
   "logoHint": "Your company logo appears in report headers and the sidebar. PNG, JPG, or SVG, max 2 MB.",
+  "confirmRemoveLogo": "Are you sure you want to remove the company logo?",
   "removeLogo": "Remove Logo",
   "uploadLogo": "Drag and drop your logo here, or click to browse",
   "logoUploading": "Uploading...",

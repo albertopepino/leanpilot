@@ -2,6 +2,20 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useI18n } from "@/stores/useI18n";
 import {
+  Shield,
+  AlertTriangle,
+  Flame,
+  Trophy,
+  ClipboardList,
+  FileText,
+  BarChart3,
+  Calendar,
+  ArrowUpDown,
+  Trash2,
+  X,
+  CheckCircle,
+} from "lucide-react";
+import {
   BarChart,
   Bar,
   XAxis,
@@ -54,39 +68,17 @@ const AREAS = [
   "Maintenance Bay",
 ];
 
-const SEVERITY_CONFIG: Record<Severity, { color: string; bg: string; border: string; glow: string }> = {
-  grave:     { color: "#ef4444", bg: "bg-red-500/20",    border: "border-red-500/40",    glow: "shadow-red-500/20" },
-  lieve:     { color: "#f59e0b", bg: "bg-amber-500/20",  border: "border-amber-500/40",  glow: "shadow-amber-500/20" },
-  near_miss: { color: "#eab308", bg: "bg-yellow-500/20", border: "border-yellow-500/40", glow: "shadow-yellow-500/20" },
-  first_aid: { color: "#22c55e", bg: "bg-emerald-500/20", border: "border-emerald-500/40", glow: "shadow-emerald-500/20" },
+const SEVERITY_CONFIG: Record<Severity, { color: string; bg: string; border: string }> = {
+  grave:     { color: "#ef4444", bg: "bg-red-500/15",     border: "border-red-500/30" },
+  lieve:     { color: "#f59e0b", bg: "bg-amber-500/15",   border: "border-amber-500/30" },
+  near_miss: { color: "#eab308", bg: "bg-yellow-500/15",  border: "border-yellow-500/30" },
+  first_aid: { color: "#22c55e", bg: "bg-emerald-500/15", border: "border-emerald-500/30" },
 };
 
 const CHART_COLORS = ["#ef4444", "#f59e0b", "#eab308", "#22c55e"];
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-// ─── Demo Data ──────────────────────────────────────────────────────────────
-
-function generateDemoIncidents(): SafetyIncident[] {
-  const now = new Date();
-  const demos: Omit<SafetyIncident, "id" | "createdAt">[] = [
-    { date: daysAgo(now, 3),   severity: "first_aid", line: "Assembly Line A", area: "Production Floor", description: "Minor cut on hand during material handling", actionsTaken: "First aid applied, gloves requirement reinforced" },
-    { date: daysAgo(now, 18),  severity: "near_miss", line: "CNC Department",  area: "Machinery Zone",  description: "Loose bolt on CNC guard detected during inspection", actionsTaken: "Guard re-secured, added to CILT checklist" },
-    { date: daysAgo(now, 35),  severity: "lieve",     line: "Packaging",       area: "Loading Area",    description: "Operator tripped over misplaced pallet", actionsTaken: "5S audit initiated, floor markings refreshed" },
-    { date: daysAgo(now, 52),  severity: "first_aid", line: "Paint Shop",      area: "Production Floor", description: "Mild irritation from solvent splash on forearm", actionsTaken: "PPE compliance check, chemical safety refresher training" },
-    { date: daysAgo(now, 78),  severity: "near_miss", line: "Warehouse",       area: "Storage Area",    description: "Forklift near collision at blind corner", actionsTaken: "Convex mirrors installed, speed limit signs added" },
-    { date: daysAgo(now, 95),  severity: "grave",     line: "Assembly Line B", area: "Machinery Zone",  description: "Finger caught in conveyor belt pinch point", actionsTaken: "Machine guarding upgraded, lockout/tagout procedure revised" },
-    { date: daysAgo(now, 130), severity: "first_aid", line: "Shipping Dock",   area: "Loading Area",    description: "Back strain from improper lifting technique", actionsTaken: "Ergonomics training scheduled, lifting aids procured" },
-    { date: daysAgo(now, 160), severity: "near_miss", line: "CNC Department",  area: "Maintenance Bay", description: "Oil spill not cleaned up, slip hazard", actionsTaken: "Spill kits relocated, cleaning SOP updated" },
-    { date: daysAgo(now, 200), severity: "lieve",     line: "Assembly Line A", area: "Production Floor", description: "Small burn from hot soldering iron contact", actionsTaken: "Insulated tool holders installed, safety zone marked" },
-    { date: daysAgo(now, 250), severity: "first_aid", line: "Packaging",       area: "Storage Area",    description: "Paper cut from cardboard box edge", actionsTaken: "Cut-resistant gloves provided for packaging team" },
-  ];
-
-  return demos.map((d, i) => ({
-    ...d,
-    id: `demo-${i + 1}`,
-    createdAt: d.date,
-  }));
-}
+/* Demo data generation removed — component starts with empty data */
 
 function daysAgo(from: Date, n: number): string {
   const d = new Date(from);
@@ -104,10 +96,7 @@ function loadIncidents(): SafetyIncident[] {
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
   } catch { /* ignore */ }
-  // Seed demo data
-  const demo = generateDemoIncidents();
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(demo));
-  return demo;
+  return [];
 }
 
 function saveIncidents(incidents: SafetyIncident[]) {
@@ -196,32 +185,36 @@ export default function SafetyTracker() {
   }, [incidents, persist, showToast, t]);
 
   // View tabs
-  const tabs: { key: ViewMode; label: string; icon: string }[] = [
-    { key: "counter", label: t("safety.viewCounter"), icon: "🛡️" },
-    { key: "log",     label: t("safety.viewLog"),     icon: "📝" },
-    { key: "history", label: t("safety.viewHistory"), icon: "📋" },
-    { key: "stats",   label: t("safety.viewStats"),   icon: "📊" },
+  const tabs: { key: ViewMode; label: string; icon: React.ReactNode }[] = [
+    { key: "counter", label: t("safety.viewCounter"), icon: <Shield className="w-4 h-4" /> },
+    { key: "log",     label: t("safety.viewLog"),     icon: <FileText className="w-4 h-4" /> },
+    { key: "history", label: t("safety.viewHistory"), icon: <ClipboardList className="w-4 h-4" /> },
+    { key: "stats",   label: t("safety.viewStats"),   icon: <BarChart3 className="w-4 h-4" /> },
   ];
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="max-w-[1400px] mx-auto space-y-6">
       {/* Toast */}
       {toast && (
-        <div className="fixed top-6 right-6 z-50 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-lg text-sm font-medium animate-in slide-in-from-top-2 fade-in duration-200">
+        <div className="fixed top-6 right-6 z-50 flex items-center gap-2 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-lg text-sm font-medium animate-in slide-in-from-top-2 fade-in duration-200">
+          <CheckCircle className="w-4 h-4" />
           {toast}
         </div>
       )}
 
       {/* Date Range Filter */}
-      <div className="bg-th-bg-2 rounded-2xl p-4 shadow-card border border-th-border flex flex-wrap items-center gap-4">
-        <span className="text-sm font-medium text-th-text-2">{t("safety.dateRangeFilter")}:</span>
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-4 flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-th-text-3" />
+          <span className="text-sm font-medium text-th-text-2">{t("safety.dateRangeFilter")}:</span>
+        </div>
         <div className="flex items-center gap-2">
           <label className="text-xs text-th-text-3">{t("safety.from")}</label>
           <input
             type="date"
             value={filterFrom}
             onChange={(e) => setFilterFrom(e.target.value)}
-            className="px-3 py-1.5 rounded-lg border border-th-border bg-th-input text-th-text text-sm"
+            className="px-3 py-1.5 rounded-lg border border-th-border bg-th-bg text-th-text text-sm"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -230,14 +223,15 @@ export default function SafetyTracker() {
             type="date"
             value={filterTo}
             onChange={(e) => setFilterTo(e.target.value)}
-            className="px-3 py-1.5 rounded-lg border border-th-border bg-th-input text-th-text text-sm"
+            className="px-3 py-1.5 rounded-lg border border-th-border bg-th-bg text-th-text text-sm"
           />
         </div>
         {(filterFrom || filterTo) && (
           <button
             onClick={() => { setFilterFrom(""); setFilterTo(""); }}
-            className="text-xs text-brand-500 hover:text-brand-400 font-medium"
+            className="flex items-center gap-1 text-xs text-th-text-3 hover:text-th-text-2 font-medium"
           >
+            <X className="w-3 h-3" />
             {t("safety.clearFilter")}
           </button>
         )}
@@ -249,13 +243,13 @@ export default function SafetyTracker() {
           <button
             key={tab.key}
             onClick={() => setView(tab.key)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
               view === tab.key
-                ? "bg-brand-600 text-white shadow-glow"
-                : "bg-th-bg-2 text-th-text-2 border border-th-border hover:bg-th-bg-2/80"
+                ? "bg-brand-600 text-white shadow-sm"
+                : "bg-th-bg-2 text-th-text-2 border border-th-border hover:bg-th-bg"
             }`}
           >
-            <span>{tab.icon}</span>
+            {tab.icon}
             {tab.label}
           </button>
         ))}
@@ -318,14 +312,14 @@ function CounterView({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Main gauge */}
-      <div className="lg:col-span-2 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-8 shadow-xl border border-white/10 flex flex-col items-center justify-center min-h-[400px] relative overflow-hidden">
+      <div className="lg:col-span-2 rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-8 flex flex-col items-center justify-center min-h-[400px] relative overflow-hidden">
         {/* Ambient glow */}
         <div
-          className="absolute inset-0 opacity-20 rounded-2xl"
+          className="absolute inset-0 opacity-20 rounded-xl"
           style={{ background: `radial-gradient(circle at 50% 40%, ${streakColor.glow}, transparent 70%)` }}
         />
 
-        <h2 className="text-lg font-semibold text-white/70 mb-6 tracking-wide uppercase relative z-10">
+        <h2 className="text-lg font-semibold text-th-text-2 mb-6 tracking-wide uppercase relative z-10">
           {t("safety.daysWithoutIncidents")}
         </h2>
 
@@ -335,7 +329,7 @@ function CounterView({
             {/* Background ring */}
             <circle
               cx="100" cy="100" r="85"
-              fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="12"
+              fill="none" stroke="currentColor" strokeWidth="12" className="text-th-border"
             />
             {/* Progress ring */}
             <circle
@@ -353,7 +347,7 @@ function CounterView({
               <line
                 key={deg}
                 x1="100" y1="22" x2="100" y2="28"
-                stroke="rgba(255,255,255,0.15)" strokeWidth="1"
+                stroke="currentColor" strokeWidth="1" className="text-th-border"
                 transform={`rotate(${deg} 100 100)`}
               />
             ))}
@@ -363,51 +357,59 @@ function CounterView({
             <span className={`text-7xl font-black tabular-nums ${streakColor.text}`} style={{ textShadow: `0 0 30px ${streakColor.glow}` }}>
               {animatedCount}
             </span>
-            <span className="text-sm text-white/50 uppercase tracking-widest mt-1">{t("safety.days")}</span>
+            <span className="text-sm text-th-text-3 uppercase tracking-widest mt-1">{t("safety.days")}</span>
           </div>
         </div>
 
         {/* Last incident */}
         {lastIncidentDate && (
-          <p className="text-sm text-white/40 mt-6 relative z-10">
-            {t("safety.lastIncident")}: <span className="text-white/70 font-medium">{lastIncidentDate}</span>
+          <p className="text-sm text-th-text-3 mt-6 relative z-10 flex items-center gap-2">
+            <Calendar className="w-3.5 h-3.5" />
+            {t("safety.lastIncident")}: <span className="text-th-text-2 font-medium">{lastIncidentDate}</span>
           </p>
         )}
         {!lastIncidentDate && (
-          <p className="text-sm text-white/40 mt-6 relative z-10">{t("safety.noIncidentsRecorded")}</p>
+          <p className="text-sm text-th-text-3 mt-6 relative z-10">{t("safety.noIncidentsRecorded")}</p>
         )}
       </div>
 
       {/* Side cards */}
       <div className="space-y-6">
         {/* Current streak card */}
-        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-6 shadow-xl border border-white/10">
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-xl">🔥</div>
-            <span className="text-sm font-medium text-white/60 uppercase tracking-wide">{t("safety.currentStreak")}</span>
+            <div className="w-10 h-10 rounded-lg bg-emerald-500/15 flex items-center justify-center">
+              <Flame className="w-5 h-5 text-emerald-500" />
+            </div>
+            <span className="text-sm font-medium text-th-text-2 uppercase tracking-wide">{t("safety.currentStreak")}</span>
           </div>
           <div className={`text-4xl font-black ${streakColor.text}`}>{currentStreak}</div>
-          <div className="text-xs text-white/40 mt-1">{t("safety.days")}</div>
+          <div className="text-xs text-th-text-3 mt-1">{t("safety.days")}</div>
         </div>
 
         {/* Best streak card */}
-        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-6 shadow-xl border border-white/10">
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-xl">🏆</div>
-            <span className="text-sm font-medium text-white/60 uppercase tracking-wide">{t("safety.bestStreak")}</span>
+            <div className="w-10 h-10 rounded-lg bg-amber-500/15 flex items-center justify-center">
+              <Trophy className="w-5 h-5 text-amber-500" />
+            </div>
+            <span className="text-sm font-medium text-th-text-2 uppercase tracking-wide">{t("safety.bestStreak")}</span>
           </div>
           <div className="text-4xl font-black text-amber-400">{bestStreak}</div>
-          <div className="text-xs text-white/40 mt-1">{t("safety.days")}</div>
+          <div className="text-xs text-th-text-3 mt-1">{t("safety.days")}</div>
         </div>
 
         {/* Severity legend */}
-        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-6 shadow-xl border border-white/10">
-          <h3 className="text-sm font-medium text-white/60 uppercase tracking-wide mb-4">{t("safety.severity")}</h3>
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertTriangle className="w-4 h-4 text-th-text-3" />
+            <h3 className="text-sm font-medium text-th-text-2 uppercase tracking-wide">{t("safety.severity")}</h3>
+          </div>
           <div className="space-y-3">
             {(["grave", "lieve", "near_miss", "first_aid"] as Severity[]).map((sev) => (
               <div key={sev} className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: SEVERITY_CONFIG[sev].color }} />
-                <span className="text-sm text-white/70">{t(`safety.severity${sev.charAt(0).toUpperCase()}${sev.slice(1).replace(/_([a-z])/g, (_, c) => c.toUpperCase())}`)}</span>
+                <span className="text-sm text-th-text-2">{t(`safety.severity${sev.charAt(0).toUpperCase()}${sev.slice(1).replace(/_([a-z])/g, (_, c) => c.toUpperCase())}`)}</span>
               </div>
             ))}
           </div>
@@ -453,19 +455,21 @@ function LogForm({
     { value: "first_aid", label: t("safety.severityFirstAid") },
   ];
 
-  const inputCls = "w-full px-4 py-3 rounded-xl border border-th-border bg-th-input text-th-text text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none";
+  const inputCls = "w-full px-4 py-3 rounded-lg border border-th-border bg-th-bg text-th-text text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none";
   const labelCls = "text-xs font-medium text-th-text-2 mb-1.5 block";
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="bg-th-bg-2 rounded-2xl p-8 shadow-card border border-th-border">
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-8">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center text-xl">🚨</div>
+          <div className="w-10 h-10 rounded-lg bg-red-500/15 flex items-center justify-center">
+            <AlertTriangle className="w-5 h-5 text-red-500" />
+          </div>
           <h2 className="text-lg font-bold text-th-text">{t("safety.logIncident")}</h2>
         </div>
 
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm px-4 py-2 rounded-xl mb-4">
+          <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-sm px-4 py-2 rounded-lg mb-4">
             {error}
           </div>
         )}
@@ -536,7 +540,7 @@ function LogForm({
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-brand-600 to-brand-500 text-white py-3 rounded-xl font-semibold hover:shadow-glow transition-all text-sm"
+            className="w-full bg-brand-600 hover:bg-brand-500 text-white py-3 rounded-lg font-semibold transition-all text-sm"
           >
             {t("safety.submitIncident")}
           </button>
@@ -578,18 +582,18 @@ function HistoryTable({
       : sev === "near_miss" ? t("safety.severityNearMiss")
       : t("safety.severityFirstAid");
     return (
-      <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${cfg.bg} ${cfg.border} border`} style={{ color: cfg.color }}>
+      <span className={`inline-flex px-2.5 py-1 rounded-md text-xs font-semibold ${cfg.bg} ${cfg.border} border`} style={{ color: cfg.color }}>
         {label}
       </span>
     );
   };
 
-  const selectCls = "px-3 py-1.5 rounded-lg border border-th-border bg-th-input text-th-text text-sm";
+  const selectCls = "px-3 py-1.5 rounded-lg border border-th-border bg-th-bg text-th-text text-sm";
 
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="bg-th-bg-2 rounded-2xl p-4 shadow-card border border-th-border flex flex-wrap items-center gap-4">
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-4 flex flex-wrap items-center gap-4">
         <select value={sevFilter} onChange={(e) => setSevFilter(e.target.value as Severity | "")} className={selectCls}>
           <option value="">{t("safety.allSeverities")}</option>
           <option value="grave">{t("safety.severityGrave")}</option>
@@ -605,19 +609,20 @@ function HistoryTable({
         </select>
         <button
           onClick={() => setSortAsc(!sortAsc)}
-          className="text-sm text-brand-500 hover:text-brand-400 font-medium"
+          className="flex items-center gap-1.5 text-sm text-th-text-2 hover:text-th-text font-medium"
         >
-          {t("safety.sortByDate")} {sortAsc ? "↑" : "↓"}
+          <ArrowUpDown className="w-3.5 h-3.5" />
+          {t("safety.sortByDate")}
         </button>
       </div>
 
       {/* Table */}
       {displayed.length === 0 ? (
-        <div className="bg-th-bg-2 rounded-2xl p-12 text-center border border-th-border">
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-12 text-center">
           <p className="text-th-text-3">{t("safety.noIncidents")}</p>
         </div>
       ) : (
-        <div className="bg-th-bg-2 rounded-2xl shadow-card border border-th-border overflow-hidden">
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -632,7 +637,7 @@ function HistoryTable({
               </thead>
               <tbody>
                 {displayed.map((inc) => (
-                  <tr key={inc.id} className="border-b border-th-border/50 hover:bg-th-bg-2/50 transition">
+                  <tr key={inc.id} className="border-b border-th-border/50 hover:bg-th-bg transition">
                     <td className="px-4 py-3 text-th-text whitespace-nowrap">{inc.date}</td>
                     <td className="px-4 py-3">{severityBadge(inc.severity)}</td>
                     <td className="px-4 py-3 text-th-text whitespace-nowrap">{inc.line}</td>
@@ -641,9 +646,10 @@ function HistoryTable({
                     <td className="px-4 py-3 text-center">
                       <button
                         onClick={() => onDelete(inc.id)}
-                        className="text-red-400 hover:text-red-300 transition text-xs font-medium"
+                        className="text-red-400 hover:text-red-300 transition p-1"
+                        title={t("common.delete")}
                       >
-                        {t("common.delete")}
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
                   </tr>
@@ -724,10 +730,10 @@ function StatsView({
 
   const chartTooltipStyle = {
     contentStyle: {
-      backgroundColor: "rgba(17,17,27,0.95)",
-      border: "1px solid rgba(255,255,255,0.1)",
+      backgroundColor: "var(--color-th-bg-2, rgba(17,17,27,0.95))",
+      border: "1px solid var(--color-th-border, rgba(255,255,255,0.1))",
       borderRadius: 12,
-      color: "#e0e0e0",
+      color: "var(--color-th-text, #e0e0e0)",
       fontSize: 12,
     },
   };
@@ -735,13 +741,16 @@ function StatsView({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Incidents by Month */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-6 shadow-xl border border-white/10">
-        <h3 className="text-sm font-semibold text-white/70 uppercase tracking-wide mb-4">{t("safety.incidentsByMonth")}</h3>
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <BarChart3 className="w-4 h-4 text-th-text-3" />
+          <h3 className="text-sm font-semibold text-th-text-2 uppercase tracking-wide">{t("safety.incidentsByMonth")}</h3>
+        </div>
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={byMonth}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-            <XAxis dataKey="month" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-th-border, rgba(255,255,255,0.06))" />
+            <XAxis dataKey="month" tick={{ fill: "var(--color-th-text-3, rgba(255,255,255,0.5))", fontSize: 11 }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fill: "var(--color-th-text-3, rgba(255,255,255,0.5))", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
             <Tooltip {...chartTooltipStyle} />
             <Bar dataKey="count" name={t("safety.count")} fill="#3b82f6" radius={[6, 6, 0, 0]} />
           </BarChart>
@@ -749,10 +758,13 @@ function StatsView({
       </div>
 
       {/* Incidents by Severity */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-6 shadow-xl border border-white/10">
-        <h3 className="text-sm font-semibold text-white/70 uppercase tracking-wide mb-4">{t("safety.incidentsBySeverity")}</h3>
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <AlertTriangle className="w-4 h-4 text-th-text-3" />
+          <h3 className="text-sm font-semibold text-th-text-2 uppercase tracking-wide">{t("safety.incidentsBySeverity")}</h3>
+        </div>
         {bySeverity.length === 0 ? (
-          <div className="flex items-center justify-center h-[260px] text-white/30 text-sm">{t("safety.noIncidents")}</div>
+          <div className="flex items-center justify-center h-[260px] text-th-text-3 text-sm">{t("safety.noIncidents")}</div>
         ) : (
           <ResponsiveContainer width="100%" height={260}>
             <PieChart>
@@ -776,7 +788,7 @@ function StatsView({
                 verticalAlign="bottom"
                 iconType="circle"
                 iconSize={8}
-                formatter={(value: string) => <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 11 }}>{value}</span>}
+                formatter={(value: string) => <span className="text-th-text-2 text-xs">{value}</span>}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -784,16 +796,19 @@ function StatsView({
       </div>
 
       {/* Incidents by Production Line */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-6 shadow-xl border border-white/10">
-        <h3 className="text-sm font-semibold text-white/70 uppercase tracking-wide mb-4">{t("safety.incidentsByLine")}</h3>
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <ClipboardList className="w-4 h-4 text-th-text-3" />
+          <h3 className="text-sm font-semibold text-th-text-2 uppercase tracking-wide">{t("safety.incidentsByLine")}</h3>
+        </div>
         {byLine.length === 0 ? (
-          <div className="flex items-center justify-center h-[260px] text-white/30 text-sm">{t("safety.noIncidents")}</div>
+          <div className="flex items-center justify-center h-[260px] text-th-text-3 text-sm">{t("safety.noIncidents")}</div>
         ) : (
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={byLine} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-              <XAxis type="number" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
-              <YAxis type="category" dataKey="name" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} axisLine={false} tickLine={false} width={120} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-th-border, rgba(255,255,255,0.06))" />
+              <XAxis type="number" tick={{ fill: "var(--color-th-text-3, rgba(255,255,255,0.5))", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+              <YAxis type="category" dataKey="name" tick={{ fill: "var(--color-th-text-3, rgba(255,255,255,0.5))", fontSize: 11 }} axisLine={false} tickLine={false} width={120} />
               <Tooltip {...chartTooltipStyle} />
               <Bar dataKey="count" name={t("safety.count")} fill="#8b5cf6" radius={[0, 6, 6, 0]} />
             </BarChart>
@@ -802,18 +817,21 @@ function StatsView({
       </div>
 
       {/* Year-over-Year */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-6 shadow-xl border border-white/10">
-        <h3 className="text-sm font-semibold text-white/70 uppercase tracking-wide mb-4">{t("safety.yearOverYear")}</h3>
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Calendar className="w-4 h-4 text-th-text-3" />
+          <h3 className="text-sm font-semibold text-th-text-2 uppercase tracking-wide">{t("safety.yearOverYear")}</h3>
+        </div>
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={yoy}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-            <XAxis dataKey="month" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-th-border, rgba(255,255,255,0.06))" />
+            <XAxis dataKey="month" tick={{ fill: "var(--color-th-text-3, rgba(255,255,255,0.5))", fontSize: 11 }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fill: "var(--color-th-text-3, rgba(255,255,255,0.5))", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
             <Tooltip {...chartTooltipStyle} />
             <Legend
               iconType="circle"
               iconSize={8}
-              formatter={(value: string) => <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 11 }}>{value}</span>}
+              formatter={(value: string) => <span className="text-th-text-2 text-xs">{value}</span>}
             />
             <Bar dataKey="thisYear" name={t("safety.thisYear")} fill="#10b981" radius={[6, 6, 0, 0]} />
             <Bar dataKey="lastYear" name={t("safety.lastYear")} fill="#6366f1" radius={[6, 6, 0, 0]} />

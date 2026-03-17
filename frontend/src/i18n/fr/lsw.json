@@ -1,0 +1,19 @@
+{
+  "title": "Travail Standard du Leader",
+  "subtitle": "Listes de contrôle quotidiennes par rôle et suivi",
+  "createTemplate": "Créer un modèle",
+  "role": "Rôle",
+  "operator": "Opérateur",
+  "supervisor": "Superviseur",
+  "manager": "Responsable",
+  "frequency": "Fréquence",
+  "daily": "Quotidien",
+  "weekly": "Hebdomadaire",
+  "monthly": "Mensuel",
+  "tasks": "Tâches",
+  "addTask": "Ajouter une tâche",
+  "todayTasks": "Tâches du jour",
+  "completionHistory": "Historique d'achèvement",
+  "completion": "Achèvement",
+  "noTemplates": "Aucun modèle créé"
+}

@@ -279,12 +279,13 @@ class QCRecordService:
         else:
             record.status = "passed"
 
-        # If FAILED → trigger Andon and QC hold
+        # If FAILED → Auto-Linked Quality Loop (Andon + NCR + Notification)
         if record.status == "failed":
             andon_status = "red" if critical_failed else "yellow"
             check_type_str = str(record.check_type).lower() if record.check_type else "qc_check"
             template_name = template.name if template else "QC Check"
 
+            # 1. Auto-trigger Andon
             andon = AndonEvent(
                 factory_id=factory_id,
                 production_line_id=record.production_line_id,
@@ -301,7 +302,58 @@ class QCRecordService:
             record.andon_triggered = True
             record.andon_event_id = andon.id
 
-            # Place QC hold on PO if linked
+            # 2. Auto-create NCR (one transaction)
+            ncr_number = await NCRService._generate_ncr_number(db, factory_id)
+            ncr = NonConformanceReport(
+                factory_id=factory_id,
+                production_line_id=record.production_line_id,
+                production_order_id=record.production_order_id,
+                qc_record_id=record.id,
+                raised_by_id=record.performed_by_id,
+                ncr_number=ncr_number,
+                title=f"QC Failure: {template_name}",
+                description=f"Auto-generated NCR from {check_type_str} failure. "
+                            f"{failed_items} item(s) failed out of {total_items} "
+                            f"(score: {score_pct:.0f}%).",
+                severity="critical" if critical_failed else "major",
+                status="open",
+            )
+            # Auto-assign NCR to line supervisor (Automation #11)
+            from app.models.user import User
+            supervisor_q = select(User).where(
+                User.factory_id == factory_id,
+                User.role == "supervisor",
+                User.is_active == True,
+            ).limit(1)
+            supervisor_r = await db.execute(supervisor_q)
+            supervisor = supervisor_r.scalar_one_or_none()
+            if supervisor:
+                ncr.assigned_to_id = supervisor.id
+            db.add(ncr)
+            await db.flush()
+
+            # 3. Auto-create notifications
+            try:
+                from app.services.notification_service import notify_qc_fail
+                # Get line name for notification
+                from app.models.factory import ProductionLine
+                line_q = select(ProductionLine.name).where(
+                    ProductionLine.id == record.production_line_id
+                )
+                line_r = await db.execute(line_q)
+                line_name = line_r.scalar() or "Unknown Line"
+
+                await notify_qc_fail(
+                    db,
+                    factory_id=factory_id,
+                    qc_record_id=record.id,
+                    line_name=line_name,
+                    check_type=check_type_str,
+                )
+            except Exception:
+                pass  # Don't fail the QC check if notifications fail
+
+            # 4. Place QC hold on PO if linked
             if record.production_order_id:
                 po_q = select(ProductionOrder).where(ProductionOrder.id == record.production_order_id)
                 po_r = await db.execute(po_q)

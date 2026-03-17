@@ -1,0 +1,19 @@
+{
+  "title": "Leader Standard Work",
+  "subtitle": "Daily role-based checklists and tracking",
+  "createTemplate": "Create Template",
+  "role": "Role",
+  "operator": "Operator",
+  "supervisor": "Supervisor",
+  "manager": "Manager",
+  "frequency": "Frequency",
+  "daily": "Daily",
+  "weekly": "Weekly",
+  "monthly": "Monthly",
+  "tasks": "Tasks",
+  "addTask": "Add Task",
+  "todayTasks": "Today's Tasks",
+  "completionHistory": "Completion History",
+  "completion": "Completion",
+  "noTemplates": "No templates created yet"
+}

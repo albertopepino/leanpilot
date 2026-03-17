@@ -1,0 +1,18 @@
+{
+  "title": "Programador de auditorías",
+  "subtitle": "Programa y realiza seguimiento de auditorías 6S, TPM, QC, Gemba y Seguridad",
+  "createSchedule": "Crear programación",
+  "auditType": "Tipo de auditoría",
+  "frequency": "Frecuencia",
+  "nextDue": "Próximo vencimiento",
+  "lastCompleted": "Último completado",
+  "overdue": "Vencida",
+  "markComplete": "Marcar como completada",
+  "daily": "Diario",
+  "weekly": "Semanal",
+  "biweekly": "Quincenal",
+  "monthly": "Mensual",
+  "quarterly": "Trimestral",
+  "assignedTo": "Asignado a",
+  "noSchedules": "Sin auditorías programadas"
+}

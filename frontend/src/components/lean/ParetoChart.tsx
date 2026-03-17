@@ -1,11 +1,27 @@
 "use client";
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { productionApi, advancedLeanApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
 import {
-  BarChart,
+  BarChart3,
+  TrendingUp,
+  Filter,
+  CalendarDays,
+  ClipboardCopy,
+  Check,
+  AlertTriangle,
+  RefreshCw,
+  Loader2,
+  X,
+  Hash,
+  Layers,
+  Target,
+  Trophy,
+  CircleDot,
+} from "lucide-react";
+import {
   Bar,
   XAxis,
   YAxis,
@@ -48,52 +64,7 @@ interface ComputedItem extends ParetoItem {
 }
 
 // ---------------------------------------------------------------------------
-// Demo data (fallback when API is unavailable)
-// ---------------------------------------------------------------------------
-
-const DEMO_DATA: Record<DataSource, ParetoItem[]> = {
-  downtime: [
-    { id: 1, categoryKey: "toolBreakage", count: 23, minutes: 460, cost: 4600 },
-    { id: 2, categoryKey: "materialShortage", count: 18, minutes: 360, cost: 3200 },
-    { id: 3, categoryKey: "setupError", count: 14, minutes: 280, cost: 2100 },
-    { id: 4, categoryKey: "qualityReject", count: 11, minutes: 165, cost: 1650 },
-    { id: 5, categoryKey: "equipmentJam", count: 8, minutes: 200, cost: 1800 },
-    { id: 6, categoryKey: "operatorAbsent", count: 5, minutes: 300, cost: 900 },
-    { id: 7, categoryKey: "itSystemDown", count: 3, minutes: 90, cost: 750 },
-    { id: 8, categoryKey: "other", count: 2, minutes: 30, cost: 120 },
-  ],
-  defects: [
-    { id: 1, categoryKey: "dimensionError", count: 30, minutes: 0, cost: 5400 },
-    { id: 2, categoryKey: "surfaceFinish", count: 22, minutes: 0, cost: 3300 },
-    { id: 3, categoryKey: "assemblyMismatch", count: 15, minutes: 0, cost: 2700 },
-    { id: 4, categoryKey: "materialDefect", count: 10, minutes: 0, cost: 2000 },
-    { id: 5, categoryKey: "colorVariation", count: 7, minutes: 0, cost: 700 },
-    { id: 6, categoryKey: "packaging", count: 4, minutes: 0, cost: 200 },
-  ],
-  scrap: [
-    { id: 1, categoryKey: "rawMaterial", count: 35, minutes: 0, cost: 7000 },
-    { id: 2, categoryKey: "rework", count: 20, minutes: 0, cost: 4000 },
-    { id: 3, categoryKey: "processWaste", count: 12, minutes: 0, cost: 1800 },
-    { id: 4, categoryKey: "overProduction", count: 8, minutes: 0, cost: 1600 },
-    { id: 5, categoryKey: "handling", count: 5, minutes: 0, cost: 500 },
-  ],
-  andon: [
-    { id: 1, categoryKey: "andonRed", count: 15, minutes: 320, cost: 4800 },
-    { id: 2, categoryKey: "andonMaintenance", count: 12, minutes: 240, cost: 3600 },
-    { id: 3, categoryKey: "andonQuality", count: 10, minutes: 200, cost: 3000 },
-    { id: 4, categoryKey: "andonMaterial", count: 8, minutes: 120, cost: 1600 },
-    { id: 5, categoryKey: "andonYellow", count: 6, minutes: 90, cost: 900 },
-    { id: 6, categoryKey: "andonSafety", count: 3, minutes: 60, cost: 1200 },
-  ],
-};
-
-const DEMO_DRILLDOWN: DrillDownRecord[] = [
-  { date: "2026-03-12", line: "Line A", duration: 45, cost: 450, notes: "Worn tool tip on CNC #3" },
-  { date: "2026-03-11", line: "Line B", duration: 30, cost: 300, notes: "Feed jam after shift change" },
-  { date: "2026-03-10", line: "Line A", duration: 60, cost: 600, notes: "Spindle alignment issue" },
-  { date: "2026-03-09", line: "Line C", duration: 25, cost: 250, notes: "Insert chipped mid-cycle" },
-  { date: "2026-03-08", line: "Line A", duration: 50, cost: 500, notes: "Emergency replacement" },
-];
+/* Demo data removed — component relies on API data */
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -165,27 +136,27 @@ function buildCsvString(computed: ComputedItem[], t: (k: string) => string): str
 // Custom Recharts Tooltip
 // ---------------------------------------------------------------------------
 
-function CustomTooltip({ active, payload, label, t }: any) {
+function CustomTooltip({ active, payload, t }: any) {
   if (!active || !payload?.length) return null;
   const data = payload[0]?.payload;
   if (!data) return null;
   return (
-    <div className="bg-th-bg-2 border border-th-border rounded-xl px-4 py-3 shadow-xl text-sm">
-      <p className="font-bold text-white mb-1.5">
+    <div className="rounded-xl border border-th-border bg-th-bg-2 px-4 py-3 shadow-sm text-sm">
+      <p className="font-bold text-th-text mb-1.5">
         {t(`problem-solving.${data.categoryKey}`) || data.categoryKey}
       </p>
       <div className="space-y-1">
-        <p className="text-th-text">
-          <span className="text-white font-semibold">{data.count}</span> {t("problem-solving.occurrences")}
+        <p className="text-th-text-2">
+          <span className="text-th-text font-semibold">{data.count}</span> {t("problem-solving.occurrences")}
         </p>
-        <p className="text-th-text">
-          {t("problem-solving.percentage")}: <span className="text-white font-semibold">{data.pct.toFixed(1)}%</span>
+        <p className="text-th-text-2">
+          {t("problem-solving.percentage")}: <span className="text-th-text font-semibold">{data.pct.toFixed(1)}%</span>
         </p>
-        <p className="text-th-text">
-          {t("problem-solving.cumulative")}: <span className={`font-semibold ${data.cumPct <= 80 ? "text-rose-400" : "text-th-text-2"}`}>{data.cumPct.toFixed(1)}%</span>
+        <p className="text-th-text-2">
+          {t("problem-solving.cumulative")}: <span className={`font-semibold ${data.cumPct <= 80 ? "text-rose-500" : "text-th-text-3"}`}>{data.cumPct.toFixed(1)}%</span>
         </p>
         {data.cost > 0 && (
-          <p className="text-purple-400 font-medium mt-1">
+          <p className="text-purple-500 font-medium mt-1">
             {fmtCurrency(data.cost)}
           </p>
         )}
@@ -302,8 +273,8 @@ export default function ParetoChart() {
       setItems(result);
       setIsDemo(false);
     } catch {
-      setItems(DEMO_DATA[dataSource]);
-      setIsDemo(true);
+      setItems([]);
+      setIsDemo(false);
     } finally {
       setLoading(false);
     }
@@ -359,7 +330,7 @@ export default function ParetoChart() {
           }
           throw new Error("fallback");
         } catch {
-          setDrillDownData(DEMO_DRILLDOWN);
+          setDrillDownData([]);
         } finally {
           setDrillDownLoading(false);
         }
@@ -385,54 +356,60 @@ export default function ParetoChart() {
   // -----------------------------------------------------------------------
 
   return (
-    <div className="space-y-5 max-w-5xl mx-auto" data-print-area="true">
-      {/* ---- Demo data banner ---- */}
-      {isDemo && (
-        <div className="px-4 py-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-between text-sm backdrop-blur-sm">
-          <span className="text-amber-700 dark:text-amber-400 font-medium">{"\u26A0\uFE0F"} {t("dashboard.demoDataBadge")} {"\u2014"} {t("dashboard.usingDemoData")}</span>
-          <button onClick={() => fetchData()} className="text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 font-semibold underline transition">
-            {t("dashboard.retry")}
-          </button>
+    <div className="max-w-[1400px] mx-auto space-y-6" data-print-area="true">
+      {/* ---- Empty state ---- */}
+      {!loading && items.length === 0 && (
+        <div className="px-4 py-6 bg-th-bg-2 border border-th-border rounded-xl text-center text-sm text-th-text-2">
+          {t("problem-solving.noParetoData") || "No data yet. Pareto analysis will appear once production records are available."}
         </div>
       )}
 
       {/* ---- Header ---- */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 dark:from-slate-800 dark:to-slate-950 border border-th-border p-6 shadow-xl">
-        <div className="absolute inset-0 bg-gradient-to-r from-rose-500/5 to-pink-500/5 pointer-events-none" />
-        <div className="relative flex items-center gap-4 mb-5">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-lg shadow-rose-500/20">
-            <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
+        <div className="flex items-center gap-4 mb-5">
+          <div className="w-10 h-10 rounded-lg bg-rose-500/10 flex items-center justify-center">
+            <BarChart3 className="w-5 h-5 text-rose-500" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-bold text-white tracking-tight">{t("problem-solving.paretoTitle")}</h2>
-            <p className="text-sm text-white/60 mt-0.5">{t("problem-solving.paretoSubtitle")}</p>
+            <h2 className="text-xl font-bold text-th-text tracking-tight">{t("problem-solving.paretoTitle")}</h2>
+            <p className="text-sm text-th-text-3 mt-0.5">{t("problem-solving.paretoSubtitle")}</p>
           </div>
           {isDemo && (
-            <span className="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full px-3 py-1 backdrop-blur-sm shrink-0">
+            <span className="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-lg px-3 py-1 shrink-0">
               {t("problem-solving.demoData")}
             </span>
           )}
         </div>
 
         {/* KPI summary cards */}
-        <div className="relative grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="bg-th-bg-3 backdrop-blur-sm rounded-xl p-3.5 border border-th-border/50">
-            <div className="text-3xl font-bold text-white">{items.length}</div>
-            <div className="text-xs text-white/50 uppercase tracking-wider font-medium mt-1">{t("problem-solving.categories")}</div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-3.5">
+            <div className="flex items-center gap-2 mb-1">
+              <Layers className="w-3.5 h-3.5 text-th-text-3" />
+              <span className="text-xs text-th-text-3 uppercase tracking-wider font-medium">{t("problem-solving.categories")}</span>
+            </div>
+            <div className="text-2xl font-bold text-th-text">{items.length}</div>
           </div>
-          <div className="bg-th-bg-3 backdrop-blur-sm rounded-xl p-3.5 border border-th-border/50">
-            <div className="text-3xl font-bold text-white">{total}</div>
-            <div className="text-xs text-white/50 uppercase tracking-wider font-medium mt-1">{t("problem-solving.totalEvents")}</div>
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-3.5">
+            <div className="flex items-center gap-2 mb-1">
+              <Hash className="w-3.5 h-3.5 text-th-text-3" />
+              <span className="text-xs text-th-text-3 uppercase tracking-wider font-medium">{t("problem-solving.totalEvents")}</span>
+            </div>
+            <div className="text-2xl font-bold text-th-text">{total}</div>
           </div>
-          <div className="bg-th-bg-3 backdrop-blur-sm rounded-xl p-3.5 border border-th-border/50">
-            <div className="text-3xl font-bold text-rose-400">{vitalCount}</div>
-            <div className="text-xs text-white/50 uppercase tracking-wider font-medium mt-1">{t("problem-solving.categoriesEighty")}</div>
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-3.5">
+            <div className="flex items-center gap-2 mb-1">
+              <Target className="w-3.5 h-3.5 text-rose-500" />
+              <span className="text-xs text-th-text-3 uppercase tracking-wider font-medium">{t("problem-solving.categoriesEighty")}</span>
+            </div>
+            <div className="text-2xl font-bold text-rose-500">{vitalCount}</div>
           </div>
-          <div className="bg-th-bg-3 backdrop-blur-sm rounded-xl p-3.5 border border-th-border/50">
-            <div className="text-3xl font-bold text-purple-400">{topContributor ? `${topContributor.pct.toFixed(0)}%` : "\u2014"}</div>
-            <div className="text-xs text-white/50 uppercase tracking-wider font-medium mt-1">{t("problem-solving.topContributor") || "Top Contributor"}</div>
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-3.5">
+            <div className="flex items-center gap-2 mb-1">
+              <Trophy className="w-3.5 h-3.5 text-purple-500" />
+              <span className="text-xs text-th-text-3 uppercase tracking-wider font-medium">{t("problem-solving.topContributor") || "Top Contributor"}</span>
+            </div>
+            <div className="text-2xl font-bold text-purple-500">{topContributor ? `${topContributor.pct.toFixed(0)}%` : "\u2014"}</div>
           </div>
         </div>
       </div>
@@ -460,19 +437,22 @@ export default function ParetoChart() {
       />
 
       {/* ---- Filters ---- */}
-      <div className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900/50 backdrop-blur-sm rounded-2xl p-5 border border-slate-200/50 dark:border-white/5 shadow-card space-y-4">
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5 space-y-4">
         {/* Data source tabs */}
         <div>
-          <div className="text-xs text-th-text-3 mb-2 font-medium uppercase tracking-wider">{t("problem-solving.dataSource")}</div>
+          <div className="flex items-center gap-1.5 text-xs text-th-text-3 mb-2 font-medium uppercase tracking-wider">
+            <Filter className="w-3.5 h-3.5" />
+            {t("problem-solving.dataSource")}
+          </div>
           <div className="flex flex-wrap gap-2">
             {DATA_SOURCES.map((ds) => (
               <button
                 key={ds.key}
                 onClick={() => setDataSource(ds.key)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   dataSource === ds.key
-                    ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-lg shadow-rose-500/20"
-                    : "bg-white dark:bg-white/5 text-th-text-2 border border-slate-200/50 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10"
+                    ? "bg-rose-500 text-white"
+                    : "bg-th-bg-3 text-th-text-2 border border-th-border hover:bg-th-bg-hover"
                 }`}
               >
                 {t(ds.labelKey)}
@@ -483,15 +463,18 @@ export default function ParetoChart() {
 
         {/* Date range + export */}
         <div className="flex flex-wrap items-center gap-2">
-          <div className="text-xs text-th-text-3 font-medium mr-1 uppercase tracking-wider">{t("problem-solving.dateRange")}:</div>
+          <div className="flex items-center gap-1.5 text-xs text-th-text-3 font-medium mr-1 uppercase tracking-wider">
+            <CalendarDays className="w-3.5 h-3.5" />
+            {t("problem-solving.dateRange")}:
+          </div>
           {DATE_PRESETS.map((p) => (
             <button
               key={p.days}
               onClick={() => setDatePreset(p.days)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 datePreset === p.days
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/20"
-                  : "bg-white dark:bg-white/5 text-th-text-2 border border-slate-200/50 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10"
+                  ? "bg-indigo-500 text-white"
+                  : "bg-th-bg-3 text-th-text-2 border border-th-border hover:bg-th-bg-hover"
               }`}
             >
               {t(p.labelKey)}
@@ -504,22 +487,24 @@ export default function ParetoChart() {
           <button
             onClick={handleExportCsv}
             disabled={computed.length === 0}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-white dark:bg-white/5 text-th-text-2 border border-slate-200/50 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 transition-all disabled:opacity-40"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-th-bg-3 text-th-text-2 border border-th-border hover:bg-th-bg-hover transition-all disabled:opacity-40"
           >
+            {copyFeedback ? (
+              <Check className="w-4 h-4 text-green-500" />
+            ) : (
+              <ClipboardCopy className="w-4 h-4" />
+            )}
             {copyFeedback ? t("problem-solving.copiedCsv") : t("problem-solving.exportCsv")}
           </button>
         </div>
       </div>
 
       {/* ---- Chart ---- */}
-      <div className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900/50 backdrop-blur-sm rounded-2xl p-5 border border-slate-200/50 dark:border-white/5 shadow-card relative min-h-[380px]">
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5 relative min-h-[380px]">
         {/* Loading overlay */}
         {loading && (
-          <div className="absolute inset-0 bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm rounded-2xl flex items-center justify-center z-30">
-            <div className="relative">
-              <div className="w-12 h-12 border-4 border-rose-500/20 rounded-full" />
-              <div className="absolute inset-0 w-12 h-12 border-4 border-rose-500 border-t-transparent rounded-full animate-spin" />
-            </div>
+          <div className="absolute inset-0 bg-th-bg-2/80 rounded-xl flex items-center justify-center z-30">
+            <Loader2 className="w-8 h-8 text-rose-500 animate-spin" />
           </div>
         )}
 
@@ -563,7 +548,7 @@ export default function ParetoChart() {
                 <CartesianGrid
                   strokeDasharray="3 3"
                   stroke="currentColor"
-                  className="text-slate-200 dark:text-white/5"
+                  className="text-th-border"
                   vertical={false}
                 />
                 <XAxis
@@ -638,7 +623,7 @@ export default function ParetoChart() {
             </ResponsiveContainer>
 
             {/* Legend */}
-            <div className="mt-4 pt-3 border-t border-slate-200/50 dark:border-white/5 flex flex-wrap gap-x-6 gap-y-1.5 text-xs text-th-text-3">
+            <div className="mt-4 pt-3 border-t border-th-border flex flex-wrap gap-x-6 gap-y-1.5 text-xs text-th-text-3">
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-3 rounded bg-gradient-to-b from-rose-500 to-rose-500/60" />
                 <span className="font-medium">{t("problem-solving.vitalFew")}</span>
@@ -667,11 +652,11 @@ export default function ParetoChart() {
 
       {/* ---- Data Table ---- */}
       {!loading && computed.length > 0 && (
-        <div className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900/50 backdrop-blur-sm rounded-2xl border border-slate-200/50 dark:border-white/5 shadow-card overflow-hidden">
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-100/80 dark:bg-white/5">
+                <tr className="bg-th-bg-3">
                   <th className="text-left py-3 px-4 font-semibold text-th-text-3 text-xs uppercase tracking-wider">#</th>
                   <th className="text-left py-3 px-4 font-semibold text-th-text-3 text-xs uppercase tracking-wider">
                     {t("problem-solving.category")}
@@ -695,18 +680,18 @@ export default function ParetoChart() {
                   <tr
                     key={item.id}
                     onClick={() => handleBarClick(item)}
-                    className={`border-b border-slate-200/30 dark:border-white/5 cursor-pointer transition-colors ${
+                    className={`border-b border-th-border cursor-pointer transition-colors ${
                       selectedItem?.id === item.id
-                        ? "bg-indigo-50 dark:bg-indigo-950/20"
-                        : "hover:bg-slate-50/50 dark:hover:bg-white/5"
+                        ? "bg-indigo-500/10"
+                        : "hover:bg-th-bg-hover"
                     }`}
                   >
                     <td className="py-3 px-4 text-th-text-3">{idx + 1}</td>
                     <td className="py-3 px-4 text-th-text font-semibold">
                       <span className="flex items-center gap-2">
-                        <span
-                          className={`inline-block w-2.5 h-2.5 rounded-sm shrink-0 ${
-                            item.isVital ? "bg-rose-500" : "bg-slate-400 dark:bg-slate-600"
+                        <CircleDot
+                          className={`w-3 h-3 shrink-0 ${
+                            item.isVital ? "text-rose-500" : "text-th-text-3"
                           }`}
                         />
                         {t(`problem-solving.${item.categoryKey}`) || item.categoryKey}
@@ -718,14 +703,14 @@ export default function ParetoChart() {
                       <span
                         className={
                           item.cumPct <= 80
-                            ? "text-rose-600 dark:text-rose-400 font-bold"
+                            ? "text-rose-500 font-bold"
                             : "text-th-text-3"
                         }
                       >
                         {item.cumPct.toFixed(1)}%
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right tabular-nums text-purple-600 dark:text-purple-400 font-medium">
+                    <td className="py-3 px-4 text-right tabular-nums text-purple-500 font-medium">
                       {fmtCurrency(item.cost)}
                     </td>
                   </tr>
@@ -738,11 +723,12 @@ export default function ParetoChart() {
 
       {/* ---- Drill-down Panel ---- */}
       {selectedItem && (
-        <div className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900/50 backdrop-blur-sm rounded-2xl p-5 border-l-4 border-l-indigo-500 border border-slate-200/50 dark:border-white/5 shadow-card animate-in slide-in-from-top-2 duration-200">
+        <div className="rounded-xl border border-th-border border-l-4 border-l-indigo-500 bg-th-bg-2 shadow-sm p-5 animate-in slide-in-from-top-2 duration-200">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-bold text-th-text">
-              {t("problem-solving.drillDownTitle")} {"\u2014"}{" "}
-              <span className="text-rose-600 dark:text-rose-400">
+            <h3 className="flex items-center gap-2 text-base font-bold text-th-text">
+              <TrendingUp className="w-4 h-4 text-indigo-500" />
+              {t("problem-solving.drillDownTitle")} —{" "}
+              <span className="text-rose-500">
                 {t(`problem-solving.${selectedItem.categoryKey}`) || selectedItem.categoryKey}
               </span>
             </h3>
@@ -751,25 +737,25 @@ export default function ParetoChart() {
                 setSelectedItem(null);
                 setDrillDownData([]);
               }}
-              className="text-th-text-3 hover:text-th-text transition text-lg leading-none px-2 py-1 rounded-lg hover:bg-th-bg-3"
+              className="text-th-text-3 hover:text-th-text transition p-1.5 rounded-lg hover:bg-th-bg-3"
               aria-label={t("problem-solving.close")}
             >
-              {"\u2715"}
+              <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Summary cards */}
           <div className="grid grid-cols-3 gap-3 mb-4">
-            <div className="bg-white/60 dark:bg-white/[0.03] rounded-xl p-3.5 text-center border border-slate-200/50 dark:border-white/5">
+            <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-3.5 text-center">
               <div className="text-2xl font-bold text-th-text">{selectedItem.count}</div>
               <div className="text-xs text-th-text-3 uppercase tracking-wider font-medium mt-0.5">{t("problem-solving.occurrences")}</div>
             </div>
-            <div className="bg-white/60 dark:bg-white/[0.03] rounded-xl p-3.5 text-center border border-slate-200/50 dark:border-white/5">
+            <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-3.5 text-center">
               <div className="text-2xl font-bold text-th-text">{selectedItem.minutes} min</div>
               <div className="text-xs text-th-text-3 uppercase tracking-wider font-medium mt-0.5">{t("problem-solving.totalDowntime")}</div>
             </div>
-            <div className="bg-white/60 dark:bg-white/[0.03] rounded-xl p-3.5 text-center border border-purple-200/50 dark:border-purple-500/10">
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+            <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-3.5 text-center">
+              <div className="text-2xl font-bold text-purple-500">
                 {fmtCurrency(selectedItem.cost)}
               </div>
               <div className="text-xs text-th-text-3 uppercase tracking-wider font-medium mt-0.5">{t("problem-solving.costImpact")}</div>
@@ -779,16 +765,13 @@ export default function ParetoChart() {
           {/* Detail table */}
           {drillDownLoading ? (
             <div className="flex justify-center py-8">
-              <div className="relative">
-                <div className="w-8 h-8 border-3 border-rose-500/20 rounded-full" />
-                <div className="absolute inset-0 w-8 h-8 border-3 border-rose-500 border-t-transparent rounded-full animate-spin" />
-              </div>
+              <Loader2 className="w-6 h-6 text-rose-500 animate-spin" />
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200/50 dark:border-white/5 text-th-text-3">
+                  <tr className="border-b border-th-border text-th-text-3">
                     <th className="text-left py-2.5 pr-4 font-medium text-xs uppercase tracking-wider">{t("problem-solving.date")}</th>
                     <th className="text-left py-2.5 pr-4 font-medium text-xs uppercase tracking-wider">{t("problem-solving.line")}</th>
                     <th className="text-right py-2.5 pr-4 font-medium text-xs uppercase tracking-wider">{t("problem-solving.duration")}</th>
@@ -798,11 +781,11 @@ export default function ParetoChart() {
                 </thead>
                 <tbody>
                   {drillDownData.map((row, i) => (
-                    <tr key={i} className="border-b border-slate-200/30 dark:border-white/5 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
+                    <tr key={i} className="border-b border-th-border hover:bg-th-bg-hover transition-colors">
                       <td className="py-2.5 pr-4 text-th-text">{row.date}</td>
                       <td className="py-2.5 pr-4 text-th-text">{row.line}</td>
                       <td className="py-2.5 pr-4 text-right text-th-text tabular-nums">{row.duration} min</td>
-                      <td className="py-2.5 pr-4 text-right text-purple-600 dark:text-purple-400 font-medium tabular-nums">
+                      <td className="py-2.5 pr-4 text-right text-purple-500 font-medium tabular-nums">
                         {fmtCurrency(row.cost)}
                       </td>
                       <td className="py-2.5 text-th-text-2">{row.notes}</td>

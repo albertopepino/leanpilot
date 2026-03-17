@@ -1,0 +1,17 @@
+{
+  "title": "Paleta Poleceń",
+  "placeholder": "Szukaj stron, akcji...",
+  "searchLabel": "Szukaj poleceń",
+  "results": "Wyniki",
+  "noResults": "Nie znaleziono wyników.",
+  "recent": "Ostatnie",
+  "quickActions": "Szybkie Akcje",
+  "navigation": "Nawigacja",
+  "hintNavigate": "nawiguj",
+  "hintSelect": "wybierz",
+  "hintClose": "zamknij",
+  "newKaizen": "Nowe Wydarzenie Kaizen",
+  "logProduction": "Zarejestruj Dane Produkcyjne",
+  "reportIssue": "Zgłoś Problem (NCR)",
+  "startGemba": "Rozpocznij Gemba Walk"
+}

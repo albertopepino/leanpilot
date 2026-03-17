@@ -1,0 +1,19 @@
+{
+  "title": "Standardni rad lidera",
+  "subtitle": "Dnevne kontrolne liste po ulozi i praćenje",
+  "createTemplate": "Kreiraj šablon",
+  "role": "Uloga",
+  "operator": "Operater",
+  "supervisor": "Poslovođa",
+  "manager": "Rukovodilac",
+  "frequency": "Učestalost",
+  "daily": "Dnevno",
+  "weekly": "Nedeljno",
+  "monthly": "Mesečno",
+  "tasks": "Zadaci",
+  "addTask": "Dodaj zadatak",
+  "todayTasks": "Današnji zadaci",
+  "completionHistory": "Istorija izvršenja",
+  "completion": "Izvršenje",
+  "noTemplates": "Još nema kreiranih šablona"
+}

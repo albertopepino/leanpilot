@@ -1,0 +1,13 @@
+{
+  "title": "SQCDP Board",
+  "subtitle": "Daily visual management board — Safety, Quality, Cost, Delivery, People",
+  "clickToAdd": "Click to add entry",
+  "actionItems": "Action Items",
+  "actionRequired": "Action Required",
+  "owner": "Owner",
+  "logMeeting": "Log Meeting",
+  "attendees": "Attendees",
+  "tier1": "Tier 1 — Team",
+  "tier2": "Tier 2 — Department",
+  "tier3": "Tier 3 — Plant"
+}

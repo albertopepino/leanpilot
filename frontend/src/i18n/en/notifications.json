@@ -1,0 +1,15 @@
+{
+  "title": "Notifications",
+  "markAllRead": "Mark all read",
+  "noNotifications": "No notifications",
+  "qcFail": "QC Check Failed",
+  "andonTriggered": "Andon Triggered",
+  "ncrCreated": "NCR Created",
+  "capaOverdue": "CAPA Overdue",
+  "kaizenAssigned": "Kaizen Assigned",
+  "tpmDue": "TPM Maintenance Due",
+  "shiftHandover": "Shift Handover",
+  "escalation": "Escalation",
+  "auditDue": "Audit Due",
+  "oeeDrop": "OEE Drop Alert"
+}

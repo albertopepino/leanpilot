@@ -1,0 +1,37 @@
+{
+  "title": "Karta Wyników Lean",
+  "subtitle": "Dojrzałość lean Twojej fabryki w pigułce",
+  "loading": "Ładowanie karty wyników...",
+  "demoNote": "Dane demonstracyjne — wykonaj Ocenę Lean, aby uzyskać rzeczywiste wyniki",
+
+  "overallMaturity": "Dojrzałość Ogólna",
+  "rawScore": "Wynik surowy: {score} / 4.0",
+  "dmaicPhases": "Fazy DMAIC",
+  "moduleUsage": "Wykorzystanie Modułów",
+  "improvementTrend": "Trend Doskonalenia",
+  "trendNote": "Miesięczny wynik dojrzałości lean na podstawie oceny i aktywności modułów",
+  "quickWins": "Szybkie Wygrane",
+  "quickWinsDesc": "Skup się na tych obszarach, aby uzyskać największy efekt doskonalenia",
+  "topPriority": "NAJWYŻSZY PRIORYTET",
+  "categoryBreakdown": "Podział na Kategorie",
+
+  "levelBeginner": "Początkujący",
+  "levelDeveloping": "Rozwijający się",
+  "levelProficient": "Biegły",
+  "levelAdvanced": "Zaawansowany",
+
+  "kaizenEvents": "Wydarzenia Kaizen",
+  "gembaWalks": "Gemba Walks",
+  "sixSAudits": "Audyty 6S",
+  "fiveWhyAnalyses": "Analizy 5 Dlaczego",
+  "a3Reports": "Raporty A3",
+  "vsmMaps": "Mapy VSM",
+
+  "suggestWorkplace": "Zacznij od audytu 6S, aby ustalić podstawowe standardy organizacji stanowiska pracy",
+  "suggestVisual": "Zainstaluj tablice śledzenia produkcji godzinowej i skonfiguruj Dashboard OEE",
+  "suggestStandard": "Udokumentuj 5 najważniejszych procedur operacyjnych i udostępnij je na stanowiskach pracy",
+  "suggestImprovement": "Uruchom tablicę Kaizen i zaplanuj pierwsze wydarzenie doskonalące",
+  "suggestProblem": "Użyj analizy 5 Dlaczego przy następnym problemie jakościowym, aby rozwijać umiejętności analizy przyczyn źródłowych",
+  "suggestTPM": "Zarejestruj krytyczne urządzenia w Dashboardzie TPM i utwórz listy kontrolne CILT",
+  "suggestDefault": "Przejrzyj ten obszar i zidentyfikuj jedno konkretne usprawnienie"
+}

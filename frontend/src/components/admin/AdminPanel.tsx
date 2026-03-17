@@ -4,6 +4,12 @@ import { useI18n } from "@/stores/useI18n";
 import { useAuth } from "@/hooks/useAuth";
 import { adminApi, manufacturingApi } from "@/lib/api";
 import GroupPoliciesPanel from "./GroupPoliciesPanel";
+import {
+  Shield, Users, Building, Key, Activity, Database, Settings,
+  Plus, Trash2, Edit3, Lock, Download, X, CheckCircle, XCircle,
+  Factory, Cog, Package, Clock, ChevronUp, ChevronDown, Copy,
+  UserPlus, RotateCcw, Ban, Check,
+} from "lucide-react";
 
 type ExportState = "idle" | "loading" | "success" | "error";
 
@@ -46,10 +52,10 @@ const ROLE_LABEL_KEYS: Record<string, string> = {
 };
 
 const PERM_COLORS: Record<string, string> = {
-  full: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  modify: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  view: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  hidden: "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600",
+  full: "bg-th-bg-3 text-emerald-600 dark:text-emerald-400",
+  modify: "bg-th-bg-3 text-blue-600 dark:text-blue-400",
+  view: "bg-th-bg-3 text-amber-600 dark:text-amber-400",
+  hidden: "bg-th-bg-3 text-th-text-3",
 };
 
 const PERM_LABEL_KEYS: Record<string, string> = {
@@ -65,6 +71,15 @@ const ALL_TABS = [
   "vsm", "smed", "gemba", "six-s", "tpm", "cilt",
   "copilot", "resources", "admin",
 ];
+
+const TAB_ICONS: Record<Tab, React.ReactNode> = {
+  setup: <Settings className="w-4 h-4" />,
+  users: <Users className="w-4 h-4" />,
+  groups: <Shield className="w-4 h-4" />,
+  permissions: <Key className="w-4 h-4" />,
+  audit: <Activity className="w-4 h-4" />,
+  factory: <Building className="w-4 h-4" />,
+};
 
 export default function AdminPanel() {
   const { t } = useI18n();
@@ -383,7 +398,7 @@ export default function AdminPanel() {
   ];
 
   return (
-    <div className="space-y-6" role="region" aria-label="Admin Panel">
+    <div className="max-w-[1400px] mx-auto space-y-6" role="region" aria-label="Admin Panel">
       {/* Tabs */}
       <div className="flex gap-1 bg-th-bg-3 rounded-xl p-1" role="tablist" aria-label="Admin sections">
         {tabs.map((tab) => (
@@ -392,12 +407,13 @@ export default function AdminPanel() {
             role="tab"
             aria-selected={activeTab === tab.id}
             onClick={() => { setActiveTab(tab.id); clearMessages(); }}
-            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition ${
+            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2 ${
               activeTab === tab.id
                 ? "bg-brand-600 text-white shadow"
                 : "text-th-text-2 hover:text-th-text hover:bg-th-bg-2"
             }`}
           >
+            {TAB_ICONS[tab.id]}
             {t(tab.labelKey)}
           </button>
         ))}
@@ -405,31 +421,47 @@ export default function AdminPanel() {
 
       {/* Alerts */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 text-sm text-red-700 dark:text-red-400 flex justify-between">
-          <span>{error}</span>
-          <button onClick={() => setError("")} className="ml-2 font-bold">✕</button>
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-3 text-sm text-red-600 dark:text-red-400 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <XCircle className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+          <button onClick={() => setError("")} className="ml-2 p-1 rounded-lg hover:bg-th-bg-3 text-th-text-2 hover:text-th-text transition">
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
       {success && (
-        <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3 text-sm text-emerald-700 dark:text-emerald-400 flex justify-between">
-          <span>{success}</span>
-          <button onClick={() => setSuccess("")} className="ml-2 font-bold">✕</button>
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-3 text-sm text-emerald-600 dark:text-emerald-400 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 shrink-0" />
+            <span>{success}</span>
+          </div>
+          <button onClick={() => setSuccess("")} className="ml-2 p-1 rounded-lg hover:bg-th-bg-3 text-th-text-2 hover:text-th-text transition">
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
       {/* Temp password display */}
       {tempPassword && (
-        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-xl p-4">
-          <p className="text-sm font-medium text-amber-800 dark:text-amber-300 mb-2">{t("admin.passwordResetSuccess")}</p>
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-4">
+          <p className="text-sm font-medium text-amber-600 dark:text-amber-400 mb-2 flex items-center gap-2">
+            <Key className="w-4 h-4" />
+            {t("admin.passwordResetSuccess")}
+          </p>
           <div className="flex items-center gap-2">
-            <code className="bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg text-sm font-mono border">{tempPassword}</code>
+            <code className="bg-th-bg border border-th-border px-3 py-1.5 rounded-lg text-sm font-mono text-th-text">{tempPassword}</code>
             <button
               onClick={() => { navigator.clipboard.writeText(tempPassword); }}
-              className="text-xs bg-amber-200 dark:bg-amber-800 px-3 py-1.5 rounded-lg hover:bg-amber-300 dark:hover:bg-amber-700 transition"
+              className="text-xs bg-th-bg-3 text-th-text-2 hover:text-th-text px-3 py-1.5 rounded-lg hover:bg-th-bg-3/80 transition flex items-center gap-1"
             >
+              <Copy className="w-3 h-3" />
               {t("admin.copyPassword")}
             </button>
-            <button onClick={() => setTempPassword(null)} className="ml-auto text-amber-500 hover:text-amber-700">✕</button>
+            <button onClick={() => setTempPassword(null)} className="ml-auto p-1 rounded-lg hover:bg-th-bg-3 text-th-text-2 hover:text-th-text transition">
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}
@@ -439,49 +471,57 @@ export default function AdminPanel() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-th-text">{t("admin.usersTitle")}</h2>
+              <h2 className="text-lg font-bold text-th-text flex items-center gap-2">
+                <Users className="w-5 h-5 text-th-text-2" />
+                {t("admin.usersTitle")}
+              </h2>
               <p className="text-sm text-th-text-2">{t("admin.usersSubtitle")}</p>
             </div>
             <button
               onClick={() => { setShowUserForm(true); setEditingUser(null); setFormData({ email: "", full_name: "", role: "operator", language: "en", password: "" }); clearMessages(); }}
-              className="bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition shadow"
+              className="bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow flex items-center gap-2"
             >
-              + {t("admin.addUser")}
+              <Plus className="w-4 h-4" />
+              {t("admin.addUser")}
             </button>
           </div>
 
           {/* User Form Modal */}
           {(showUserForm || editingUser) && (
-            <div className="bg-th-bg-2 border border-th-border rounded-2xl p-6 space-y-4 shadow-lg">
-              <h3 className="font-bold text-th-text">
+            <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6 space-y-4">
+              <h3 className="font-bold text-th-text flex items-center gap-2">
+                {editingUser ? <Edit3 className="w-4 h-4 text-th-text-2" /> : <UserPlus className="w-4 h-4 text-th-text-2" />}
                 {editingUser ? t("admin.editUser") : t("admin.addUser")}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {!editingUser && (
                   <div>
-                    <label className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldEmail")}</label>
+                    <label htmlFor="admin-email" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldEmail")}</label>
                     <input
+                      id="admin-email"
                       type="email" value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full bg-th-bg border border-th-border rounded-xl px-3 py-2 text-sm text-th-text"
+                      className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text"
                       placeholder="user@company.com"
                     />
                   </div>
                 )}
                 <div>
-                  <label className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldName")}</label>
+                  <label htmlFor="admin-fullname" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldName")}</label>
                   <input
+                    id="admin-fullname"
                     type="text" value={formData.full_name}
                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                    className="w-full bg-th-bg border border-th-border rounded-xl px-3 py-2 text-sm text-th-text"
+                    className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldRole")}</label>
+                  <label htmlFor="admin-role" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldRole")}</label>
                   <select
+                    id="admin-role"
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    className="w-full bg-th-bg border border-th-border rounded-xl px-3 py-2 text-sm text-th-text"
+                    className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text"
                   >
                     {ROLES.map((r) => (
                       <option key={r} value={r}>{t(ROLE_LABEL_KEYS[r])}</option>
@@ -489,11 +529,12 @@ export default function AdminPanel() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldLanguage")}</label>
+                  <label htmlFor="admin-language" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldLanguage")}</label>
                   <select
+                    id="admin-language"
                     value={formData.language}
                     onChange={(e) => setFormData({ ...formData, language: e.target.value })}
-                    className="w-full bg-th-bg border border-th-border rounded-xl px-3 py-2 text-sm text-th-text"
+                    className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text"
                   >
                     <option value="en">English</option>
                     <option value="it">Italiano</option>
@@ -501,11 +542,12 @@ export default function AdminPanel() {
                 </div>
                 {!editingUser && (
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldPassword")}</label>
+                    <label htmlFor="admin-password" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldPassword")}</label>
                     <input
+                      id="admin-password"
                       type="text" value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="w-full bg-th-bg border border-th-border rounded-xl px-3 py-2 text-sm text-th-text font-mono"
+                      className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text font-mono"
                       placeholder={t("admin.fieldPasswordHint")}
                     />
                     <p className="text-xs text-th-text-3 mt-1">{t("admin.fieldPasswordHint")}</p>
@@ -516,7 +558,7 @@ export default function AdminPanel() {
                 <button
                   onClick={editingUser ? handleUpdateUser : handleCreateUser}
                   disabled={loading}
-                  className="bg-brand-600 hover:bg-brand-500 text-white px-6 py-2 rounded-xl text-sm font-semibold transition disabled:opacity-50"
+                  className="bg-brand-600 hover:bg-brand-500 text-white px-6 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50"
                 >
                   {loading ? "..." : (editingUser ? t("common.save") : t("admin.addUser"))}
                 </button>
@@ -531,7 +573,7 @@ export default function AdminPanel() {
           )}
 
           {/* Users Table */}
-          <div className="bg-th-bg-2 border border-th-border rounded-2xl overflow-hidden shadow">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -545,8 +587,8 @@ export default function AdminPanel() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((u) => (
-                    <tr key={u.id} className="border-b border-th-border last:border-0 hover:bg-th-bg-3/50 transition">
+                  {users.map((u, idx) => (
+                    <tr key={u.id} className={`border-b border-th-border last:border-0 hover:bg-th-bg-3/50 transition ${idx % 2 === 1 ? "bg-th-bg-3/20" : ""}`}>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-xs font-bold text-white">
@@ -560,16 +602,17 @@ export default function AdminPanel() {
                       </td>
                       <td className="px-4 py-3 text-th-text-2">{u.email}</td>
                       <td className="px-4 py-3">
-                        <span className="text-xs font-medium bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400 px-2 py-1 rounded-full">
+                        <span className="text-xs font-medium bg-th-bg-3 text-brand-700 dark:text-brand-400 px-2 py-1 rounded-full">
                           {t(ROLE_LABEL_KEYS[u.role] || "admin.roleViewer")}
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                        <span className={`text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 w-fit ${
                           u.is_active
-                            ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400"
-                            : "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400"
+                            ? "bg-th-bg-3 text-emerald-600 dark:text-emerald-400"
+                            : "bg-th-bg-3 text-red-600 dark:text-red-400"
                         }`}>
+                          {u.is_active ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
                           {u.is_active ? t("admin.statusActive") : t("admin.statusInactive")}
                         </span>
                       </td>
@@ -584,12 +627,16 @@ export default function AdminPanel() {
                             onClick={() => openEditUser(u)}
                             className="p-1.5 rounded-lg hover:bg-th-bg-3 text-th-text-2 hover:text-th-text transition"
                             title={t("admin.editUser")}
-                          >✏️</button>
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
                           <button
                             onClick={() => handleResetPassword(u)}
                             className="p-1.5 rounded-lg hover:bg-th-bg-3 text-th-text-2 hover:text-th-text transition"
                             title={t("admin.resetPassword")}
-                          >🔑</button>
+                          >
+                            <RotateCcw className="w-4 h-4" />
+                          </button>
                           {u.id !== user?.id && (
                             <button
                               onClick={() => handleToggleActive(u)}
@@ -598,7 +645,7 @@ export default function AdminPanel() {
                               }`}
                               title={u.is_active ? t("admin.deactivate") : t("admin.activate")}
                             >
-                              {u.is_active ? "🚫" : "✅"}
+                              {u.is_active ? <Ban className="w-4 h-4" /> : <Check className="w-4 h-4" />}
                             </button>
                           )}
                         </div>
@@ -626,11 +673,14 @@ export default function AdminPanel() {
       {activeTab === "permissions" && (
         <div className="space-y-4">
           <div>
-            <h2 className="text-lg font-bold text-th-text">{t("admin.permTitle")}</h2>
+            <h2 className="text-lg font-bold text-th-text flex items-center gap-2">
+              <Key className="w-5 h-5 text-th-text-2" />
+              {t("admin.permTitle")}
+            </h2>
             <p className="text-sm text-th-text-2">{t("admin.permSubtitle")}</p>
           </div>
 
-          <div className="bg-th-bg-2 border border-th-border rounded-2xl overflow-hidden shadow">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
@@ -644,8 +694,8 @@ export default function AdminPanel() {
                   </tr>
                 </thead>
                 <tbody>
-                  {ALL_TABS.map((tabId) => (
-                    <tr key={tabId} className="border-b border-th-border last:border-0">
+                  {ALL_TABS.map((tabId, idx) => (
+                    <tr key={tabId} className={`border-b border-th-border last:border-0 ${idx % 2 === 1 ? "bg-th-bg-3/20" : ""}`}>
                       <td className="px-3 py-2 font-medium text-th-text sticky left-0 bg-th-bg-2 z-10 capitalize">
                         {tabId.replace("-", " ")}
                       </td>
@@ -672,11 +722,14 @@ export default function AdminPanel() {
       {activeTab === "audit" && (
         <div className="space-y-4">
           <div>
-            <h2 className="text-lg font-bold text-th-text">{t("admin.auditTitle")}</h2>
+            <h2 className="text-lg font-bold text-th-text flex items-center gap-2">
+              <Activity className="w-5 h-5 text-th-text-2" />
+              {t("admin.auditTitle")}
+            </h2>
             <p className="text-sm text-th-text-2">{t("admin.auditSubtitle")}</p>
           </div>
 
-          <div className="bg-th-bg-2 border border-th-border rounded-2xl overflow-hidden shadow">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -689,8 +742,8 @@ export default function AdminPanel() {
                   </tr>
                 </thead>
                 <tbody>
-                  {auditLogs.map((log) => (
-                    <tr key={log.id} className="border-b border-th-border last:border-0 hover:bg-th-bg-3/50">
+                  {auditLogs.map((log, idx) => (
+                    <tr key={log.id} className={`border-b border-th-border last:border-0 hover:bg-th-bg-3/50 ${idx % 2 === 1 ? "bg-th-bg-3/20" : ""}`}>
                       <td className="px-4 py-3 text-xs text-th-text-2 whitespace-nowrap">
                         {new Date(log.timestamp).toLocaleString()}
                       </td>
@@ -722,52 +775,57 @@ export default function AdminPanel() {
       {activeTab === "setup" && (
         <div className="space-y-6">
           <div>
-            <h2 className="text-lg font-bold text-th-text">{t("admin.setupTitle")}</h2>
+            <h2 className="text-lg font-bold text-th-text flex items-center gap-2">
+              <Settings className="w-5 h-5 text-th-text-2" />
+              {t("admin.setupTitle")}
+            </h2>
             <p className="text-sm text-th-text-2">{t("admin.setupSubtitle")}</p>
           </div>
 
-          {/* ═══ PRODUCTION LINES ═══ */}
-          <div className="bg-th-bg-2 border border-th-border rounded-2xl shadow overflow-hidden">
+          {/* Production Lines */}
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-th-border bg-th-bg-3">
               <h3 className="font-bold text-th-text flex items-center gap-2">
-                <span className="text-lg">🏭</span> {t("admin.sectionLines")}
+                <Factory className="w-4 h-4 text-th-text-2" />
+                {t("admin.sectionLines")}
                 <span className="text-xs bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400 px-2 py-0.5 rounded-full">{prodLines.length}</span>
               </h3>
               <button onClick={() => { setShowLineForm(true); setEditingLine(null); setLineForm({ name: "", product_type: "", target_oee: 85, target_cycle_time_seconds: "" }); clearMessages(); }}
-                className="bg-brand-600 hover:bg-brand-500 text-white px-3 py-1.5 rounded-xl text-sm font-semibold transition">
+                className="bg-brand-600 hover:bg-brand-500 text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition flex items-center gap-1">
+                <Plus className="w-4 h-4" />
                 {t("admin.addLine")}
               </button>
             </div>
 
             {/* Line Form */}
             {(showLineForm || editingLine) && (
-              <div className="px-6 py-4 border-b border-th-border bg-blue-50/50 dark:bg-blue-950/20">
+              <div className="px-6 py-4 border-b border-th-border bg-th-bg-3/30">
                 <h4 className="font-semibold text-th-text mb-3">{editingLine ? t("admin.editLine") : t("admin.newLine")}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.lineName")}</label>
-                    <input type="text" value={lineForm.name} onChange={(e) => setLineForm({ ...lineForm, name: e.target.value })}
+                    <label htmlFor="admin-line-name" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.lineName")}</label>
+                    <input id="admin-line-name" type="text" value={lineForm.name} onChange={(e) => setLineForm({ ...lineForm, name: e.target.value })}
                       className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text" placeholder={t("admin.lineNameHint")} />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.lineProductType")}</label>
-                    <input type="text" value={lineForm.product_type} onChange={(e) => setLineForm({ ...lineForm, product_type: e.target.value })}
+                    <label htmlFor="admin-line-product-type" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.lineProductType")}</label>
+                    <input id="admin-line-product-type" type="text" value={lineForm.product_type} onChange={(e) => setLineForm({ ...lineForm, product_type: e.target.value })}
                       className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text" placeholder={t("admin.lineProductTypeHint")} />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.lineTargetOee")}</label>
-                    <input type="number" value={lineForm.target_oee} onChange={(e) => setLineForm({ ...lineForm, target_oee: Number(e.target.value) })}
+                    <label htmlFor="admin-line-target-oee" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.lineTargetOee")}</label>
+                    <input id="admin-line-target-oee" type="number" inputMode="decimal" value={lineForm.target_oee} onChange={(e) => setLineForm({ ...lineForm, target_oee: Number(e.target.value) })}
                       className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.lineCycleTime")}</label>
-                    <input type="number" value={lineForm.target_cycle_time_seconds} onChange={(e) => setLineForm({ ...lineForm, target_cycle_time_seconds: e.target.value ? Number(e.target.value) : "" })}
+                    <label htmlFor="admin-line-cycle-time" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.lineCycleTime")}</label>
+                    <input id="admin-line-cycle-time" type="number" inputMode="decimal" value={lineForm.target_cycle_time_seconds} onChange={(e) => setLineForm({ ...lineForm, target_cycle_time_seconds: e.target.value ? Number(e.target.value) : "" })}
                       className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text" />
                   </div>
                 </div>
                 <div className="flex gap-2 mt-3">
                   <button onClick={editingLine ? handleUpdateLine : handleCreateLine} disabled={loading || !lineForm.name}
-                    className="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2 rounded-xl text-sm font-semibold transition disabled:opacity-50">
+                    className="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50">
                     {loading ? t("admin.savingDots") : t("common.save")}
                   </button>
                   <button onClick={() => { setShowLineForm(false); setEditingLine(null); }}
@@ -785,7 +843,7 @@ export default function AdminPanel() {
                 <div key={line.id}>
                   {/* Line Row */}
                   <div className="flex items-center gap-4 px-6 py-3 hover:bg-th-bg-3/50 transition cursor-pointer" onClick={() => setExpandedLine(expandedLine === line.id ? null : line.id)}>
-                    <span className={`text-xs font-mono px-1.5 py-0.5 rounded ${line.is_active ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400" : "bg-gray-100 dark:bg-gray-800 text-gray-500"}`}>
+                    <span className={`text-xs font-mono px-1.5 py-0.5 rounded ${line.is_active ? "bg-th-bg-3 text-emerald-600 dark:text-emerald-400" : "bg-th-bg-3 text-th-text-3"}`}>
                       {line.is_active ? t("admin.lineActive") : t("admin.lineInactive")}
                     </span>
                     <div className="flex-1">
@@ -797,20 +855,30 @@ export default function AdminPanel() {
                     <span className="text-xs text-th-text-3">{line.shifts?.length || 0} shifts</span>
                     <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                       <button onClick={() => { setEditingLine(line); setLineForm({ name: line.name, product_type: line.product_type || "", target_oee: line.target_oee || 85, target_cycle_time_seconds: line.target_cycle_time_seconds || "" }); clearMessages(); }}
-                        className="p-1.5 rounded-lg hover:bg-th-bg-3 text-th-text-2 hover:text-th-text transition" title={t("admin.editLine")}>✏️</button>
+                        className="p-1.5 rounded-lg hover:bg-th-bg-3 text-th-text-2 hover:text-th-text transition" title={t("admin.editLine")}>
+                        <Edit3 className="w-4 h-4" />
+                      </button>
                       <button onClick={() => handleDeleteLine(line.id)}
-                        className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-400 hover:text-red-600 transition" title={t("admin.remove")}>🗑️</button>
+                        className="p-1.5 rounded-lg hover:bg-th-bg-3 text-red-400 hover:text-red-600 transition" title={t("admin.remove")}>
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
-                    <span className="text-th-text-3 text-sm">{expandedLine === line.id ? "▲" : "▼"}</span>
+                    {expandedLine === line.id ? <ChevronUp className="w-4 h-4 text-th-text-3" /> : <ChevronDown className="w-4 h-4 text-th-text-3" />}
                   </div>
 
                   {/* Expanded: Shifts */}
                   {expandedLine === line.id && (
                     <div className="bg-th-bg-3/30 px-6 pb-4">
                       <div className="flex items-center justify-between mb-2 pt-2">
-                        <h5 className="text-sm font-semibold text-th-text-2">{t("admin.sectionShifts")}</h5>
+                        <h5 className="text-sm font-semibold text-th-text-2 flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5" />
+                          {t("admin.sectionShifts")}
+                        </h5>
                         <button onClick={() => { setShowShiftForm(line.id); setShiftForm({ name: "", start_hour: 6, end_hour: 14, planned_minutes: 480 }); }}
-                          className="text-brand-600 hover:text-brand-500 text-xs font-semibold">{t("admin.addShift")}</button>
+                          className="text-brand-600 hover:text-brand-500 text-xs font-semibold flex items-center gap-1">
+                          <Plus className="w-3 h-3" />
+                          {t("admin.addShift")}
+                        </button>
                       </div>
 
                       {showShiftForm === line.id && (
@@ -823,17 +891,17 @@ export default function AdminPanel() {
                             </div>
                             <div>
                               <label className="block text-[10px] font-medium text-th-text-2 mb-0.5">{t("admin.shiftStart")}</label>
-                              <input type="number" min={0} max={23} value={shiftForm.start_hour} onChange={(e) => setShiftForm({ ...shiftForm, start_hour: Number(e.target.value) })}
+                              <input type="number" inputMode="numeric" min={0} max={23} value={shiftForm.start_hour} onChange={(e) => setShiftForm({ ...shiftForm, start_hour: Number(e.target.value) })}
                                 className="w-full bg-th-bg-2 border border-th-border rounded-lg px-2 py-1.5 text-sm text-th-text" />
                             </div>
                             <div>
                               <label className="block text-[10px] font-medium text-th-text-2 mb-0.5">{t("admin.shiftEnd")}</label>
-                              <input type="number" min={0} max={23} value={shiftForm.end_hour} onChange={(e) => setShiftForm({ ...shiftForm, end_hour: Number(e.target.value) })}
+                              <input type="number" inputMode="numeric" min={0} max={23} value={shiftForm.end_hour} onChange={(e) => setShiftForm({ ...shiftForm, end_hour: Number(e.target.value) })}
                                 className="w-full bg-th-bg-2 border border-th-border rounded-lg px-2 py-1.5 text-sm text-th-text" />
                             </div>
                             <div>
                               <label className="block text-[10px] font-medium text-th-text-2 mb-0.5">{t("admin.shiftPlannedMin")}</label>
-                              <input type="number" value={shiftForm.planned_minutes} onChange={(e) => setShiftForm({ ...shiftForm, planned_minutes: Number(e.target.value) })}
+                              <input type="number" inputMode="numeric" value={shiftForm.planned_minutes} onChange={(e) => setShiftForm({ ...shiftForm, planned_minutes: Number(e.target.value) })}
                                 className="w-full bg-th-bg-2 border border-th-border rounded-lg px-2 py-1.5 text-sm text-th-text" />
                             </div>
                           </div>
@@ -853,7 +921,9 @@ export default function AdminPanel() {
                           <span className="text-sm font-medium text-th-text flex-1">{s.name}</span>
                           <span className="text-xs text-th-text-2">{String(s.start_hour).padStart(2, "0")}:00 – {String(s.end_hour).padStart(2, "0")}:00</span>
                           <span className="text-xs text-th-text-3">{s.planned_minutes} min</span>
-                          <button onClick={() => handleDeleteShift(s.id)} className="text-red-400 hover:text-red-600 text-xs">🗑️</button>
+                          <button onClick={() => handleDeleteShift(s.id)} className="p-1 rounded-lg hover:bg-th-bg-3 text-red-400 hover:text-red-600 transition">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       ))}
                     </div>
@@ -863,21 +933,23 @@ export default function AdminPanel() {
             </div>
           </div>
 
-          {/* ═══ WORK CENTERS / MACHINES ═══ */}
-          <div className="bg-th-bg-2 border border-th-border rounded-2xl shadow overflow-hidden">
+          {/* Work Centers / Machines */}
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-th-border bg-th-bg-3">
               <h3 className="font-bold text-th-text flex items-center gap-2">
-                <span className="text-lg">⚙️</span> {t("admin.sectionWorkCenters")}
+                <Cog className="w-4 h-4 text-th-text-2" />
+                {t("admin.sectionWorkCenters")}
                 <span className="text-xs bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400 px-2 py-0.5 rounded-full">{workCenters.length}</span>
               </h3>
               <button onClick={() => { setShowWCForm(true); setEditingWC(null); setWCForm({ name: "", description: "", machine_type: "", capacity_units_per_hour: "", production_line_id: prodLines[0]?.id || 0 }); clearMessages(); }}
-                className="bg-brand-600 hover:bg-brand-500 text-white px-3 py-1.5 rounded-xl text-sm font-semibold transition" disabled={prodLines.length === 0}>
+                className="bg-brand-600 hover:bg-brand-500 text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition flex items-center gap-1" disabled={prodLines.length === 0}>
+                <Plus className="w-4 h-4" />
                 {t("admin.addWorkCenter")}
               </button>
             </div>
 
             {(showWCForm || editingWC) && (
-              <div className="px-6 py-4 border-b border-th-border bg-blue-50/50 dark:bg-blue-950/20">
+              <div className="px-6 py-4 border-b border-th-border bg-th-bg-3/30">
                 <h4 className="font-semibold text-th-text mb-3">{editingWC ? t("admin.editWorkCenter") : t("admin.newWorkCenter")}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                   <div>
@@ -892,7 +964,7 @@ export default function AdminPanel() {
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.wcCapacity")}</label>
-                    <input type="number" value={wcForm.capacity_units_per_hour} onChange={(e) => setWCForm({ ...wcForm, capacity_units_per_hour: e.target.value ? Number(e.target.value) : "" })}
+                    <input type="number" inputMode="numeric" value={wcForm.capacity_units_per_hour} onChange={(e) => setWCForm({ ...wcForm, capacity_units_per_hour: e.target.value ? Number(e.target.value) : "" })}
                       className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text" />
                   </div>
                   <div>
@@ -910,7 +982,7 @@ export default function AdminPanel() {
                 </div>
                 <div className="flex gap-2 mt-3">
                   <button onClick={editingWC ? handleUpdateWC : handleCreateWC} disabled={loading || !wcForm.name || !wcForm.production_line_id}
-                    className="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2 rounded-xl text-sm font-semibold transition disabled:opacity-50">
+                    className="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50">
                     {loading ? t("admin.savingDots") : t("common.save")}
                   </button>
                   <button onClick={() => { setShowWCForm(false); setEditingWC(null); }}
@@ -925,7 +997,7 @@ export default function AdminPanel() {
               )}
               {workCenters.map((wc: any) => (
                 <div key={wc.id} className="flex items-center gap-4 px-6 py-3 hover:bg-th-bg-3/50 transition">
-                  <span className={`text-xs font-mono px-1.5 py-0.5 rounded ${wc.is_active !== false ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400" : "bg-gray-100 dark:bg-gray-800 text-gray-500"}`}>
+                  <span className={`text-xs font-mono px-1.5 py-0.5 rounded ${wc.is_active !== false ? "bg-th-bg-3 text-emerald-600 dark:text-emerald-400" : "bg-th-bg-3 text-th-text-3"}`}>
                     {wc.is_active !== false ? t("admin.lineActive") : t("admin.lineInactive")}
                   </span>
                   <div className="flex-1">
@@ -935,27 +1007,31 @@ export default function AdminPanel() {
                   {wc.capacity_units_per_hour && <span className="text-xs text-th-text-2">{wc.capacity_units_per_hour} units/hr</span>}
                   <span className="text-xs text-th-text-3">{prodLines.find((l: any) => l.id === wc.production_line_id)?.name || "—"}</span>
                   <button onClick={() => { setEditingWC(wc); setWCForm({ name: wc.name, description: wc.description || "", machine_type: wc.machine_type || "", capacity_units_per_hour: wc.capacity_units_per_hour || "", production_line_id: wc.production_line_id }); clearMessages(); }}
-                    className="p-1.5 rounded-lg hover:bg-th-bg-3 text-th-text-2 hover:text-th-text transition" title={t("admin.editWorkCenter")}>✏️</button>
+                    className="p-1.5 rounded-lg hover:bg-th-bg-3 text-th-text-2 hover:text-th-text transition" title={t("admin.editWorkCenter")}>
+                    <Edit3 className="w-4 h-4" />
+                  </button>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* ═══ PRODUCTS ═══ */}
-          <div className="bg-th-bg-2 border border-th-border rounded-2xl shadow overflow-hidden">
+          {/* Products */}
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-th-border bg-th-bg-3">
               <h3 className="font-bold text-th-text flex items-center gap-2">
-                <span className="text-lg">📦</span> {t("admin.sectionProducts")}
+                <Package className="w-4 h-4 text-th-text-2" />
+                {t("admin.sectionProducts")}
                 <span className="text-xs bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400 px-2 py-0.5 rounded-full">{products.length}</span>
               </h3>
               <button onClick={() => { setShowProductForm(true); setProductForm({ code: "", name: "", product_family: "", unit_of_measure: "pcs" }); clearMessages(); }}
-                className="bg-brand-600 hover:bg-brand-500 text-white px-3 py-1.5 rounded-xl text-sm font-semibold transition">
+                className="bg-brand-600 hover:bg-brand-500 text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition flex items-center gap-1">
+                <Plus className="w-4 h-4" />
                 {t("admin.addProduct")}
               </button>
             </div>
 
             {showProductForm && (
-              <div className="px-6 py-4 border-b border-th-border bg-blue-50/50 dark:bg-blue-950/20">
+              <div className="px-6 py-4 border-b border-th-border bg-th-bg-3/30">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.productCode")}</label>
@@ -985,7 +1061,7 @@ export default function AdminPanel() {
                 </div>
                 <div className="flex gap-2 mt-3">
                   <button onClick={handleCreateProduct} disabled={loading || !productForm.name || !productForm.code}
-                    className="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2 rounded-xl text-sm font-semibold transition disabled:opacity-50">
+                    className="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50">
                     {loading ? t("admin.savingDots") : t("common.save")}
                   </button>
                   <button onClick={() => setShowProductForm(false)} className="text-th-text-2 hover:text-th-text px-4 py-2 text-sm">{t("common.cancel")}</button>
@@ -1013,8 +1089,11 @@ export default function AdminPanel() {
       {/* ---- FACTORY TAB ---- */}
       {activeTab === "factory" && factory && (
         <div className="space-y-4">
-          <h2 className="text-lg font-bold text-th-text">{t("admin.factoryTitle")}</h2>
-          <div className="bg-th-bg-2 border border-th-border rounded-2xl p-6 shadow space-y-4">
+          <h2 className="text-lg font-bold text-th-text flex items-center gap-2">
+            <Building className="w-5 h-5 text-th-text-2" />
+            {t("admin.factoryTitle")}
+          </h2>
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <p className="text-xs font-medium text-th-text-2 mb-1">{t("admin.factoryName")}</p>
@@ -1032,13 +1111,11 @@ export default function AdminPanel() {
           </div>
 
           {/* Data Export */}
-          <div className="bg-th-bg-2 border border-th-border rounded-2xl p-6 shadow space-y-3">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6 space-y-3">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h3 className="text-base font-bold text-th-text flex items-center gap-2">
-                  <svg className="w-5 h-5 text-brand-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                  </svg>
+                  <Download className="w-5 h-5 text-brand-500" />
                   {t("admin.exportData")}
                 </h3>
                 <p className="text-sm text-th-text-2 mt-1">{t("admin.exportDataDesc")}</p>
@@ -1046,7 +1123,7 @@ export default function AdminPanel() {
               <button
                 onClick={handleExportData}
                 disabled={exportState === "loading"}
-                className={`shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold transition shadow ${
+                className={`shrink-0 px-5 py-2.5 rounded-lg text-sm font-semibold transition shadow flex items-center gap-2 ${
                   exportState === "success"
                     ? "bg-emerald-600 text-white"
                     : exportState === "error"
@@ -1055,7 +1132,7 @@ export default function AdminPanel() {
                 }`}
               >
                 {exportState === "loading" ? t("admin.exportDataLoading")
-                  : exportState === "success" ? "✓ " + t("admin.exportDataSuccess")
+                  : exportState === "success" ? (<><Check className="w-4 h-4" /> {t("admin.exportDataSuccess")}</>)
                   : exportState === "error" ? t("admin.exportDataError")
                   : t("admin.exportDataButton")}
               </button>

@@ -1,0 +1,17 @@
+{
+  "title": "Palette Comandi",
+  "placeholder": "Cerca pagine, azioni...",
+  "searchLabel": "Cerca comandi",
+  "results": "Risultati",
+  "noResults": "Nessun risultato trovato.",
+  "recent": "Recenti",
+  "quickActions": "Azioni Rapide",
+  "navigation": "Navigazione",
+  "hintNavigate": "naviga",
+  "hintSelect": "seleziona",
+  "hintClose": "chiudi",
+  "newKaizen": "Nuovo Evento Kaizen",
+  "logProduction": "Registra Dati Produzione",
+  "reportIssue": "Segnala Problema (NCR)",
+  "startGemba": "Inizia Gemba Walk"
+}

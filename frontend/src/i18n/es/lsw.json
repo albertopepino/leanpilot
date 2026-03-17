@@ -1,0 +1,19 @@
+{
+  "title": "Trabajo Estándar del Líder",
+  "subtitle": "Listas de verificación diarias por rol y seguimiento",
+  "createTemplate": "Crear plantilla",
+  "role": "Rol",
+  "operator": "Operador",
+  "supervisor": "Supervisor",
+  "manager": "Gerente",
+  "frequency": "Frecuencia",
+  "daily": "Diario",
+  "weekly": "Semanal",
+  "monthly": "Mensual",
+  "tasks": "Tareas",
+  "addTask": "Agregar tarea",
+  "todayTasks": "Tareas de hoy",
+  "completionHistory": "Historial de cumplimiento",
+  "completion": "Cumplimiento",
+  "noTemplates": "Aún no se han creado plantillas"
+}

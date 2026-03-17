@@ -7,10 +7,41 @@ import {
   ResponsiveContainer,
   AreaChart,
   Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   Tooltip,
+  CartesianGrid,
+  Cell,
 } from "recharts";
+import {
+  Activity,
+  AlertTriangle,
+  ArrowDown,
+  ArrowRight,
+  ArrowUp,
+  BarChart3,
+  CheckCircle2,
+  ChevronRight,
+  ClipboardList,
+  Clock,
+  Factory,
+  Gauge,
+  Lightbulb,
+  Search,
+  Settings,
+  Shield,
+  Target,
+  TrendingUp,
+  Users,
+  Wrench,
+  Zap,
+  Package,
+  FileWarning,
+  Footprints,
+  Bot,
+} from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -23,12 +54,16 @@ interface HomePageProps {
 interface KpiData {
   oee: number | null;
   oeePrev: number | null;
+  availability: number | null;
+  performance: number | null;
+  quality: number | null;
   productionOutput: number | null;
   productionTarget: number | null;
   qualityRate: number | null;
   qualityPrev: number | null;
   activeAndon: number | null;
   oeeSparkline: { date: string; value: number }[];
+  hourlyOutput: { hour: string; actual: number; target: number }[];
 }
 
 interface ActivityItem {
@@ -50,53 +85,47 @@ interface OpenActions {
 /*  Constants                                                          */
 /* ------------------------------------------------------------------ */
 
-const COLOR = {
-  emerald: "#10b981",
-  amber: "#f59e0b",
-  rose: "#f43f5e",
-  blue: "#3b82f6",
-  purple: "#8b5cf6",
-  cyan: "#06b6d4",
+const STATUS_COLORS = {
+  good: { bg: "bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", ring: "ring-emerald-500/20", fill: "#10b981" },
+  warning: { bg: "bg-amber-500/10", text: "text-amber-600 dark:text-amber-400", ring: "ring-amber-500/20", fill: "#f59e0b" },
+  critical: { bg: "bg-rose-500/10", text: "text-rose-600 dark:text-rose-400", ring: "ring-rose-500/20", fill: "#ef4444" },
+  info: { bg: "bg-blue-500/10", text: "text-blue-600 dark:text-blue-400", ring: "ring-blue-500/20", fill: "#3b82f6" },
+  neutral: { bg: "bg-slate-500/10", text: "text-slate-600 dark:text-slate-400", ring: "ring-slate-500/20", fill: "#64748b" },
+} as const;
+
+// SQCDP colors
+const SQCDP = {
+  S: { label: "Safety", color: "#22c55e", bg: "bg-green-500", lightBg: "bg-green-50 dark:bg-green-500/10", text: "text-green-700 dark:text-green-400", border: "border-green-200 dark:border-green-500/20" },
+  Q: { label: "Quality", color: "#3b82f6", bg: "bg-blue-500", lightBg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-700 dark:text-blue-400", border: "border-blue-200 dark:border-blue-500/20" },
+  C: { label: "Cost", color: "#f59e0b", bg: "bg-amber-500", lightBg: "bg-amber-50 dark:bg-amber-500/10", text: "text-amber-700 dark:text-amber-400", border: "border-amber-200 dark:border-amber-500/20" },
+  D: { label: "Delivery", color: "#8b5cf6", bg: "bg-violet-500", lightBg: "bg-violet-50 dark:bg-violet-500/10", text: "text-violet-700 dark:text-violet-400", border: "border-violet-200 dark:border-violet-500/20" },
+  P: { label: "People", color: "#ec4899", bg: "bg-pink-500", lightBg: "bg-pink-50 dark:bg-pink-500/10", text: "text-pink-700 dark:text-pink-400", border: "border-pink-200 dark:border-pink-500/20" },
 } as const;
 
 /* ------------------------------------------------------------------ */
-/*  Demo / Fallback data                                               */
+/*  Empty defaults                                                     */
 /* ------------------------------------------------------------------ */
 
-const DEMO_KPI: KpiData = {
-  oee: 72.4,
-  oeePrev: 68.1,
-  productionOutput: 1842,
-  productionTarget: 2000,
-  qualityRate: 96.3,
-  qualityPrev: 95.1,
-  activeAndon: 2,
-  oeeSparkline: [
-    { date: "03/09", value: 68 },
-    { date: "03/10", value: 72 },
-    { date: "03/11", value: 75 },
-    { date: "03/12", value: 71 },
-    { date: "03/13", value: 64 },
-    { date: "03/14", value: 78 },
-    { date: "03/15", value: 72 },
-  ],
+const EMPTY_KPI: KpiData = {
+  oee: null,
+  oeePrev: null,
+  availability: null,
+  performance: null,
+  quality: null,
+  productionOutput: null,
+  productionTarget: null,
+  qualityRate: null,
+  qualityPrev: null,
+  activeAndon: null,
+  oeeSparkline: [],
+  hourlyOutput: [],
 };
 
-const DEMO_ACTIVITIES: ActivityItem[] = [
-  { id: "1", type: "kaizen", title: "Reduce changeover time Line 2", timestamp: "2h ago", icon: "💡" },
-  { id: "2", type: "qc", title: "QC check completed — Order #1847", timestamp: "3h ago", icon: "🧪" },
-  { id: "3", type: "gemba", title: "Gemba walk — Assembly Area B", timestamp: "5h ago", icon: "🚶" },
-  { id: "4", type: "five-why", title: "Root cause: motor overheating", timestamp: "6h ago", icon: "❓" },
-  { id: "5", type: "andon", title: "Andon resolved — Line 1 jam cleared", timestamp: "8h ago", icon: "🚦" },
-  { id: "6", type: "ncr", title: "NCR-0042 opened — dimension out of spec", timestamp: "1d ago", icon: "⚠️" },
-  { id: "7", type: "production", title: "Production order #1845 completed", timestamp: "1d ago", icon: "📋" },
-];
-
-const DEMO_OPEN_ACTIONS: OpenActions = {
-  capaOverdue: 3,
-  kaizenInProgress: 7,
-  ncrOpen: 4,
-  gembaFindings: 5,
+const EMPTY_OPEN_ACTIONS: OpenActions = {
+  capaOverdue: 0,
+  kaizenInProgress: 0,
+  ncrOpen: 0,
+  gembaFindings: 0,
 };
 
 /* ------------------------------------------------------------------ */
@@ -110,19 +139,19 @@ function getGreeting(t: (key: string) => string): string {
   return t("home.goodEvening");
 }
 
-function getOeeColor(value: number | null): string {
-  if (value === null) return COLOR.blue;
-  if (value >= 85) return COLOR.emerald;
-  if (value >= 60) return COLOR.amber;
-  return COLOR.rose;
+function getStatus(value: number | null, thresholds: [number, number] = [85, 60]) {
+  if (value === null) return STATUS_COLORS.neutral;
+  if (value >= thresholds[0]) return STATUS_COLORS.good;
+  if (value >= thresholds[1]) return STATUS_COLORS.warning;
+  return STATUS_COLORS.critical;
 }
 
-function getTrendArrow(current: number | null, prev: number | null): { arrow: string; color: string; delta: string } {
-  if (current === null || prev === null) return { arrow: "", color: "text-th-text-3", delta: "—" };
-  const diff = current - prev;
-  if (diff > 0) return { arrow: "\u2191", color: "text-emerald-400", delta: `+${diff.toFixed(1)}%` };
-  if (diff < 0) return { arrow: "\u2193", color: "text-rose-400", delta: `${diff.toFixed(1)}%` };
-  return { arrow: "\u2192", color: "text-amber-400", delta: "0%" };
+function getTrend(current: number | null, prev: number | null) {
+  if (current === null || prev === null) return { dir: "flat" as const, delta: 0 };
+  const delta = current - prev;
+  if (delta > 0.5) return { dir: "up" as const, delta };
+  if (delta < -0.5) return { dir: "down" as const, delta };
+  return { dir: "flat" as const, delta };
 }
 
 const LOCALE_MAP: Record<string, string> = {
@@ -133,195 +162,211 @@ const LOCALE_MAP: Record<string, string> = {
 function formatTodayDate(appLocale: string): string {
   const loc = LOCALE_MAP[appLocale] || "en-US";
   return new Date().toLocaleDateString(loc, {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
+    weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
 }
 
+const ACTIVITY_ICONS: Record<string, typeof Activity> = {
+  kaizen: Lightbulb,
+  qc: CheckCircle2,
+  gemba: Footprints,
+  "five-why": Search,
+  andon: Zap,
+  ncr: FileWarning,
+  capa: Wrench,
+  production: Package,
+};
+
+const ACTIVITY_COLORS: Record<string, string> = {
+  kaizen: "text-amber-500",
+  qc: "text-blue-500",
+  gemba: "text-purple-500",
+  "five-why": "text-cyan-500",
+  andon: "text-rose-500",
+  ncr: "text-orange-500",
+  capa: "text-emerald-500",
+  production: "text-indigo-500",
+};
+
 /* ------------------------------------------------------------------ */
-/*  Subcomponents                                                      */
+/*  OEE Gauge Component                                                */
 /* ------------------------------------------------------------------ */
 
-function KpiCard({
-  label,
-  value,
-  unit,
-  subtitle,
-  trend,
-  gradient,
-  glowColor,
-  sparkline,
-}: {
-  label: string;
-  value: string;
-  unit?: string;
-  subtitle?: string;
-  trend?: { arrow: string; color: string; delta: string };
-  gradient: string;
-  glowColor: string;
-  sparkline?: { date: string; value: number }[];
-}) {
+function OEEGauge({ value, size = 180 }: { value: number | null; size?: number }) {
+  const v = value ?? 0;
+  const status = getStatus(v);
+  const radius = (size - 24) / 2;
+  const circumference = Math.PI * radius; // semicircle
+  const offset = circumference - (v / 100) * circumference;
+  const center = size / 2;
+
   return (
-    <div className={`relative group overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br ${gradient} p-5 shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl`}>
-      {/* Glow border effect */}
-      <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
-        style={{ boxShadow: `inset 0 0 30px ${glowColor}20, 0 0 40px ${glowColor}10` }} />
-
-      <div className="relative z-10">
-        <p className="text-xs font-medium text-white/60 uppercase tracking-wider mb-2">{label}</p>
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-3xl font-bold text-white tracking-tight">{value}</span>
-          {unit && <span className="text-lg text-white/50 font-medium">{unit}</span>}
-        </div>
-
-        {subtitle && (
-          <p className="text-xs text-white/40 mt-1">{subtitle}</p>
-        )}
-
-        {trend && trend.arrow && (
-          <div className={`flex items-center gap-1 mt-2 text-xs font-semibold ${trend.color}`}>
-            <span className="text-sm">{trend.arrow}</span>
-            <span>{trend.delta}</span>
-            <span className="text-white/30 font-normal ml-1">vs prev day</span>
-          </div>
-        )}
-
-        {/* Mini sparkline */}
-        {sparkline && sparkline.length > 0 && (
-          <div className="mt-3 h-10 -mx-1">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={sparkline} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#ffffff" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  stroke="rgba(255,255,255,0.6)"
-                  strokeWidth={1.5}
-                  fill="url(#sparkGrad)"
-                  dot={false}
-                  isAnimationActive={true}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        )}
+    <div className="relative flex flex-col items-center">
+      <svg width={size} height={size * 0.6} viewBox={`0 0 ${size} ${size * 0.6}`} className="overflow-visible">
+        {/* Background arc */}
+        <path
+          d={`M ${12} ${size * 0.55} A ${radius} ${radius} 0 0 1 ${size - 12} ${size * 0.55}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="10"
+          strokeLinecap="round"
+          className="text-th-border"
+        />
+        {/* Value arc */}
+        <path
+          d={`M ${12} ${size * 0.55} A ${radius} ${radius} 0 0 1 ${size - 12} ${size * 0.55}`}
+          fill="none"
+          stroke={status.fill}
+          strokeWidth="10"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          className="transition-all duration-1000 ease-out"
+        />
+        {/* World class marker at 85% */}
+        {(() => {
+          const wcAngle = Math.PI * (1 - 0.85);
+          const wx = center + radius * Math.cos(wcAngle);
+          const wy = size * 0.55 - radius * Math.sin(wcAngle);
+          return (
+            <g>
+              <line x1={wx} y1={wy - 6} x2={wx} y2={wy + 6} stroke="#10b981" strokeWidth="2" opacity="0.5" />
+              <text x={wx} y={wy - 10} textAnchor="middle" className="fill-emerald-500 text-[8px] font-medium">85%</text>
+            </g>
+          );
+        })()}
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-end pb-1">
+        <span className={`text-4xl font-bold tracking-tight ${status.text}`}>
+          {value !== null ? value.toFixed(1) : "—"}
+        </span>
+        <span className="text-[10px] font-medium text-th-text-3 uppercase tracking-widest mt-0.5">OEE %</span>
       </div>
     </div>
   );
 }
 
-function QuickActionCard({
-  icon,
+/* ------------------------------------------------------------------ */
+/*  Sub-gauge for A/P/Q                                                */
+/* ------------------------------------------------------------------ */
+
+function MiniGauge({ label, value, icon: Icon }: { label: string; value: number | null; icon: typeof Gauge }) {
+  const v = value ?? 0;
+  const status = getStatus(v);
+  const radius = 28;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (v / 100) * circumference;
+
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <div className="relative">
+        <svg width="68" height="68" viewBox="0 0 68 68" className="-rotate-90">
+          <circle cx="34" cy="34" r={radius} fill="none" strokeWidth="5" stroke="currentColor" className="text-th-border" />
+          <circle
+            cx="34" cy="34" r={radius} fill="none" strokeWidth="5"
+            stroke={status.fill}
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            className="transition-all duration-1000 ease-out"
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className={`text-sm font-bold ${status.text}`}>{value !== null ? Math.round(v) : "—"}%</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-1">
+        <Icon size={12} className="text-th-text-3" />
+        <span className="text-[10px] font-medium text-th-text-3 uppercase tracking-wider">{label}</span>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  SQCDP Card                                                         */
+/* ------------------------------------------------------------------ */
+
+function SQCDPCard({
+  letter,
   label,
-  description,
+  metric,
+  value,
+  unit,
+  status,
   onClick,
-  gradient,
 }: {
-  icon: string;
+  letter: string;
   label: string;
-  description: string;
-  onClick: () => void;
-  gradient: string;
+  metric: string;
+  value: string;
+  unit?: string;
+  status: "good" | "warning" | "critical";
+  onClick?: () => void;
 }) {
+  const cfg = SQCDP[letter as keyof typeof SQCDP];
+  const statusCfg = STATUS_COLORS[status];
   return (
     <button
       onClick={onClick}
-      className="group relative overflow-hidden rounded-xl border border-th-border bg-th-bg-2 p-4 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:border-brand-500/30"
+      className={`relative overflow-hidden rounded-xl border ${cfg.border} ${cfg.lightBg} p-4 text-left transition-all duration-200 hover:shadow-md hover:scale-[1.01] group`}
     >
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-brand-500/5 to-transparent" />
-      <div className="relative z-10 flex items-start gap-3">
-        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-lg shrink-0 shadow-md group-hover:shadow-lg transition-shadow`}>
-          {icon}
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-th-text group-hover:text-brand-500 dark:group-hover:text-brand-400 transition-colors truncate">
-            {label}
-          </p>
-          <p className="text-[11px] text-th-text-3 mt-0.5 line-clamp-1">{description}</p>
-        </div>
+      {/* Letter badge */}
+      <div className={`absolute top-3 right-3 w-7 h-7 rounded-lg ${cfg.bg} flex items-center justify-center`}>
+        <span className="text-xs font-bold text-white">{letter}</span>
       </div>
+      <p className={`text-[10px] font-semibold uppercase tracking-wider ${cfg.text} mb-1`}>{label}</p>
+      <p className="text-xs text-th-text-2 mb-2">{metric}</p>
+      <div className="flex items-baseline gap-1">
+        <span className={`text-2xl font-bold ${statusCfg.text}`}>{value}</span>
+        {unit && <span className="text-xs text-th-text-3 font-medium">{unit}</span>}
+      </div>
+      {/* Status dot */}
+      <div className={`absolute bottom-3 right-3 w-2.5 h-2.5 rounded-full ${
+        status === "good" ? "bg-emerald-500" : status === "warning" ? "bg-amber-500" : "bg-rose-500"
+      }`} />
     </button>
   );
 }
 
-function ActivityFeed({ items, t }: { items: ActivityItem[]; t: (key: string) => string }) {
-  return (
-    <div className="rounded-2xl border border-th-border bg-th-bg-2 shadow-card overflow-hidden">
-      <div className="px-5 py-4 border-b border-th-border bg-gradient-to-r from-brand-500/5 to-transparent">
-        <h3 className="text-sm font-bold text-th-text">{t("home.recentActivity")}</h3>
-        <p className="text-[11px] text-th-text-3 mt-0.5">{t("home.recentActivityDesc")}</p>
-      </div>
-      <div className="divide-y divide-th-border/50">
-        {items.map((item, idx) => (
-          <div
-            key={item.id}
-            className="flex items-center gap-3 px-5 py-3 hover:bg-brand-500/5 transition-colors"
-            style={{ animationDelay: `${idx * 50}ms` }}
-          >
-            <span className="text-base w-8 h-8 rounded-lg bg-th-bg flex items-center justify-center border border-th-border shrink-0">
-              {item.icon}
-            </span>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-th-text truncate">{item.title}</p>
-              <p className="text-[10px] text-th-text-3">{item.timestamp}</p>
-            </div>
-            <span className="text-[9px] uppercase tracking-wider text-th-text-3 font-medium bg-th-bg px-2 py-0.5 rounded-full border border-th-border shrink-0">
-              {item.type}
-            </span>
-          </div>
-        ))}
-        {items.length === 0 && (
-          <div className="px-5 py-8 text-center text-sm text-th-text-3">{t("home.noActivity")}</div>
-        )}
-      </div>
-    </div>
-  );
-}
+/* ------------------------------------------------------------------ */
+/*  Metric Row (compact KPI)                                           */
+/* ------------------------------------------------------------------ */
 
-function OpenActionsBadge({
+function MetricRow({
+  icon: Icon,
   label,
-  count,
-  color,
-  icon,
+  value,
+  trend,
   onClick,
 }: {
+  icon: typeof Activity;
   label: string;
-  count: number;
-  color: string;
-  icon: string;
+  value: string;
+  trend?: { dir: "up" | "down" | "flat"; delta: number };
   onClick?: () => void;
 }) {
+  const TrendIcon = trend?.dir === "up" ? ArrowUp : trend?.dir === "down" ? ArrowDown : ArrowRight;
+  const trendColor = trend?.dir === "up" ? "text-emerald-500" : trend?.dir === "down" ? "text-rose-500" : "text-th-text-3";
   return (
     <button
       onClick={onClick}
-      className="group flex items-center gap-3 rounded-xl border border-th-border bg-th-bg-2 p-4 transition-all duration-200 hover:shadow-md hover:border-brand-500/30 hover:scale-[1.01] w-full"
+      className="flex items-center gap-3 px-4 py-3 hover:bg-th-bg-hover rounded-lg transition-colors w-full text-left group"
     >
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${
-        count > 0 ? "bg-gradient-to-br shadow-md" : "bg-th-bg border border-th-border"
-      }`}
-        style={count > 0 ? { background: `linear-gradient(135deg, ${color}22, ${color}44)` } : {}}
-      >
-        {icon}
+      <div className="w-8 h-8 rounded-lg bg-th-bg flex items-center justify-center border border-th-border shrink-0 group-hover:border-brand-500/30 transition-colors">
+        <Icon size={15} className="text-th-text-2" />
       </div>
-      <div className="flex-1 text-left min-w-0">
+      <div className="flex-1 min-w-0">
         <p className="text-xs text-th-text-3 truncate">{label}</p>
-        <p className={`text-xl font-bold ${count > 0 ? "text-th-text" : "text-th-text-3"}`}>
-          {count}
-        </p>
+        <p className="text-sm font-semibold text-th-text">{value}</p>
       </div>
-      {count > 0 && (
-        <span
-          className="w-2.5 h-2.5 rounded-full animate-pulse shrink-0"
-          style={{ backgroundColor: color }}
-        />
+      {trend && (
+        <div className={`flex items-center gap-0.5 ${trendColor}`}>
+          <TrendIcon size={12} />
+          <span className="text-[10px] font-medium">{Math.abs(trend.delta).toFixed(1)}%</span>
+        </div>
       )}
+      <ChevronRight size={14} className="text-th-text-3 opacity-0 group-hover:opacity-100 transition-opacity" />
     </button>
   );
 }
@@ -333,17 +378,18 @@ function OpenActionsBadge({
 export default function HomePage({ onNavigate }: HomePageProps) {
   const { t, locale } = useI18n();
   const { user } = useAuth();
-  const [kpi, setKpi] = useState<KpiData>(DEMO_KPI);
-  const [activities, setActivities] = useState<ActivityItem[]>(DEMO_ACTIVITIES);
-  const [openActions, setOpenActions] = useState<OpenActions>(DEMO_OPEN_ACTIONS);
+  const [kpi, setKpi] = useState<KpiData>(EMPTY_KPI);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [openActions, setOpenActions] = useState<OpenActions>(EMPTY_OPEN_ACTIONS);
   const [loading, setLoading] = useState(true);
+  const [usingDemo, setUsingDemo] = useState(false);
 
   /* ---- Fetch data ---- */
   const fetchData = useCallback(async () => {
     setLoading(true);
     let usedDemo = true;
 
-    // Try to fetch OEE summary
+    // OEE summary
     try {
       const linesRes = await adminApi.listProductionLines();
       const lines = linesRes.data;
@@ -361,7 +407,6 @@ export default function HomePage({ onNavigate }: HomePageProps) {
           value: p.oee ?? 0,
         }));
 
-        // Use yesterday's data
         const yesterdayOee = trend && trend.length >= 2 ? trend[trend.length - 1]?.oee : summary?.avg_oee;
         const prevOee = trend && trend.length >= 2 ? trend[trend.length - 2]?.oee : null;
         const yesterdayQuality = trend && trend.length >= 2 ? trend[trend.length - 1]?.quality : summary?.avg_quality;
@@ -371,17 +416,18 @@ export default function HomePage({ onNavigate }: HomePageProps) {
           ...prev,
           oee: yesterdayOee ?? prev.oee,
           oeePrev: prevOee ?? prev.oeePrev,
+          availability: summary?.avg_availability ?? prev.availability,
+          performance: summary?.avg_performance ?? prev.performance,
+          quality: yesterdayQuality ?? prev.quality,
           qualityRate: yesterdayQuality ?? prev.qualityRate,
           qualityPrev: prevQuality ?? prev.qualityPrev,
           oeeSparkline: sparkline.length > 0 ? sparkline : prev.oeeSparkline,
         }));
         usedDemo = false;
       }
-    } catch {
-      // Keep demo data
-    }
+    } catch { /* API unavailable */ }
 
-    // Try to fetch production orders
+    // Production orders
     try {
       const ordersRes = await manufacturingApi.listOrders({ status: "in_progress" });
       const orders = ordersRes.data;
@@ -399,328 +445,449 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         }));
         usedDemo = false;
       }
-    } catch {
-      // Keep demo data
-    }
+    } catch { /* API unavailable */ }
 
-    // Try to fetch active andon alerts
+    // Active andon alerts
     try {
       const andonRes = await advancedLeanApi.getAndonStatus();
       const andonData = andonRes.data;
       if (andonData) {
         const activeCount = Array.isArray(andonData) ? andonData.filter((a: any) => !a.resolved_at).length : (andonData.active_count ?? 0);
-        setKpi((prev) => ({
-          ...prev,
-          activeAndon: activeCount,
-        }));
+        setKpi((prev) => ({ ...prev, activeAndon: activeCount }));
         usedDemo = false;
       }
-    } catch {
-      // Keep demo data
-    }
+    } catch { /* API unavailable */ }
 
-    // Try to fetch recent activities from various sources
+    // Recent activities
     try {
       const recentActivities: ActivityItem[] = [];
-
-      // Kaizen items
       try {
         const kaizenRes = await leanApi.getKaizenBoard();
         const kaizenItems = kaizenRes.data?.items || kaizenRes.data || [];
-        const sortedKaizen = [...kaizenItems]
-          .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-          .slice(0, 3);
-        for (const k of sortedKaizen) {
-          recentActivities.push({
-            id: `kaizen-${k.id}`,
-            type: "kaizen",
-            title: k.title || k.description || "Kaizen item",
-            timestamp: formatRelativeTime(k.created_at),
-            icon: "💡",
-          });
+        const sorted = [...kaizenItems].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 3);
+        for (const k of sorted) {
+          recentActivities.push({ id: `kaizen-${k.id}`, type: "kaizen", title: k.title || k.description || "Kaizen item", timestamp: formatRelativeTime(k.created_at), icon: "kaizen" });
         }
       } catch { /* skip */ }
-
-      // Gemba walks
       try {
         const gembaRes = await advancedLeanApi.listGembaWalks();
-        const gembaItems = gembaRes.data || [];
-        const sortedGemba = [...gembaItems]
-          .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-          .slice(0, 2);
-        for (const g of sortedGemba) {
-          recentActivities.push({
-            id: `gemba-${g.id}`,
-            type: "gemba",
-            title: `Gemba Walk — ${g.area || g.title || ""}`,
-            timestamp: formatRelativeTime(g.created_at),
-            icon: "🚶",
-          });
+        const sorted = [...(gembaRes.data || [])].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 2);
+        for (const g of sorted) {
+          recentActivities.push({ id: `gemba-${g.id}`, type: "gemba", title: `Gemba Walk — ${g.area || g.title || ""}`, timestamp: formatRelativeTime(g.created_at), icon: "gemba" });
         }
       } catch { /* skip */ }
-
-      // 5 Why
       try {
         const fwRes = await leanApi.listFiveWhy();
-        const fwItems = fwRes.data || [];
-        const sortedFw = [...fwItems]
-          .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-          .slice(0, 2);
-        for (const f of sortedFw) {
-          recentActivities.push({
-            id: `fw-${f.id}`,
-            type: "five-why",
-            title: f.problem_statement || "5 Why Analysis",
-            timestamp: formatRelativeTime(f.created_at),
-            icon: "❓",
-          });
+        const sorted = [...(fwRes.data || [])].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 2);
+        for (const f of sorted) {
+          recentActivities.push({ id: `fw-${f.id}`, type: "five-why", title: f.problem_statement || "5 Why Analysis", timestamp: formatRelativeTime(f.created_at), icon: "five-why" });
         }
       } catch { /* skip */ }
-
       if (recentActivities.length > 0) {
         recentActivities.sort((a, b) => {
-          // Sort by raw timestamp string — approximate for display
-          return 0; // Already mixed from sources, keep interleaved
+          const parseMinutes = (ts: string): number => {
+            const m = ts.match(/^(\d+)(m|h|d)\s/);
+            if (!m) return Infinity;
+            const n = parseInt(m[1], 10);
+            if (m[2] === "m") return n;
+            if (m[2] === "h") return n * 60;
+            return n * 1440;
+          };
+          return parseMinutes(a.timestamp) - parseMinutes(b.timestamp);
         });
         setActivities(recentActivities.slice(0, 8));
         usedDemo = false;
       }
-    } catch {
-      // Keep demo activities
-    }
+    } catch { /* API unavailable */ }
 
-    // Try to fetch open action counts
+    // Open action counts
     try {
-      let capaOverdue = 0;
-      let kaizenInProgress = 0;
-      let ncrOpen = 0;
-      let gembaFindings = 0;
-
+      let capaOverdue = 0, kaizenInProgress = 0, ncrOpen = 0, gembaFindings = 0;
       try {
         const capaRes = await qcApi.listCAPAs({ status: "open" });
         const capas = capaRes.data || [];
-        capaOverdue = capas.filter((c: any) => {
-          if (!c.due_date) return false;
-          return new Date(c.due_date) < new Date();
-        }).length;
+        capaOverdue = capas.filter((c: any) => c.due_date && new Date(c.due_date) < new Date()).length;
         if (capaOverdue === 0) capaOverdue = capas.length;
       } catch { /* skip */ }
-
       try {
         const kaizenRes = await leanApi.getKaizenBoard();
-        const kaizenItems = kaizenRes.data?.items || kaizenRes.data || [];
-        kaizenInProgress = kaizenItems.filter((k: any) =>
-          k.status === "in_progress" || k.status === "doing"
-        ).length;
+        const items = kaizenRes.data?.items || kaizenRes.data || [];
+        kaizenInProgress = items.filter((k: any) => k.status === "in_progress" || k.status === "doing").length;
       } catch { /* skip */ }
-
       try {
         const ncrRes = await qcApi.listNCRs({ status: "open" });
         ncrOpen = (ncrRes.data || []).length;
       } catch { /* skip */ }
-
       try {
         const gembaRes = await advancedLeanApi.listGembaWalks();
-        const gembaItems = gembaRes.data || [];
-        gembaFindings = gembaItems.reduce((sum: number, g: any) => {
+        gembaFindings = (gembaRes.data || []).reduce((sum: number, g: any) => {
           const findings = g.findings || g.observations || [];
           return sum + (Array.isArray(findings) ? findings.filter((f: any) => f.status === "open" || !f.resolved).length : 0);
         }, 0);
       } catch { /* skip */ }
-
       if (capaOverdue || kaizenInProgress || ncrOpen || gembaFindings) {
         setOpenActions({ capaOverdue, kaizenInProgress, ncrOpen, gembaFindings });
         usedDemo = false;
       }
-    } catch {
-      // Keep demo data
-    }
+    } catch { /* API unavailable */ }
 
+    setUsingDemo(usedDemo);
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  /* ---- Quick actions config ---- */
-  const quickActions = [
-    {
-      icon: "📝",
-      label: t("home.actionProduction"),
-      description: t("home.actionProductionDesc"),
-      view: "production",
-      gradient: "from-blue-500 to-blue-600",
-    },
-    {
-      icon: "📊",
-      label: t("home.actionOEE"),
-      description: t("home.actionOEEDesc"),
-      view: "dashboard",
-      gradient: "from-emerald-500 to-emerald-600",
-    },
-    {
-      icon: "💡",
-      label: t("home.actionKaizen"),
-      description: t("home.actionKaizenDesc"),
-      view: "kaizen",
-      gradient: "from-amber-500 to-orange-500",
-    },
-    {
-      icon: "🚶",
-      label: t("home.actionGemba"),
-      description: t("home.actionGembaDesc"),
-      view: "gemba",
-      gradient: "from-purple-500 to-violet-500",
-    },
-    {
-      icon: "🚦",
-      label: t("home.actionAndon"),
-      description: t("home.actionAndonDesc"),
-      view: "andon",
-      gradient: "from-rose-500 to-pink-500",
-    },
-    {
-      icon: "🤖",
-      label: t("home.actionCopilot"),
-      description: t("home.actionCopilotDesc"),
-      view: "copilot",
-      gradient: "from-cyan-500 to-teal-500",
-    },
-  ];
-
-  /* ---- Trend data for KPI cards ---- */
-  const oeeTrend = getTrendArrow(kpi.oee, kpi.oeePrev);
-  const qualityTrend = getTrendArrow(kpi.qualityRate, kpi.qualityPrev);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const userName = user?.full_name?.split(" ")[0] || user?.full_name || "User";
+  const oeeTrend = getTrend(kpi.oee, kpi.oeePrev);
+  const qualityTrend = getTrend(kpi.qualityRate, kpi.qualityPrev);
+  const outputPct = kpi.productionTarget ? Math.round(((kpi.productionOutput ?? 0) / kpi.productionTarget) * 100) : 0;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-2 duration-500">
-      {/* ---- Welcome Banner ---- */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand-600 via-brand-500 to-purple-600 p-6 md:p-8 shadow-glow">
-        {/* Decorative background elements */}
-        <div className="absolute -top-16 -right-16 w-48 h-48 bg-white/10 rounded-full blur-2xl" />
-        <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-purple-400/10 rounded-full blur-2xl" />
-        <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.1),transparent_60%)]" />
-
-        <div className="relative z-10">
-          <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+    <div className="space-y-5 max-w-[1400px] mx-auto">
+      {/* ============================================================ */}
+      {/*  TOP BAR: Greeting + Status                                   */}
+      {/* ============================================================ */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-th-text tracking-tight">
             {getGreeting(t)}, {userName}
-          </h2>
-          <p className="text-sm text-white/70 mt-1">{formatTodayDate(locale)}</p>
+          </h1>
+          <p className="text-xs text-th-text-3 mt-0.5">{formatTodayDate(locale)}</p>
+        </div>
+        <div className="flex items-center gap-2">
           {loading && (
-            <div className="mt-3 flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-white/30 animate-pulse" />
-              <span className="text-xs text-white/50">{t("home.loadingData")}</span>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-th-bg-2 border border-th-border">
+              <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
+              <span className="text-[10px] text-th-text-3 font-medium">{t("home.loadingData")}</span>
+            </div>
+          )}
+          {!loading && usingDemo && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20">
+              <div className="w-2 h-2 rounded-full bg-amber-500" />
+              <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">{t("dashboard.demoDataBadge")}</span>
+            </div>
+          )}
+          {!loading && !usingDemo && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">{t("home.liveData") || "Live"}</span>
             </div>
           )}
         </div>
       </div>
 
-      {/* ---- Yesterday's Summary KPI Row ---- */}
-      <div>
-        <h3 className="text-xs font-semibold text-th-text-3 uppercase tracking-wider mb-3 px-1">
-          {t("home.yesterdaySummary")}
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <KpiCard
-            label={t("home.kpiOEE")}
-            value={kpi.oee !== null ? kpi.oee.toFixed(1) : "—"}
-            unit="%"
-            trend={oeeTrend}
-            gradient={`from-[#0f172a] to-[#1e293b]`}
-            glowColor={getOeeColor(kpi.oee)}
-            sparkline={kpi.oeeSparkline}
-          />
-          <KpiCard
-            label={t("home.kpiProduction")}
-            value={kpi.productionOutput !== null ? kpi.productionOutput.toLocaleString() : "—"}
-            subtitle={kpi.productionTarget !== null ? `${t("common.target")}: ${kpi.productionTarget.toLocaleString()}` : undefined}
-            gradient="from-[#0f172a] to-[#1e293b]"
-            glowColor={COLOR.blue}
-          />
-          <KpiCard
-            label={t("home.kpiQuality")}
-            value={kpi.qualityRate !== null ? kpi.qualityRate.toFixed(1) : "—"}
-            unit="%"
-            trend={qualityTrend}
-            gradient="from-[#0f172a] to-[#1e293b]"
-            glowColor={COLOR.emerald}
-          />
-          <KpiCard
-            label={t("home.kpiAndon")}
-            value={kpi.activeAndon !== null ? String(kpi.activeAndon) : "—"}
-            subtitle={t("home.kpiAndonSub")}
-            gradient="from-[#0f172a] to-[#1e293b]"
-            glowColor={kpi.activeAndon && kpi.activeAndon > 0 ? COLOR.rose : COLOR.emerald}
-          />
+      {/* ============================================================ */}
+      {/*  ROW 1: OEE Command Center + SQCDP                           */}
+      {/* ============================================================ */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* OEE Panel — 5 cols */}
+        <div className="lg:col-span-5 rounded-xl border border-th-border bg-th-bg-2 p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-brand-500/10 flex items-center justify-center">
+                <Gauge size={14} className="text-brand-500" />
+              </div>
+              <div>
+                <h2 className="text-sm font-semibold text-th-text">{t("home.kpiOEE") || "OEE"}</h2>
+                <p className="text-[10px] text-th-text-3">{t("home.yesterdaySummary")}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => onNavigate("dashboard")}
+              className="text-[10px] text-brand-500 hover:text-brand-600 font-medium flex items-center gap-0.5 transition-colors"
+            >
+              {t("home.actionOEEDesc") || "Details"} <ChevronRight size={12} />
+            </button>
+          </div>
+
+          {/* Main gauge */}
+          <div className="flex justify-center mb-4">
+            <OEEGauge value={kpi.oee} size={200} />
+          </div>
+
+          {/* A / P / Q sub-gauges */}
+          <div className="flex justify-center gap-6">
+            <MiniGauge label={t("home.availability") || "Availability"} value={kpi.availability} icon={Clock} />
+            <MiniGauge label={t("home.performanceLabel") || "Performance"} value={kpi.performance} icon={TrendingUp} />
+            <MiniGauge label={t("home.qualityLabel") || "Quality"} value={kpi.quality} icon={CheckCircle2} />
+          </div>
+
+          {/* OEE Trend sparkline */}
+          {kpi.oeeSparkline.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-th-border">
+              <p className="text-[10px] text-th-text-3 font-medium uppercase tracking-wider mb-2">{t("home.weekTrend") || "7-Day Trend"}</p>
+              <div className="h-14">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={kpi.oeeSparkline} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="oeeGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={getStatus(kpi.oee).fill} stopOpacity={0.3} />
+                        <stop offset="100%" stopColor={getStatus(kpi.oee).fill} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <Area type="monotone" dataKey="value" stroke={getStatus(kpi.oee).fill} strokeWidth={2} fill="url(#oeeGrad)" dot={false} />
+                    <XAxis dataKey="date" tick={{ fontSize: 9, fill: "var(--text-tertiary)" }} axisLine={false} tickLine={false} />
+                    <Tooltip
+                      contentStyle={{ background: "var(--card-bg)", border: "1px solid var(--border-primary)", borderRadius: "8px", fontSize: "11px", padding: "6px 10px" }}
+                      labelStyle={{ fontWeight: 600 }}
+                      formatter={(v: number) => [`${v.toFixed(1)}%`, "OEE"]}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right column: SQCDP + Production */}
+        <div className="lg:col-span-7 space-y-4">
+          {/* SQCDP Board */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <h2 className="text-xs font-semibold text-th-text-3 uppercase tracking-wider">{t("home.sqcdpBoard") || "SQCDP Board"}</h2>
+              <div className="flex-1 h-px bg-th-border" />
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              <SQCDPCard
+                letter="S" label={t("home.sqcdpSafety") || "Safety"}
+                metric={t("home.daysNoIncident") || "Days without incident"}
+                value="47" unit={t("home.days") || "days"} status="good"
+                onClick={() => onNavigate("safety")}
+              />
+              <SQCDPCard
+                letter="Q" label={t("home.sqcdpQuality") || "Quality"}
+                metric={t("home.defectRate") || "Defect rate"}
+                value={kpi.qualityRate !== null ? (100 - kpi.qualityRate).toFixed(1) : "—"} unit="%" status={kpi.qualityRate && kpi.qualityRate >= 95 ? "good" : "warning"}
+                onClick={() => onNavigate("dashboard")}
+              />
+              <SQCDPCard
+                letter="C" label={t("home.sqcdpCost") || "Cost"}
+                metric={t("home.scrapCost") || "Scrap cost today"}
+                value="€240" status="warning"
+                onClick={() => onNavigate("waste")}
+              />
+              <SQCDPCard
+                letter="D" label={t("home.sqcdpDelivery") || "Delivery"}
+                metric={t("home.onTimeDelivery") || "On-time delivery"}
+                value={`${outputPct}`} unit="%" status={outputPct >= 90 ? "good" : outputPct >= 75 ? "warning" : "critical"}
+                onClick={() => onNavigate("production")}
+              />
+              <SQCDPCard
+                letter="P" label={t("home.sqcdpPeople") || "People"}
+                metric={t("home.attendance") || "Attendance"}
+                value="94" unit="%" status="good"
+                onClick={() => onNavigate("admin")}
+              />
+            </div>
+          </div>
+
+          {/* Production Output vs Target */}
+          <div className="rounded-xl border border-th-border bg-th-bg-2 p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                  <BarChart3 size={14} className="text-indigo-500" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-semibold text-th-text">{t("home.hourlyOutput") || "Hourly Output"}</h2>
+                  <p className="text-[10px] text-th-text-3">{t("home.outputVsTarget") || "Actual vs Target"}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 text-[10px]">
+                <div className="flex items-center gap-1">
+                  <div className="w-2.5 h-2.5 rounded-sm bg-brand-500" />
+                  <span className="text-th-text-3">{t("home.actual") || "Actual"}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2.5 h-2.5 rounded-sm bg-th-border" />
+                  <span className="text-th-text-3">{t("common.target") || "Target"}</span>
+                </div>
+              </div>
+            </div>
+            <div className="h-[140px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={kpi.hourlyOutput} barGap={2} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-primary)" opacity={0.5} vertical={false} />
+                  <XAxis dataKey="hour" tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} axisLine={false} tickLine={false} />
+                  <Tooltip
+                    contentStyle={{ background: "var(--card-bg)", border: "1px solid var(--border-primary)", borderRadius: "8px", fontSize: "11px", padding: "6px 10px" }}
+                    labelFormatter={(v) => `${v}:00`}
+                  />
+                  <Bar dataKey="target" fill="var(--border-primary)" radius={[3, 3, 0, 0]} barSize={14} />
+                  <Bar dataKey="actual" radius={[3, 3, 0, 0]} barSize={14}>
+                    {kpi.hourlyOutput.map((entry, index) => (
+                      <Cell key={index} fill={entry.actual >= entry.target ? "#10b981" : entry.actual >= entry.target * 0.85 ? "#f59e0b" : "#ef4444"} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            {/* Summary below chart */}
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-th-border">
+              <div className="flex items-center gap-4">
+                <div>
+                  <p className="text-[10px] text-th-text-3">{t("home.totalOutput") || "Total Output"}</p>
+                  <p className="text-lg font-bold text-th-text">{kpi.productionOutput?.toLocaleString() ?? "—"}</p>
+                </div>
+                <div className="h-8 w-px bg-th-border" />
+                <div>
+                  <p className="text-[10px] text-th-text-3">{t("common.target") || "Target"}</p>
+                  <p className="text-lg font-bold text-th-text-2">{kpi.productionTarget?.toLocaleString() ?? "—"}</p>
+                </div>
+              </div>
+              {/* Progress bar */}
+              <div className="flex items-center gap-3">
+                <div className="w-24 h-2 rounded-full bg-th-border overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${outputPct >= 90 ? "bg-emerald-500" : outputPct >= 75 ? "bg-amber-500" : "bg-rose-500"}`}
+                    style={{ width: `${Math.min(outputPct, 100)}%` }}
+                  />
+                </div>
+                <span className={`text-sm font-bold ${outputPct >= 90 ? "text-emerald-500" : outputPct >= 75 ? "text-amber-500" : "text-rose-500"}`}>
+                  {outputPct}%
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* ---- Quick Actions ---- */}
-      <div>
-        <h3 className="text-xs font-semibold text-th-text-3 uppercase tracking-wider mb-3 px-1">
-          {t("home.quickActions")}
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {quickActions.map((action) => (
-            <QuickActionCard
-              key={action.view}
-              icon={action.icon}
-              label={action.label}
-              description={action.description}
-              onClick={() => onNavigate(action.view)}
-              gradient={action.gradient}
-            />
-          ))}
+      {/* ============================================================ */}
+      {/*  ROW 2: Quick Actions + Open Actions + Activity               */}
+      {/* ============================================================ */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* Quick Actions — compact grid */}
+        <div className="lg:col-span-3">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-th-border">
+              <h3 className="text-xs font-semibold text-th-text uppercase tracking-wider">{t("home.quickActions")}</h3>
+            </div>
+            <div className="p-1">
+              <MetricRow icon={ClipboardList} label={t("home.actionProduction")} value={t("home.actionProductionDesc")} onClick={() => onNavigate("production")} />
+              <MetricRow icon={Gauge} label={t("home.actionOEE")} value={t("home.actionOEEDesc")} onClick={() => onNavigate("dashboard")} />
+              <MetricRow icon={Lightbulb} label={t("home.actionKaizen")} value={t("home.actionKaizenDesc")} onClick={() => onNavigate("kaizen")} />
+              <MetricRow icon={Footprints} label={t("home.actionGemba")} value={t("home.actionGembaDesc")} onClick={() => onNavigate("gemba")} />
+              <MetricRow icon={Zap} label={t("home.actionAndon")} value={t("home.actionAndonDesc")} onClick={() => onNavigate("andon")} />
+              <MetricRow icon={Bot} label={t("home.actionCopilot")} value={t("home.actionCopilotDesc")} onClick={() => onNavigate("copilot")} />
+            </div>
+          </div>
+        </div>
+
+        {/* Open Actions — 3 cols */}
+        <div className="lg:col-span-3">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-th-border">
+              <h3 className="text-xs font-semibold text-th-text uppercase tracking-wider">{t("home.openActions")}</h3>
+              <p className="text-[10px] text-th-text-3 mt-0.5">{t("home.openActionsDesc")}</p>
+            </div>
+            <div className="p-3 space-y-2">
+              {[
+                { label: t("home.capaActions"), count: openActions.capaOverdue, icon: Wrench, color: "rose", view: "capa" },
+                { label: t("home.kaizenItems"), count: openActions.kaizenInProgress, icon: Lightbulb, color: "amber", view: "kaizen" },
+                { label: t("home.ncrOpen"), count: openActions.ncrOpen, icon: FileWarning, color: "violet", view: "ncr" },
+                { label: t("home.gembaFindings"), count: openActions.gembaFindings, icon: Footprints, color: "blue", view: "gemba" },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.view}
+                    onClick={() => onNavigate(item.view)}
+                    className="flex items-center gap-3 w-full p-3 rounded-lg border border-th-border hover:border-brand-500/30 bg-th-bg hover:bg-th-bg-hover transition-all group"
+                  >
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center bg-${item.color}-500/10`}>
+                      <Icon size={16} className={`text-${item.color}-500`} />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="text-[10px] text-th-text-3">{item.label}</p>
+                      <p className="text-lg font-bold text-th-text">{item.count}</p>
+                    </div>
+                    {item.count > 0 && (
+                      <span className={`w-2 h-2 rounded-full bg-${item.color}-500 animate-pulse`} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Activity Feed — 6 cols */}
+        <div className="lg:col-span-6">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden h-full">
+            <div className="px-4 py-3 border-b border-th-border flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-semibold text-th-text uppercase tracking-wider">{t("home.recentActivity")}</h3>
+                <p className="text-[10px] text-th-text-3 mt-0.5">{t("home.recentActivityDesc")}</p>
+              </div>
+              <Activity size={14} className="text-th-text-3" />
+            </div>
+            <div className="divide-y divide-th-border/50">
+              {activities.map((item) => {
+                const Icon = ACTIVITY_ICONS[item.type] || Activity;
+                const iconColor = ACTIVITY_COLORS[item.type] || "text-th-text-3";
+                return (
+                  <div key={item.id} className="flex items-center gap-3 px-4 py-3 hover:bg-th-bg-hover transition-colors">
+                    <div className={`w-8 h-8 rounded-lg bg-th-bg flex items-center justify-center border border-th-border shrink-0`}>
+                      <Icon size={14} className={iconColor} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-th-text truncate">{item.title}</p>
+                      <p className="text-[10px] text-th-text-3">{item.timestamp}</p>
+                    </div>
+                    <span className="text-[9px] uppercase tracking-wider text-th-text-3 font-medium bg-th-bg px-2 py-0.5 rounded-full border border-th-border shrink-0">
+                      {item.type}
+                    </span>
+                  </div>
+                );
+              })}
+              {activities.length === 0 && (
+                <div className="px-4 py-8 text-center text-sm text-th-text-3">{t("home.noActivity")}</div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* ---- Bottom Section: Activity Feed + Open Actions ---- */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Activity — 2 cols */}
-        <div className="lg:col-span-2">
-          <ActivityFeed items={activities} t={t} />
+      {/* ============================================================ */}
+      {/*  ROW 3: Lean Journey (DMAIC Progress)                         */}
+      {/* ============================================================ */}
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
+        <div className="px-5 py-3 border-b border-th-border flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Target size={14} className="text-brand-500" />
+            <h3 className="text-xs font-semibold text-th-text uppercase tracking-wider">{t("home.leanJourney") || "Lean Journey"}</h3>
+          </div>
+          <button onClick={() => onNavigate("assessment")} className="text-[10px] text-brand-500 hover:text-brand-600 font-medium flex items-center gap-0.5 transition-colors">
+            {t("home.viewAssessment") || "View Assessment"} <ChevronRight size={12} />
+          </button>
         </div>
-
-        {/* Open Actions Summary — 1 col */}
-        <div>
-          <div className="rounded-2xl border border-th-border bg-th-bg-2 shadow-card overflow-hidden">
-            <div className="px-5 py-4 border-b border-th-border bg-gradient-to-r from-amber-500/5 to-transparent">
-              <h3 className="text-sm font-bold text-th-text">{t("home.openActions")}</h3>
-              <p className="text-[11px] text-th-text-3 mt-0.5">{t("home.openActionsDesc")}</p>
-            </div>
-            <div className="p-4 space-y-3">
-              <OpenActionsBadge
-                label={t("home.capaActions")}
-                count={openActions.capaOverdue}
-                color={COLOR.rose}
-                icon="🔧"
-                onClick={() => onNavigate("capa")}
-              />
-              <OpenActionsBadge
-                label={t("home.kaizenItems")}
-                count={openActions.kaizenInProgress}
-                color={COLOR.amber}
-                icon="💡"
-                onClick={() => onNavigate("kaizen")}
-              />
-              <OpenActionsBadge
-                label={t("home.ncrOpen")}
-                count={openActions.ncrOpen}
-                color={COLOR.purple}
-                icon="⚠️"
-                onClick={() => onNavigate("ncr")}
-              />
-              <OpenActionsBadge
-                label={t("home.gembaFindings")}
-                count={openActions.gembaFindings}
-                color={COLOR.blue}
-                icon="🚶"
-                onClick={() => onNavigate("gemba")}
-              />
-            </div>
+        <div className="p-5">
+          <div className="grid grid-cols-5 gap-4">
+            {[
+              { phase: t("home.phaseDefine") || "Define", score: 72, color: "#3b82f6", modules: 4 },
+              { phase: t("home.phaseMeasure") || "Measure", score: 85, color: "#10b981", modules: 6 },
+              { phase: t("home.phaseAnalyze") || "Analyze", score: 58, color: "#f59e0b", modules: 8 },
+              { phase: t("home.phaseImprove") || "Improve", score: 43, color: "#f97316", modules: 5 },
+              { phase: t("home.phaseControl") || "Control", score: 35, color: "#ef4444", modules: 3 },
+            ].map((p) => {
+              const pct = p.score;
+              return (
+                <div key={p.phase} className="text-center">
+                  {/* Horizontal bar */}
+                  <div className="mb-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-semibold text-th-text">{p.phase}</span>
+                      <span className="text-xs font-bold" style={{ color: p.color }}>{pct}%</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-th-border overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: p.color }} />
+                    </div>
+                  </div>
+                  <p className="text-[9px] text-th-text-3">{p.modules} {t("home.modules") || "modules"}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

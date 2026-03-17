@@ -160,6 +160,10 @@
   "titleSafety": "Rastreador de Seguridad",
   "navMindMap": "Mapa Mental",
   "titleMindMap": "Mapa Mental",
+
+  "navWaste": "Rastreador de Desperdicios",
+  "titleWaste": "Rastreador de Desperdicios (TIMWOODS)",
+
   "navConsolidated": "OEE Consolidado",
   "titleConsolidated": "OEE Consolidado",
   "navSettings": "Configuración",
@@ -168,5 +172,20 @@
   "navHome": "Inicio",
   "titleHome": "Inicio",
   "navMasterCalendar": "Calendario Principal",
-  "titleMasterCalendar": "Calendario Principal"
+  "titleMasterCalendar": "Calendario Principal",
+
+  "navScorecard": "Cuadro de Mando Lean",
+  "titleScorecard": "Cuadro de Mando Lean",
+
+  "navSQCDP": "Tablero SQCDP",
+  "titleSQCDP": "Tablero SQCDP",
+  "navHandover": "Entrega de Turno",
+  "titleHandover": "Entrega de Turno",
+  "navLSW": "Trabajo Estándar del Líder",
+  "titleLSW": "Trabajo Estándar del Líder",
+  "navAuditScheduler": "Programador de Auditorías",
+  "titleAuditScheduler": "Programador de Auditorías",
+
+  "navHorizontalDeploy": "Despliegue Horizontal",
+  "titleHorizontalDeploy": "Despliegue Horizontal"
 }

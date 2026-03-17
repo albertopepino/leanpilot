@@ -31,6 +31,15 @@ const DOMAINS = [
   "consolidated",
   "onboarding",
   "calendar",
+  "commandPalette",
+  "scorecard",
+  "crossModule",
+  "waste",
+  "sqcdp",
+  "handover",
+  "notifications",
+  "lsw",
+  "scheduling",
 ];
 
 async function loadTranslations(locale: Locale): Promise<Record<string, Translations>> {
@@ -59,6 +68,9 @@ export const useI18n = create<I18nStore>((set, get) => ({
       : null) as Locale | null;
     const locale = saved || "en";
     const translations = await loadTranslations(locale);
+    if (typeof window !== "undefined") {
+      document.documentElement.lang = locale;
+    }
     set({ locale, translations, ready: true });
   },
 

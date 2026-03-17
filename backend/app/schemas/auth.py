@@ -121,3 +121,21 @@ class ConsentUpdateRequest(BaseModel):
     """Update granular consent preferences — GDPR Art. 7(3) right to withdraw."""
     ai_consent: bool | None = None
     marketing_consent: bool | None = None
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password(cls, v):
+        from app.core.security import validate_password_strength
+        errors = validate_password_strength(v)
+        if errors:
+            raise ValueError("; ".join(errors))
+        return v

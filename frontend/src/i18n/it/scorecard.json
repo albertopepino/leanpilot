@@ -1,0 +1,37 @@
+{
+  "title": "Scorecard Lean",
+  "subtitle": "La maturita' lean della tua fabbrica a colpo d'occhio",
+  "loading": "Caricamento scorecard...",
+  "demoNote": "Dati demo — completa la Valutazione Lean per punteggi reali",
+
+  "overallMaturity": "Maturita' Complessiva",
+  "rawScore": "Punteggio grezzo: {score} / 4.0",
+  "dmaicPhases": "Fasi DMAIC",
+  "moduleUsage": "Utilizzo Moduli",
+  "improvementTrend": "Trend Miglioramento",
+  "trendNote": "Punteggio mensile maturita' lean basato su valutazione e attivita' moduli",
+  "quickWins": "Vittorie Rapide",
+  "quickWinsDesc": "Concentrati su queste aree per il massimo impatto di miglioramento",
+  "topPriority": "PRIORITA' MASSIMA",
+  "categoryBreakdown": "Dettaglio per Categoria",
+
+  "levelBeginner": "Principiante",
+  "levelDeveloping": "In Sviluppo",
+  "levelProficient": "Competente",
+  "levelAdvanced": "Avanzato",
+
+  "kaizenEvents": "Eventi Kaizen",
+  "gembaWalks": "Gemba Walk",
+  "sixSAudits": "Audit 6S",
+  "fiveWhyAnalyses": "Analisi 5 Perche'",
+  "a3Reports": "Report A3",
+  "vsmMaps": "Mappe VSM",
+
+  "suggestWorkplace": "Inizia con un audit 6S per stabilire gli standard di base dell'organizzazione del posto di lavoro",
+  "suggestVisual": "Installa tabelloni di tracciamento produzione oraria e configura la Dashboard OEE",
+  "suggestStandard": "Documenta le tue 5 procedure operative critiche principali e rendile accessibili alle postazioni",
+  "suggestImprovement": "Lancia una bacheca Kaizen e pianifica il tuo primo evento di miglioramento",
+  "suggestProblem": "Usa l'analisi 5 Perche' sul prossimo problema qualita' per costruire competenze di analisi causa radice",
+  "suggestTPM": "Registra le attrezzature critiche nella Dashboard TPM e crea le checklist CILT",
+  "suggestDefault": "Rivedi quest'area e identifica un miglioramento attuabile"
+}

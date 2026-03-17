@@ -272,5 +272,10 @@
   "mindmapLabelPlaceholder": "es. collegato a, causa di...",
   "mindmapApply": "Applica",
   "mindmapRemove": "Rimuovi",
-  "mindmapHelp": "Doppio clic per modificare \u2022 Tab per aggiungere \u2022 Trascina per spostare \u2022 Scroll per zoom \u2022 Alt+trascina per panoramica"
+  "mindmapHelp": "Doppio clic per modificare \u2022 Tab per aggiungere \u2022 Trascina per spostare \u2022 Scroll per zoom \u2022 Alt+trascina per panoramica",
+
+  "addActualSavings": "Aggiungi risparmi effettivi",
+  "kaizenFunnel": "Imbuto Kaizen",
+  "totalItems": "Totale",
+  "completionRate": "Completati"
 }

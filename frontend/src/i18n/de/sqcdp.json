@@ -1,0 +1,13 @@
+{
+  "title": "SQCDP-Tafel",
+  "subtitle": "Tägliche visuelle Management-Tafel — Sicherheit, Qualität, Kosten, Lieferung, Personal",
+  "clickToAdd": "Klicken zum Hinzufügen",
+  "actionItems": "Maßnahmen",
+  "actionRequired": "Handlungsbedarf",
+  "owner": "Verantwortlicher",
+  "logMeeting": "Besprechung protokollieren",
+  "attendees": "Teilnehmer",
+  "tier1": "Stufe 1 — Team",
+  "tier2": "Stufe 2 — Abteilung",
+  "tier3": "Stufe 3 — Werk"
+}

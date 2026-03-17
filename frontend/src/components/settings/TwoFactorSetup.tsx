@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/stores/useI18n";
 import { authApi } from "@/lib/api";
+import { ShieldCheck } from "lucide-react";
 
 type Step = "idle" | "setup" | "verify" | "disable";
 
@@ -69,9 +70,9 @@ export default function TwoFactorSetup() {
   };
 
   return (
-    <section className="bg-th-bg-2 rounded-2xl border border-th-border p-6 space-y-4">
+    <section className="bg-th-bg-2 rounded-xl border border-th-border p-6 space-y-4">
       <h2 className="text-lg font-semibold text-th-text flex items-center gap-2">
-        <span className="text-xl">🔐</span> {t("settings.2faTitle")}
+        <ShieldCheck size={20} className="text-brand-600" /> {t("settings.2faTitle")}
       </h2>
 
       <div className="flex items-center gap-3">

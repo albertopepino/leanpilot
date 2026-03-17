@@ -1,0 +1,37 @@
+{
+  "title": "Scorecard Lean",
+  "subtitle": "La maturité lean de votre usine en un coup d'oeil",
+  "loading": "Chargement du scorecard...",
+  "demoNote": "Données de démonstration — complétez l'Évaluation Lean pour des résultats réels",
+
+  "overallMaturity": "Maturité Globale",
+  "rawScore": "Score brut : {score} / 4.0",
+  "dmaicPhases": "Phases DMAIC",
+  "moduleUsage": "Utilisation des Modules",
+  "improvementTrend": "Tendance d'Amélioration",
+  "trendNote": "Score mensuel de maturité lean basé sur l'évaluation et l'activité des modules",
+  "quickWins": "Gains Rapides",
+  "quickWinsDesc": "Concentrez-vous sur ces domaines pour le plus grand impact d'amélioration",
+  "topPriority": "PRIORITÉ MAXIMALE",
+  "categoryBreakdown": "Répartition par Catégorie",
+
+  "levelBeginner": "Débutant",
+  "levelDeveloping": "En Développement",
+  "levelProficient": "Compétent",
+  "levelAdvanced": "Avancé",
+
+  "kaizenEvents": "Événements Kaizen",
+  "gembaWalks": "Gemba Walks",
+  "sixSAudits": "Audits 6S",
+  "fiveWhyAnalyses": "Analyses 5 Pourquoi",
+  "a3Reports": "Rapports A3",
+  "vsmMaps": "Cartes VSM",
+
+  "suggestWorkplace": "Commencez par un audit 6S pour établir les standards de base d'organisation du poste de travail",
+  "suggestVisual": "Installez des tableaux de suivi de production horaire et configurez le Dashboard OEE",
+  "suggestStandard": "Documentez vos 5 procédures opérationnelles critiques et rendez-les accessibles aux postes de travail",
+  "suggestImprovement": "Lancez un tableau Kaizen et planifiez votre premier événement d'amélioration",
+  "suggestProblem": "Utilisez l'analyse 5 Pourquoi sur votre prochain problème qualité pour développer les compétences d'analyse de cause racine",
+  "suggestTPM": "Enregistrez les équipements critiques dans le Dashboard TPM et créez les checklists CILT",
+  "suggestDefault": "Examinez ce domaine et identifiez une amélioration concrète"
+}

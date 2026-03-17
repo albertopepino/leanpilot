@@ -1,0 +1,13 @@
+{
+  "title": "Tableau SQCDP",
+  "subtitle": "Tableau de management visuel quotidien — Sécurité, Qualité, Coût, Délai, Personnel",
+  "clickToAdd": "Cliquer pour ajouter une entrée",
+  "actionItems": "Actions à mener",
+  "actionRequired": "Action requise",
+  "owner": "Responsable",
+  "logMeeting": "Enregistrer la réunion",
+  "attendees": "Participants",
+  "tier1": "Niveau 1 — Équipe",
+  "tier2": "Niveau 2 — Service",
+  "tier3": "Niveau 3 — Usine"
+}

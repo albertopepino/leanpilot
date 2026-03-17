@@ -257,11 +257,21 @@ async def get_current_user(
 
 
 async def get_current_active_admin(
+    request: Request,
     user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """Dependency that requires the current user to be a factory admin."""
     from app.models.user import UserRole
     if user.role != UserRole.ADMIN:
+        await log_audit(
+            db, action="admin_check_failed", resource_type="auth",
+            user_id=user.id, user_email=user.email,
+            factory_id=user.factory_id,
+            ip_address=get_client_ip(request),
+            detail=f"Admin access denied for role {user.role.value if hasattr(user.role, 'value') else user.role}",
+        )
+        await db.commit()
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
     return user
 
@@ -284,15 +294,102 @@ def require_role(minimum_role: str):
     """FastAPI dependency factory — require minimum role level."""
     min_level = _ROLE_LEVELS.get(minimum_role, 0)
 
-    async def _check(user=Depends(get_current_user)):
+    async def _check(
+        request: Request,
+        user=Depends(get_current_user),
+        db: AsyncSession = Depends(get_db),
+    ):
         user_role = user.role.value if hasattr(user.role, "value") else user.role
         user_level = _ROLE_LEVELS.get(user_role, 0)
         if user_level < min_level:
+            await log_audit(
+                db, action="role_check_failed", resource_type="auth",
+                user_id=user.id, user_email=user.email,
+                factory_id=user.factory_id,
+                ip_address=get_client_ip(request),
+                detail=f"Required {minimum_role} (level {min_level}), user has {user_role} (level {user_level})",
+            )
+            await db.commit()
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Requires {minimum_role} role or higher",
             )
         return user
+    return _check
+
+
+# ---------------------------------------------------------------------------
+# Group policy enforcement — backend permission checks
+# ---------------------------------------------------------------------------
+
+# Permission hierarchy: full > modify > view > hidden
+_PERMISSION_LEVELS = {
+    "full": 40,
+    "modify": 30,
+    "view": 20,
+    "hidden": 0,
+}
+
+
+def require_permission(tab_id: str, minimum: str = "view"):
+    """FastAPI dependency factory — enforce group-based tab/module permissions.
+
+    Checks the user's groups for a policy on *tab_id* and verifies the
+    permission level meets or exceeds *minimum*.  Admins always pass.
+    If no policy is found for the tab, access is allowed by default
+    (open-by-default for tabs without explicit policies).
+    """
+    min_level = _PERMISSION_LEVELS.get(minimum, 0)
+
+    async def _check(
+        request: Request,
+        user=Depends(get_current_user),
+        db: AsyncSession = Depends(get_db),
+    ):
+        from app.models.user import UserRole
+
+        # Admins bypass group policy checks
+        user_role = user.role.value if hasattr(user.role, "value") else user.role
+        if user_role == UserRole.ADMIN.value:
+            return user
+
+        # Load user's active group policies for this tab
+        from app.models.groups import Group, GroupPolicy, user_groups
+        result = await db.execute(
+            select(GroupPolicy.permission)
+            .join(Group, GroupPolicy.group_id == Group.id)
+            .join(user_groups, user_groups.c.group_id == Group.id)
+            .where(
+                user_groups.c.user_id == user.id,
+                Group.factory_id == user.factory_id,
+                Group.is_active == True,  # noqa: E712
+                GroupPolicy.tab_id == tab_id,
+            )
+        )
+        permissions = [row[0] for row in result.all()]
+
+        if not permissions:
+            # No policy defined for this tab — allow by default
+            return user
+
+        # Use the highest permission across all groups the user belongs to
+        best_level = max(_PERMISSION_LEVELS.get(p, 0) for p in permissions)
+
+        if best_level < min_level:
+            await log_audit(
+                db, action="permission_denied", resource_type="policy",
+                user_id=user.id, user_email=user.email,
+                factory_id=user.factory_id,
+                ip_address=get_client_ip(request),
+                detail=f"Tab '{tab_id}' requires '{minimum}', user has level {best_level}",
+            )
+            await db.commit()
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Insufficient permissions for {tab_id}",
+            )
+        return user
+
     return _check
 
 

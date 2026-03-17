@@ -196,6 +196,7 @@
   "copiedCsv": "CSV copied to clipboard",
   "summaryEighty": "{count} categories account for 80% of issues",
   "noData": "No data available for the selected filters",
+  "confirmDelete": "Are you sure you want to delete this analysis?",
   "demoData": "Demo Data",
   "dimensionError": "Dimension Error",
   "surfaceFinish": "Surface Finish",

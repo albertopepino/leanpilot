@@ -1,0 +1,13 @@
+{
+  "title": "Tabellone SQCDP",
+  "subtitle": "Tabellone di gestione visiva giornaliera — Sicurezza, Qualità, Costo, Consegna, Persone",
+  "clickToAdd": "Clicca per aggiungere una voce",
+  "actionItems": "Azioni da completare",
+  "actionRequired": "Azione richiesta",
+  "owner": "Responsabile",
+  "logMeeting": "Registra riunione",
+  "attendees": "Partecipanti",
+  "tier1": "Livello 1 — Team",
+  "tier2": "Livello 2 — Reparto",
+  "tier3": "Livello 3 — Stabilimento"
+}

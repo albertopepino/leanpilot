@@ -171,6 +171,10 @@
   "titleSafety": "Tracker BHP",
   "navMindMap": "Mapa Myśli",
   "titleMindMap": "Mapa Myśli",
+
+  "navWaste": "Tracker Marnotrawstwa",
+  "titleWaste": "Tracker Marnotrawstwa (TIMWOODS)",
+
   "navConsolidated": "OEE Skonsolidowane",
   "titleConsolidated": "OEE Skonsolidowane",
   "navSettings": "Ustawienia",
@@ -179,5 +183,20 @@
   "navHome": "Strona glowna",
   "titleHome": "Strona glowna",
   "navMasterCalendar": "Kalendarz główny",
-  "titleMasterCalendar": "Kalendarz główny"
+  "titleMasterCalendar": "Kalendarz główny",
+
+  "navScorecard": "Karta wyników Lean",
+  "titleScorecard": "Karta wyników Lean",
+
+  "navSQCDP": "Tablica SQCDP",
+  "titleSQCDP": "Tablica SQCDP",
+  "navHandover": "Przekazanie zmiany",
+  "titleHandover": "Przekazanie zmiany",
+  "navLSW": "Praca standardowa lidera",
+  "titleLSW": "Praca standardowa lidera",
+  "navAuditScheduler": "Harmonogram audytów",
+  "titleAuditScheduler": "Harmonogram audytów",
+
+  "navHorizontalDeploy": "Wdrożenie Horyzontalne",
+  "titleHorizontalDeploy": "Wdrożenie Horyzontalne"
 }

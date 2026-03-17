@@ -1,0 +1,18 @@
+{
+  "title": "Schichtübergabe",
+  "subtitle": "Schicht-zu-Schicht-Kommunikation und Produktionsübersicht",
+  "autoGenerate": "Automatisch generieren",
+  "acknowledge": "Bestätigen",
+  "acknowledged": "Bestätigt",
+  "safetyIssues": "Sicherheitsprobleme",
+  "qualityIssues": "Qualitätsprobleme",
+  "equipmentIssues": "Anlagenprobleme",
+  "materialIssues": "Materialprobleme",
+  "pendingActions": "Offene Maßnahmen",
+  "productionSummary": "Produktionsübersicht",
+  "totalPieces": "Gesamtstückzahl",
+  "goodPieces": "Gutteile",
+  "scrapPieces": "Ausschuss",
+  "oee": "OEE",
+  "downtime": "Stillstandzeit (Min.)"
+}

@@ -36,5 +36,14 @@
   "stdISO": "ISO 56002 Innovationsmanagement",
   "stdISODesc": "Standards für kontinuierliche Verbesserungssysteme",
   "stdIndustry4": "Industrie 4.0 + Lean",
-  "stdIndustry4Desc": "Digitales Lean Manufacturing in der vierten industriellen Revolution"
+  "stdIndustry4Desc": "Digitales Lean Manufacturing in der vierten industriellen Revolution",
+
+  "leanThinking": "Lean Thinking",
+  "leanThinkingDesc": "Wie Sie Verschwendung beseitigen und Werte in Ihrer Organisation schaffen",
+  "toyotaWay": "The Toyota Way",
+  "toyotaWayDesc": "Die 14 Managementprinzipien des weltbesten Herstellers",
+  "gembaKaizen": "Gemba Kaizen",
+  "gembaKaizenDesc": "Ein praxisnaher Ansatz zur Strategie der kontinuierlichen Verbesserung",
+  "leanStartup": "The Lean Startup",
+  "leanStartupDesc": "Wie heutige Unternehmer kontinuierliche Innovation nutzen, um erfolgreiche Unternehmen aufzubauen"
 }

@@ -40,7 +40,7 @@ export default function ConsentGate({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-900 via-[#1e1b4b] to-brand-800 p-4">
-      <div className="w-full max-w-lg bg-th-bg-2 rounded-2xl shadow-2xl border border-th-border overflow-hidden">
+      <div className="w-full max-w-lg bg-th-bg-2 rounded-xl shadow-xl border border-th-border overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-brand-600 to-brand-500 p-6 text-white">
           <div className="flex items-center gap-3 mb-3">

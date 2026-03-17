@@ -160,6 +160,10 @@
   "titleSafety": "Suivi Sécurité",
   "navMindMap": "Carte Mentale",
   "titleMindMap": "Carte Mentale",
+
+  "navWaste": "Suivi des Gaspillages",
+  "titleWaste": "Suivi des Gaspillages (TIMWOODS)",
+
   "navConsolidated": "OEE Consolidé",
   "titleConsolidated": "OEE Consolidé",
   "navSettings": "Paramètres",
@@ -168,5 +172,20 @@
   "navHome": "Accueil",
   "titleHome": "Accueil",
   "navMasterCalendar": "Calendrier principal",
-  "titleMasterCalendar": "Calendrier principal"
+  "titleMasterCalendar": "Calendrier principal",
+
+  "navScorecard": "Tableau de bord Lean",
+  "titleScorecard": "Tableau de bord Lean",
+
+  "navSQCDP": "Tableau SQCDP",
+  "titleSQCDP": "Tableau SQCDP",
+  "navHandover": "Passation de quart",
+  "titleHandover": "Passation de quart",
+  "navLSW": "Travail standard du leader",
+  "titleLSW": "Travail standard du leader",
+  "navAuditScheduler": "Planification des audits",
+  "titleAuditScheduler": "Planification des audits",
+
+  "navHorizontalDeploy": "Déploiement Horizontal",
+  "titleHorizontalDeploy": "Déploiement Horizontal"
 }

@@ -1,5 +1,6 @@
 import os
 import time
+from contextlib import asynccontextmanager
 import structlog
 from fastapi import Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,8 +29,15 @@ if _sentry_dsn:
 from app.core.config import get_settings
 from app.core.security import get_current_active_admin
 from app.core.logging import setup_logging
+from app.services.data_retention import (
+    start_retention_scheduler,
+    stop_retention_scheduler,
+    run_data_retention_purge,
+)
 from app.api.routes import auth, production, oee, lean, ai, lean_advanced
-from app.api.routes import privacy, admin, manufacturing, qc, totp, groups, calendar
+from app.api.routes import privacy, admin, manufacturing, qc, totp, groups, calendar, waste
+from app.api.routes import sqcdp, shift_handover, notifications, lsw, audit_schedule, reports
+from app.api.routes import ws, horizontal_deploy
 from app.api.routes.company_settings import (
     admin_router as company_admin_router,
     public_router as company_public_router,
@@ -39,12 +47,28 @@ settings = get_settings()
 setup_logging(debug=settings.debug)
 logger = structlog.get_logger()
 
+
+# ---------------------------------------------------------------------------
+# Lifespan — start/stop background tasks (GDPR data retention scheduler)
+# ---------------------------------------------------------------------------
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application startup and shutdown lifecycle."""
+    start_retention_scheduler()
+    logger.info("lifespan.startup", detail="Data retention scheduler started")
+    yield
+    stop_retention_scheduler()
+    logger.info("lifespan.shutdown", detail="Data retention scheduler stopped")
+
+
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
     description="Lean Manufacturing Management Platform for SME Factories",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
+    lifespan=lifespan,
 )
 
 
@@ -115,8 +139,17 @@ app.include_router(qc.router, prefix="/api/v1")
 app.include_router(totp.router, prefix="/api/v1")
 app.include_router(groups.router, prefix="/api/v1")
 app.include_router(calendar.router, prefix="/api/v1")
+app.include_router(waste.router, prefix="/api/v1")
 app.include_router(company_admin_router, prefix="/api/v1")
 app.include_router(company_public_router, prefix="/api/v1")
+app.include_router(sqcdp.router, prefix="/api/v1")
+app.include_router(shift_handover.router, prefix="/api/v1")
+app.include_router(notifications.router, prefix="/api/v1")
+app.include_router(lsw.router, prefix="/api/v1")
+app.include_router(audit_schedule.router, prefix="/api/v1")
+app.include_router(reports.router, prefix="/api/v1")
+app.include_router(ws.router)
+app.include_router(horizontal_deploy.router, prefix="/api/v1")
 
 
 @app.get("/api/health")
@@ -178,6 +211,37 @@ async def metrics(_admin=Depends(get_current_active_admin)):
     }
 
 
+# ---------------------------------------------------------------------------
+# Data retention manual purge — GDPR Art. 5(1)(e) storage limitation
+# ---------------------------------------------------------------------------
+
+@app.post("/api/v1/admin/retention/purge")
+async def manual_retention_purge(
+    _admin=Depends(get_current_active_admin),
+):
+    """Manually trigger the data retention purge. Requires admin auth.
+
+    Deletes expired data according to the configured retention periods:
+    - Soft-deleted users past the grace period (hard delete)
+    - AI conversations older than retention_ai_conversations_days
+    - Audit logs older than retention_audit_log_days
+    """
+    from app.db.session import async_session as _async_session
+
+    async with _async_session() as session:
+        summary = await run_data_retention_purge(session)
+
+    return {
+        "status": "completed",
+        "summary": summary,
+        "retention_config": {
+            "deleted_account_grace_days": settings.retention_deleted_account_grace_days,
+            "ai_conversations_days": settings.retention_ai_conversations_days,
+            "audit_log_days": settings.retention_audit_log_days,
+        },
+    }
+
+
 @app.get("/api/v1/features")
 async def features():
     """All features enabled - full demo mode."""
@@ -222,5 +286,19 @@ async def features():
             "root_cause_ai": True,
             "auto_kaizen": True,
             "gemba_vision": True,
+        },
+        "phase1": {
+            "sqcdp_board": True,
+            "shift_handover": True,
+            "quality_loop": True,
+            "notifications": True,
+        },
+        "phase3": {
+            "leader_standard_work": True,
+            "audit_scheduling": True,
+        },
+        "phase4": {
+            "websocket_realtime": True,
+            "horizontal_deployment": True,
         },
     }

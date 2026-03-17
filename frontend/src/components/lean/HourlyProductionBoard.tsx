@@ -4,6 +4,25 @@ import { useI18n } from "@/stores/useI18n";
 import { advancedLeanApi, adminApi, manufacturingApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
+import {
+  Clock,
+  Target,
+  TrendingUp,
+  TrendingDown,
+  Package,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  BarChart3,
+  Save,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  Factory,
+  RefreshCw,
+  Loader2,
+  Grid3x3,
+} from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -156,22 +175,13 @@ export default function HourlyProductionBoard() {
             setSelectedLineId(mapped[0].id);
           }
         } else {
-          // Fallback demo lines
           if (!cancelled) {
-            setLines([
-              { id: 1, name: t("dashboard.demoLine1") },
-              { id: 2, name: t("dashboard.demoLine2") },
-            ]);
-            setSelectedLineId(1);
+            setLines([]);
           }
         }
       } catch {
         if (!cancelled) {
-          setLines([
-            { id: 1, name: t("dashboard.demoLine1") },
-            { id: 2, name: t("dashboard.demoLine2") },
-          ]);
-          setSelectedLineId(1);
+          setLines([]);
         }
       } finally {
         if (!cancelled) setLinesLoading(false);
@@ -409,7 +419,7 @@ export default function HourlyProductionBoard() {
 
   // --- Render --------------------------------------------------------------
   return (
-    <div className="space-y-6 max-w-6xl mx-auto" data-print-area="true" role="region" aria-label="Hourly Production Board">
+    <div className="max-w-[1400px] mx-auto space-y-6" data-print-area="true" role="region" aria-label="Hourly Production Board">
       {/* ================================================================== */}
       {/* Control Bar                                                        */}
       {/* ================================================================== */}
@@ -425,7 +435,7 @@ export default function HourlyProductionBoard() {
               value={selectedLineId ?? ""}
               onChange={(e) => setSelectedLineId(Number(e.target.value))}
               aria-label="Production line"
-              className="text-sm font-semibold border border-th-border rounded-xl px-3 py-2 bg-th-bg-2 text-th-text focus:ring-2 focus:ring-brand-500/50 outline-none backdrop-blur-sm"
+              className="text-sm font-semibold border border-th-border rounded-lg px-3 py-2 bg-th-bg-2 text-th-text focus:ring-2 focus:ring-brand-500/50 outline-none"
             >
               {lines.map((l) => (
                 <option key={l.id} value={l.id}>
@@ -435,19 +445,17 @@ export default function HourlyProductionBoard() {
             </select>
             <button
               onClick={() => setShowAddLine(true)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg border border-dashed border-th-border text-th-text-2 hover:bg-th-bg-3 hover:text-brand-500 hover:border-brand-500/50 transition-all text-lg font-bold"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-dashed border-th-border text-th-text-2 hover:bg-th-bg-3 hover:text-brand-500 hover:border-brand-500/50 transition-all"
               title={t("dashboard.addLine") || "Add Line"}
             >
-              +
+              <Plus className="w-4 h-4" />
             </button>
             <button
               onClick={() => setShowAddProduct(true)}
               className="px-2.5 py-1.5 flex items-center gap-1 rounded-lg border border-dashed border-th-border text-th-text-2 hover:bg-th-bg-3 hover:text-brand-500 hover:border-brand-500/50 transition-all text-xs font-semibold"
               title={t("dashboard.addProduct") || "Add Product"}
             >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
+              <Package className="w-3.5 h-3.5" />
               {t("dashboard.product") || "Product"}
             </button>
           </div>
@@ -457,28 +465,28 @@ export default function HourlyProductionBoard() {
         <div className="flex items-center gap-1">
           <button
             onClick={() => shiftDate(-1)}
-            className="px-2.5 py-2 rounded-lg border border-th-border bg-th-input text-th-text hover:bg-th-bg-3 transition-all duration-300 text-sm"
+            className="px-2.5 py-2 rounded-lg border border-th-border bg-th-input text-th-text hover:bg-th-bg-3 transition-colors text-sm"
             aria-label="Previous day"
           >
-            &#8592;
+            <ChevronLeft className="w-4 h-4" />
           </button>
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="text-sm border border-th-border rounded-xl px-3 py-2 bg-th-input text-th-text focus:ring-2 focus:ring-brand-500/50 outline-none backdrop-blur-sm"
+            className="text-sm border border-th-border rounded-lg px-3 py-2 bg-th-input text-th-text focus:ring-2 focus:ring-brand-500/50 outline-none"
           />
           <button
             onClick={() => shiftDate(1)}
-            className="px-2.5 py-2 rounded-lg border border-th-border bg-th-input text-th-text hover:bg-th-bg-3 transition-all duration-300 text-sm"
+            className="px-2.5 py-2 rounded-lg border border-th-border bg-th-input text-th-text hover:bg-th-bg-3 transition-colors text-sm"
             aria-label="Next day"
           >
-            &#8594;
+            <ChevronRight className="w-4 h-4" />
           </button>
           {!isToday && (
             <button
               onClick={() => setSelectedDate(toISODate(new Date()))}
-              className="ml-1 px-3 py-2 text-xs font-bold rounded-xl border border-brand-500/30 text-brand-400 bg-brand-500/10 hover:bg-brand-500/20 transition-all duration-300 uppercase tracking-wider"
+              className="ml-1 px-3 py-2 text-xs font-bold rounded-lg border border-brand-500/30 text-brand-400 bg-brand-500/10 hover:bg-brand-500/20 transition-colors uppercase tracking-wider"
             >
               {t("dashboard.today")}
             </button>
@@ -511,16 +519,19 @@ export default function HourlyProductionBoard() {
 
         <div className="ml-auto flex items-center gap-2 text-xs">
           {saving && (
-            <span className="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 font-semibold animate-pulse">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-500 border border-blue-500/20 font-semibold">
+              <Loader2 className="w-3 h-3 animate-spin" />
               {t("dashboard.saving")}
             </span>
           )}
           {saveSuccess && (
-            <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-semibold">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-semibold">
+              <CheckCircle className="w-3 h-3" />
               {t("dashboard.saveAllSuccess")}
             </span>
           )}
-          <span className="text-th-text-2" title={lastRefresh.toLocaleTimeString(dateLocale)}>
+          <span className="inline-flex items-center gap-1.5 text-th-text-2" title={lastRefresh.toLocaleTimeString(dateLocale)}>
+            <RefreshCw className="w-3 h-3" />
             {t("dashboard.autoRefresh")}
           </span>
         </div>
@@ -532,18 +543,21 @@ export default function HourlyProductionBoard() {
       {loading && (
         <div className="flex items-center justify-center py-12">
           <div className="flex items-center gap-3">
-            <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+            <Loader2 className="w-5 h-5 text-brand-500 animate-spin" />
             <span className="text-sm text-th-text-2 font-medium">{t("dashboard.loadingData")}</span>
           </div>
         </div>
       )}
 
       {error && !loading && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center justify-between backdrop-blur-sm">
-          <span className="text-sm text-red-600 dark:text-red-400">{error}</span>
+        <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 flex items-center justify-between">
+          <span className="inline-flex items-center gap-2 text-sm text-red-600">
+            <AlertTriangle className="w-4 h-4" />
+            {error}
+          </span>
           <button
             onClick={() => selectedLineId !== null && fetchData(selectedLineId, selectedDate)}
-            className="px-3 py-1 text-sm font-semibold rounded-lg bg-gradient-to-r from-red-600 to-red-500 text-white hover:from-red-500 hover:to-red-400 transition-all duration-300"
+            className="px-3 py-1 text-sm font-semibold rounded-lg bg-red-600 text-white hover:bg-red-500 transition-colors"
           >
             {t("dashboard.retry")}
           </button>
@@ -555,51 +569,50 @@ export default function HourlyProductionBoard() {
           {/* ================================================================ */}
           {/* KPI Banner                                                       */}
           {/* ================================================================ */}
-          <div
-            className={`relative overflow-hidden rounded-2xl p-6 text-white ${
-              stats.cumDelta >= 0
-                ? "bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500"
-                : "bg-gradient-to-r from-red-600 via-red-500 to-rose-500"
-            }`}
-          >
-            {/* Subtle pattern overlay */}
-            <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
-
-            <div className="relative z-10">
-              <div className="flex items-center gap-4 mb-5">
-                <div className="w-14 h-14 bg-white/15 rounded-xl flex items-center justify-center text-3xl backdrop-blur-sm border border-white/10">
-                  &#9201;
-                </div>
-                <div className="flex-1">
-                  <h2 className="text-2xl font-bold tracking-tight">{t("dashboard.hourlyTitle")}</h2>
-                  <p className="text-sm text-white/70 mt-0.5">
-                    {lineName} &mdash; {displayDate}
-                  </p>
-                </div>
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
+            <div className="flex items-center gap-4 mb-5">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                stats.cumDelta >= 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"
+              }`}>
+                <Clock className="w-6 h-6" />
               </div>
+              <div className="flex-1">
+                <h2 className="text-xl font-bold text-th-text tracking-tight">{t("dashboard.hourlyTitle")}</h2>
+                <p className="text-sm text-th-text-2 mt-0.5 flex items-center gap-1.5">
+                  <Factory className="w-3.5 h-3.5" />
+                  {lineName} &mdash; {displayDate}
+                </p>
+              </div>
+            </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                {[
-                  { val: stats.totalTarget, label: t("dashboard.totalTarget") },
-                  { val: stats.totalActual, label: t("dashboard.totalActual") },
-                  { val: `${stats.variancePct >= 0 ? "+" : ""}${stats.variancePct}%`, label: t("dashboard.overallVariance") },
-                  { val: stats.wins, label: t("dashboard.hoursWon") },
-                  { val: stats.losses, label: t("dashboard.hoursLost") },
-                ].map((item, idx) => (
-                  <div key={idx} className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-center border border-white/10 hover:bg-white/15 transition-all duration-300">
-                    <div className="text-2xl font-bold drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">{item.val}</div>
-                    <div className="text-[10px] text-white/60 font-bold uppercase tracking-[0.1em] mt-0.5">{item.label}</div>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              {[
+                { val: stats.totalTarget, label: t("dashboard.totalTarget"), icon: Target },
+                { val: stats.totalActual, label: t("dashboard.totalActual"), icon: Package },
+                { val: `${stats.variancePct >= 0 ? "+" : ""}${stats.variancePct}%`, label: t("dashboard.overallVariance"), icon: stats.variancePct >= 0 ? TrendingUp : TrendingDown },
+                { val: stats.wins, label: t("dashboard.hoursWon"), icon: CheckCircle },
+                { val: stats.losses, label: t("dashboard.hoursLost"), icon: XCircle },
+              ].map((item, idx) => {
+                const Icon = item.icon;
+                return (
+                  <div key={idx} className="rounded-xl border border-th-border bg-th-bg-3 p-3 text-center">
+                    <div className="flex justify-center mb-1">
+                      <Icon className="w-4 h-4 text-th-text-2" />
+                    </div>
+                    <div className="text-2xl font-bold text-th-text">{item.val}</div>
+                    <div className="text-[10px] text-th-text-2 font-bold uppercase tracking-[0.1em] mt-0.5">{item.label}</div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </div>
 
           {/* ================================================================ */}
           {/* Hourly Bar Chart                                                 */}
           {/* ================================================================ */}
-          <div className="bg-th-bg-2 rounded-2xl backdrop-blur-sm border border-th-border p-5">
-            <h3 className="text-[10px] font-bold text-th-text-2 uppercase tracking-[0.15em] mb-4">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5">
+            <h3 className="flex items-center gap-2 text-xs font-bold text-th-text-2 uppercase tracking-wider mb-4">
+              <BarChart3 className="w-4 h-4" />
               {t("dashboard.cumulativeChart")}
             </h3>
             <div className="flex items-end gap-1.5 h-48">
@@ -622,8 +635,8 @@ export default function HourlyProductionBoard() {
                           d.cumActual === null
                             ? "bg-th-bg-3/50"
                             : ahead
-                            ? "bg-gradient-to-t from-emerald-600 to-teal-400 shadow-[0_0_8px_rgba(16,185,129,0.3)]"
-                            : "bg-gradient-to-t from-red-600 to-rose-400 shadow-[0_0_8px_rgba(239,68,68,0.3)]"
+                            ? "bg-emerald-500"
+                            : "bg-red-500"
                         }`}
                         style={{ height: d.cumActual !== null ? `${actualH}%` : "2px", minHeight: "2px" }}
                         title={d.cumActual !== null ? `${t("dashboard.hourlyActual")}: ${d.cumActual}` : "--"}
@@ -642,11 +655,88 @@ export default function HourlyProductionBoard() {
                 {t("dashboard.cumTarget")}
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-sm bg-gradient-to-t from-emerald-600 to-teal-400 inline-block" />
+                <span className="w-3 h-3 rounded-sm bg-emerald-500 inline-block" />
                 {t("dashboard.cumActual")}
               </span>
             </div>
           </div>
+
+          {/* ================================================================ */}
+          {/* Weekly Production Heatmap                                        */}
+          {/* ================================================================ */}
+          {(() => {
+            // Build a 7-day heatmap from current slot data
+            const today = new Date(selectedDate + "T00:00:00");
+            const weekDays: { label: string; date: string; slots: HourlySlot[] }[] = [];
+            for (let i = 6; i >= 0; i--) {
+              const d = new Date(today);
+              d.setDate(d.getDate() - i);
+              const iso = toISODate(d);
+              const dayLabel = d.toLocaleDateString(dateLocale, { weekday: "short", day: "numeric" });
+              // Only the selected date has real slot data; others show empty placeholder
+              weekDays.push({
+                label: dayLabel,
+                date: iso,
+                slots: iso === selectedDate ? slots : [],
+              });
+            }
+            const hours = DEFAULT_SHIFT_HOURS;
+
+            return (
+              <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5">
+                <h3 className="flex items-center gap-2 text-xs font-bold text-th-text-2 uppercase tracking-wider mb-4">
+                  <Grid3x3 className="w-4 h-4" />
+                  {t("dashboard.weeklyHeatmap") || "Weekly Production Heatmap"}
+                </h3>
+                <div className="overflow-x-auto">
+                  <div className="grid gap-px" style={{ gridTemplateColumns: `80px repeat(${hours.length}, 1fr)` }}>
+                    {/* Header row — hours */}
+                    <div className="text-[9px] text-th-text-2 font-mono p-1" />
+                    {hours.map((h) => (
+                      <div key={h} className="text-[9px] text-th-text-2 text-center font-mono p-1">
+                        {h.slice(0, 2)}
+                      </div>
+                    ))}
+                    {/* Data rows — one per day */}
+                    {weekDays.map((day) => (
+                      <>
+                        <div key={day.date + "-label"} className="text-[10px] text-th-text-2 font-medium p-1 truncate flex items-center">
+                          {day.label}
+                        </div>
+                        {hours.map((h) => {
+                          const slot = day.slots.find((s) => s.hour === h);
+                          const hasData = slot && slot.actual !== null;
+                          const pct = hasData && slot.target > 0 ? (slot.actual! / slot.target) * 100 : 0;
+                          let bg = "bg-th-bg-3/30";
+                          if (hasData) {
+                            if (pct >= 100) bg = "bg-emerald-500/80";
+                            else if (pct >= 85) bg = "bg-emerald-500/40";
+                            else if (pct >= 70) bg = "bg-amber-500/50";
+                            else bg = "bg-red-500/50";
+                          }
+                          return (
+                            <div
+                              key={day.date + h}
+                              className={`${bg} rounded-sm h-6 transition-colors`}
+                              title={hasData ? `${slot.actual}/${slot.target} (${Math.round(pct)}%)` : "—"}
+                            />
+                          );
+                        })}
+                      </>
+                    ))}
+                  </div>
+                </div>
+                {/* Legend */}
+                <div className="flex items-center gap-4 mt-3 text-[9px] text-th-text-2 uppercase tracking-wider font-medium">
+                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-emerald-500/80 inline-block" />{">"}100%</span>
+                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-emerald-500/40 inline-block" />85-99%</span>
+                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-amber-500/50 inline-block" />70-84%</span>
+                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-red-500/50 inline-block" />{"<"}70%</span>
+                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-th-bg-3/30 inline-block" />{t("dashboard.noData") || "No data"}</span>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* ================================================================ */}
           {/* Save All button                                                  */}
@@ -655,12 +745,13 @@ export default function HourlyProductionBoard() {
             <button
               onClick={saveAll}
               disabled={!hasDirtyRows || saving}
-              className={`px-6 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${
+              className={`inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg transition-colors ${
                 hasDirtyRows && !saving
-                  ? "bg-gradient-to-r from-brand-600 to-brand-500 text-white hover:from-brand-500 hover:to-brand-400 shadow-[0_0_15px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)]"
+                  ? "bg-brand-600 text-white hover:bg-brand-500"
                   : "bg-th-bg-3 text-th-text-2 cursor-not-allowed border border-th-border"
               }`}
             >
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               {saving ? t("dashboard.saving") : t("dashboard.saveAll")}
             </button>
           </div>
@@ -668,7 +759,7 @@ export default function HourlyProductionBoard() {
           {/* ================================================================ */}
           {/* Hour-by-Hour Table                                               */}
           {/* ================================================================ */}
-          <div className="bg-th-bg-2 rounded-2xl backdrop-blur-sm border border-th-border overflow-x-auto">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-th-bg-3 text-[10px] font-bold text-th-text-2 uppercase tracking-[0.12em]">
@@ -725,11 +816,12 @@ export default function HourlyProductionBoard() {
                       <td className="p-4 text-center">
                         <input
                           type="number"
+                          inputMode="numeric"
                           min={0}
                           value={slot.actual ?? ""}
                           onChange={(e) => updateSlot(idx, "actual", e.target.value)}
                           onBlur={() => { if (slot.dirty) saveSlot(slots[idx]); }}
-                          className="w-16 text-center text-sm font-bold border border-th-border rounded-lg py-1.5 focus:ring-2 focus:ring-brand-500/50 outline-none bg-th-input text-th-text backdrop-blur-sm"
+                          className="w-16 text-center text-sm font-bold border border-th-border rounded-lg py-1.5 focus:ring-2 focus:ring-brand-500/50 outline-none bg-th-input text-th-text"
                           placeholder="--"
                         />
                       </td>
@@ -744,8 +836,8 @@ export default function HourlyProductionBoard() {
                         {slot.cumulativeActual !== null ? (
                           <span className={`font-bold ${
                             slot.cumulativeActual >= slot.cumulativeTarget
-                              ? "text-emerald-600 dark:text-emerald-400 dark:drop-shadow-[0_0_4px_rgba(16,185,129,0.4)]"
-                              : "text-red-600 dark:text-red-400 dark:drop-shadow-[0_0_4px_rgba(239,68,68,0.4)]"
+                              ? "text-emerald-600"
+                              : "text-red-600"
                           }`}>
                             {slot.cumulativeActual}
                           </span>
@@ -759,8 +851,8 @@ export default function HourlyProductionBoard() {
                         {delta !== null ? (
                           <span className={
                             isWin
-                              ? "text-emerald-600 dark:text-emerald-400 dark:drop-shadow-[0_0_4px_rgba(16,185,129,0.4)]"
-                              : "text-red-600 dark:text-red-400 dark:drop-shadow-[0_0_4px_rgba(239,68,68,0.4)]"
+                              ? "text-emerald-600"
+                              : "text-red-600"
                           }>
                             {delta >= 0 ? "+" : ""}{delta}
                           </span>
@@ -774,21 +866,21 @@ export default function HourlyProductionBoard() {
                         {delta !== null ? (
                           isWin ? (
                             <span
-                              className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-base font-bold dark:shadow-[0_0_10px_rgba(16,185,129,0.2)]"
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
                               title={t("dashboard.win")}
                             >
-                              &#10003;
+                              <CheckCircle className="w-4 h-4" />
                             </span>
                           ) : (
                             <span
-                              className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/20 text-base font-bold dark:shadow-[0_0_10px_rgba(239,68,68,0.2)]"
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-500/10 text-red-600 border border-red-500/20"
                               title={t("dashboard.loss")}
                             >
-                              &#10007;
+                              <XCircle className="w-4 h-4" />
                             </span>
                           )
                         ) : (
-                          <span className="inline-block w-8 h-8 rounded-lg bg-th-bg-3 text-th-text-3 text-center leading-8 text-xs border border-th-border">
+                          <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-th-bg-3 text-th-text-3 text-xs border border-th-border">
                             --
                           </span>
                         )}
@@ -804,7 +896,7 @@ export default function HourlyProductionBoard() {
                               const updated = { ...slot, reasonCode: e.target.value as MissReason, dirty: true };
                               saveSlot(updated);
                             }}
-                            className={`w-full text-xs border rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-red-500/40 outline-none bg-th-input text-th-text backdrop-blur-sm ${
+                            className={`w-full text-xs border rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-red-500/40 outline-none bg-th-input text-th-text ${
                               slot.reasonCode
                                 ? "border-th-border"
                                 : "border-red-500/30 animate-pulse"
@@ -829,7 +921,7 @@ export default function HourlyProductionBoard() {
                           value={slot.notes}
                           onChange={(e) => updateSlot(idx, "notes", e.target.value)}
                           onBlur={() => { if (slot.dirty) saveSlot(slots[idx]); }}
-                          className="w-full text-xs border border-th-border rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-brand-500/50 outline-none bg-th-input text-th-text backdrop-blur-sm"
+                          className="w-full text-xs border border-th-border rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-brand-500/50 outline-none bg-th-input text-th-text"
                           placeholder={t("dashboard.notesPlaceholder")}
                         />
                       </td>
@@ -840,12 +932,10 @@ export default function HourlyProductionBoard() {
                           <button
                             onClick={() => saveSlot(slots[idx])}
                             disabled={saving}
-                            className="p-1.5 rounded-lg text-brand-400 hover:bg-brand-500/10 transition-all duration-300 border border-transparent hover:border-brand-500/20"
+                            className="p-1.5 rounded-lg text-brand-500 hover:bg-brand-500/10 transition-colors border border-transparent hover:border-brand-500/20"
                             title={t("dashboard.saveAll")}
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
+                            <Save className="w-4 h-4" />
                           </button>
                         )}
                       </td>
@@ -859,8 +949,9 @@ export default function HourlyProductionBoard() {
           {/* ================================================================ */}
           {/* Summary Stats                                                    */}
           {/* ================================================================ */}
-          <div className="bg-th-bg-2 rounded-2xl backdrop-blur-sm border border-th-border p-6">
-            <h3 className="text-[10px] font-bold text-th-text-2 uppercase tracking-[0.15em] mb-4">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
+            <h3 className="flex items-center gap-2 text-xs font-bold text-th-text-2 uppercase tracking-wider mb-4">
+              <Target className="w-4 h-4" />
               {t("dashboard.summaryStats")}
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -886,8 +977,8 @@ export default function HourlyProductionBoard() {
                   <div
                     className={`h-full rounded-full transition-all duration-700 ${
                       stats.totalActual >= stats.totalTarget
-                        ? "bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_12px_rgba(16,185,129,0.4)]"
-                        : "bg-gradient-to-r from-red-500 to-rose-400 shadow-[0_0_12px_rgba(239,68,68,0.4)]"
+                        ? "bg-emerald-500"
+                        : "bg-red-500"
                     }`}
                     style={{ width: `${Math.min((stats.totalActual / stats.totalTarget) * 100, 100)}%` }}
                   />
@@ -903,8 +994,9 @@ export default function HourlyProductionBoard() {
       {/* ================================================================== */}
       {showAddLine && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowAddLine(false)}>
-          <div className="bg-th-bg rounded-2xl shadow-xl border border-th-border w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-            <div className="p-5 border-b border-th-border">
+          <div className="bg-th-bg rounded-xl shadow-sm border border-th-border w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 border-b border-th-border flex items-center gap-2">
+              <Factory className="w-5 h-5 text-th-text-2" />
               <h3 className="font-bold text-th-text text-lg">{t("dashboard.addLine") || "Add Production Line"}</h3>
             </div>
             <div className="p-5 space-y-4">
@@ -942,8 +1034,9 @@ export default function HourlyProductionBoard() {
       {/* ================================================================== */}
       {showAddProduct && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowAddProduct(false)}>
-          <div className="bg-th-bg rounded-2xl shadow-xl border border-th-border w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-            <div className="p-5 border-b border-th-border">
+          <div className="bg-th-bg rounded-xl shadow-sm border border-th-border w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 border-b border-th-border flex items-center gap-2">
+              <Package className="w-5 h-5 text-th-text-2" />
               <h3 className="font-bold text-th-text text-lg">{t("dashboard.addProduct") || "Add Product"}</h3>
             </div>
             <div className="p-5 space-y-4">
@@ -1014,8 +1107,8 @@ function SummaryKpi({
 }) {
   const colorMap = {
     slate: "text-th-text",
-    emerald: "text-emerald-600 dark:text-emerald-400 dark:drop-shadow-[0_0_6px_rgba(16,185,129,0.4)]",
-    red: "text-red-600 dark:text-red-400 dark:drop-shadow-[0_0_6px_rgba(239,68,68,0.4)]",
+    emerald: "text-emerald-600",
+    red: "text-red-600",
   };
 
   const borderMap = {
@@ -1025,7 +1118,7 @@ function SummaryKpi({
   };
 
   return (
-    <div className={`text-center border-l-4 ${borderMap[color]} bg-th-bg-3 rounded-lg p-3 hover:bg-th-bg transition-all duration-300`}>
+    <div className={`text-center border-l-4 ${borderMap[color]} rounded-xl border border-th-border bg-th-bg-3 p-3`}>
       <div className={`text-3xl font-bold ${colorMap[color]}`}>{value}</div>
       <div className="text-[10px] text-th-text-2 font-bold uppercase tracking-[0.1em] mt-1">{label}</div>
     </div>

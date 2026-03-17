@@ -51,5 +51,7 @@
   "tipVsm": "Value stream visualization",
   "tipA3": "Structured problem solving",
   "tipGemba": "Shop floor observation walks",
-  "tipTpm": "Total productive maintenance"
+  "tipTpm": "Total productive maintenance",
+
+  "gdprNotice": "By signing in, you agree to our Privacy Policy and Terms of Service. Your data is processed in accordance with GDPR."
 }

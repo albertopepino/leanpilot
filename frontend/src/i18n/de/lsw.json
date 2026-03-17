@@ -1,0 +1,19 @@
+{
+  "title": "Führungskräfte-Standardarbeit",
+  "subtitle": "Tägliche rollenbasierte Checklisten und Nachverfolgung",
+  "createTemplate": "Vorlage erstellen",
+  "role": "Rolle",
+  "operator": "Bediener",
+  "supervisor": "Vorarbeiter",
+  "manager": "Manager",
+  "frequency": "Häufigkeit",
+  "daily": "Täglich",
+  "weekly": "Wöchentlich",
+  "monthly": "Monatlich",
+  "tasks": "Aufgaben",
+  "addTask": "Aufgabe hinzufügen",
+  "todayTasks": "Heutige Aufgaben",
+  "completionHistory": "Abschlussverlauf",
+  "completion": "Abschluss",
+  "noTemplates": "Noch keine Vorlagen erstellt"
+}

@@ -1,4 +1,5 @@
 "use client";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 interface Props {
   t: (key: string) => string;
@@ -17,9 +18,10 @@ interface Props {
  */
 export default function PrivacyModal({ t, onClose, lang }: Props) {
   const content = lang === "en" ? privacyEN : privacyIT;
+  const trapRef = useFocusTrap<HTMLDivElement>();
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="privacy-modal-title">
+    <div ref={trapRef} className="fixed inset-0 z-[200] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="privacy-modal-title" onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}>
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
@@ -65,7 +67,7 @@ export default function PrivacyModal({ t, onClose, lang }: Props) {
 
 const privacyEN = `
 <h3>1. Data Controller</h3>
-<p>[COMPANY NAME], [ADDRESS], [COUNTRY]<br/>
+<p>Centro Studi Grassi S.r.l., Via Example 1, Milan, Italy<br/>
 Email: privacy@autopilot.rs<br/>
 Data Protection Officer: dpo@autopilot.rs</p>
 
@@ -121,14 +123,14 @@ Data Protection Officer: dpo@autopilot.rs</p>
 <h3>8. Sub-processors</h3>
 <p>We use the following sub-processors:</p>
 <ul>
-  <li>Cloud hosting: [Provider] — EU data center</li>
-  <li>Email delivery: [Provider] — for sending account credentials</li>
+  <li>Cloud hosting: Hetzner Cloud — EU data center (Germany/Finland)</li>
+  <li>Email delivery: SMTP service — for sending account credentials</li>
   <li>Payment processing: Stripe — PCI DSS compliant (they are an independent controller for payment data)</li>
   <li>AI processing: OpenAI — with DPA and SCCs in place (Pro plan only)</li>
 </ul>
 
 <h3>9. Security</h3>
-<p>We implement appropriate technical and organizational measures including: encryption in transit (TLS 1.3), encryption at rest (AES-256), access controls, regular security assessments, and incident response procedures.</p>
+<p>We implement appropriate technical and organizational measures including: encryption in transit (TLS 1.2+), role-based access controls, password hashing (bcrypt), JWT token management, regular security assessments, and incident response procedures. Database security is managed at the infrastructure level by the hosting provider.</p>
 
 <h3>10. Children</h3>
 <p>LeanPilot is a B2B service for manufacturing professionals. We do not knowingly collect data from persons under 16.</p>
@@ -144,7 +146,7 @@ Data Protection Officer: dpo@autopilot.rs</p>
 
 const privacyIT = `
 <h3>1. Titolare del Trattamento</h3>
-<p>[NOME SOCIETÀ], [INDIRIZZO], [PAESE]<br/>
+<p>Centro Studi Grassi S.r.l., Via Example 1, Milano, Italia<br/>
 Email: privacy@autopilot.rs<br/>
 Responsabile Protezione Dati: dpo@autopilot.rs</p>
 
@@ -200,14 +202,14 @@ Responsabile Protezione Dati: dpo@autopilot.rs</p>
 <h3>8. Sub-responsabili</h3>
 <p>Utilizziamo i seguenti sub-responsabili:</p>
 <ul>
-  <li>Cloud hosting: [Provider] — data center UE</li>
-  <li>Invio email: [Provider] — per invio credenziali account</li>
+  <li>Cloud hosting: Hetzner Cloud — data center UE (Germania/Finlandia)</li>
+  <li>Invio email: Servizio SMTP — per invio credenziali account</li>
   <li>Elaborazione pagamenti: Stripe — conforme PCI DSS (titolare autonomo per dati pagamento)</li>
   <li>Elaborazione AI: OpenAI — con DPA e SCC in atto (solo piano Pro)</li>
 </ul>
 
 <h3>9. Sicurezza</h3>
-<p>Implementiamo misure tecniche e organizzative appropriate tra cui: crittografia in transito (TLS 1.3), crittografia a riposo (AES-256), controlli accesso, valutazioni sicurezza regolari e procedure di risposta agli incidenti.</p>
+<p>Implementiamo misure tecniche e organizzative appropriate tra cui: crittografia in transito (TLS 1.2+), controlli accesso basati su ruoli, hashing password (bcrypt), gestione token JWT, valutazioni sicurezza regolari e procedure di risposta agli incidenti. La sicurezza del database è gestita a livello infrastrutturale dal provider di hosting.</p>
 
 <h3>10. Minori</h3>
 <p>LeanPilot è un servizio B2B per professionisti manifatturieri. Non raccogliamo consapevolmente dati da persone sotto i 16 anni.</p>

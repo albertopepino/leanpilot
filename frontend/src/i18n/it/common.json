@@ -173,6 +173,9 @@
   "navMindMap": "Mappa Mentale",
   "titleMindMap": "Mappa Mentale",
 
+  "navWaste": "Tracker Sprechi",
+  "titleWaste": "Tracker Sprechi (TIMWOODS)",
+
   "navConsolidated": "OEE Consolidato",
   "titleConsolidated": "OEE Consolidato",
 
@@ -183,5 +186,37 @@
   "titleHome": "Home",
 
   "navMasterCalendar": "Calendario Principale",
-  "titleMasterCalendar": "Calendario Principale"
+  "titleMasterCalendar": "Calendario Principale",
+
+  "retry": "Riprova",
+  "notifications": "Notifiche",
+  "noNotifications": "Nessuna notifica",
+
+  "machineStop": "Fermo Macchina",
+  "qualityIssue": "Problema Qualita'",
+  "materialShortage": "Mancanza Materiale",
+  "safetyConcern": "Problema Sicurezza",
+  "maintenanceNeeded": "Manutenzione Necessaria",
+  "other": "Altro",
+  "quickReport": "Segnalazione Rapida",
+  "quickReportDesc": "Che tipo di problema?",
+  "describeIssue": "Descrivi il problema (opzionale)...",
+  "submitReport": "Invia Segnalazione ad Andon",
+  "reportSubmitted": "Segnalazione Inviata",
+  "reportSubmittedDesc": "Il tuo team e' stato notificato.",
+
+  "navScorecard": "Scorecard Lean",
+  "titleScorecard": "Scorecard Lean",
+
+  "navSQCDP": "Tabellone SQCDP",
+  "titleSQCDP": "Tabellone SQCDP",
+  "navHandover": "Passaggio Turno",
+  "titleHandover": "Passaggio Turno",
+  "navLSW": "Lavoro Standard Leader",
+  "titleLSW": "Lavoro Standard Leader",
+  "navAuditScheduler": "Pianificazione Audit",
+  "titleAuditScheduler": "Pianificazione Audit",
+
+  "navHorizontalDeploy": "Deployment Orizzontale",
+  "titleHorizontalDeploy": "Deployment Orizzontale"
 }

@@ -1,0 +1,37 @@
+{
+  "title": "Lean Scorecard",
+  "subtitle": "Lean zrelost vaše fabrike na prvi pogled",
+  "loading": "Učitavanje scorecard-a...",
+  "demoNote": "Prikazani demo podaci — završite Lean procenu za stvarne rezultate",
+
+  "overallMaturity": "Ukupna Zrelost",
+  "rawScore": "Sirov rezultat: {score} / 4.0",
+  "dmaicPhases": "DMAIC Faze",
+  "moduleUsage": "Korišćenje Modula",
+  "improvementTrend": "Trend Unapređenja",
+  "trendNote": "Mesečni lean skor zrelosti na osnovu procene i aktivnosti modula",
+  "quickWins": "Brze Pobede",
+  "quickWinsDesc": "Fokusirajte se na ove oblasti za najveći uticaj unapređenja",
+  "topPriority": "NAJVEĆI PRIORITET",
+  "categoryBreakdown": "Raspodela po Kategorijama",
+
+  "levelBeginner": "Početnik",
+  "levelDeveloping": "U Razvoju",
+  "levelProficient": "Napredan",
+  "levelAdvanced": "Ekspert",
+
+  "kaizenEvents": "Kaizen Događaji",
+  "gembaWalks": "Gemba Obilasci",
+  "sixSAudits": "6S Auditi",
+  "fiveWhyAnalyses": "Analize 5 Zašto",
+  "a3Reports": "A3 Izveštaji",
+  "vsmMaps": "VSM Mape",
+
+  "suggestWorkplace": "Počnite sa 6S auditom da biste uspostavili osnovne standarde organizacije radnog mesta",
+  "suggestVisual": "Postavite table za praćenje satne proizvodnje i podesite OEE Dashboard",
+  "suggestStandard": "Dokumentujte svojih 5 najvažnijih operativnih procedura i učinite ih dostupnim na radnim mestima",
+  "suggestImprovement": "Pokrenite Kaizen tablu i zakažite svoj prvi događaj unapređenja",
+  "suggestProblem": "Koristite analizu 5 Zašto na sledećem problemu kvaliteta da biste razvili veštine analize osnovnog uzroka",
+  "suggestTPM": "Registrujte kritičnu opremu u TPM Dashboard-u i kreirajte CILT kontrolne liste",
+  "suggestDefault": "Pregledajte ovu oblast i identifikujte jedno konkretno unapređenje"
+}

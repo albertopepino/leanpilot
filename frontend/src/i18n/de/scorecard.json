@@ -1,0 +1,37 @@
+{
+  "title": "Lean-Scorecard",
+  "subtitle": "Die Lean-Reife Ihrer Fabrik auf einen Blick",
+  "loading": "Scorecard wird geladen...",
+  "demoNote": "Demodaten angezeigt — führen Sie das Lean-Assessment für echte Ergebnisse durch",
+
+  "overallMaturity": "Gesamtreife",
+  "rawScore": "Rohwert: {score} / 4.0",
+  "dmaicPhases": "DMAIC-Phasen",
+  "moduleUsage": "Modulnutzung",
+  "improvementTrend": "Verbesserungstrend",
+  "trendNote": "Monatlicher Lean-Reifegrad basierend auf Bewertung und Modulaktivität",
+  "quickWins": "Quick Wins",
+  "quickWinsDesc": "Konzentrieren Sie sich auf diese Bereiche für die größte Verbesserungswirkung",
+  "topPriority": "HÖCHSTE PRIORITÄT",
+  "categoryBreakdown": "Aufschlüsselung nach Kategorie",
+
+  "levelBeginner": "Anfänger",
+  "levelDeveloping": "In Entwicklung",
+  "levelProficient": "Fortgeschritten",
+  "levelAdvanced": "Experte",
+
+  "kaizenEvents": "Kaizen-Events",
+  "gembaWalks": "Gemba Walks",
+  "sixSAudits": "6S-Audits",
+  "fiveWhyAnalyses": "5-Warum-Analysen",
+  "a3Reports": "A3-Berichte",
+  "vsmMaps": "VSM-Karten",
+
+  "suggestWorkplace": "Beginnen Sie mit einem 6S-Audit, um grundlegende Standards der Arbeitsplatzorganisation festzulegen",
+  "suggestVisual": "Installieren Sie stündliche Produktionsverfolgungstafeln und richten Sie das OEE-Dashboard ein",
+  "suggestStandard": "Dokumentieren Sie Ihre 5 wichtigsten SOPs und machen Sie diese an den Arbeitsplätzen zugänglich",
+  "suggestImprovement": "Starten Sie ein Kaizen-Board und planen Sie Ihr erstes Verbesserungsereignis",
+  "suggestProblem": "Nutzen Sie die 5-Warum-Analyse beim nächsten Qualitätsproblem, um Ursachenanalyse-Fähigkeiten aufzubauen",
+  "suggestTPM": "Registrieren Sie kritische Anlagen im TPM-Dashboard und erstellen Sie CILT-Checklisten",
+  "suggestDefault": "Überprüfen Sie diesen Bereich und identifizieren Sie eine umsetzbare Verbesserung"
+}

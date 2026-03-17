@@ -5,6 +5,27 @@ import { leanApi, adminApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
 import {
+  RefreshCw,
+  Clock,
+  Timer,
+  ArrowRightLeft,
+  CheckCircle,
+  Play,
+  TrendingDown,
+  BarChart3,
+  Plus,
+  ChevronUp,
+  ChevronDown,
+  X,
+  AlertTriangle,
+  Save,
+  Loader2,
+  Lightbulb,
+  Target,
+  Gauge,
+  ArrowRight,
+} from "lucide-react";
+import {
   ResponsiveContainer,
   BarChart,
   Bar,
@@ -60,22 +81,7 @@ const fmtMinutes = (s: number): string => {
 const pct = (part: number, total: number): number =>
   total > 0 ? Math.round((part / total) * 100) : 0;
 
-function buildDemoSteps(t: (k: string) => string): SMEDStep[] {
-  return [
-    { id: uid(), order: 1, description: t("improvement.smedStop"), duration_seconds: 60, phase: "internal", can_be_externalized: false, improvement_notes: "" },
-    { id: uid(), order: 2, description: t("improvement.smedRemove"), duration_seconds: 180, phase: "internal", can_be_externalized: false, improvement_notes: "" },
-    { id: uid(), order: 3, description: t("improvement.smedClean"), duration_seconds: 120, phase: "internal", can_be_externalized: true, improvement_notes: "Can pre-clean while machine runs" },
-    { id: uid(), order: 4, description: t("improvement.smedInstall"), duration_seconds: 240, phase: "internal", can_be_externalized: false, improvement_notes: "" },
-    { id: uid(), order: 5, description: t("improvement.smedAdjust"), duration_seconds: 300, phase: "internal", can_be_externalized: false, improvement_notes: "" },
-    { id: uid(), order: 6, description: t("improvement.smedPrepare"), duration_seconds: 180, phase: "external", can_be_externalized: false, improvement_notes: "" },
-    { id: uid(), order: 7, description: t("improvement.smedTestRun"), duration_seconds: 120, phase: "internal", can_be_externalized: false, improvement_notes: "" },
-  ];
-}
-
-const getDemoLines = (t: (k: string) => string): LineOption[] => [
-  { id: 1, name: t("dashboard.demoLine1") },
-  { id: 2, name: t("dashboard.demoLine2") },
-];
+/* Demo step/line builders removed — component relies on API data */
 
 /* ─── Component ──────────────────────────────────────────────────────── */
 
@@ -84,7 +90,7 @@ export default function SMEDTracker() {
   const { printView, exportToExcel, exportToCSV } = useExport();
 
   /* ── Factory / Lines ── */
-  const [lines, setLines] = useState<LineOption[]>(() => getDemoLines(t));
+  const [lines, setLines] = useState<LineOption[]>([]);
   const [selectedLineId, setSelectedLineId] = useState<number>(1);
   const [linesLoading, setLinesLoading] = useState(false);
 
@@ -105,7 +111,7 @@ export default function SMEDTracker() {
           setSelectedLineId(apiLines[0].id);
         }
       } catch {
-        /* keep demo lines */
+        /* API unavailable — lines remain empty */
       } finally {
         if (!cancelled) setLinesLoading(false);
       }
@@ -118,7 +124,7 @@ export default function SMEDTracker() {
   const [baselineSeconds, setBaselineSeconds] = useState(1200);
   const [targetSeconds, setTargetSeconds] = useState(600);
   const [steps, setSteps] = useState<SMEDStep[]>([]);
-  const [isDemo, setIsDemo] = useState(false);
+  /* isDemo state removed — no more demo fallbacks */
 
   /* ── API state ── */
   const [saving, setSaving] = useState(false);
@@ -281,12 +287,6 @@ export default function SMEDTracker() {
     ];
   }, [metrics, t]);
 
-  /* ── Load demo data for quick-start ── */
-  const loadDemoData = useCallback(() => {
-    setSteps(buildDemoSteps(t));
-    setIsDemo(true);
-  }, [t]);
-
   /* ── Start fresh analysis ── */
   const startNewAnalysis = useCallback(() => {
     setSteps([{
@@ -298,7 +298,6 @@ export default function SMEDTracker() {
       can_be_externalized: false,
       improvement_notes: "",
     }]);
-    setIsDemo(false);
     setChangeoverName("");
     setPotential(null);
     setSaveSuccess(false);
@@ -310,9 +309,9 @@ export default function SMEDTracker() {
   /* Empty state */
   if (steps.length === 0) {
     return (
-      <div className="space-y-6" data-print-area="true">
-        <div className="bg-th-bg-2 p-10 rounded-2xl shadow-card border border-th-border text-center backdrop-blur-sm">
-          <div className="text-5xl mb-4">{"\u23F1\uFE0F"}</div>
+      <div className="max-w-[1400px] mx-auto space-y-6" data-print-area="true">
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-10 text-center">
+          <RefreshCw className="w-10 h-10 text-th-text-3 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-th-text mb-2">
             {t("improvement.smedTitle")}
           </h3>
@@ -322,15 +321,10 @@ export default function SMEDTracker() {
           <div className="flex items-center justify-center gap-3">
             <button
               onClick={startNewAnalysis}
-              className="bg-gradient-to-r from-brand-600 to-blue-600 text-white px-6 py-3 rounded-xl hover:from-brand-700 hover:to-blue-700 transition font-semibold shadow-glow"
+              className="bg-th-brand text-white px-6 py-3 rounded-lg hover:opacity-90 transition font-semibold flex items-center gap-2"
             >
+              <Play className="w-4 h-4" />
               {t("improvement.startNewAnalysis") || "Start New Analysis"}
-            </button>
-            <button
-              onClick={loadDemoData}
-              className="bg-th-bg-3 text-th-text-2 px-6 py-3 rounded-xl hover:bg-th-bg-3 border border-th-border transition font-semibold"
-            >
-              {t("improvement.loadDemoData") || "Load Demo Data"}
             </button>
           </div>
         </div>
@@ -339,23 +333,14 @@ export default function SMEDTracker() {
   }
 
   return (
-    <div className="space-y-6" data-print-area="true">
-      {/* ── Demo data banner ── */}
-      {isDemo && (
-        <div className="mb-4 px-4 py-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-between text-sm backdrop-blur-sm">
-          <span className="text-amber-700 dark:text-amber-400 font-medium">{"\u26A0\uFE0F"} {t("dashboard.demoDataBadge")} — {t("improvement.smedDemoHint") || "Demo data shown — create your first changeover analysis"}</span>
-          <button onClick={startNewAnalysis} className="text-amber-600 dark:text-amber-400 hover:text-amber-800 font-semibold underline">
-            {t("improvement.startNewAnalysis") || "Start New Analysis"}
-          </button>
-        </div>
-      )}
-
+    <div className="max-w-[1400px] mx-auto space-y-6" data-print-area="true">
       {/* ── Header & Config Card ── */}
-      <div className="bg-th-bg-2 p-6 rounded-2xl shadow-card border border-th-border backdrop-blur-sm">
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
         <div className="flex items-start justify-between gap-3 mb-5">
           <div>
             <h3 className="text-lg font-bold mb-1 text-th-text flex items-center gap-2">
-              {"\u23F1\uFE0F"} {t("improvement.smedTitle")}
+              <RefreshCw className="w-5 h-5 text-th-text-2" />
+              {t("improvement.smedTitle")}
             </h3>
             <p className="text-sm text-th-text-2">
               {t("improvement.smedSubtitle")}
@@ -419,7 +404,7 @@ export default function SMEDTracker() {
               type="text"
               value={changeoverName}
               onChange={(e) => setChangeoverName(e.target.value)}
-              className="w-full px-3 py-2 border border-th-border rounded-xl bg-th-input text-th-text placeholder:text-th-text-3 focus:ring-2 focus:ring-brand-500 outline-none transition"
+              className="w-full px-3 py-2 border border-th-border rounded-lg bg-th-input text-th-text placeholder:text-th-text-3 focus:ring-2 focus:ring-th-brand outline-none transition"
               placeholder={t("improvement.changeoverName")}
             />
           </div>
@@ -431,7 +416,7 @@ export default function SMEDTracker() {
               value={selectedLineId}
               onChange={(e) => setSelectedLineId(Number(e.target.value))}
               disabled={linesLoading}
-              className="w-full px-3 py-2 border border-th-border rounded-xl bg-th-input text-th-text disabled:opacity-50 focus:ring-2 focus:ring-brand-500 outline-none transition"
+              className="w-full px-3 py-2 border border-th-border rounded-lg bg-th-input text-th-text disabled:opacity-50 focus:ring-2 focus:ring-th-brand outline-none transition"
             >
               {lines.map((l) => (
                 <option key={l.id} value={l.id}>{l.name}</option>
@@ -448,10 +433,11 @@ export default function SMEDTracker() {
             </label>
             <input
               type="number"
+              inputMode="numeric"
               min={0}
               value={baselineSeconds}
               onChange={(e) => setBaselineSeconds(Math.max(0, Number(e.target.value)))}
-              className="w-full px-3 py-2 border border-th-border rounded-xl bg-th-input text-th-text focus:ring-2 focus:ring-brand-500 outline-none transition"
+              className="w-full px-3 py-2 border border-th-border rounded-lg bg-th-input text-th-text focus:ring-2 focus:ring-th-brand outline-none transition"
             />
           </div>
           <div>
@@ -460,26 +446,103 @@ export default function SMEDTracker() {
             </label>
             <input
               type="number"
+              inputMode="numeric"
               min={0}
               value={targetSeconds}
               onChange={(e) => setTargetSeconds(Math.max(0, Number(e.target.value)))}
-              className="w-full px-3 py-2 border border-th-border rounded-xl bg-th-input text-th-text focus:ring-2 focus:ring-brand-500 outline-none transition"
+              className="w-full px-3 py-2 border border-th-border rounded-lg bg-th-input text-th-text focus:ring-2 focus:ring-th-brand outline-none transition"
             />
           </div>
         </div>
 
         {/* ── Summary Cards ── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-          <SummaryCard label={t("improvement.baselineTime")} value={fmtSeconds(baselineSeconds)} sub={fmtMinutes(baselineSeconds)} color="gray" />
-          <SummaryCard label={t("improvement.currentTime")} value={fmtSeconds(metrics.totalSec)} sub={`${metrics.internalCount + metrics.externalCount} ${t("improvement.steps")}`} color="blue" />
-          <SummaryCard label={t("improvement.targetTime")} value={fmtSeconds(targetSeconds)} sub={fmtMinutes(targetSeconds)} color="green" />
-          <SummaryCard label={t("improvement.potentialReduction")} value={`${metrics.reductionPct}%`} sub={`${fmtSeconds(metrics.internalSec)} \u2192 ${fmtSeconds(metrics.projectedInternalSec)}`} color="brand" />
+          <SummaryCard icon={<Clock className="w-4 h-4" />} label={t("improvement.baselineTime")} value={fmtSeconds(baselineSeconds)} sub={fmtMinutes(baselineSeconds)} color="gray" />
+          <SummaryCard icon={<Timer className="w-4 h-4" />} label={t("improvement.currentTime")} value={fmtSeconds(metrics.totalSec)} sub={`${metrics.internalCount + metrics.externalCount} ${t("improvement.steps")}`} color="blue" />
+          <SummaryCard icon={<Target className="w-4 h-4" />} label={t("improvement.targetTime")} value={fmtSeconds(targetSeconds)} sub={fmtMinutes(targetSeconds)} color="green" />
+          <SummaryCard icon={<TrendingDown className="w-4 h-4" />} label={t("improvement.potentialReduction")} value={`${metrics.reductionPct}%`} sub={`${fmtSeconds(metrics.internalSec)} → ${fmtSeconds(metrics.projectedInternalSec)}`} color="brand" />
         </div>
+
+        {/* ── Internal / External / Conversion Visual Summary ── */}
+        {steps.length > 0 && (
+          <div className="mb-6 p-4 rounded-xl border border-th-border bg-th-bg-3/50">
+            <h4 className="text-xs font-bold text-th-text-2 mb-3 uppercase tracking-wider flex items-center gap-1.5">
+              <ArrowRightLeft className="w-3.5 h-3.5" />
+              {t("improvement.externalizationSummary") || "Externalization Summary"}
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+              {/* Total Internal */}
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                <div className="w-3 h-10 rounded bg-blue-500" />
+                <div>
+                  <p className="text-[10px] text-th-text-3 uppercase tracking-wider font-semibold">{t("improvement.totalInternal") || "Total Internal"}</p>
+                  <p className="text-lg font-black text-blue-600 dark:text-blue-400">{fmtSeconds(metrics.internalSec)}</p>
+                  <p className="text-[10px] text-th-text-3">{metrics.internalCount} {t("improvement.steps")} &middot; {metrics.internalPct}%</p>
+                </div>
+              </div>
+              {/* Total External */}
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                <div className="w-3 h-10 rounded bg-emerald-500" />
+                <div>
+                  <p className="text-[10px] text-th-text-3 uppercase tracking-wider font-semibold">{t("improvement.totalExternal") || "Total External"}</p>
+                  <p className="text-lg font-black text-emerald-600 dark:text-emerald-400">{fmtSeconds(metrics.externalSec)}</p>
+                  <p className="text-[10px] text-th-text-3">{metrics.externalCount} {t("improvement.steps")} &middot; {metrics.externalPct}%</p>
+                </div>
+              </div>
+              {/* Conversion Ratio */}
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                <div className="w-3 h-10 rounded bg-orange-500" />
+                <div>
+                  <p className="text-[10px] text-th-text-3 uppercase tracking-wider font-semibold">{t("improvement.conversionRatio") || "Conversion Ratio"}</p>
+                  <p className="text-lg font-black text-orange-600 dark:text-orange-400">{metrics.reductionPct}%</p>
+                  <p className="text-[10px] text-th-text-3">{metrics.convertibleCount} {t("improvement.canExternalize")} &middot; {fmtSeconds(metrics.convertibleSec)}</p>
+                </div>
+              </div>
+            </div>
+            {/* Stacked bar showing proportions */}
+            {metrics.totalSec > 0 && (
+              <div className="space-y-1.5">
+                <div className="h-4 rounded-full overflow-hidden flex">
+                  {/* Must-remain internal (red) */}
+                  {(metrics.internalSec - metrics.convertibleSec) > 0 && (
+                    <div
+                      className="h-full bg-red-500/80 transition-all duration-500"
+                      style={{ width: `${pct(metrics.internalSec - metrics.convertibleSec, metrics.totalSec)}%` }}
+                      title={`${t("improvement.mustRemainInternal") || "Must remain internal"}: ${fmtSeconds(metrics.internalSec - metrics.convertibleSec)}`}
+                    />
+                  )}
+                  {/* Can be externalized (amber) */}
+                  {metrics.convertibleSec > 0 && (
+                    <div
+                      className="h-full bg-amber-500/80 transition-all duration-500"
+                      style={{ width: `${pct(metrics.convertibleSec, metrics.totalSec)}%` }}
+                      title={`${t("improvement.canExternalize")}: ${fmtSeconds(metrics.convertibleSec)}`}
+                    />
+                  )}
+                  {/* Already external (green) */}
+                  {metrics.externalSec > 0 && (
+                    <div
+                      className="h-full bg-emerald-500/80 transition-all duration-500"
+                      style={{ width: `${pct(metrics.externalSec, metrics.totalSec)}%` }}
+                      title={`${t("improvement.external")}: ${fmtSeconds(metrics.externalSec)}`}
+                    />
+                  )}
+                </div>
+                <div className="flex gap-4 text-[10px] text-th-text-3 font-medium">
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-red-500/80 inline-block" />{t("improvement.mustRemainInternal") || "Must remain internal"}</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-amber-500/80 inline-block" />{t("improvement.canExternalize")}</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-emerald-500/80 inline-block" />{t("improvement.external")}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── Gantt-style Step Chart with Recharts ── */}
         {ganttData.length > 0 && (
           <div className="mb-6">
-            <h4 className="text-xs font-bold text-th-text-2 mb-3 uppercase tracking-wider">
+            <h4 className="text-xs font-bold text-th-text-2 mb-3 uppercase tracking-wider flex items-center gap-1.5">
+              <BarChart3 className="w-3.5 h-3.5" />
               {t("improvement.timeBreakdown")}
             </h4>
             <ResponsiveContainer width="100%" height={Math.max(ganttData.length * 36 + 50, 180)}>
@@ -533,7 +596,8 @@ export default function SMEDTracker() {
 
         {/* ── Before/After Comparison Chart ── */}
         <div className="mb-6">
-          <h4 className="text-xs font-bold text-th-text-2 mb-3 uppercase tracking-wider">
+          <h4 className="text-xs font-bold text-th-text-2 mb-3 uppercase tracking-wider flex items-center gap-1.5">
+            <TrendingDown className="w-3.5 h-3.5" />
             {t("improvement.potentialSavings")}
           </h4>
           <ResponsiveContainer width="100%" height={120}>
@@ -553,11 +617,12 @@ export default function SMEDTracker() {
 
           {/* Savings highlight */}
           {metrics.reductionPct > 0 && (
-            <div className="mt-3 p-3 rounded-xl bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-500/20 text-center">
+            <div className="mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center flex items-center justify-center gap-2">
+              <TrendingDown className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               <span className="text-lg font-black text-emerald-600 dark:text-emerald-400">
                 -{metrics.reductionPct}%
               </span>
-              <span className="text-sm text-emerald-700 dark:text-emerald-400 ml-2">
+              <span className="text-sm text-emerald-700 dark:text-emerald-400">
                 {t("improvement.potentialReduction")} ({fmtSeconds(metrics.convertibleSec)} {t("improvement.canExternalize")})
               </span>
             </div>
@@ -583,9 +648,11 @@ export default function SMEDTracker() {
               {steps.map((step, idx) => {
                 const rowBg =
                   step.phase === "external"
-                    ? "bg-emerald-500/5 dark:bg-emerald-500/5"
+                    ? "bg-emerald-500/8 border-l-2 border-l-emerald-500"
                     : step.can_be_externalized
-                    ? "bg-orange-500/5 dark:bg-orange-500/5"
+                    ? "bg-amber-500/8 border-l-2 border-l-amber-500"
+                    : step.phase === "internal"
+                    ? "bg-red-500/5 border-l-2 border-l-red-400/50"
                     : idx % 2 === 1
                     ? "bg-th-bg-3/50"
                     : "";
@@ -602,18 +669,19 @@ export default function SMEDTracker() {
                         type="text"
                         value={step.description}
                         onChange={(e) => updateStep(step.id, "description", e.target.value)}
-                        className="w-full px-2 py-1.5 border border-th-border rounded-lg bg-th-input text-th-text text-sm focus:ring-2 focus:ring-brand-500 outline-none transition"
+                        className="w-full px-2 py-1.5 border border-th-border rounded-lg bg-th-input text-th-text text-sm focus:ring-2 focus:ring-th-brand outline-none transition"
                         placeholder={t("improvement.stepDescription")}
                       />
                     </td>
                     <td className="py-2.5 pr-2">
                       <input
                         type="number"
+                        inputMode="numeric"
                         min={0}
                         step={1}
                         value={step.duration_seconds}
                         onChange={(e) => updateStep(step.id, "duration_seconds", Math.max(0, Number(e.target.value)))}
-                        className="w-full px-2 py-1.5 border border-th-border rounded-lg bg-th-input text-th-text text-sm text-right focus:ring-2 focus:ring-brand-500 outline-none transition"
+                        className="w-full px-2 py-1.5 border border-th-border rounded-lg bg-th-input text-th-text text-sm text-right focus:ring-2 focus:ring-th-brand outline-none transition"
                       />
                     </td>
                     <td className="py-2.5 pr-2">
@@ -643,18 +711,24 @@ export default function SMEDTracker() {
                         type="text"
                         value={step.improvement_notes}
                         onChange={(e) => updateStep(step.id, "improvement_notes", e.target.value)}
-                        className="w-full px-2 py-1.5 border border-th-border rounded-lg bg-th-input text-th-text text-sm focus:ring-2 focus:ring-brand-500 outline-none transition"
+                        className="w-full px-2 py-1.5 border border-th-border rounded-lg bg-th-input text-th-text text-sm focus:ring-2 focus:ring-th-brand outline-none transition"
                         placeholder={step.can_be_externalized ? t("improvement.howToConvert") : t("improvement.improvementNotes")}
                       />
                     </td>
                     <td className="py-2.5 text-center">
                       <div className="flex items-center justify-center gap-1">
-                        <button onClick={() => moveStep(step.id, "up")} disabled={idx === 0} className="text-th-text-3 hover:text-th-text disabled:opacity-30 disabled:cursor-not-allowed text-sm leading-none px-1" title={t("improvement.moveUp")}>&#9650;</button>
-                        <button onClick={() => moveStep(step.id, "down")} disabled={idx === steps.length - 1} className="text-th-text-3 hover:text-th-text disabled:opacity-30 disabled:cursor-not-allowed text-sm leading-none px-1" title={t("improvement.moveDown")}>&#9660;</button>
+                        <button onClick={() => moveStep(step.id, "up")} disabled={idx === 0} className="text-th-text-3 hover:text-th-text disabled:opacity-30 disabled:cursor-not-allowed p-0.5" title={t("improvement.moveUp")} aria-label={t("improvement.moveUp")}>
+                          <ChevronUp className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => moveStep(step.id, "down")} disabled={idx === steps.length - 1} className="text-th-text-3 hover:text-th-text disabled:opacity-30 disabled:cursor-not-allowed p-0.5" title={t("improvement.moveDown")} aria-label={t("improvement.moveDown")}>
+                          <ChevronDown className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                     <td className="py-2.5 text-center">
-                      <button onClick={() => removeStep(step.id)} className="text-red-400 hover:text-red-600 dark:hover:text-red-300 text-lg leading-none" title={t("common.remove")}>&times;</button>
+                      <button onClick={() => removeStep(step.id)} className="text-red-400 hover:text-red-600 dark:hover:text-red-300 p-0.5" title={t("common.remove")} aria-label={t("common.remove")}>
+                        <X className="w-4 h-4" />
+                      </button>
                     </td>
                   </tr>
                 );
@@ -663,8 +737,9 @@ export default function SMEDTracker() {
           </table>
         </div>
 
-        <button onClick={addStep} className="mt-3 text-sm text-brand-600 dark:text-brand-400 hover:underline font-semibold">
-          + {t("improvement.addStep")}
+        <button onClick={addStep} className="mt-3 text-sm text-th-text-2 hover:text-th-text font-semibold flex items-center gap-1.5">
+          <Plus className="w-4 h-4" />
+          {t("improvement.addStep")}
         </button>
 
         {/* ── Save Actions ── */}
@@ -672,19 +747,23 @@ export default function SMEDTracker() {
           <button
             onClick={handleSave}
             disabled={saving || steps.length === 0}
-            className="bg-gradient-to-r from-brand-600 to-blue-600 text-white px-6 py-2.5 rounded-xl hover:from-brand-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition font-semibold shadow-glow flex items-center gap-2"
+            className="bg-th-brand text-white px-6 py-2.5 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition font-semibold flex items-center gap-2"
           >
             {saving ? (
-              <span className="flex items-center gap-2">
-                <Spinner />
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
                 {t("common.saving")}
-              </span>
+              </>
             ) : (
-              t("improvement.saveSmedAnalysis")
+              <>
+                <Save className="w-4 h-4" />
+                {t("improvement.saveSmedAnalysis")}
+              </>
             )}
           </button>
           {saveSuccess && (
-            <span className="text-sm text-emerald-600 dark:text-emerald-400 font-medium animate-slide-in">
+            <span className="text-sm text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1.5 animate-slide-in">
+              <CheckCircle className="w-4 h-4" />
               {t("common.saved")}
             </span>
           )}
@@ -696,35 +775,36 @@ export default function SMEDTracker() {
 
       {/* ── Improvement Potential Panel ── */}
       {(potential || potentialLoading) && (
-        <div className="bg-th-bg-2 p-6 rounded-2xl shadow-card border border-th-border backdrop-blur-sm">
-          <h4 className="text-xs font-bold text-th-text-2 mb-4 uppercase tracking-wider">
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
+          <h4 className="text-xs font-bold text-th-text-2 mb-4 uppercase tracking-wider flex items-center gap-1.5">
+            <Gauge className="w-3.5 h-3.5" />
             {t("improvement.potentialAnalysis")}
           </h4>
 
           {potentialLoading ? (
             <div className="flex items-center gap-2 text-sm text-th-text-2">
-              <Spinner />
+              <Loader2 className="w-4 h-4 animate-spin" />
               <span>{t("common.loading")}</span>
             </div>
           ) : potential ? (
             <div className="space-y-5">
               {/* Potential summary */}
               <div className="grid grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                <div className="text-center p-4 rounded-xl border border-th-border bg-blue-500/10">
                   <p className="text-[10px] text-th-text-3 uppercase tracking-wider font-semibold">{t("improvement.currentChangeover")}</p>
                   <p className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1">
                     {potential.current_changeover_minutes}m
                   </p>
                 </div>
-                <div className="text-center p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                <div className="text-center p-4 rounded-xl border border-th-border bg-emerald-500/10">
                   <p className="text-[10px] text-th-text-3 uppercase tracking-wider font-semibold">{t("improvement.projectedChangeover")}</p>
                   <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
                     {potential.projected_changeover_minutes}m
                   </p>
                 </div>
-                <div className="text-center p-4 bg-brand-500/10 border border-brand-500/20 rounded-xl">
+                <div className="text-center p-4 rounded-xl border border-th-border bg-th-brand/10">
                   <p className="text-[10px] text-th-text-3 uppercase tracking-wider font-semibold">{t("improvement.reduction")}</p>
-                  <p className="text-2xl font-black text-brand-600 dark:text-brand-400 mt-1">
+                  <p className="text-2xl font-black text-th-text mt-1">
                     {potential.reduction_percent}%
                   </p>
                 </div>
@@ -738,7 +818,7 @@ export default function SMEDTracker() {
                 </div>
                 <div className="h-4 bg-blue-500/20 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-emerald-500 to-green-500 rounded-full transition-all duration-700"
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-700"
                     style={{
                       width: `${
                         potential.current_changeover_minutes > 0
@@ -753,13 +833,14 @@ export default function SMEDTracker() {
               {/* Suggestions */}
               {potential.suggestions.length > 0 && (
                 <div>
-                  <p className="text-xs font-semibold text-th-text-2 mb-2 uppercase tracking-wider">
+                  <p className="text-xs font-semibold text-th-text-2 mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                    <Lightbulb className="w-3.5 h-3.5" />
                     {t("improvement.suggestions")}
                   </p>
                   <ul className="space-y-1.5">
                     {potential.suggestions.map((s, i) => (
                       <li key={i} className="text-sm text-th-text-2 flex gap-2 items-start">
-                        <span className="text-brand-500 mt-0.5 shrink-0">&#8227;</span>
+                        <CheckCircle className="w-3.5 h-3.5 text-th-text-3 mt-0.5 shrink-0" />
                         {s}
                       </li>
                     ))}
@@ -773,8 +854,9 @@ export default function SMEDTracker() {
 
       {/* ── Conversion Opportunities Panel ── */}
       {steps.some((s) => s.phase === "internal" && s.can_be_externalized) && (
-        <div className="bg-gradient-to-br from-orange-500/10 to-amber-500/10 dark:from-orange-950/30 dark:to-amber-950/30 p-6 rounded-2xl shadow-card border border-orange-500/20 dark:border-orange-700/40 backdrop-blur-sm">
-          <h4 className="text-xs font-bold text-orange-700 dark:text-orange-400 mb-3 uppercase tracking-wider">
+        <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 shadow-sm p-6">
+          <h4 className="text-xs font-bold text-orange-700 dark:text-orange-400 mb-3 uppercase tracking-wider flex items-center gap-1.5">
+            <ArrowRightLeft className="w-3.5 h-3.5" />
             {t("improvement.conversionOpportunities")}
           </h4>
           <div className="space-y-2">
@@ -783,12 +865,10 @@ export default function SMEDTracker() {
               .map((step) => (
                 <div
                   key={step.id}
-                  className="flex items-start gap-3 p-3 rounded-xl bg-th-bg-3 border border-orange-300/30 dark:border-orange-700/30"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-th-bg-2 border border-th-border"
                 >
-                  <span className="text-orange-600 dark:text-orange-400 text-lg leading-none mt-0.5">
-                    &#x21C4;
-                  </span>
-                  <div className="flex-1">
+                  <ArrowRightLeft className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0" />
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-th-text">
                       {step.description}{" "}
                       <span className="text-th-text-3">({fmtSeconds(step.duration_seconds)})</span>
@@ -800,7 +880,7 @@ export default function SMEDTracker() {
                   <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">
                     {t("improvement.internal")}
                   </span>
-                  <span className="text-th-text-3">&rarr;</span>
+                  <ArrowRight className="w-4 h-4 text-th-text-3 shrink-0" />
                   <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
                     {t("improvement.external")}
                   </span>
@@ -815,52 +895,39 @@ export default function SMEDTracker() {
 
 /* ─── Sub-components ─────────────────────────────────────────────────── */
 
-function Spinner() {
-  return (
-    <svg
-      className="animate-spin h-4 w-4 text-current"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-      />
-    </svg>
-  );
-}
-
 function SummaryCard({
+  icon,
   label,
   value,
   sub,
   color,
 }: {
+  icon: React.ReactNode;
   label: string;
   value: string;
   sub: string;
   color: "gray" | "blue" | "green" | "brand";
 }) {
-  const gradients: Record<string, string> = {
-    gray: "from-slate-500/10 to-gray-500/10 border-slate-500/20",
-    blue: "from-blue-500/10 to-cyan-500/10 border-blue-500/20",
-    green: "from-emerald-500/10 to-green-500/10 border-emerald-500/20",
-    brand: "from-brand-500/10 to-purple-500/10 border-brand-500/20",
+  const bg: Record<string, string> = {
+    gray: "bg-th-bg-3 border-th-border",
+    blue: "bg-blue-500/10 border-blue-500/20",
+    green: "bg-emerald-500/10 border-emerald-500/20",
+    brand: "bg-th-brand/10 border-th-border",
   };
   const text: Record<string, string> = {
     gray: "text-th-text-2",
     blue: "text-blue-600 dark:text-blue-400",
     green: "text-emerald-600 dark:text-emerald-400",
-    brand: "text-brand-600 dark:text-brand-400",
+    brand: "text-th-text",
   };
 
   return (
-    <div className={`text-center p-4 rounded-xl bg-gradient-to-br ${gradients[color]} border backdrop-blur-sm`}>
-      <p className="text-[10px] text-th-text-3 uppercase tracking-wider font-semibold">{label}</p>
-      <p className={`text-xl font-black ${text[color]} mt-1`}>{value}</p>
+    <div className={`text-center p-4 rounded-xl border ${bg[color]}`}>
+      <div className="flex items-center justify-center gap-1.5 mb-1">
+        <span className="text-th-text-3">{icon}</span>
+        <p className="text-[10px] text-th-text-3 uppercase tracking-wider font-semibold">{label}</p>
+      </div>
+      <p className={`text-xl font-black ${text[color]}`}>{value}</p>
       <p className="text-[11px] text-th-text-3 mt-0.5">{sub}</p>
     </div>
   );

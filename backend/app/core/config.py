@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     # Data retention (days) — GDPR Art. 5(1)(e) storage limitation
     retention_ai_conversations_days: int = 90
     retention_production_data_days: int = 1825  # 5 years
-    retention_audit_log_days: int = 365
+    retention_audit_log_days: int = 2190  # 6 years — GDPR/financial compliance requirement
     retention_deleted_account_grace_days: int = 30
 
     # Privacy

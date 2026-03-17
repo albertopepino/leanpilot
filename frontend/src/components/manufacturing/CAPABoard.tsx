@@ -2,6 +2,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { qcApi } from "@/lib/api";
+import {
+  Wrench,
+  Shield,
+  Clock,
+  AlertTriangle,
+  CheckCircle,
+  CalendarDays,
+  Search,
+  Plus,
+  X,
+} from "lucide-react";
 
 interface CAPA {
   id: number;
@@ -27,8 +38,8 @@ export default function CAPABoard() {
   const { t } = useI18n();
 
   const CAPA_TYPES = [
-    { value: "corrective", label: t("manufacturing.typeCorrective"), icon: "🔧", desc: t("manufacturing.descCorrective") },
-    { value: "preventive", label: t("manufacturing.typePreventive"), icon: "🛡️", desc: t("manufacturing.descPreventive") },
+    { value: "corrective", label: t("manufacturing.typeCorrective"), icon: <Wrench className="w-4 h-4" />, desc: t("manufacturing.descCorrective") },
+    { value: "preventive", label: t("manufacturing.typePreventive"), icon: <Shield className="w-4 h-4" />, desc: t("manufacturing.descPreventive") },
   ];
 
   const STATUSES = [
@@ -36,8 +47,8 @@ export default function CAPABoard() {
     { value: "in_progress", label: t("manufacturing.statusInProgress"), color: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300" },
     { value: "implemented", label: t("manufacturing.statusImplemented"), color: "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300" },
     { value: "verified", label: t("manufacturing.statusVerified"), color: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300" },
-    { value: "closed", label: t("manufacturing.statusClosed"), color: "bg-gray-100 text-gray-600 dark:bg-gray-900/40 dark:text-gray-300" },
-    { value: "cancelled", label: t("manufacturing.statusCancelled"), color: "bg-gray-100 text-gray-500 dark:bg-gray-900/40 dark:text-gray-400" },
+    { value: "closed", label: t("manufacturing.statusClosed"), color: "bg-th-bg-3 text-th-text-2" },
+    { value: "cancelled", label: t("manufacturing.statusCancelled"), color: "bg-th-bg-3 text-th-text-3" },
   ];
 
   const PRIORITIES = [
@@ -174,7 +185,7 @@ export default function CAPABoard() {
   }
 
   return (
-    <div className="space-y-4" id="capa-view">
+    <div className="max-w-[1400px] mx-auto space-y-6" id="capa-view">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -185,24 +196,34 @@ export default function CAPABoard() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-semibold flex items-center gap-1.5"
+          className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-semibold flex items-center gap-1.5"
         >
+          <Plus className="w-4 h-4" />
           {t("manufacturing.newCAPA")}
         </button>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
-          <p className="text-blue-800 dark:text-blue-300 text-xs font-semibold uppercase">{t("manufacturing.active")}</p>
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-4">
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-blue-500" />
+            <p className="text-blue-800 dark:text-blue-300 text-xs font-semibold uppercase">{t("manufacturing.active")}</p>
+          </div>
           <p className="text-2xl font-bold text-blue-700 dark:text-blue-400 mt-1">{openCount}</p>
         </div>
-        <div className={`rounded-xl p-4 border ${overdueCount > 0 ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800" : "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"}`}>
-          <p className={`text-xs font-semibold uppercase ${overdueCount > 0 ? "text-red-800 dark:text-red-300" : "text-green-800 dark:text-green-300"}`}>{t("manufacturing.overdue")}</p>
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className={`w-4 h-4 ${overdueCount > 0 ? "text-red-500" : "text-green-500"}`} />
+            <p className={`text-xs font-semibold uppercase ${overdueCount > 0 ? "text-red-800 dark:text-red-300" : "text-green-800 dark:text-green-300"}`}>{t("manufacturing.overdue")}</p>
+          </div>
           <p className={`text-2xl font-bold mt-1 ${overdueCount > 0 ? "text-red-700 dark:text-red-400" : "text-green-700 dark:text-green-400"}`}>{overdueCount}</p>
         </div>
-        <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 border border-green-200 dark:border-green-800">
-          <p className="text-green-800 dark:text-green-300 text-xs font-semibold uppercase">{t("manufacturing.verifiedClosed")}</p>
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-4">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-green-500" />
+            <p className="text-green-800 dark:text-green-300 text-xs font-semibold uppercase">{t("manufacturing.verifiedClosed")}</p>
+          </div>
           <p className="text-2xl font-bold text-green-700 dark:text-green-400 mt-1">{verifiedCount}</p>
         </div>
       </div>
@@ -230,7 +251,7 @@ export default function CAPABoard() {
             <button
               key={ct.value}
               onClick={() => setFilterType(ct.value)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${filterType === ct.value ? "bg-brand-600 text-white" : "bg-th-bg-3 text-th-text-2 hover:bg-th-hover"}`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition inline-flex items-center gap-1 ${filterType === ct.value ? "bg-brand-600 text-white" : "bg-th-bg-3 text-th-text-2 hover:bg-th-hover"}`}
             >
               {ct.icon} {ct.label}
             </button>
@@ -241,24 +262,24 @@ export default function CAPABoard() {
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-sm border border-red-200 dark:border-red-800">
           {error}
-          <button onClick={() => setError(null)} className="ml-2 font-bold">{"×"}</button>
+          <button onClick={() => setError(null)} className="ml-2"><X className="w-4 h-4 inline" /></button>
         </div>
       )}
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-4 py-3 rounded-xl text-sm border border-green-200 dark:border-green-800">
-          {"✓"} {success}
-          <button onClick={() => setSuccess(null)} className="ml-2 font-bold">{"×"}</button>
+          <CheckCircle className="w-4 h-4 inline" /> {success}
+          <button onClick={() => setSuccess(null)} className="ml-2"><X className="w-4 h-4 inline" /></button>
         </div>
       )}
 
       {/* CAPA List */}
       {filteredCAPAs.length === 0 ? (
-        <div className="bg-white dark:bg-th-bg-2 rounded-xl border border-th-border p-12 text-center">
-          <div className="text-4xl mb-3">{"🛡️"}</div>
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-12 text-center">
+          <Shield className="w-10 h-10 text-th-text-3 mx-auto mb-3" />
           <p className="text-th-text-3">{t("manufacturing.noCAPA")}</p>
         </div>
       ) : (
-        <div className="bg-white dark:bg-th-bg-2 rounded-xl border border-th-border overflow-hidden">
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -282,7 +303,7 @@ export default function CAPABoard() {
                     <tr key={capa.id} className="hover:bg-th-hover transition cursor-pointer" onClick={() => openDetail(capa)}>
                       <td className="px-4 py-3 font-mono text-xs text-th-text-3">{capa.capa_number}</td>
                       <td className="px-4 py-3">
-                        <span className="text-xs">{typeInfo?.icon} {typeInfo?.label}</span>
+                        <span className="text-xs inline-flex items-center gap-1">{typeInfo?.icon} {typeInfo?.label}</span>
                       </td>
                       <td className="px-4 py-3 font-medium text-th-text max-w-xs truncate">{capa.title}</td>
                       <td className="px-4 py-3">
@@ -297,8 +318,8 @@ export default function CAPABoard() {
                       </td>
                       <td className="px-4 py-3 text-xs">
                         {capa.due_date ? (
-                          <span className={isOverdue ? "text-red-600 font-bold" : "text-th-text-3"}>
-                            {isOverdue && "⚠ "}{new Date(capa.due_date).toLocaleDateString()}
+                          <span className={`inline-flex items-center gap-1 ${isOverdue ? "text-red-600 font-bold" : "text-th-text-3"}`}>
+                            {isOverdue && <AlertTriangle className="w-3 h-3" />}{new Date(capa.due_date).toLocaleDateString()}
                           </span>
                         ) : "—"}
                       </td>
@@ -306,16 +327,16 @@ export default function CAPABoard() {
                         <div className="flex gap-1">
                           <button
                             onClick={() => openDetail(capa)}
-                            className="px-2 py-1 bg-th-bg-3 text-th-text-2 rounded text-xs hover:bg-th-hover"
+                            className="px-2 py-1 bg-th-bg-3 text-th-text-2 rounded-lg text-xs hover:bg-th-hover"
                           >
                             {t("manufacturing.view")}
                           </button>
                           {capa.status === "implemented" && (
                             <button
                               onClick={() => handleVerify(capa)}
-                              className="px-2 py-1 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded text-xs font-semibold hover:bg-green-100 dark:hover:bg-green-900/40"
+                              className="px-2 py-1 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-lg text-xs font-semibold hover:bg-green-100 dark:hover:bg-green-900/40 inline-flex items-center gap-1"
                             >
-                              {"✓"} {t("manufacturing.verify")}
+                              <CheckCircle className="w-3 h-3" /> {t("manufacturing.verify")}
                             </button>
                           )}
                         </div>
@@ -331,8 +352,9 @@ export default function CAPABoard() {
 
       {/* Create CAPA Modal */}
       {showCreate && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowCreate(false)}>
-          <div className="bg-th-bg rounded-2xl shadow-xl border border-th-border w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center md:justify-center p-0 md:p-4" onClick={() => setShowCreate(false)}>
+          <div className="bg-th-bg rounded-t-xl md:rounded-xl shadow-xl border border-th-border w-full md:max-w-lg max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-th-border rounded-full mx-auto mt-3 md:hidden" />
             <div className="p-5 border-b border-th-border">
               <h3 className="font-bold text-th-text text-lg">{t("manufacturing.newCAPAAction")}</h3>
             </div>
@@ -349,7 +371,7 @@ export default function CAPABoard() {
                         : "border-th-border hover:bg-th-hover"
                     }`}
                   >
-                    <span className="text-lg">{ct.icon}</span>
+                    <span className="text-th-text-2">{ct.icon}</span>
                     <p className="text-sm font-semibold text-th-text mt-1">{ct.label}</p>
                     <p className="text-xs text-th-text-3">{ct.desc}</p>
                   </button>
@@ -364,6 +386,7 @@ export default function CAPABoard() {
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text"
                   placeholder="Implement SPC on critical dimension"
+                  autoFocus
                 />
               </div>
               <div>
@@ -417,7 +440,7 @@ export default function CAPABoard() {
               <button
                 onClick={handleCreate}
                 disabled={!form.title.trim() || !form.description.trim() || submitting}
-                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-bold flex items-center gap-1.5"
+                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-lg text-sm font-bold flex items-center gap-1.5"
               >
                 {submitting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
                 {submitting ? t("manufacturing.creating") : t("manufacturing.createCAPA")}
@@ -429,12 +452,13 @@ export default function CAPABoard() {
 
       {/* CAPA Detail / Update Modal */}
       {showDetail && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowDetail(null)}>
-          <div className="bg-th-bg rounded-2xl shadow-xl border border-th-border w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center md:justify-center p-0 md:p-4" onClick={() => setShowDetail(null)}>
+          <div className="bg-th-bg rounded-t-xl md:rounded-xl shadow-xl border border-th-border w-full md:max-w-lg max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-th-border rounded-full mx-auto mt-3 md:hidden" />
             <div className="p-5 border-b border-th-border">
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs text-th-text-3">{showDetail.capa_number}</span>
-                <span className="text-xs">{CAPA_TYPES.find((ct) => ct.value === showDetail.capa_type)?.icon} {CAPA_TYPES.find((ct) => ct.value === showDetail.capa_type)?.label}</span>
+                <span className="text-xs inline-flex items-center gap-1">{CAPA_TYPES.find((ct) => ct.value === showDetail.capa_type)?.icon} {CAPA_TYPES.find((ct) => ct.value === showDetail.capa_type)?.label}</span>
               </div>
               <h3 className="font-bold text-th-text text-lg mt-1">{showDetail.title}</h3>
             </div>
@@ -454,10 +478,10 @@ export default function CAPABoard() {
               <div className="border border-th-border rounded-lg p-3 space-y-2">
                 <p className="text-xs font-semibold text-th-text-2">{t("manufacturing.timeline")}</p>
                 <div className="text-xs text-th-text-3 space-y-1">
-                  <p>{"📅"} {t("manufacturing.created")}: {new Date(showDetail.created_at).toLocaleString()}</p>
-                  {showDetail.due_date && <p>{"⏰"} {t("manufacturing.due")}: {new Date(showDetail.due_date).toLocaleDateString()}</p>}
-                  {showDetail.implemented_at && <p>{"✅"} {t("manufacturing.implemented")}: {new Date(showDetail.implemented_at).toLocaleString()}</p>}
-                  {showDetail.verified_at && <p>{"🔍"} {t("manufacturing.verified")}: {new Date(showDetail.verified_at).toLocaleString()}</p>}
+                  <p className="flex items-center gap-1.5"><CalendarDays className="w-3 h-3" /> {t("manufacturing.created")}: {new Date(showDetail.created_at).toLocaleString()}</p>
+                  {showDetail.due_date && <p className="flex items-center gap-1.5"><Clock className="w-3 h-3" /> {t("manufacturing.due")}: {new Date(showDetail.due_date).toLocaleDateString()}</p>}
+                  {showDetail.implemented_at && <p className="flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> {t("manufacturing.implemented")}: {new Date(showDetail.implemented_at).toLocaleString()}</p>}
+                  {showDetail.verified_at && <p className="flex items-center gap-1.5"><Search className="w-3 h-3" /> {t("manufacturing.verified")}: {new Date(showDetail.verified_at).toLocaleString()}</p>}
                 </div>
               </div>
 
@@ -533,7 +557,7 @@ export default function CAPABoard() {
               <button
                 onClick={handleUpdate}
                 disabled={submitting}
-                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-bold flex items-center gap-1.5"
+                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-lg text-sm font-bold flex items-center gap-1.5"
               >
                 {submitting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
                 {submitting ? t("manufacturing.saving") : t("manufacturing.updateCAPA")}

@@ -1,0 +1,13 @@
+{
+  "title": "Tablero SQCDP",
+  "subtitle": "Tablero de gestión visual diaria — Seguridad, Calidad, Costo, Entrega, Personas",
+  "clickToAdd": "Haz clic para agregar una entrada",
+  "actionItems": "Acciones pendientes",
+  "actionRequired": "Acción requerida",
+  "owner": "Responsable",
+  "logMeeting": "Registrar reunión",
+  "attendees": "Asistentes",
+  "tier1": "Nivel 1 — Equipo",
+  "tier2": "Nivel 2 — Departamento",
+  "tier3": "Nivel 3 — Planta"
+}

@@ -4,6 +4,7 @@ import { useI18n } from "@/stores/useI18n";
 import { productionApi, adminApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
+import { Check, X } from "lucide-react";
 
 /* ─── Types ─────────────────────────────────────────────────────────── */
 
@@ -172,7 +173,7 @@ function ToastNotification({
       aria-live="assertive"
       className={`fixed top-4 right-4 z-50 ${bg} text-white px-5 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slide-in`}
     >
-      <span className="text-lg">{toast.type === "success" ? "\u2713" : "\u2717"}</span>
+      {toast.type === "success" ? <Check className="h-5 w-5" /> : <X className="h-5 w-5" />}
       <span className="text-sm font-medium">{toast.message}</span>
       <button
         onClick={onDismiss}
@@ -439,7 +440,7 @@ export default function ProductionInput() {
     "w-full px-3 py-2 border rounded-lg bg-th-input text-th-text focus:ring-2 focus:ring-brand-500 focus:outline-none transition";
   const labelCls = "block text-sm text-th-text-2 mb-1 font-medium";
   const errorCls = "text-xs text-red-500 mt-0.5";
-  const cardCls = "bg-th-bg-2 p-6 rounded-lg shadow-sm border border-th-border";
+  const cardCls = "bg-th-bg-2 p-6 rounded-xl shadow-sm border border-th-border";
 
   function fieldBorder(fieldKey: string) {
     return errors[fieldKey] ? "border-red-500" : "border-th-border";
@@ -454,7 +455,7 @@ export default function ProductionInput() {
   /* ─── Render ──────────────────────────────────────────────────────── */
 
   return (
-    <div className="max-w-3xl space-y-6" data-print-area="true">
+    <div className="max-w-[1400px] mx-auto space-y-6" data-print-area="true">
       {/* Toast */}
       {toast && (
         <ToastNotification toast={toast} onDismiss={() => setToast(null)} />
@@ -693,7 +694,7 @@ export default function ProductionInput() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="bg-brand-600 text-white px-6 py-2 rounded-lg hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2"
+            className="bg-brand-600 hover:bg-brand-500 text-white px-6 py-2 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {saving && (
               <span className="inline-block h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

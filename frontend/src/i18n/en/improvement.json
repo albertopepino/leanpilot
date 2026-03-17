@@ -254,6 +254,7 @@
   "mindmapTitleRequired": "Please enter a title",
   "mindmapSaved": "Mind map saved",
   "mindmapSaveError": "Save failed",
+  "confirmDeleteMindmap": "Are you sure you want to delete this mind map?",
   "mindmapDeleted": "Mind map deleted",
   "mindmapDeleteError": "Delete failed",
   "mindmapNoSaved": "No saved mind maps",
@@ -272,5 +273,10 @@
   "mindmapLabelPlaceholder": "e.g., relates to, causes...",
   "mindmapApply": "Apply",
   "mindmapRemove": "Remove",
-  "mindmapHelp": "Double-click to edit \u2022 Tab to add child \u2022 Drag to move \u2022 Scroll to zoom \u2022 Alt+drag to pan"
+  "mindmapHelp": "Double-click to edit \u2022 Tab to add child \u2022 Drag to move \u2022 Scroll to zoom \u2022 Alt+drag to pan",
+
+  "addActualSavings": "Add actual savings",
+  "kaizenFunnel": "Kaizen Funnel",
+  "totalItems": "Total",
+  "completionRate": "Completed"
 }

@@ -252,5 +252,15 @@
   "productNamePlaceholder": "ej. Cigüeñal",
   "cancel": "Cancelar",
   "creating": "Creando...",
-  "create": "Crear"
+  "create": "Crear",
+
+  "units": "unidades",
+  "totalTime": "Tiempo Total",
+  "availabilityLoss": "Pérdida de Disponibilidad",
+  "performanceLoss": "Pérdida de Rendimiento",
+  "qualityLoss": "Pérdida de Calidad",
+  "oeeWaterfallDesc": "Cómo se desglosa el tiempo total disponible en OEE",
+
+  "weeklyHeatmap": "Mapa de Calor de Producción Semanal",
+  "noData": "Sin datos"
 }

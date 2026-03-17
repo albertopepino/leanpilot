@@ -11,6 +11,10 @@
   "create": "Create",
   "close": "Close",
   "remove": "Remove",
+  "zoomIn": "Zoom in",
+  "zoomOut": "Zoom out",
+  "moveLeft": "Move left",
+  "moveRight": "Move right",
   "loading": "Loading LeanPilot...",
   "poweredBy": "Powered by Lean Manufacturing principles & Six Sigma methodology",
   "priority": "priority",
@@ -173,6 +177,9 @@
   "navMindMap": "Mind Map",
   "titleMindMap": "Mind Map",
 
+  "navWaste": "Waste Tracker",
+  "titleWaste": "Waste Tracker (TIMWOODS)",
+
   "navConsolidated": "Consolidated OEE",
   "titleConsolidated": "Consolidated OEE",
 
@@ -183,5 +190,37 @@
   "titleHome": "Home",
 
   "navMasterCalendar": "Master Calendar",
-  "titleMasterCalendar": "Master Calendar"
+  "titleMasterCalendar": "Master Calendar",
+
+  "retry": "Retry",
+  "notifications": "Notifications",
+  "noNotifications": "No notifications",
+
+  "machineStop": "Machine Stop",
+  "qualityIssue": "Quality Issue",
+  "materialShortage": "Material Shortage",
+  "safetyConcern": "Safety Concern",
+  "maintenanceNeeded": "Maintenance Needed",
+  "other": "Other",
+  "quickReport": "Quick Report",
+  "quickReportDesc": "What type of issue?",
+  "describeIssue": "Describe the issue (optional)...",
+  "submitReport": "Submit Report to Andon",
+  "reportSubmitted": "Report Submitted",
+  "reportSubmittedDesc": "Your team has been notified.",
+
+  "navScorecard": "Lean Scorecard",
+  "titleScorecard": "Lean Scorecard",
+
+  "navSQCDP": "SQCDP Board",
+  "titleSQCDP": "SQCDP Board",
+  "navHandover": "Shift Handover",
+  "titleHandover": "Shift Handover",
+  "navLSW": "Leader Standard Work",
+  "titleLSW": "Leader Standard Work",
+  "navAuditScheduler": "Audit Scheduler",
+  "titleAuditScheduler": "Audit Scheduler",
+
+  "navHorizontalDeploy": "Horizontal Deployment",
+  "titleHorizontalDeploy": "Horizontal Deployment"
 }

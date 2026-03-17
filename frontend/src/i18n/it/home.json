@@ -34,5 +34,15 @@
   "capaActions": "Azioni CAPA",
   "kaizenItems": "Kaizen in Corso",
   "ncrOpen": "NCR Aperte",
-  "gembaFindings": "Rilievi Gemba"
+  "gembaFindings": "Rilievi Gemba",
+
+  "leanJourney": "Percorso Lean",
+  "leanJourneyDesc": "Il tuo progresso DMAIC su tutti i moduli",
+  "viewAssessment": "Vedi Valutazione",
+  "phaseDefine": "Definire",
+  "phaseMeasure": "Misurare",
+  "phaseAnalyze": "Analizzare",
+  "phaseImprove": "Migliorare",
+  "phaseControl": "Controllare",
+  "modules": "moduli"
 }

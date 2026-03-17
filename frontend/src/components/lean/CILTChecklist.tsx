@@ -4,6 +4,25 @@ import { useI18n } from "@/stores/useI18n";
 import { advancedLeanApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
+import {
+  ClipboardCheck,
+  Droplets,
+  Eye,
+  Wrench,
+  CheckCircle,
+  XCircle,
+  Clock,
+  AlertTriangle,
+  ChevronDown,
+  Plus,
+  X,
+  Settings,
+  Play,
+  TrendingUp,
+  Loader2,
+  Check,
+  Sparkles,
+} from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -64,45 +83,55 @@ interface NewStandardForm {
 // Constants
 // ---------------------------------------------------------------------------
 
+const CATEGORY_ICONS: Record<CILTCategory, React.ReactNode> = {
+  C: <Sparkles className="w-4 h-4" />,
+  I: <Eye className="w-4 h-4" />,
+  L: <Droplets className="w-4 h-4" />,
+  T: <Wrench className="w-4 h-4" />,
+};
+
+const CATEGORY_ICONS_LG: Record<CILTCategory, React.ReactNode> = {
+  C: <Sparkles className="w-5 h-5" />,
+  I: <Eye className="w-5 h-5" />,
+  L: <Droplets className="w-5 h-5" />,
+  T: <Wrench className="w-5 h-5" />,
+};
+
 const CATEGORY_CONFIG: Record<
   CILTCategory,
-  { label: string; icon: string; color: string; bg: string; border: string; badge: string; gradient: string }
+  { label: string; color: string; bg: string; border: string; badge: string; gradient: string }
 > = {
   C: {
     label: "Clean",
-    icon: "\uD83E\uDDF9",
-    color: "text-blue-600 dark:text-blue-400",
-    bg: "bg-blue-500/10 dark:bg-blue-950/30",
-    border: "border-blue-500/30 dark:border-blue-700/50",
-    badge: "bg-blue-500/15 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300 border border-blue-500/30",
-    gradient: "from-blue-500 to-cyan-500",
+    color: "text-th-accent",
+    bg: "bg-th-accent/10",
+    border: "border-th-accent/30",
+    badge: "bg-th-accent/15 text-th-accent border border-th-accent/30",
+    gradient: "from-th-accent to-th-accent",
   },
   I: {
     label: "Inspect",
-    icon: "\uD83D\uDD0D",
-    color: "text-green-600 dark:text-green-400",
-    bg: "bg-green-500/10 dark:bg-green-950/30",
-    border: "border-green-500/30 dark:border-green-700/50",
-    badge: "bg-green-500/15 text-green-700 dark:bg-green-500/20 dark:text-green-300 border border-green-500/30",
-    gradient: "from-green-500 to-emerald-500",
+    color: "text-emerald-600 dark:text-emerald-400",
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/30",
+    badge: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30",
+    gradient: "from-emerald-500 to-emerald-500",
   },
   L: {
     label: "Lubricate",
-    icon: "\uD83D\uDEE2\uFE0F",
-    color: "text-yellow-600 dark:text-yellow-400",
-    bg: "bg-yellow-500/10 dark:bg-yellow-950/30",
-    border: "border-yellow-500/30 dark:border-yellow-700/50",
-    badge: "bg-yellow-500/15 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300 border border-yellow-500/30",
-    gradient: "from-yellow-500 to-amber-500",
+    color: "text-amber-600 dark:text-amber-400",
+    bg: "bg-amber-500/10",
+    border: "border-amber-500/30",
+    badge: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30",
+    gradient: "from-amber-500 to-amber-500",
   },
   T: {
     label: "Tighten",
-    icon: "\uD83D\uDD29",
     color: "text-orange-600 dark:text-orange-400",
-    bg: "bg-orange-500/10 dark:bg-orange-950/30",
-    border: "border-orange-500/30 dark:border-orange-700/50",
-    badge: "bg-orange-500/15 text-orange-700 dark:bg-orange-500/20 dark:text-orange-300 border border-orange-500/30",
-    gradient: "from-orange-500 to-red-500",
+    bg: "bg-orange-500/10",
+    border: "border-orange-500/30",
+    badge: "bg-orange-500/15 text-orange-700 dark:text-orange-300 border border-orange-500/30",
+    gradient: "from-orange-500 to-orange-500",
   },
 };
 
@@ -132,25 +161,21 @@ const EMPTY_STANDARD: NewStandardForm = {
 // ---------------------------------------------------------------------------
 
 function Spinner({ className = "w-4 h-4" }: { className?: string }) {
-  return (
-    <span
-      className={`${className} border-2 border-current/30 border-t-current rounded-full animate-spin inline-block`}
-    />
-  );
+  return <Loader2 className={`${className} animate-spin`} />;
 }
 
 function categoryBadge(cat: CILTCategory, t: (k: string) => string) {
   const cfg = CATEGORY_CONFIG[cat];
   return (
-    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${cfg.badge}`}>
-      {cfg.icon} {t(`maintenance.ciltCat${cat}`)}
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${cfg.badge}`}>
+      {CATEGORY_ICONS[cat]} {t(`maintenance.ciltCat${cat}`)}
     </span>
   );
 }
 
 function frequencyBadge(freq: Frequency, t: (k: string) => string) {
   const colors: Record<Frequency, string> = {
-    daily: "bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/30",
+    daily: "bg-th-accent/15 text-th-accent border border-th-accent/30",
     weekly: "bg-violet-500/15 text-violet-700 dark:text-violet-300 border border-violet-500/30",
     monthly: "bg-teal-500/15 text-teal-700 dark:text-teal-300 border border-teal-500/30",
   };
@@ -424,20 +449,20 @@ export default function CILTChecklist() {
   // RENDER
   // =========================================================================
   return (
-    <div className="space-y-6 max-w-5xl mx-auto" data-print-area="true">
+    <div className="max-w-[1400px] mx-auto space-y-6" data-print-area="true">
       {/* ================================================================== */}
       {/* HEADER                                                              */}
       {/* ================================================================== */}
-      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-2xl p-6 text-white shadow-glow">
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 bg-white/15 rounded-xl flex items-center justify-center text-2xl backdrop-blur-sm border border-white/20">
-            {"\uD83D\uDCCB"}
+          <div className="w-10 h-10 rounded-lg bg-th-accent/10 flex items-center justify-center text-th-accent">
+            <ClipboardCheck className="w-5 h-5" />
           </div>
           <div className="flex-1">
-            <h2 className="text-xl font-bold">{t("maintenance.ciltTitle")}</h2>
-            <p className="text-sm text-white/70">{t("maintenance.ciltSubtitle")}</p>
+            <h2 className="text-xl font-bold text-th-text">{t("maintenance.ciltTitle")}</h2>
+            <p className="text-sm text-th-text-3">{t("maintenance.ciltSubtitle")}</p>
           </div>
-          {loading && <Spinner className="w-5 h-5 text-white" />}
+          {loading && <Spinner className="w-5 h-5 text-th-text-3" />}
           <ExportToolbar
             onPrint={() => printView({ title: t("maintenance.ciltTitle") || "CILT Checklist" })}
             onExportExcel={() => {
@@ -508,8 +533,8 @@ export default function CILTChecklist() {
         <div className="flex gap-2" role="tablist" aria-label={t("maintenance.ciltTitle")}>
           {(
             [
-              { key: "execute" as MainView, labelKey: "ciltViewExecute", icon: "\u2705" },
-              { key: "standards" as MainView, labelKey: "ciltViewStandards", icon: "\u2699\uFE0F" },
+              { key: "execute" as MainView, labelKey: "ciltViewExecute", icon: <Play className="w-4 h-4" /> },
+              { key: "standards" as MainView, labelKey: "ciltViewStandards", icon: <Settings className="w-4 h-4" /> },
             ] as const
           ).map((v) => (
             <button
@@ -518,10 +543,10 @@ export default function CILTChecklist() {
               aria-selected={mainView === v.key}
               aria-controls={`cilt-panel-${v.key}`}
               onClick={() => setMainView(v.key)}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition touch-check ${
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 ${
                 mainView === v.key
-                  ? "bg-white/90 text-indigo-700 shadow-md"
-                  : "bg-white/10 text-white/80 hover:bg-white/20 border border-white/10"
+                  ? "bg-th-accent text-white"
+                  : "bg-th-bg-3 text-th-text-2 hover:bg-th-bg-3/80 border border-th-border"
               }`}
             >
               {v.icon} {t(`maintenance.${v.labelKey}`)}
@@ -532,8 +557,8 @@ export default function CILTChecklist() {
 
       {/* Error banner */}
       {error && (
-        <div className="px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-sm text-red-700 dark:text-red-400 flex items-center gap-2 backdrop-blur-sm">
-          <span>{"\u26A0\uFE0F"}</span>
+        <div className="px-4 py-3 rounded-xl border border-red-500/30 bg-red-500/10 text-sm text-red-700 dark:text-red-400 flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
           {error}
           <button
             onClick={() => { setError(null); loadStandards(); }}
@@ -548,8 +573,11 @@ export default function CILTChecklist() {
       {/* COMPLIANCE DASHBOARD (always visible)                               */}
       {/* ================================================================== */}
       {compliance && (
-        <div className="bg-th-bg-2 rounded-2xl p-5 border border-th-border shadow-card backdrop-blur-sm">
-          <h3 className="text-xs font-bold text-th-text-2 mb-4 uppercase tracking-wider">{t("maintenance.ciltComplianceTitle")}</h3>
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5">
+          <h3 className="text-xs font-bold text-th-text-2 mb-4 uppercase tracking-wider flex items-center gap-1.5">
+            <TrendingUp className="w-3.5 h-3.5" />
+            {t("maintenance.ciltComplianceTitle")}
+          </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Overall rate gauge */}
@@ -559,7 +587,7 @@ export default function CILTChecklist() {
             </div>
 
             {/* Trend sparkline (CSS bars) */}
-            <div className="bg-th-bg-3 rounded-xl p-4 border border-th-border">
+            <div className="rounded-xl border border-th-border bg-th-bg-3 p-4">
               <div className="text-xs text-th-text-3 mb-2 font-semibold uppercase tracking-wider">{t("maintenance.ciltTrend")}</div>
               {compliance.trend.length > 0 ? (
                 <div className="flex items-end gap-1 h-16">
@@ -568,10 +596,10 @@ export default function CILTChecklist() {
                       key={i}
                       className={`flex-1 rounded-t transition-all duration-300 ${
                         pt.rate >= 90
-                          ? "bg-gradient-to-t from-emerald-500 to-emerald-400"
+                          ? "bg-emerald-500"
                           : pt.rate >= 70
-                            ? "bg-gradient-to-t from-amber-500 to-amber-400"
-                            : "bg-gradient-to-t from-red-500 to-red-400"
+                            ? "bg-amber-500"
+                            : "bg-red-500"
                       }`}
                       style={{ height: `${Math.max(pt.rate, 5)}%` }}
                       title={`${pt.date}: ${pt.rate}%`}
@@ -584,14 +612,17 @@ export default function CILTChecklist() {
             </div>
 
             {/* Overdue */}
-            <div className="bg-th-bg-3 rounded-xl p-4 border border-th-border">
-              <div className="text-xs text-th-text-3 mb-2 font-semibold uppercase tracking-wider">{t("maintenance.ciltOverdue")}</div>
+            <div className="rounded-xl border border-th-border bg-th-bg-3 p-4">
+              <div className="text-xs text-th-text-3 mb-2 font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                <AlertTriangle className="w-3 h-3" />
+                {t("maintenance.ciltOverdue")}
+              </div>
               {compliance.overdue.length > 0 ? (
                 <div className="space-y-1.5 max-h-20 overflow-y-auto">
                   {compliance.overdue.map((o, i) => (
                     <div
                       key={i}
-                      className="text-xs px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-400 font-medium flex justify-between animate-pulse"
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-400 font-medium flex justify-between"
                     >
                       <span className="truncate">{o.standard_name}</span>
                       <span className="shrink-0 ml-2 font-mono">{o.due_date?.slice(5)}</span>
@@ -599,8 +630,8 @@ export default function CILTChecklist() {
                   ))}
                 </div>
               ) : (
-                <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
-                  {"\u2705"} {t("maintenance.ciltAllCurrent")}
+                <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5" /> {t("maintenance.ciltAllCurrent")}
                 </div>
               )}
             </div>
@@ -615,28 +646,32 @@ export default function CILTChecklist() {
         <div className="space-y-4">
           {/* Existing standards list */}
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-th-text uppercase tracking-wider">{t("maintenance.ciltStandardsList")}</h3>
+            <h3 className="text-sm font-bold text-th-text uppercase tracking-wider flex items-center gap-1.5">
+              <Settings className="w-4 h-4 text-th-text-2" />
+              {t("maintenance.ciltStandardsList")}
+            </h3>
             <button
               onClick={() => setShowCreateForm(!showCreateForm)}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-sm font-semibold shadow-glow transition flex items-center gap-1"
+              className="px-4 py-2 rounded-lg bg-th-accent hover:bg-th-accent/90 text-white text-sm font-semibold transition flex items-center gap-1.5"
             >
-              {showCreateForm ? "\u2715" : "+"} {showCreateForm ? t("maintenance.ciltCancel") : t("maintenance.ciltNewStandard")}
+              {showCreateForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              {showCreateForm ? t("maintenance.ciltCancel") : t("maintenance.ciltNewStandard")}
             </button>
           </div>
 
           {loading && standards.length === 0 && (
             <div className="flex justify-center py-12">
-              <Spinner className="w-8 h-8 text-indigo-500" />
+              <Spinner className="w-8 h-8 text-th-text-3" />
             </div>
           )}
 
           {!loading && standards.length === 0 && !showCreateForm && (
-            <div className="text-center py-12 text-th-text-3 bg-th-bg-2 rounded-2xl border border-th-border backdrop-blur-sm">
-              <div className="text-3xl mb-2">{"\uD83D\uDCCB"}</div>
+            <div className="text-center py-12 text-th-text-3 rounded-xl border border-th-border bg-th-bg-2 shadow-sm">
+              <ClipboardCheck className="w-8 h-8 mx-auto mb-2 text-th-text-3" />
               <p className="text-sm">{t("maintenance.ciltNoStandards")}</p>
               <button
                 onClick={() => setShowCreateForm(true)}
-                className="mt-3 px-4 py-2 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-sm font-semibold hover:bg-indigo-500/25 transition border border-indigo-500/30"
+                className="mt-3 px-4 py-2 rounded-lg bg-th-accent/15 text-th-accent text-sm font-semibold hover:bg-th-accent/25 transition border border-th-accent/30"
               >
                 {t("maintenance.ciltCreateFirst")}
               </button>
@@ -649,7 +684,7 @@ export default function CILTChecklist() {
               {standards.map((std) => (
                 <div
                   key={std.id}
-                  className="bg-th-bg-2 rounded-xl p-4 border border-th-border shadow-card hover:shadow-card-hover hover:border-th-border transition-all duration-200 backdrop-blur-sm"
+                  className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-4 hover:border-th-accent/30 transition-all duration-200"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -673,8 +708,8 @@ export default function CILTChecklist() {
                         const count = std.items.filter((i) => i.category === cat).length;
                         if (count === 0) return null;
                         return (
-                          <span key={cat} className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${CATEGORY_CONFIG[cat].badge}`}>
-                            {CATEGORY_CONFIG[cat].icon} {count}
+                          <span key={cat} className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-0.5 rounded-full font-medium ${CATEGORY_CONFIG[cat].badge}`}>
+                            {CATEGORY_ICONS[cat]} {count}
                           </span>
                         );
                       })}
@@ -684,7 +719,7 @@ export default function CILTChecklist() {
                   {/* Expandable items table */}
                   {std.items && std.items.length > 0 && (
                     <details className="mt-3">
-                      <summary className="text-xs text-indigo-600 dark:text-indigo-400 cursor-pointer font-semibold hover:underline">
+                      <summary className="text-xs text-th-accent cursor-pointer font-semibold hover:underline">
                         {t("maintenance.ciltShowItems")}
                       </summary>
                       <div className="mt-2 overflow-x-auto">
@@ -720,8 +755,11 @@ export default function CILTChecklist() {
 
           {/* ---- Create Standard Form ---- */}
           {showCreateForm && (
-            <div className="bg-th-bg-2 rounded-2xl p-6 border-2 border-indigo-500/30 shadow-glow space-y-5 backdrop-blur-sm">
-              <h3 className="text-sm font-bold text-th-text uppercase tracking-wider">{t("maintenance.ciltCreateTitle")}</h3>
+            <div className="rounded-xl border border-th-accent/30 bg-th-bg-2 shadow-sm p-6 space-y-5">
+              <h3 className="text-sm font-bold text-th-text uppercase tracking-wider flex items-center gap-1.5">
+                <Plus className="w-4 h-4 text-th-accent" />
+                {t("maintenance.ciltCreateTitle")}
+              </h3>
 
               {/* Standard info */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -734,7 +772,7 @@ export default function CILTChecklist() {
                     value={newStdForm.name}
                     onChange={(e) => setNewStdForm((f) => ({ ...f, name: e.target.value }))}
                     placeholder={t("maintenance.ciltStdNamePlaceholder")}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-th-border bg-th-input text-th-text outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-th-border bg-th-input text-th-text outline-none focus:ring-2 focus:ring-th-accent/50 transition"
                   />
                 </div>
                 <div>
@@ -746,7 +784,7 @@ export default function CILTChecklist() {
                     value={newStdForm.equipment_area}
                     onChange={(e) => setNewStdForm((f) => ({ ...f, equipment_area: e.target.value }))}
                     placeholder={t("maintenance.ciltEquipmentAreaPlaceholder")}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-th-border bg-th-input text-th-text outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-th-border bg-th-input text-th-text outline-none focus:ring-2 focus:ring-th-accent/50 transition"
                   />
                 </div>
                 <div>
@@ -756,7 +794,7 @@ export default function CILTChecklist() {
                   <select
                     value={newStdForm.frequency}
                     onChange={(e) => setNewStdForm((f) => ({ ...f, frequency: e.target.value as Frequency }))}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-th-border bg-th-input text-th-text outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-th-border bg-th-input text-th-text outline-none focus:ring-2 focus:ring-th-accent/50 transition"
                   >
                     {FREQUENCY_OPTIONS.map((fo) => (
                       <option key={fo.value} value={fo.value}>
@@ -775,9 +813,9 @@ export default function CILTChecklist() {
                   </label>
                   <button
                     onClick={addItem}
-                    className="text-xs px-3 py-1.5 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-semibold hover:bg-indigo-500/25 transition border border-indigo-500/30"
+                    className="text-xs px-3 py-1.5 min-h-[44px] sm:min-h-0 rounded-lg bg-th-accent/15 text-th-accent font-semibold hover:bg-th-accent/25 transition border border-th-accent/30 flex items-center gap-1"
                   >
-                    + {t("maintenance.ciltAddItem")}
+                    <Plus className="w-3 h-3" /> {t("maintenance.ciltAddItem")}
                   </button>
                 </div>
 
@@ -785,7 +823,7 @@ export default function CILTChecklist() {
                   {newStdForm.items.map((item, idx) => (
                     <div
                       key={idx}
-                      className={`rounded-xl p-4 border ${CATEGORY_CONFIG[item.category].bg} ${CATEGORY_CONFIG[item.category].border} backdrop-blur-sm`}
+                      className={`rounded-xl p-4 border ${CATEGORY_CONFIG[item.category].bg} ${CATEGORY_CONFIG[item.category].border}`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-semibold text-th-text-2">
@@ -794,9 +832,9 @@ export default function CILTChecklist() {
                         {newStdForm.items.length > 1 && (
                           <button
                             onClick={() => removeItem(idx)}
-                            className="text-xs text-red-500 hover:text-red-700 font-medium"
+                            className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 min-h-[44px] sm:min-h-0"
                           >
-                            {"\u2715"} {t("maintenance.ciltRemove")}
+                            <X className="w-3 h-3" /> {t("maintenance.ciltRemove")}
                           </button>
                         )}
                       </div>
@@ -812,7 +850,7 @@ export default function CILTChecklist() {
                             value={item.task_description}
                             onChange={(e) => updateItem(idx, "task_description", e.target.value)}
                             placeholder={t("maintenance.ciltTaskDescPlaceholder")}
-                            className="w-full px-3 py-2 text-sm rounded-xl border border-th-border bg-th-input text-th-text outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                            className="w-full px-3 py-2 text-sm rounded-lg border border-th-border bg-th-input text-th-text outline-none focus:ring-2 focus:ring-th-accent/50 transition"
                           />
                         </div>
 
@@ -826,13 +864,13 @@ export default function CILTChecklist() {
                                 <button
                                   key={cat}
                                   onClick={() => updateItem(idx, "category", cat)}
-                                  className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition border ${
+                                  className={`flex-1 px-2 py-1.5 min-h-[44px] sm:min-h-0 rounded-lg text-xs font-semibold transition border flex items-center justify-center gap-1 ${
                                     item.category === cat
                                       ? `${cfg.badge} ring-2 ring-offset-1 ring-current`
                                       : "bg-th-bg-3 text-th-text-3 border-th-border hover:bg-th-bg-3"
                                   }`}
                                 >
-                                  {cfg.icon} {cfg.label}
+                                  {CATEGORY_ICONS[cat]} {cfg.label}
                                 </button>
                               );
                             })}
@@ -846,12 +884,13 @@ export default function CILTChecklist() {
                           </label>
                           <input
                             type="number"
+                            inputMode="numeric"
                             min={1}
                             value={item.time_estimate_minutes}
                             onChange={(e) =>
                               updateItem(idx, "time_estimate_minutes", parseInt(e.target.value) || 1)
                             }
-                            className="w-full px-3 py-2 text-sm rounded-xl border border-th-border bg-th-input text-th-text outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                            className="w-full px-3 py-2 text-sm rounded-lg border border-th-border bg-th-input text-th-text outline-none focus:ring-2 focus:ring-th-accent/50 transition"
                           />
                         </div>
 
@@ -863,7 +902,7 @@ export default function CILTChecklist() {
                             value={item.method}
                             onChange={(e) => updateItem(idx, "method", e.target.value)}
                             placeholder={t("maintenance.ciltMethodPlaceholder")}
-                            className="w-full px-3 py-2 text-sm rounded-xl border border-th-border bg-th-input text-th-text outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                            className="w-full px-3 py-2 text-sm rounded-lg border border-th-border bg-th-input text-th-text outline-none focus:ring-2 focus:ring-th-accent/50 transition"
                           />
                         </div>
 
@@ -877,7 +916,7 @@ export default function CILTChecklist() {
                             value={item.acceptance_criteria}
                             onChange={(e) => updateItem(idx, "acceptance_criteria", e.target.value)}
                             placeholder={t("maintenance.ciltAcceptCriteriaPlaceholder")}
-                            className="w-full px-3 py-2 text-sm rounded-xl border border-th-border bg-th-input text-th-text outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                            className="w-full px-3 py-2 text-sm rounded-lg border border-th-border bg-th-input text-th-text outline-none focus:ring-2 focus:ring-th-accent/50 transition"
                           />
                         </div>
                       </div>
@@ -889,12 +928,13 @@ export default function CILTChecklist() {
               {/* Create message */}
               {createMsg && (
                 <div
-                  className={`px-4 py-2.5 rounded-xl text-sm font-medium backdrop-blur-sm ${
+                  className={`px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 ${
                     createMsg.type === "ok"
                       ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30"
                       : "bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/30"
                   }`}
                 >
+                  {createMsg.type === "ok" ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
                   {createMsg.text}
                 </div>
               )}
@@ -909,7 +949,7 @@ export default function CILTChecklist() {
                     !newStdForm.equipment_area.trim() ||
                     !newStdForm.items[0]?.task_description.trim()
                   }
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-sm font-semibold shadow-glow transition disabled:opacity-50 flex items-center gap-2"
+                  className="px-6 py-2.5 rounded-lg bg-th-accent hover:bg-th-accent/90 text-white text-sm font-semibold transition disabled:opacity-50 flex items-center gap-2"
                 >
                   {creatingStandard && <Spinner className="w-4 h-4 text-white" />}
                   {t("maintenance.ciltCreateBtn")}
@@ -920,7 +960,7 @@ export default function CILTChecklist() {
                     setNewStdForm({ ...EMPTY_STANDARD, items: [{ ...EMPTY_ITEM }] });
                     setCreateMsg(null);
                   }}
-                  className="px-6 py-2.5 rounded-xl bg-th-bg-3 hover:bg-th-bg-3 text-th-text text-sm font-semibold transition"
+                  className="px-6 py-2.5 rounded-lg bg-th-bg-3 hover:bg-th-bg-3/80 text-th-text text-sm font-semibold transition border border-th-border"
                 >
                   {t("maintenance.ciltCancel")}
                 </button>
@@ -936,7 +976,7 @@ export default function CILTChecklist() {
       {mainView === "execute" && (
         <div className="space-y-4">
           {/* Standard selector */}
-          <div className="bg-th-bg-2 rounded-2xl p-5 border border-th-border shadow-card backdrop-blur-sm">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5">
             <label className="block text-xs font-semibold text-th-text-2 mb-3 uppercase tracking-wider">
               {t("maintenance.ciltSelectStandard")}
             </label>
@@ -951,7 +991,7 @@ export default function CILTChecklist() {
                     {t("maintenance.ciltNoStandards")}{" "}
                     <button
                       onClick={() => setMainView("standards")}
-                      className="text-indigo-600 dark:text-indigo-400 underline font-medium"
+                      className="text-th-accent underline font-medium"
                     >
                       {t("maintenance.ciltGoToStandards")}
                     </button>
@@ -969,15 +1009,15 @@ export default function CILTChecklist() {
                       setExecutionMsg(null);
                       setCollapsedCategories({});
                     }}
-                    className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition border ${
+                    className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition border ${
                       selectedStandardId === std.id
-                        ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white border-indigo-600 shadow-glow"
-                        : "bg-th-bg-3 text-th-text border-th-border hover:bg-th-bg-3 hover:border-indigo-400"
+                        ? "bg-th-accent text-white border-th-accent"
+                        : "bg-th-bg-3 text-th-text border-th-border hover:border-th-accent/40"
                     }`}
                   >
                     <div>{std.name}</div>
                     <div className={`text-xs mt-0.5 ${selectedStandardId === std.id ? "text-white/70" : "text-th-text-3"}`}>
-                      {std.equipment_area} {"\u00B7"} {t(`maintenance.ciltFreq${std.frequency.charAt(0).toUpperCase() + std.frequency.slice(1)}`)}
+                      {std.equipment_area} · {t(`maintenance.ciltFreq${std.frequency.charAt(0).toUpperCase() + std.frequency.slice(1)}`)}
                     </div>
                   </button>
                 ))}
@@ -989,12 +1029,12 @@ export default function CILTChecklist() {
           {selectedStandard && (
             <>
               {/* Progress bar */}
-              <div className="bg-th-bg-2 rounded-2xl p-5 border border-th-border shadow-card backdrop-blur-sm">
+              <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-bold text-th-text">
-                    {selectedStandard.name} {"\u2014"} {selectedStandard.equipment_area}
+                    {selectedStandard.name} — {selectedStandard.equipment_area}
                   </span>
-                  <span className="text-lg font-black text-indigo-600 dark:text-indigo-400">
+                  <span className="text-lg font-black text-th-accent">
                     {executionProgress.pct}%
                   </span>
                 </div>
@@ -1011,11 +1051,11 @@ export default function CILTChecklist() {
                   />
                 </div>
                 <div className="flex gap-4 mt-2.5 text-xs text-th-text-3">
-                  <span className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" /> {executionProgress.ok} {t("maintenance.ciltOk")}
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle className="w-3 h-3 text-emerald-500" /> {executionProgress.ok} {t("maintenance.ciltOk")}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-red-500" /> {executionProgress.nok} {t("maintenance.ciltNok")}
+                  <span className="flex items-center gap-1.5">
+                    <XCircle className="w-3 h-3 text-red-500" /> {executionProgress.nok} {t("maintenance.ciltNok")}
                   </span>
                   <span className="ml-auto font-medium">
                     {executionProgress.completed}/{executionProgress.total} {t("maintenance.ciltCompleted")}
@@ -1033,13 +1073,13 @@ export default function CILTChecklist() {
                   const catCompleted = items.filter((item) => checks[item.id]?.status && checks[item.id].status !== "pending").length;
 
                   return (
-                    <div key={cat} className="rounded-2xl border border-th-border overflow-hidden backdrop-blur-sm">
+                    <div key={cat} className="rounded-xl border border-th-border overflow-hidden">
                       {/* Category header - collapsible */}
                       <button
                         onClick={() => toggleCategory(cat)}
                         className={`w-full flex items-center gap-3 px-5 py-3 ${cfg.bg} border-b ${cfg.border} transition hover:opacity-90`}
                       >
-                        <span className="text-lg">{cfg.icon}</span>
+                        <span className={cfg.color}>{CATEGORY_ICONS_LG[cat]}</span>
                         <span className={`text-sm font-bold ${cfg.color} uppercase tracking-wider`}>
                           {t(`maintenance.ciltCat${cat}`)}
                         </span>
@@ -1054,9 +1094,7 @@ export default function CILTChecklist() {
                               style={{ width: `${items.length > 0 ? (catCompleted / items.length) * 100 : 0}%` }}
                             />
                           </div>
-                          <svg className={`w-4 h-4 text-th-text-3 transition-transform ${isCollapsed ? "" : "rotate-180"}`} viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
+                          <ChevronDown className={`w-4 h-4 text-th-text-3 transition-transform ${isCollapsed ? "" : "rotate-180"}`} />
                         </div>
                       </button>
 
@@ -1074,9 +1112,9 @@ export default function CILTChecklist() {
                                 key={item.id}
                                 className={`px-5 py-4 border-b border-th-border/50 transition-all duration-200 ${
                                   isOk
-                                    ? "bg-emerald-500/5 dark:bg-emerald-500/5"
+                                    ? "bg-emerald-500/5"
                                     : isNok
-                                      ? "bg-red-500/5 dark:bg-red-500/5"
+                                      ? "bg-red-500/5"
                                       : idx % 2 === 1 ? "bg-th-bg-3/50" : ""
                                 } hover:bg-th-bg-3`}
                               >
@@ -1085,21 +1123,13 @@ export default function CILTChecklist() {
                                   <div className="flex items-start gap-3 flex-1">
                                     <button
                                       onClick={() => toggleCheck(item.id, "ok")}
-                                      className={`mt-0.5 w-7 h-7 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all duration-200 ${
+                                      className={`mt-0.5 w-7 h-7 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all duration-200 ${
                                         isOk
-                                          ? "bg-emerald-500 border-emerald-500 text-white shadow-md"
-                                          : "border-th-border hover:border-emerald-400 hover:shadow-sm"
+                                          ? "bg-emerald-500 border-emerald-500 text-white"
+                                          : "border-th-border hover:border-emerald-400"
                                       }`}
                                     >
-                                      {isOk && (
-                                        <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                                          <path
-                                            fillRule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clipRule="evenodd"
-                                          />
-                                        </svg>
-                                      )}
+                                      {isOk && <Check className="w-4 h-4" />}
                                     </button>
                                     <div className="flex-1">
                                       <div className={`font-semibold text-sm ${isDone ? (isOk ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400") : "text-th-text"}`}>
@@ -1116,8 +1146,8 @@ export default function CILTChecklist() {
                                             | {item.acceptance_criteria}
                                           </span>
                                         )}
-                                        <span className="text-xs text-th-text-3">
-                                          {"\u23F1"} {item.time_estimate_minutes}m
+                                        <span className="text-xs text-th-text-3 flex items-center gap-1">
+                                          <Clock className="w-3 h-3" /> {item.time_estimate_minutes}m
                                         </span>
                                       </div>
                                     </div>
@@ -1129,28 +1159,29 @@ export default function CILTChecklist() {
                                       onClick={() => toggleCheck(item.id, "ok")}
                                       aria-pressed={isOk}
                                       aria-label={`${item.task_description} - OK`}
-                                      className={`px-5 py-2 rounded-xl text-xs font-bold transition-all duration-200 touch-check ${
+                                      className={`px-5 py-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center gap-1.5 ${
                                         isOk
-                                          ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/20"
+                                          ? "bg-emerald-500 text-white"
                                           : "bg-th-bg-3 text-th-text-3 hover:bg-emerald-500/15 hover:text-emerald-700 dark:hover:text-emerald-400 border border-th-border"
                                       }`}
                                     >
-                                      OK
+                                      <CheckCircle className="w-3.5 h-3.5" /> OK
                                     </button>
                                     <button
                                       onClick={() => toggleCheck(item.id, "nok")}
                                       aria-pressed={isNok}
                                       aria-label={`${item.task_description} - NOK`}
-                                      className={`px-5 py-2 rounded-xl text-xs font-bold transition-all duration-200 touch-check ${
+                                      className={`px-5 py-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center gap-1.5 ${
                                         isNok
-                                          ? "bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-lg shadow-red-500/20"
+                                          ? "bg-red-500 text-white"
                                           : "bg-th-bg-3 text-th-text-3 hover:bg-red-500/15 hover:text-red-700 dark:hover:text-red-400 border border-th-border"
                                       }`}
                                     >
-                                      NOK
+                                      <XCircle className="w-3.5 h-3.5" /> NOK
                                     </button>
                                     {isDone && (
-                                      <span className="text-[10px] text-th-text-3 font-mono ml-1">
+                                      <span className="text-[10px] text-th-text-3 font-mono ml-1 flex items-center gap-1">
+                                        <Clock className="w-3 h-3" />
                                         {new Date(check.timestamp).toLocaleTimeString([], {
                                           hour: "2-digit",
                                           minute: "2-digit",
@@ -1168,7 +1199,7 @@ export default function CILTChecklist() {
                                       value={check.notes}
                                       onChange={(e) => setCheckNote(item.id, e.target.value)}
                                       placeholder={t("maintenance.ciltDescribeIssue")}
-                                      className="w-full px-3 py-2 text-sm border border-red-400/50 rounded-xl bg-red-500/5 focus:ring-2 focus:ring-red-500 outline-none text-th-text transition"
+                                      className="w-full px-3 py-2 text-sm border border-red-400/50 rounded-lg bg-red-500/5 focus:ring-2 focus:ring-red-500 outline-none text-th-text transition"
                                     />
                                   </div>
                                 )}
@@ -1185,12 +1216,13 @@ export default function CILTChecklist() {
               {/* Execution message */}
               {executionMsg && (
                 <div
-                  className={`px-4 py-2.5 rounded-xl text-sm font-medium backdrop-blur-sm ${
+                  className={`px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 ${
                     executionMsg.type === "ok"
                       ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30"
                       : "bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/30"
                   }`}
                 >
+                  {executionMsg.type === "ok" ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
                   {executionMsg.text}
                 </div>
               )}
@@ -1201,7 +1233,7 @@ export default function CILTChecklist() {
                   <button
                     onClick={handleSubmitExecution}
                     disabled={submittingExecution}
-                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-sm font-semibold shadow-glow transition disabled:opacity-50 flex items-center gap-2"
+                    className="px-6 py-2.5 rounded-lg bg-th-accent hover:bg-th-accent/90 text-white text-sm font-semibold transition disabled:opacity-50 flex items-center gap-2"
                   >
                     {submittingExecution && <Spinner className="w-4 h-4 text-white" />}
                     {t("maintenance.ciltSubmitExecution")} ({executionProgress.completed}/{executionProgress.total})

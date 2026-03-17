@@ -2,6 +2,20 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { qcApi } from "@/lib/api";
+import {
+  Upload,
+  ClipboardList,
+  FilePen,
+  BookOpen,
+  FileText,
+  Library,
+  FolderOpen,
+  Download,
+  Trash2,
+  X,
+  Check,
+  Image,
+} from "lucide-react";
 
 interface PolicyDoc {
   id: number;
@@ -15,12 +29,12 @@ interface PolicyDoc {
   created_at: string;
 }
 
-const FILE_ICONS: Record<string, string> = {
-  "application/pdf": "📕",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "📘",
-  "application/msword": "📘",
-  "image/jpeg": "🖼️",
-  "image/png": "🖼️",
+const FILE_ICON_MAP: Record<string, React.ElementType> = {
+  "application/pdf": BookOpen,
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": FileText,
+  "application/msword": FileText,
+  "image/jpeg": Image,
+  "image/png": Image,
 };
 
 function formatFileSize(bytes: number): string {
@@ -29,15 +43,23 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+const CATEGORY_ICONS: Record<string, React.ElementType> = {
+  policy: ClipboardList,
+  procedure: FilePen,
+  work_instruction: BookOpen,
+  form: FileText,
+  reference: Library,
+};
+
 export default function QCPolicyRepository() {
   const { t } = useI18n();
 
   const CATEGORIES = [
-    { value: "policy", label: t("manufacturing.catPolicy"), icon: "📋" },
-    { value: "procedure", label: t("manufacturing.catProcedure"), icon: "📝" },
-    { value: "work_instruction", label: t("manufacturing.catWorkInstruction"), icon: "📖" },
-    { value: "form", label: t("manufacturing.catForm"), icon: "📄" },
-    { value: "reference", label: t("manufacturing.catReference"), icon: "📚" },
+    { value: "policy", label: t("manufacturing.catPolicy") },
+    { value: "procedure", label: t("manufacturing.catProcedure") },
+    { value: "work_instruction", label: t("manufacturing.catWorkInstruction") },
+    { value: "form", label: t("manufacturing.catForm") },
+    { value: "reference", label: t("manufacturing.catReference") },
   ];
 
   const [docs, setDocs] = useState<PolicyDoc[]>([]);
@@ -137,7 +159,7 @@ export default function QCPolicyRepository() {
   }
 
   return (
-    <div className="space-y-4" id="qc-policies-view">
+    <div className="max-w-[1400px] mx-auto space-y-6" id="qc-policies-view">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-th-text">{t("manufacturing.titleQCPolicies")}</h2>
@@ -149,11 +171,9 @@ export default function QCPolicyRepository() {
         </div>
         <button
           onClick={() => { resetForm(); setShowUpload(true); }}
-          className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-semibold flex items-center gap-1.5"
+          className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-semibold flex items-center gap-1.5"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-          </svg>
+          <Upload className="w-4 h-4" />
           {t("manufacturing.uploadDocument")}
         </button>
       </div>
@@ -170,95 +190,110 @@ export default function QCPolicyRepository() {
         >
           {t("manufacturing.catAll")}
         </button>
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat.value}
-            onClick={() => setFilterCategory(cat.value)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-              filterCategory === cat.value
-                ? "bg-brand-600 text-white"
-                : "bg-th-bg-3 text-th-text-2 hover:bg-th-hover"
-            }`}
-          >
-            {cat.icon} {cat.label}
-          </button>
-        ))}
+        {CATEGORIES.map((cat) => {
+          const CatIcon = CATEGORY_ICONS[cat.value];
+          return (
+            <button
+              key={cat.value}
+              onClick={() => setFilterCategory(cat.value)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 ${
+                filterCategory === cat.value
+                  ? "bg-brand-600 text-white"
+                  : "bg-th-bg-3 text-th-text-2 hover:bg-th-hover"
+              }`}
+            >
+              <CatIcon className="w-3.5 h-3.5" />
+              {cat.label}
+            </button>
+          );
+        })}
       </div>
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-sm border border-red-200 dark:border-red-800">
-          {error}
-          <button onClick={() => setError(null)} className="ml-2 font-bold">{"×"}</button>
+        <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-sm border border-red-200 dark:border-red-800 flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={() => setError(null)} className="ml-2 text-red-500 hover:text-red-700 dark:hover:text-red-200">
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
       {success && (
-        <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-4 py-3 rounded-xl text-sm border border-green-200 dark:border-green-800">
-          {"✓"} {success}
-          <button onClick={() => setSuccess(null)} className="ml-2 font-bold">{"×"}</button>
+        <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-4 py-3 rounded-xl text-sm border border-green-200 dark:border-green-800 flex items-center justify-between">
+          <span className="flex items-center gap-1.5">
+            <Check className="w-4 h-4" />
+            {success}
+          </span>
+          <button onClick={() => setSuccess(null)} className="ml-2 text-green-500 hover:text-green-700 dark:hover:text-green-200">
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
       {/* Document Grid */}
       {docs.length === 0 ? (
-        <div className="bg-white dark:bg-th-bg-2 rounded-xl border border-th-border p-12 text-center">
-          <div className="text-4xl mb-3">{"📁"}</div>
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-12 text-center">
+          <FolderOpen className="w-10 h-10 text-th-text-3 mx-auto mb-3" />
           <p className="text-th-text-3">{t("manufacturing.noDocuments")}</p>
           <p className="text-th-text-3 text-xs mt-1">{t("manufacturing.acceptedFormats")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {docs.map((doc) => (
-            <div
-              key={doc.id}
-              className="bg-white dark:bg-th-bg-2 rounded-xl border border-th-border p-4 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start gap-3">
-                <div className="text-2xl flex-shrink-0">
-                  {FILE_ICONS[doc.mime_type] || "📄"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-th-text text-sm truncate" title={doc.title}>
-                    {doc.title}
-                  </h3>
-                  {doc.description && (
-                    <p className="text-th-text-3 text-xs mt-0.5 line-clamp-2">{doc.description}</p>
-                  )}
-                  <div className="flex items-center gap-2 mt-2 flex-wrap">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 capitalize">
-                      {doc.category?.replace("_", " ")}
-                    </span>
-                    <span className="text-th-text-3 text-[10px]">v{doc.version}</span>
-                    <span className="text-th-text-3 text-[10px]">{formatFileSize(doc.file_size)}</span>
+          {docs.map((doc) => {
+            const DocIcon = FILE_ICON_MAP[doc.mime_type] || FileText;
+            return (
+              <div
+                key={doc.id}
+                className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-4 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 p-2 rounded-lg bg-th-bg-3">
+                    <DocIcon className="w-5 h-5 text-th-text-2" />
                   </div>
-                  <p className="text-th-text-3 text-[10px] mt-1">
-                    {new Date(doc.created_at).toLocaleDateString()}
-                  </p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-th-text text-sm truncate" title={doc.title}>
+                      {doc.title}
+                    </h3>
+                    {doc.description && (
+                      <p className="text-th-text-3 text-xs mt-0.5 line-clamp-2">{doc.description}</p>
+                    )}
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 capitalize">
+                        {doc.category?.replace("_", " ")}
+                      </span>
+                      <span className="text-th-text-3 text-[10px]">v{doc.version}</span>
+                      <span className="text-th-text-3 text-[10px]">{formatFileSize(doc.file_size)}</span>
+                    </div>
+                    <p className="text-th-text-3 text-[10px] mt-1">
+                      {new Date(doc.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-3 pt-3 border-t border-th-border/50">
+                  <button
+                    onClick={() => handleDownload(doc)}
+                    className="flex-1 px-3 py-1.5 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 rounded-lg text-xs font-semibold hover:bg-brand-100 dark:hover:bg-brand-900/40 transition flex items-center justify-center gap-1.5"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    {t("manufacturing.download")}
+                  </button>
+                  <button
+                    onClick={() => handleDelete(doc)}
+                    className="px-3 py-1.5 text-red-600 dark:text-red-400 rounded-lg text-xs font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
-              <div className="flex gap-2 mt-3 pt-3 border-t border-th-border/50">
-                <button
-                  onClick={() => handleDownload(doc)}
-                  className="flex-1 px-3 py-1.5 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 rounded-lg text-xs font-semibold hover:bg-brand-100 dark:hover:bg-brand-900/40 transition"
-                >
-                  {"⬇"} {t("manufacturing.download")}
-                </button>
-                <button
-                  onClick={() => handleDelete(doc)}
-                  className="px-3 py-1.5 text-red-600 dark:text-red-400 rounded-lg text-xs font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 transition"
-                >
-                  {"🗑"}
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {/* Upload Modal */}
       {showUpload && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={resetForm}>
-          <div className="bg-th-bg rounded-2xl shadow-xl border border-th-border w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-th-bg rounded-xl shadow-xl border border-th-border w-full max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="p-5 border-b border-th-border">
               <h3 className="font-bold text-th-text text-lg">{t("manufacturing.uploadQCDocument")}</h3>
             </div>
@@ -333,7 +368,7 @@ export default function QCPolicyRepository() {
               <button
                 onClick={handleUpload}
                 disabled={!form.file || !form.title.trim() || uploading}
-                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-bold flex items-center gap-1.5"
+                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-40 text-white rounded-lg text-sm font-bold flex items-center gap-1.5"
               >
                 {uploading && (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

@@ -1,0 +1,58 @@
+{
+  "title": "Praćenje Rasipanja",
+  "subtitle": "Identifikujte i eliminišite 8 vrsta rasipanja (TIMWOODS)",
+  "loading": "Učitavanje podataka o rasipanju...",
+
+  "transport": "Transport",
+  "transportDesc": "Nepotrebno kretanje materijala ili proizvoda",
+  "inventory": "Zalihe",
+  "inventoryDesc": "Višak proizvoda ili materijala koji se ne obrađuju",
+  "motion": "Kretanje",
+  "motionDesc": "Nepotrebno kretanje ljudi",
+  "waiting": "Čekanje",
+  "waitingDesc": "Vreme mirovanja u čekanju na sledeći korak procesa",
+  "overproduction": "Prekomerna proizvodnja",
+  "overproductionDesc": "Proizvodnja više nego što je potrebno",
+  "overprocessing": "Prekomerna obrada",
+  "overprocessingDesc": "Obavljanje više posla nego što klijent zahteva",
+  "defects": "Defekti",
+  "defectsDesc": "Dorada, škart i korekcije",
+  "skills": "Veštine (Neiskorišćen talenat)",
+  "skillsDesc": "Nedovoljno korišćenje sposobnosti i znanja zaposlenih",
+
+  "logWaste": "Evidentiraj Događaj Rasipanja",
+  "wasteType": "Tip Rasipanja",
+  "area": "Oblast / Linija",
+  "description": "Opis",
+  "estimatedCost": "Procenjeni Trošak",
+  "estimatedTime": "Procenjeno Izgubljeno Vreme (min)",
+  "rootCause": "Osnovni Uzrok",
+  "countermeasure": "Protivmera",
+  "severity": "Ozbiljnost",
+  "severityHigh": "Visoka",
+  "severityMedium": "Srednja",
+  "severityLow": "Niska",
+
+  "totalEvents": "Ukupno Događaja",
+  "totalCost": "Ukupan Uticaj na Troškove",
+  "totalTimeLost": "Ukupno Izgubljeno Vreme",
+  "topWasteType": "Najčešći Tip Rasipanja",
+
+  "byType": "Po Tipu",
+  "byArea": "Po Oblasti",
+  "trend": "Trend",
+
+  "noEvents": "Još nema evidentiranih događaja rasipanja",
+  "noEventsHint": "Počnite da identifikujete rasipanje u proizvodnji",
+
+  "saved": "Događaj rasipanja uspešno evidentiran",
+  "saveError": "Neuspešno evidentiranje događaja rasipanja",
+  "deleted": "Događaj rasipanja obrisan",
+
+  "last7": "Poslednjih 7 dana",
+  "last30": "Poslednjih 30 dana",
+  "last90": "Poslednjih 90 dana",
+  "allTime": "Ceo Period",
+
+  "exportTitle": "Izveštaj o Rasipanju"
+}

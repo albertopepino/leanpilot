@@ -1,0 +1,18 @@
+{
+  "title": "Primopredaja smene",
+  "subtitle": "Komunikacija između smena i pregled proizvodnje",
+  "autoGenerate": "Automatski generiši",
+  "acknowledge": "Potvrdi prijem",
+  "acknowledged": "Potvrđeno",
+  "safetyIssues": "Bezbednosni problemi",
+  "qualityIssues": "Problemi kvaliteta",
+  "equipmentIssues": "Problemi sa opremom",
+  "materialIssues": "Problemi sa materijalom",
+  "pendingActions": "Nerealizovane akcije",
+  "productionSummary": "Pregled proizvodnje",
+  "totalPieces": "Ukupno komada",
+  "goodPieces": "Dobrih komada",
+  "scrapPieces": "Škart komada",
+  "oee": "OEE",
+  "downtime": "Zastoj (min)"
+}

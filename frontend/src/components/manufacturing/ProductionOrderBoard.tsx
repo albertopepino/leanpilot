@@ -3,6 +3,20 @@ import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { useAuth } from "@/hooks/useAuth";
 import { manufacturingApi, adminApi } from "@/lib/api";
+import {
+  ClipboardList,
+  Factory,
+  CheckCircle,
+  Clock,
+  Package,
+  PlayCircle,
+  PauseCircle,
+  ShieldAlert,
+  X,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -54,6 +68,26 @@ type StatusColumn = "planned" | "released" | "in_progress" | "on_hold" | "comple
 
 type PermLevel = "full" | "modify" | "view" | "hidden";
 
+// ─── Status icon helper ──────────────────────────────────────────────────────
+
+function StatusIcon({ status, className }: { status: string; className?: string }) {
+  const cls = className || "w-4 h-4";
+  switch (status) {
+    case "planned":
+      return <ClipboardList className={cls} />;
+    case "released":
+      return <Package className={cls} />;
+    case "in_progress":
+      return <Clock className={cls} />;
+    case "on_hold":
+      return <PauseCircle className={cls} />;
+    case "completed":
+      return <CheckCircle className={cls} />;
+    default:
+      return <ClipboardList className={cls} />;
+  }
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function ProductionOrderBoard() {
@@ -61,11 +95,11 @@ export default function ProductionOrderBoard() {
   const { user } = useAuth();
 
   const STATUS_COLUMNS: { key: StatusColumn; label: string; color: string; bg: string }[] = [
-    { key: "planned", label: t("manufacturing.statusPlanned"), color: "text-gray-700", bg: "bg-gray-50 dark:bg-gray-900/30" },
-    { key: "released", label: t("manufacturing.statusReleased"), color: "text-blue-700", bg: "bg-blue-50 dark:bg-blue-900/20" },
-    { key: "in_progress", label: t("manufacturing.statusInProgress"), color: "text-green-700", bg: "bg-green-50 dark:bg-green-900/20" },
-    { key: "on_hold", label: t("manufacturing.statusOnHold"), color: "text-red-700", bg: "bg-red-50 dark:bg-red-900/20" },
-    { key: "completed", label: t("manufacturing.statusCompleted"), color: "text-purple-700", bg: "bg-purple-50 dark:bg-purple-900/20" },
+    { key: "planned", label: t("manufacturing.statusPlanned"), color: "text-th-text-2", bg: "bg-th-bg-2" },
+    { key: "released", label: t("manufacturing.statusReleased"), color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50/50 dark:bg-blue-900/10" },
+    { key: "in_progress", label: t("manufacturing.statusInProgress"), color: "text-green-600 dark:text-green-400", bg: "bg-green-50/50 dark:bg-green-900/10" },
+    { key: "on_hold", label: t("manufacturing.statusOnHold"), color: "text-red-600 dark:text-red-400", bg: "bg-red-50/50 dark:bg-red-900/10" },
+    { key: "completed", label: t("manufacturing.statusCompleted"), color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-50/50 dark:bg-purple-900/10" },
   ];
 
   const [orders, setOrders] = useState<ProductionOrder[]>([]);
@@ -280,7 +314,7 @@ export default function ProductionOrderBoard() {
   }
 
   return (
-    <div className="space-y-4" id="production-orders-view">
+    <div className="max-w-[1400px] mx-auto space-y-6" id="production-orders-view">
       {/* Header */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-th-text-3">
@@ -289,8 +323,9 @@ export default function ProductionOrderBoard() {
         {canEdit && (
           <button
             onClick={() => setShowCreate(true)}
-            className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-semibold transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-semibold transition-colors"
           >
+            <Plus className="w-4 h-4" />
             {t("manufacturing.newOrder")}
           </button>
         )}
@@ -298,7 +333,7 @@ export default function ProductionOrderBoard() {
 
       {/* Error */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-sm border border-red-200 dark:border-red-800">
+        <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-3 text-sm">
           {error}
         </div>
       )}
@@ -310,8 +345,11 @@ export default function ProductionOrderBoard() {
           return (
             <div key={col.key} className={`rounded-xl border border-th-border ${col.bg} p-3`}>
               <div className="flex items-center justify-between mb-3">
-                <h3 className={`text-sm font-bold ${col.color}`}>{col.label}</h3>
-                <span className="text-xs bg-white dark:bg-th-bg-2 px-2 py-0.5 rounded-full font-semibold text-th-text-2 border border-th-border">
+                <div className="flex items-center gap-1.5">
+                  <StatusIcon status={col.key} className={`w-4 h-4 ${col.color}`} />
+                  <h3 className={`text-sm font-bold ${col.color}`}>{col.label}</h3>
+                </div>
+                <span className="text-xs bg-th-bg-2 px-2 py-0.5 rounded-full font-semibold text-th-text-2 border border-th-border">
                   {colOrders.length}
                 </span>
               </div>
@@ -326,15 +364,16 @@ export default function ProductionOrderBoard() {
                     <div
                       key={order.id}
                       onClick={() => openDetail(order)}
-                      className={`bg-white dark:bg-th-bg rounded-lg border p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${
+                      className={`rounded-xl border border-th-border bg-th-bg-2 shadow-sm hover:shadow-md transition-shadow cursor-pointer p-3 ${
                         order.qc_hold
                           ? "border-red-400 dark:border-red-600 ring-1 ring-red-200 dark:ring-red-800"
-                          : "border-th-border"
+                          : ""
                       }`}
                     >
                       {/* QC Hold Badge */}
                       {order.qc_hold && (
-                        <div className="mb-2 px-2 py-1 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-bold rounded flex items-center gap-1">
+                        <div className="mb-2 px-2 py-1 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-bold rounded-lg flex items-center gap-1">
+                          <ShieldAlert className="w-3 h-3 shrink-0" />
                           <span>{t("manufacturing.qcHold")}</span>
                           {order.qc_hold_reason && (
                             <span className="font-normal truncate">- {order.qc_hold_reason}</span>
@@ -348,8 +387,12 @@ export default function ProductionOrderBoard() {
                         </span>
                       </div>
 
-                      <p className="text-sm font-semibold text-th-text truncate">{order.product_name}</p>
-                      <p className="text-xs text-th-text-3">
+                      <p className="text-sm font-semibold text-th-text truncate flex items-center gap-1">
+                        <Package className="w-3.5 h-3.5 text-th-text-3 shrink-0" />
+                        {order.product_name}
+                      </p>
+                      <p className="text-xs text-th-text-3 flex items-center gap-1">
+                        <Factory className="w-3 h-3 shrink-0" />
                         {order.line_name}
                         {order.order_lines && order.order_lines.length > 0 && (
                           <span className="ml-1 text-brand-500">+{order.order_lines.length} lines</span>
@@ -362,7 +405,7 @@ export default function ProductionOrderBoard() {
                           <span>{order.actual_quantity_good} / {order.planned_quantity}</span>
                           <span>{progress}%</span>
                         </div>
-                        <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div className="w-full h-1.5 bg-th-bg rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full transition-all ${
                               progress >= 100 ? "bg-green-500" : progress > 50 ? "bg-blue-500" : "bg-amber-500"
@@ -435,26 +478,28 @@ export default function ProductionOrderBoard() {
       {/* ═══ ORDER DETAIL / EDIT MODAL ═══ */}
       {selectedOrder && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={closeDetail}>
-          <div className="bg-th-bg rounded-2xl shadow-xl border border-th-border w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="rounded-xl border border-th-border bg-th-bg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div className="p-5 border-b border-th-border flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-th-text text-lg">{selectedOrder.order_number}</h3>
+                <h3 className="font-bold text-th-text text-lg flex items-center gap-2">
+                  <ClipboardList className="w-5 h-5 text-brand-500" />
+                  {selectedOrder.order_number}
+                </h3>
                 <p className="text-sm text-th-text-2">{selectedOrder.product_name}</p>
               </div>
               <div className="flex items-center gap-2">
                 {canEdit && !isEditing && selectedOrder.status !== "completed" && (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-semibold transition-colors"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-semibold transition-colors"
                   >
+                    <Pencil className="w-3.5 h-3.5" />
                     {t("manufacturing.edit")}
                   </button>
                 )}
                 <button onClick={closeDetail} className="text-th-text-3 hover:text-th-text p-1">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -463,17 +508,19 @@ export default function ProductionOrderBoard() {
             <div className="p-5 space-y-4">
               {/* Status + QC Hold */}
               <div className="flex items-center gap-2 flex-wrap">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                  selectedOrder.status === "planned" ? "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300" :
+                <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
+                  selectedOrder.status === "planned" ? "bg-th-bg-2 text-th-text-2" :
                   selectedOrder.status === "released" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" :
                   selectedOrder.status === "in_progress" ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" :
                   selectedOrder.status === "on_hold" ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" :
                   "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
                 }`}>
+                  <StatusIcon status={selectedOrder.status} className="w-3.5 h-3.5" />
                   {t(`manufacturing.status${selectedOrder.status.split("_").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join("")}`)}
                 </span>
                 {selectedOrder.qc_hold && (
-                  <span className="px-2 py-1 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-bold rounded">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-bold rounded-lg">
+                    <ShieldAlert className="w-3.5 h-3.5" />
                     {t("manufacturing.qcHold")} {selectedOrder.qc_hold_reason && `- ${selectedOrder.qc_hold_reason}`}
                   </span>
                 )}
@@ -485,7 +532,7 @@ export default function ProductionOrderBoard() {
                   <span>{t("manufacturing.progress")}</span>
                   <span className="font-semibold">{selectedOrder.actual_quantity_good} / {selectedOrder.planned_quantity} ({selectedOrder.planned_quantity > 0 ? Math.round((selectedOrder.actual_quantity_good / selectedOrder.planned_quantity) * 100) : 0}%)</span>
                 </div>
-                <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-th-bg-2 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all ${
                       selectedOrder.planned_quantity > 0 && (selectedOrder.actual_quantity_good / selectedOrder.planned_quantity) >= 1
@@ -501,11 +548,12 @@ export default function ProductionOrderBoard() {
 
               {/* Editable Fields */}
               {isEditing ? (
-                <div className="space-y-3 bg-th-bg-2 rounded-xl p-4 border border-th-border">
+                <div className="space-y-3 rounded-xl border border-th-border bg-th-bg-2 p-4">
                   <div>
                     <label className="block text-xs font-semibold text-th-text-2 mb-1">{t("manufacturing.plannedQuantity")}</label>
                     <input
                       type="number"
+                      inputMode="numeric"
                       min={1}
                       value={editForm.planned_quantity || ""}
                       onChange={(e) => setEditForm({ ...editForm, planned_quantity: parseInt(e.target.value) || 0 })}
@@ -576,8 +624,11 @@ export default function ProductionOrderBoard() {
                   <h4 className="text-xs font-bold text-th-text-2 mb-2 uppercase tracking-wide">{t("manufacturing.orderLines")}</h4>
                   <div className="space-y-1">
                     {selectedOrder.order_lines.map((ol) => (
-                      <div key={ol.id} className="flex justify-between items-center bg-th-bg-2 rounded-lg px-3 py-2 text-sm border border-th-border">
-                        <span className="text-th-text">{ol.line_name || `Line #${ol.production_line_id}`}</span>
+                      <div key={ol.id} className="flex justify-between items-center rounded-xl border border-th-border bg-th-bg-2 shadow-sm px-3 py-2 text-sm">
+                        <span className="text-th-text flex items-center gap-1.5">
+                          <Factory className="w-3.5 h-3.5 text-th-text-3" />
+                          {ol.line_name || `Line #${ol.production_line_id}`}
+                        </span>
                         <span className="text-th-text-2">{ol.actual_quantity_good}/{ol.planned_quantity}</span>
                       </div>
                     ))}
@@ -619,7 +670,7 @@ export default function ProductionOrderBoard() {
                 <button
                   onClick={handleSaveEdit}
                   disabled={saveLoading || !editForm.planned_quantity}
-                  className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-bold"
+                  className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-lg text-sm font-bold"
                 >
                   {saveLoading ? t("manufacturing.saving") : t("manufacturing.saveChanges")}
                 </button>
@@ -639,9 +690,12 @@ export default function ProductionOrderBoard() {
       {/* ═══ CREATE ORDER MODAL ═══ */}
       {showCreate && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowCreate(false)}>
-          <div className="bg-th-bg rounded-2xl shadow-xl border border-th-border w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+          <div className="rounded-xl border border-th-border bg-th-bg shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="p-5 border-b border-th-border">
-              <h3 className="font-bold text-th-text text-lg">{t("manufacturing.newProductionOrder")}</h3>
+              <h3 className="font-bold text-th-text text-lg flex items-center gap-2">
+                <PlayCircle className="w-5 h-5 text-brand-500" />
+                {t("manufacturing.newProductionOrder")}
+              </h3>
             </div>
 
             <div className="p-5 space-y-4">
@@ -715,9 +769,10 @@ export default function ProductionOrderBoard() {
                       ...newOrder,
                       additional_lines: [...newOrder.additional_lines, { production_line_id: 0, planned_quantity: 0 }],
                     })}
-                    className="text-xs text-brand-600 hover:text-brand-700 font-semibold"
+                    className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700 font-semibold"
                   >
-                    + Add Line
+                    <Plus className="w-3.5 h-3.5" />
+                    Add Line
                   </button>
                 </div>
                 {newOrder.additional_lines.map((al, i) => (
@@ -738,6 +793,7 @@ export default function ProductionOrderBoard() {
                     </select>
                     <input
                       type="number"
+                      inputMode="numeric"
                       min={1}
                       value={al.planned_quantity || ""}
                       onChange={(e) => {
@@ -753,8 +809,10 @@ export default function ProductionOrderBoard() {
                         ...newOrder,
                         additional_lines: newOrder.additional_lines.filter((_, idx) => idx !== i),
                       })}
-                      className="text-red-500 text-xs hover:text-red-700"
-                    >{"🗑"}</button>
+                      className="text-red-500 hover:text-red-700 p-1"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
                 {newOrder.additional_lines.length === 0 && (
@@ -775,7 +833,7 @@ export default function ProductionOrderBoard() {
               <button
                 onClick={handleCreate}
                 disabled={!newOrder.product_id || !newOrder.production_line_id || !newOrder.planned_quantity}
-                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-bold"
+                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-lg text-sm font-bold"
               >
                 {t("common.create")}
               </button>
@@ -818,7 +876,7 @@ function ActionBtn({
     <button
       onClick={onClick}
       disabled={loading}
-      className={`px-2 py-1 rounded text-xs font-semibold transition-colors ${colors[color] || colors.blue}`}
+      className={`px-2 py-1 rounded-lg text-xs font-semibold transition-colors ${colors[color] || colors.blue}`}
     >
       {loading ? "..." : label}
     </button>

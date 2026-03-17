@@ -1,0 +1,15 @@
+{
+  "title": "Powiadomienia",
+  "markAllRead": "Oznacz wszystkie jako przeczytane",
+  "noNotifications": "Brak powiadomień",
+  "qcFail": "Kontrola jakości nieudana",
+  "andonTriggered": "Andon uruchomiony",
+  "ncrCreated": "NCR utworzona",
+  "capaOverdue": "CAPA przeterminowana",
+  "kaizenAssigned": "Kaizen przypisany",
+  "tpmDue": "Przegląd TPM wymagany",
+  "shiftHandover": "Przekazanie zmiany",
+  "escalation": "Eskalacja",
+  "auditDue": "Audyt wymagany",
+  "oeeDrop": "Alert spadku OEE"
+}

@@ -1,0 +1,37 @@
+{
+  "title": "Lean Scorecard",
+  "subtitle": "Your factory's lean maturity at a glance",
+  "loading": "Loading scorecard...",
+  "demoNote": "Showing demo data — complete the Lean Assessment for real scores",
+
+  "overallMaturity": "Overall Maturity",
+  "rawScore": "Raw score: {score} / 4.0",
+  "dmaicPhases": "DMAIC Phases",
+  "moduleUsage": "Module Usage",
+  "improvementTrend": "Improvement Trend",
+  "trendNote": "Monthly lean maturity score based on assessment and module activity",
+  "quickWins": "Quick Wins",
+  "quickWinsDesc": "Focus on these areas for the biggest improvement impact",
+  "topPriority": "TOP PRIORITY",
+  "categoryBreakdown": "Category Breakdown",
+
+  "levelBeginner": "Beginner",
+  "levelDeveloping": "Developing",
+  "levelProficient": "Proficient",
+  "levelAdvanced": "Advanced",
+
+  "kaizenEvents": "Kaizen Events",
+  "gembaWalks": "Gemba Walks",
+  "sixSAudits": "6S Audits",
+  "fiveWhyAnalyses": "5-Why Analyses",
+  "a3Reports": "A3 Reports",
+  "vsmMaps": "VSM Maps",
+
+  "suggestWorkplace": "Start with a 6S audit to establish baseline workplace organization standards",
+  "suggestVisual": "Install hourly production tracking boards and set up the OEE Dashboard",
+  "suggestStandard": "Document your top 5 critical SOPs and make them accessible at workstations",
+  "suggestImprovement": "Launch a Kaizen board and schedule your first improvement event",
+  "suggestProblem": "Use 5-Why analysis on your next quality issue to build root cause skills",
+  "suggestTPM": "Register critical equipment in TPM Dashboard and create CILT checklists",
+  "suggestDefault": "Review this area and identify one actionable improvement"
+}

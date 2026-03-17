@@ -1,0 +1,18 @@
+{
+  "title": "Passaggio di consegne",
+  "subtitle": "Comunicazione tra turni e riepilogo produzione",
+  "autoGenerate": "Genera automaticamente",
+  "acknowledge": "Conferma presa visione",
+  "acknowledged": "Confermato",
+  "safetyIssues": "Problemi di sicurezza",
+  "qualityIssues": "Problemi di qualità",
+  "equipmentIssues": "Problemi attrezzature",
+  "materialIssues": "Problemi materiali",
+  "pendingActions": "Azioni in sospeso",
+  "productionSummary": "Riepilogo produzione",
+  "totalPieces": "Pezzi totali",
+  "goodPieces": "Pezzi conformi",
+  "scrapPieces": "Pezzi di scarto",
+  "oee": "OEE",
+  "downtime": "Fermo macchina (min)"
+}

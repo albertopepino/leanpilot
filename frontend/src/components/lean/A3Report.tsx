@@ -4,6 +4,35 @@ import { useI18n } from "@/stores/useI18n";
 import { advancedLeanApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
+import {
+  FileSpreadsheet,
+  AlertCircle,
+  BarChart3,
+  Target,
+  Search,
+  Lightbulb,
+  CalendarDays,
+  ClipboardCheck,
+  TrendingUp,
+  Plus,
+  FolderOpen,
+  Save,
+  Eye,
+  Pencil,
+  Printer,
+  X,
+  Check,
+  Loader2,
+  ArrowRight,
+  Info,
+  Zap,
+  ChevronRight,
+  ChevronDown,
+  UserCheck,
+  PlayCircle,
+  CheckCircle2,
+  RotateCcw,
+} from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -19,7 +48,7 @@ type A3Status =
 interface A3Section {
   key: keyof A3Sections;
   labelKey: string;
-  icon: string;
+  icon: React.ReactNode;
   hintKey: string;
   side: "left" | "right";
 }
@@ -34,6 +63,37 @@ interface A3Sections {
   follow_up: string;
   results: string;
 }
+
+interface MentorReview {
+  reviewerName: string;
+  reviewDate: string;
+  comments: string;
+  approvalStatus: "draft" | "reviewed" | "approved";
+}
+
+type PDCACycle = "plan" | "do" | "check" | "act";
+
+const PDCA_SECTIONS: Record<PDCACycle, (keyof A3Sections)[]> = {
+  plan: ["background", "current_condition", "goal_statement", "root_cause_analysis"],
+  do: ["countermeasures", "implementation_plan"],
+  check: ["follow_up"],
+  act: ["results"],
+};
+
+const PDCA_META: Record<PDCACycle, { labelKey: string; icon: React.ReactNode; color: string; bg: string }> = {
+  plan: { labelKey: "pdcaPlan", icon: <Target className="h-4 w-4" />, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
+  do: { labelKey: "pdcaDo", icon: <PlayCircle className="h-4 w-4" />, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
+  check: { labelKey: "pdcaCheck", icon: <CheckCircle2 className="h-4 w-4" />, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
+  act: { labelKey: "pdcaAct", icon: <RotateCcw className="h-4 w-4" />, color: "text-violet-600 dark:text-violet-400", bg: "bg-violet-500/10 border-violet-500/20" },
+};
+
+const PDCA_ORDER: PDCACycle[] = ["plan", "do", "check", "act"];
+
+const MENTOR_STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
+  draft: { label: "Draft", color: "text-gray-600 dark:text-gray-300", bg: "bg-gray-500/10 border-gray-500/20" },
+  reviewed: { label: "Reviewed", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
+  approved: { label: "Approved", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
+};
 
 interface A3Data extends A3Sections {
   title: string;
@@ -53,14 +113,14 @@ interface SavedA3 extends A3Data {
 /* ------------------------------------------------------------------ */
 
 const SECTION_DEFS: A3Section[] = [
-  { key: "background",          labelKey: "background",        icon: "\u{1F4C4}", hintKey: "backgroundHint",        side: "left"  },
-  { key: "current_condition",   labelKey: "currentCondition",  icon: "\u{1F4CA}", hintKey: "currentConditionHint",  side: "left"  },
-  { key: "goal_statement",      labelKey: "goalTarget",        icon: "\u{1F3AF}", hintKey: "goalTargetHint",        side: "left"  },
-  { key: "root_cause_analysis", labelKey: "rootCauseAnalysis", icon: "\u{1F50D}", hintKey: "rootCauseAnalysisHint", side: "left"  },
-  { key: "countermeasures",     labelKey: "countermeasures",   icon: "\u{1F4A1}", hintKey: "countermeasuresHint",   side: "right" },
-  { key: "implementation_plan", labelKey: "implementationPlan",icon: "\u{1F4C5}", hintKey: "implementationPlanHint",side: "right" },
-  { key: "follow_up",           labelKey: "followUp",          icon: "\u2705",    hintKey: "followUpHint",          side: "right" },
-  { key: "results",             labelKey: "results",           icon: "\u{1F4C8}", hintKey: "resultsHint",           side: "right" },
+  { key: "background",          labelKey: "background",        icon: <AlertCircle className="h-4 w-4" />,    hintKey: "backgroundHint",        side: "left"  },
+  { key: "current_condition",   labelKey: "currentCondition",  icon: <BarChart3 className="h-4 w-4" />,      hintKey: "currentConditionHint",  side: "left"  },
+  { key: "goal_statement",      labelKey: "goalTarget",        icon: <Target className="h-4 w-4" />,         hintKey: "goalTargetHint",        side: "left"  },
+  { key: "root_cause_analysis", labelKey: "rootCauseAnalysis", icon: <Search className="h-4 w-4" />,         hintKey: "rootCauseAnalysisHint", side: "left"  },
+  { key: "countermeasures",     labelKey: "countermeasures",   icon: <Lightbulb className="h-4 w-4" />,      hintKey: "countermeasuresHint",   side: "right" },
+  { key: "implementation_plan", labelKey: "implementationPlan",icon: <CalendarDays className="h-4 w-4" />,   hintKey: "implementationPlanHint",side: "right" },
+  { key: "follow_up",           labelKey: "followUp",          icon: <ClipboardCheck className="h-4 w-4" />, hintKey: "followUpHint",          side: "right" },
+  { key: "results",             labelKey: "results",           icon: <TrendingUp className="h-4 w-4" />,     hintKey: "resultsHint",           side: "right" },
 ];
 
 const LEFT_SECTIONS = SECTION_DEFS.filter((s) => s.side === "left");
@@ -172,11 +232,44 @@ export default function A3Report() {
 
   const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  /* ---- PDCA & Mentor Review state ------------------------------- */
+  const [expandedPdca, setExpandedPdca] = useState<Record<PDCACycle, boolean>>({
+    plan: true, do: false, check: false, act: false,
+  });
+  const [mentorReview, setMentorReview] = useState<MentorReview>({
+    reviewerName: "",
+    reviewDate: new Date().toISOString().slice(0, 10),
+    comments: "",
+    approvalStatus: "draft",
+  });
+
+  const togglePdca = (cycle: PDCACycle) => {
+    setExpandedPdca((prev) => ({ ...prev, [cycle]: !prev[cycle] }));
+  };
+
+  const updateMentor = (key: keyof MentorReview, value: string) => {
+    setMentorReview((prev) => ({ ...prev, [key]: value }));
+  };
+
   /* ---- Derived -------------------------------------------------- */
   const filledSections = SECTION_DEFS.filter(
     (s) => data[s.key]?.trim(),
   ).length;
   const progress = Math.round((filledSections / SECTION_DEFS.length) * 100);
+
+  // PDCA progress per cycle
+  const pdcaProgress: Record<PDCACycle, { filled: number; total: number; pct: number }> = {
+    plan: { filled: 0, total: 0, pct: 0 },
+    do: { filled: 0, total: 0, pct: 0 },
+    check: { filled: 0, total: 0, pct: 0 },
+    act: { filled: 0, total: 0, pct: 0 },
+  };
+  for (const cycle of PDCA_ORDER) {
+    const keys = PDCA_SECTIONS[cycle];
+    const total = keys.length;
+    const filled = keys.filter((k) => data[k]?.trim()).length;
+    pdcaProgress[cycle] = { filled, total, pct: total > 0 ? Math.round((filled / total) * 100) : 0 };
+  }
 
   const nextStatus = (): A3Status | null => {
     const idx = STATUS_FLOW.indexOf(data.status);
@@ -299,11 +392,11 @@ export default function A3Report() {
       className={
         isPrintView
           ? "border border-th-border p-3 print:border-black print:p-2"
-          : `bg-white/60 dark:bg-th-bg-3 backdrop-blur-sm rounded-xl p-5 border border-gray-200 dark:border-th-border border-l-4 ${SECTION_ACCENT[section.key]} hover:shadow-card hover:bg-white/80 dark:hover:bg-th-bg-3 transition-all duration-200 group`
+          : `rounded-xl border border-th-border bg-th-bg-2 shadow-sm border-l-4 ${SECTION_ACCENT[section.key]} p-5 hover:shadow-md transition-all duration-200 group`
       }
     >
       <div className="flex items-center gap-2.5 mb-3">
-        <span className="text-lg print:text-base">{section.icon}</span>
+        <span className="text-th-text-2 print:text-black">{section.icon}</span>
         <h3 className="font-bold text-sm text-th-text print:text-xs print:text-black uppercase tracking-wide">
           {t(`problem-solving.${section.labelKey}`)}
         </h3>
@@ -327,7 +420,7 @@ export default function A3Report() {
           value={data[section.key]}
           onChange={(e) => updateField(section.key, e.target.value)}
           rows={5}
-          className="w-full px-3.5 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none resize-y bg-white dark:bg-th-input text-th-text placeholder:text-th-text-3 border-gray-200 dark:border-th-border transition-all"
+          className="w-full px-3.5 py-2.5 text-sm border rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none resize-y bg-th-input text-th-text placeholder:text-th-text-3 border-th-border transition-all"
           placeholder={t(`problem-solving.${section.hintKey}`)}
         />
       )}
@@ -339,28 +432,28 @@ export default function A3Report() {
   /* ================================================================ */
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto print:max-w-none print:m-0 print:p-0" data-print-area="true" role="region" aria-label="A3 Report">
+    <div className="max-w-[1400px] mx-auto space-y-6 print:max-w-none print:m-0 print:p-0" data-print-area="true" role="region" aria-label="A3 Report">
       {/* ---------- Feedback toast ---------- */}
       {feedback && (
         <div
           role="status"
           aria-live="polite"
-          className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-xl shadow-lg shadow-black/10 text-sm font-medium backdrop-blur-sm transition-all animate-slide-in ${
+          className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-5 py-3 rounded-xl shadow-lg shadow-black/10 text-sm font-medium backdrop-blur-sm transition-all animate-slide-in ${
             feedback.type === "ok"
               ? "bg-emerald-500/90 text-white border border-emerald-400/30"
               : "bg-red-500/90 text-white border border-red-400/30"
           }`}
         >
-          <span className="mr-2">{feedback.type === "ok" ? "\u2713" : "\u2717"}</span>
+          {feedback.type === "ok" ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
           {feedback.msg}
         </div>
       )}
 
       {/* ---------- Header (hidden when printing) ---------- */}
-      <div className="bg-white/80 dark:bg-th-bg-2 backdrop-blur-sm rounded-2xl p-6 shadow-card border border-gray-200 dark:border-th-border print:hidden transition-all">
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6 print:hidden transition-all">
         <div className="flex items-start gap-4 mb-5 flex-wrap">
-          <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-glow flex-shrink-0">
-            A3
+          <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center text-white flex-shrink-0">
+            <FileSpreadsheet className="h-6 w-6" />
           </div>
           <div className="flex-1 min-w-[180px]">
             <h2 className="text-xl font-bold text-th-text">
@@ -376,8 +469,9 @@ export default function A3Report() {
             <button
               type="button"
               onClick={handleNew}
-              className="px-4 py-2.5 bg-white dark:bg-th-input rounded-xl text-sm font-medium text-th-text-2 hover:bg-gray-50 dark:hover:bg-th-bg-3 border border-gray-200 dark:border-th-border transition-all"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-th-input rounded-lg text-sm font-medium text-th-text-2 hover:bg-th-bg-3 border border-th-border transition-all"
             >
+              <Plus className="h-4 w-4" />
               {t("problem-solving.newReport")}
             </button>
             <button
@@ -387,23 +481,26 @@ export default function A3Report() {
                 if (!showList) loadList();
               }}
               disabled={loading}
-              className="px-4 py-2.5 bg-white dark:bg-th-input rounded-xl text-sm font-medium text-th-text-2 hover:bg-gray-50 dark:hover:bg-th-bg-3 border border-gray-200 dark:border-th-border transition-all disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-th-input rounded-lg text-sm font-medium text-th-text-2 hover:bg-th-bg-3 border border-th-border transition-all disabled:opacity-50"
             >
-              {loading ? "\u2026" : t("problem-solving.loadReport")}
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FolderOpen className="h-4 w-4" />}
+              {t("problem-solving.loadReport")}
             </button>
             <button
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="px-5 py-2.5 bg-gradient-to-r from-brand-500 to-brand-600 rounded-xl text-sm font-semibold text-white hover:from-brand-600 hover:to-brand-700 hover:shadow-glow transition-all disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-brand-500 to-brand-600 rounded-lg text-sm font-semibold text-white hover:from-brand-600 hover:to-brand-700 transition-all disabled:opacity-50"
             >
-              {saving ? "\u2026" : t("problem-solving.saveReport")}
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {t("problem-solving.saveReport")}
             </button>
             <button
               type="button"
               onClick={() => setIsPrintView(!isPrintView)}
-              className="px-4 py-2.5 bg-white dark:bg-th-input rounded-xl text-sm font-medium text-th-text-2 hover:bg-gray-50 dark:hover:bg-th-bg-3 border border-gray-200 dark:border-th-border transition-all"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-th-input rounded-lg text-sm font-medium text-th-text-2 hover:bg-th-bg-3 border border-th-border transition-all"
             >
+              {isPrintView ? <Pencil className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               {isPrintView
                 ? t("problem-solving.editMode")
                 : t("problem-solving.printView")}
@@ -411,10 +508,10 @@ export default function A3Report() {
             <button
               type="button"
               onClick={() => window.print()}
-              className="px-3 py-2.5 bg-white dark:bg-th-input rounded-xl text-sm text-th-text-2 hover:bg-gray-50 dark:hover:bg-th-bg-3 border border-gray-200 dark:border-th-border transition-all"
+              className="inline-flex items-center justify-center px-3 py-2.5 bg-th-input rounded-lg text-th-text-2 hover:bg-th-bg-3 border border-th-border transition-all"
               aria-label={t("problem-solving.print")}
             >
-              {"\u{1F5A8}\uFE0F"}
+              <Printer className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -425,7 +522,7 @@ export default function A3Report() {
           value={data.title}
           onChange={(e) => updateField("title", e.target.value)}
           placeholder={t("problem-solving.a3TitlePlaceholder")}
-          className="w-full px-4 py-3 bg-white dark:bg-th-input backdrop-blur-sm border border-gray-200 dark:border-th-border rounded-xl text-th-text placeholder:text-th-text-3 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+          className="w-full px-4 py-3 bg-th-input border border-th-border rounded-lg text-th-text placeholder:text-th-text-3 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
         />
 
         {/* Owner, Date, Status row */}
@@ -439,7 +536,7 @@ export default function A3Report() {
               value={data.owner}
               onChange={(e) => updateField("owner", e.target.value)}
               placeholder={t("problem-solving.ownerPlaceholder")}
-              className="w-full px-3 py-2 bg-white dark:bg-th-input backdrop-blur-sm border border-gray-200 dark:border-th-border rounded-xl text-th-text placeholder:text-th-text-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+              className="w-full px-3 py-2 bg-th-input border border-th-border rounded-lg text-th-text placeholder:text-th-text-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
             />
           </div>
           <div>
@@ -450,7 +547,7 @@ export default function A3Report() {
               type="date"
               value={data.date}
               onChange={(e) => updateField("date", e.target.value)}
-              className="w-full px-3 py-2 bg-white dark:bg-th-input backdrop-blur-sm border border-gray-200 dark:border-th-border rounded-xl text-th-text text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all dark:[color-scheme:dark]"
+              className="w-full px-3 py-2 bg-th-input border border-th-border rounded-lg text-th-text text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all dark:[color-scheme:dark]"
             />
           </div>
           <div>
@@ -468,10 +565,10 @@ export default function A3Report() {
                 <button
                   type="button"
                   onClick={() => handleStatusChange(next)}
-                  className="px-3 py-1.5 bg-white dark:bg-th-input rounded-lg text-xs font-medium text-th-text-2 hover:bg-gray-50 dark:hover:bg-th-bg-3 border border-gray-200 dark:border-th-border transition-all"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-th-input rounded-lg text-xs font-medium text-th-text-2 hover:bg-th-bg-3 border border-th-border transition-all"
                   title={t(`problem-solving.${STATUS_META[next].labelKey}`)}
                 >
-                  {"→"} {t(`problem-solving.${STATUS_META[next].labelKey}`)}
+                  <ArrowRight className="h-3 w-3" /> {t(`problem-solving.${STATUS_META[next].labelKey}`)}
                 </button>
               )}
             </div>
@@ -480,7 +577,7 @@ export default function A3Report() {
 
         {/* Progress bar */}
         <div className="mt-4 flex items-center gap-3">
-          <div className="flex-1 h-2 bg-th-bg-3 rounded-full overflow-hidden">
+          <div className="flex-1 h-1.5 bg-th-bg-3 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-brand-500 to-brand-400 rounded-full transition-all duration-500 ease-out"
               style={{ width: `${progress}%` }}
@@ -535,43 +632,25 @@ export default function A3Report() {
 
       {/* ---------- Saved reports list (collapsible) ---------- */}
       {showList && (
-        <div className="bg-white/80 dark:bg-th-bg-2 backdrop-blur-sm rounded-2xl border border-gray-200 dark:border-th-border shadow-card overflow-hidden print:hidden animate-slide-in transition-all">
-          <div className="p-4 border-b border-gray-200 dark:border-th-border flex items-center justify-between">
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden print:hidden animate-slide-in transition-all">
+          <div className="p-4 border-b border-th-border flex items-center justify-between">
             <h3 className="font-bold text-th-text text-sm flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-brand-500" />
+              <FolderOpen className="h-4 w-4 text-brand-500" />
               {t("problem-solving.savedReports")}
             </h3>
             <button
               type="button"
               onClick={() => setShowList(false)}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-th-text-3 hover:text-th-text hover:bg-gray-100 dark:hover:bg-th-bg-3 transition-all"
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-th-text-3 hover:text-th-text hover:bg-th-bg-3 transition-all"
               aria-label={t("problem-solving.close")}
             >
-              &times;
+              <X className="h-4 w-4" />
             </button>
           </div>
 
           {loading ? (
             <div className="p-6 flex items-center justify-center gap-2 text-th-text-3 text-sm">
-              <svg
-                className="animate-spin h-4 w-4"
-                viewBox="0 0 24 24"
-                fill="none"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
-              </svg>
+              <Loader2 className="h-4 w-4 animate-spin" />
               {t("problem-solving.loading")}
             </div>
           ) : listError ? (
@@ -592,7 +671,7 @@ export default function A3Report() {
               </p>
             </div>
           ) : (
-            <ul className="divide-y divide-gray-100 dark:divide-th-border max-h-72 overflow-y-auto">
+            <ul className="divide-y divide-th-border max-h-72 overflow-y-auto">
               {savedReports.map((r) => {
                 const meta = STATUS_META[r.status] ?? STATUS_META.draft;
                 return (
@@ -600,7 +679,7 @@ export default function A3Report() {
                     <button
                       type="button"
                       onClick={() => openReport(r)}
-                      className={`w-full text-left px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-th-bg-3 transition-all flex items-center gap-3 ${
+                      className={`w-full text-left px-4 py-3.5 hover:bg-th-bg-3 transition-all flex items-center gap-3 ${
                         activeId === r.id
                           ? "bg-brand-50/50 dark:bg-brand-500/5 ring-1 ring-inset ring-brand-500/30"
                           : ""
@@ -629,6 +708,42 @@ export default function A3Report() {
         </div>
       )}
 
+      {/* ---------- PDCA Progress Indicator ---------- */}
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5 print:hidden transition-all">
+        <h3 className="text-xs font-bold text-th-text uppercase tracking-wider mb-4">
+          {t("problem-solving.pdcaCycle") || "PDCA Cycle Progress"}
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {PDCA_ORDER.map((cycle) => {
+            const meta = PDCA_META[cycle];
+            const prog = pdcaProgress[cycle];
+            return (
+              <button
+                key={cycle}
+                type="button"
+                onClick={() => togglePdca(cycle)}
+                className={`text-center p-3 rounded-xl border transition-all hover:shadow-sm ${meta.bg} ${expandedPdca[cycle] ? "ring-2 ring-brand-500/30" : ""}`}
+              >
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <span className={meta.color}>{meta.icon}</span>
+                  <span className={`text-xs font-bold uppercase tracking-wider ${meta.color}`}>
+                    {t(`problem-solving.${meta.labelKey}`) || cycle.toUpperCase()}
+                  </span>
+                </div>
+                <p className="text-lg font-black text-th-text">{prog.pct}%</p>
+                <div className="mt-1.5 h-1.5 bg-th-bg-3 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-brand-500 to-brand-400"
+                    style={{ width: `${prog.pct}%` }}
+                  />
+                </div>
+                <p className="text-[10px] text-th-text-3 mt-1">{prog.filled}/{prog.total} {t("problem-solving.sections") || "sections"}</p>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* ---------- A3 Grid (landscape two-column layout) ---------- */}
       {isPrintView && (
         <div className="text-center mb-2 print:mb-1">
@@ -638,55 +753,139 @@ export default function A3Report() {
         </div>
       )}
 
-      <div
-        className={
-          isPrintView
-            ? "grid grid-cols-2 gap-0 border-2 border-th-border rounded-lg overflow-hidden print:border-black print:rounded-none"
-            : "grid grid-cols-1 lg:grid-cols-2 gap-5"
-        }
-      >
-        {/* Left side: Problem / Analysis */}
-        {isPrintView ? (
-          <>
-            {LEFT_SECTIONS.map(renderSectionCard)}
-            {RIGHT_SECTIONS.map(renderSectionCard)}
-          </>
-        ) : (
-          <>
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 px-1">
-                <div className="w-8 h-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-600 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
-                </div>
-                <div>
-                  <span className="text-xs font-bold text-th-text uppercase tracking-wider">
-                    {t("problem-solving.problemAnalysis")}
+      {isPrintView ? (
+        <div className="grid grid-cols-2 gap-0 border-2 border-th-border rounded-lg overflow-hidden print:border-black print:rounded-none">
+          {LEFT_SECTIONS.map(renderSectionCard)}
+          {RIGHT_SECTIONS.map(renderSectionCard)}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {PDCA_ORDER.map((cycle) => {
+            const meta = PDCA_META[cycle];
+            const prog = pdcaProgress[cycle];
+            const sectionKeys = PDCA_SECTIONS[cycle];
+            const sectionsForCycle = SECTION_DEFS.filter((s) => sectionKeys.includes(s.key));
+            const isExpanded = expandedPdca[cycle];
+
+            return (
+              <div key={cycle} className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden transition-all">
+                {/* PDCA Header */}
+                <button
+                  type="button"
+                  onClick={() => togglePdca(cycle)}
+                  className={`w-full flex items-center gap-3 p-4 hover:bg-th-bg-3/50 transition-all`}
+                >
+                  <span className={`${meta.color}`}>{meta.icon}</span>
+                  <span className={`text-sm font-bold uppercase tracking-wider ${meta.color}`}>
+                    {t(`problem-solving.${meta.labelKey}`) || cycle.toUpperCase()}
                   </span>
-                  <div className="h-0.5 w-12 mt-1 bg-gradient-to-r from-blue-500 to-transparent rounded-full" />
-                </div>
+                  <div className="flex-1 mx-3">
+                    <div className="h-1.5 bg-th-bg-3 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-brand-500 to-brand-400"
+                        style={{ width: `${prog.pct}%` }}
+                      />
+                    </div>
+                  </div>
+                  <span className="text-xs text-th-text-3 font-medium tabular-nums">{prog.filled}/{prog.total}</span>
+                  <ChevronDown className={`h-4 w-4 text-th-text-3 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
+                </button>
+
+                {/* Collapsible sections */}
+                {isExpanded && (
+                  <div className="p-4 pt-0 grid grid-cols-1 lg:grid-cols-2 gap-4 animate-slide-in">
+                    {sectionsForCycle.map(renderSectionCard)}
+                  </div>
+                )}
               </div>
-              {LEFT_SECTIONS.map(renderSectionCard)}
-            </div>
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 px-1">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-600 dark:text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" /></svg>
-                </div>
-                <div>
-                  <span className="text-xs font-bold text-th-text uppercase tracking-wider">
-                    {t("problem-solving.solutionAction")}
-                  </span>
-                  <div className="h-0.5 w-12 mt-1 bg-gradient-to-r from-emerald-500 to-transparent rounded-full" />
-                </div>
-              </div>
-              {RIGHT_SECTIONS.map(renderSectionCard)}
-            </div>
-          </>
-        )}
+            );
+          })}
+        </div>
+      )}
+
+      {/* ---------- Mentor Review Section ---------- */}
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6 print:hidden transition-all">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center flex-shrink-0">
+            <UserCheck className="h-4 w-4 text-indigo-500" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-th-text uppercase tracking-wider">
+              {t("problem-solving.mentorReview") || "Mentor Review"}
+            </h3>
+            <p className="text-xs text-th-text-3">
+              {t("problem-solving.mentorReviewHint") || "Feedback and approval from mentor/coach"}
+            </p>
+          </div>
+          <div className="ml-auto">
+            {(() => {
+              const ms = MENTOR_STATUS_META[mentorReview.approvalStatus];
+              return (
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border ${ms.bg} ${ms.color}`}>
+                  {mentorReview.approvalStatus === "approved" ? <Check className="h-3 w-3" /> : null}
+                  {t(`problem-solving.mentor${mentorReview.approvalStatus.charAt(0).toUpperCase() + mentorReview.approvalStatus.slice(1)}`) || ms.label}
+                </span>
+              );
+            })()}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label className="block text-xs font-semibold text-th-text-3 uppercase tracking-wider mb-1.5">
+              {t("problem-solving.reviewerName") || "Reviewer Name"}
+            </label>
+            <input
+              type="text"
+              value={mentorReview.reviewerName}
+              onChange={(e) => updateMentor("reviewerName", e.target.value)}
+              placeholder={t("problem-solving.reviewerNamePlaceholder") || "Mentor / Coach name"}
+              className="w-full px-3 py-2 bg-th-input border border-th-border rounded-lg text-th-text placeholder:text-th-text-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-th-text-3 uppercase tracking-wider mb-1.5">
+              {t("problem-solving.reviewDate") || "Review Date"}
+            </label>
+            <input
+              type="date"
+              value={mentorReview.reviewDate}
+              onChange={(e) => updateMentor("reviewDate", e.target.value)}
+              className="w-full px-3 py-2 bg-th-input border border-th-border rounded-lg text-th-text text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all dark:[color-scheme:dark]"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-th-text-3 uppercase tracking-wider mb-1.5">
+              {t("problem-solving.approvalStatus") || "Approval Status"}
+            </label>
+            <select
+              value={mentorReview.approvalStatus}
+              onChange={(e) => updateMentor("approvalStatus", e.target.value)}
+              className="w-full px-3 py-2 bg-th-input border border-th-border rounded-lg text-th-text text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+            >
+              <option value="draft">{t("problem-solving.mentorDraft") || "Draft"}</option>
+              <option value="reviewed">{t("problem-solving.mentorReviewed") || "Reviewed"}</option>
+              <option value="approved">{t("problem-solving.mentorApproved") || "Approved"}</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-th-text-3 uppercase tracking-wider mb-1.5">
+            {t("problem-solving.reviewComments") || "Review Comments"}
+          </label>
+          <textarea
+            value={mentorReview.comments}
+            onChange={(e) => updateMentor("comments", e.target.value)}
+            rows={4}
+            className="w-full px-3.5 py-2.5 text-sm border rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none resize-y bg-th-input text-th-text placeholder:text-th-text-3 border-th-border transition-all"
+            placeholder={t("problem-solving.reviewCommentsPlaceholder") || "Mentor feedback, suggestions, and observations..."}
+          />
+        </div>
       </div>
 
       {/* ---------- Status workflow stepper (screen only) ---------- */}
-      <div className="bg-white/80 dark:bg-th-bg-2 backdrop-blur-sm rounded-2xl p-5 border border-gray-200 dark:border-th-border shadow-card print:hidden transition-all">
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5 print:hidden transition-all">
         <h3 className="text-xs font-bold text-th-text uppercase tracking-wider mb-4">
           {t("problem-solving.workflow")}
         </h3>
@@ -700,24 +899,24 @@ export default function A3Report() {
                 <button
                   type="button"
                   onClick={() => handleStatusChange(s)}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold border transition-all ${
                     isActive
                       ? `${meta.bg} ${meta.color} ring-2 ring-brand-500/30 shadow-sm`
                       : isPast
-                        ? "bg-th-bg-3 text-th-text-2 border-gray-200 dark:border-th-border"
-                        : "bg-white dark:bg-transparent text-th-text-3 border-gray-200 dark:border-th-border hover:bg-gray-50 dark:hover:bg-th-bg-3"
+                        ? "bg-th-bg-3 text-th-text-2 border-th-border"
+                        : "bg-th-bg-2 text-th-text-3 border-th-border hover:bg-th-bg-3"
                   }`}
                   aria-current={isActive ? "step" : undefined}
                 >
                   {isPast && (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-emerald-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                    <Check className="h-3 w-3 text-emerald-500" />
                   )}
                   {isActive && <span className={`w-1.5 h-1.5 rounded-full ${meta.dot}`} />}
                   {t(`problem-solving.${meta.labelKey}`)}
                 </button>
                 {i < STATUS_FLOW.length - 1 && (
-                  <div className={`w-4 h-0.5 rounded-full ${
-                    isPast ? "bg-emerald-300 dark:bg-emerald-500/40" : "bg-gray-200 dark:bg-th-bg-3"
+                  <ChevronRight className={`h-3 w-3 ${
+                    isPast ? "text-emerald-400" : "text-th-text-3"
                   }`} />
                 )}
               </div>

@@ -1,0 +1,15 @@
+{
+  "title": "Obaveštenja",
+  "markAllRead": "Označi sve kao pročitano",
+  "noNotifications": "Nema obaveštenja",
+  "qcFail": "Kontrola kvaliteta neuspešna",
+  "andonTriggered": "Andon aktiviran",
+  "ncrCreated": "NCR kreiran",
+  "capaOverdue": "CAPA istekla",
+  "kaizenAssigned": "Kaizen dodeljen",
+  "tpmDue": "TPM održavanje dospelo",
+  "shiftHandover": "Primopredaja smene",
+  "escalation": "Eskalacija",
+  "auditDue": "Audit dospeo",
+  "oeeDrop": "Upozorenje na pad OEE"
+}

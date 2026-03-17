@@ -1,0 +1,58 @@
+{
+  "title": "Rastreador de Desperdicios",
+  "subtitle": "Identifica y elimina los 8 desperdicios (TIMWOODS)",
+  "loading": "Cargando datos de desperdicios...",
+
+  "transport": "Transporte",
+  "transportDesc": "Movimiento innecesario de materiales o productos",
+  "inventory": "Inventario",
+  "inventoryDesc": "Exceso de productos o materiales sin procesar",
+  "motion": "Movimiento",
+  "motionDesc": "Movimiento innecesario de personas",
+  "waiting": "Espera",
+  "waitingDesc": "Tiempo de inactividad esperando el siguiente paso del proceso",
+  "overproduction": "Sobreproducción",
+  "overproductionDesc": "Producir más de lo necesario",
+  "overprocessing": "Sobreprocesamiento",
+  "overprocessingDesc": "Realizar más trabajo del requerido por el cliente",
+  "defects": "Defectos",
+  "defectsDesc": "Reprocesos, desechos y correcciones",
+  "skills": "Habilidades (Talento no utilizado)",
+  "skillsDesc": "Subutilización de las capacidades y conocimientos de las personas",
+
+  "logWaste": "Registrar Evento de Desperdicio",
+  "wasteType": "Tipo de Desperdicio",
+  "area": "Área / Línea",
+  "description": "Descripción",
+  "estimatedCost": "Costo Estimado",
+  "estimatedTime": "Tiempo Perdido Estimado (min)",
+  "rootCause": "Causa Raíz",
+  "countermeasure": "Contramedida",
+  "severity": "Severidad",
+  "severityHigh": "Alta",
+  "severityMedium": "Media",
+  "severityLow": "Baja",
+
+  "totalEvents": "Eventos Totales",
+  "totalCost": "Impacto de Costo Total",
+  "totalTimeLost": "Tiempo Total Perdido",
+  "topWasteType": "Tipo de Desperdicio Principal",
+
+  "byType": "Por Tipo",
+  "byArea": "Por Área",
+  "trend": "Tendencia",
+
+  "noEvents": "Aún no se han registrado eventos de desperdicio",
+  "noEventsHint": "Comienza a identificar desperdicios en el piso de producción",
+
+  "saved": "Evento de desperdicio registrado exitosamente",
+  "saveError": "Error al registrar el evento de desperdicio",
+  "deleted": "Evento de desperdicio eliminado",
+
+  "last7": "Últimos 7 días",
+  "last30": "Últimos 30 días",
+  "last90": "Últimos 90 días",
+  "allTime": "Todo el Periodo",
+
+  "exportTitle": "Reporte de Desperdicios"
+}

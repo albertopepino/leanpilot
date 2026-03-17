@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { manufacturingApi, adminApi } from "@/lib/api";
+import { ClipboardList, Package, Check, AlertTriangle, Settings, Trash2, FolderDown, Upload, ChevronDown } from "lucide-react";
 
 interface BOMComponent {
   id: number;
@@ -252,7 +253,7 @@ export default function BOMManager() {
   }
 
   return (
-    <div className="space-y-4" id="bom-view">
+    <div className="max-w-[1400px] mx-auto space-y-6" id="bom-view">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -267,12 +268,10 @@ export default function BOMManager() {
           {/* Download Template */}
           <button
             onClick={handleDownloadTemplate}
-            className="px-3 py-2 border border-th-border text-th-text-2 hover:bg-th-bg-3 rounded-xl text-sm font-semibold flex items-center gap-1.5"
+            className="px-3 py-2 border border-th-border text-th-text-2 hover:bg-th-bg-3 rounded-lg text-sm font-semibold flex items-center gap-1.5"
             title="Download BOM Excel template"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-            </svg>
+            <FolderDown className="w-4 h-4" />
             {t("manufacturing.downloadTemplate")}
           </button>
 
@@ -287,14 +286,12 @@ export default function BOMManager() {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={importing}
-            className="px-3 py-2 border border-green-300 dark:border-green-700 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-xl text-sm font-semibold flex items-center gap-1.5 disabled:opacity-50"
+            className="px-3 py-2 border border-green-300 dark:border-green-700 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg text-sm font-semibold flex items-center gap-1.5 disabled:opacity-50"
           >
             {importing ? (
               <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
             ) : (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
+              <Upload className="w-4 h-4" />
             )}
             {importing ? t("manufacturing.importing") : t("manufacturing.uploadExcel")}
           </button>
@@ -302,7 +299,7 @@ export default function BOMManager() {
           {/* Manual Create */}
           <button
             onClick={() => { setForm({ product_id: 0, production_line_id: 0, ideal_cycle_time_sec: 60, batch_size: "", notes: "", components: [], operations: [] }); setShowCreate(true); }}
-            className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-semibold"
+            className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-semibold"
           >
             {t("manufacturing.newBom")}
           </button>
@@ -341,15 +338,15 @@ export default function BOMManager() {
       )}
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-4 py-3 rounded-xl text-sm border border-green-200 dark:border-green-800">
-          {"✓"} {success}
+          <Check className="w-4 h-4 inline" /> {success}
           <button onClick={() => setSuccess(null)} className="ml-2 font-bold">{"×"}</button>
         </div>
       )}
 
       {/* BOM List */}
       {boms.length === 0 ? (
-        <div className="bg-white dark:bg-th-bg-2 rounded-xl border border-th-border p-12 text-center">
-          <div className="text-4xl mb-3">{"📋"}</div>
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-12 text-center">
+          <ClipboardList className="w-10 h-10 mx-auto mb-3 text-th-text-3" />
           <p className="text-th-text-3">{t("manufacturing.noBoms")}</p>
           <p className="text-th-text-3 text-xs mt-1">{t("manufacturing.noBomsTip")}</p>
         </div>
@@ -360,14 +357,14 @@ export default function BOMManager() {
             const lineName = lineMap.get(bom.production_line_id) || "—";
             const isExpanded = expandedBOM === bom.id;
             return (
-              <div key={bom.id} className="bg-white dark:bg-th-bg-2 rounded-xl border border-th-border overflow-hidden">
+              <div key={bom.id} className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
                 {/* BOM Header */}
                 <div
                   className="p-4 cursor-pointer hover:bg-th-hover transition flex items-center justify-between"
                   onClick={() => setExpandedBOM(isExpanded ? null : bom.id)}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-lg">{"📦"}</span>
+                    <Package className="w-5 h-5 text-brand-500" />
                     <div>
                       <h3 className="font-semibold text-th-text">
                         {product ? `${product.code} — ${product.name}` : `Product #${bom.product_id}`}
@@ -385,7 +382,7 @@ export default function BOMManager() {
                     </span>
                     {bom.approved_at ? (
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
-                        {"✓"} {t("manufacturing.approved")}
+                        <Check className="w-3 h-3 inline" /> {t("manufacturing.approved")}
                       </span>
                     ) : (
                       <button
@@ -395,9 +392,7 @@ export default function BOMManager() {
                         {t("manufacturing.approve")}
                       </button>
                     )}
-                    <svg className={`w-4 h-4 text-th-text-3 transition-transform ${isExpanded ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <ChevronDown className={`w-4 h-4 text-th-text-3 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                   </div>
                 </div>
 
@@ -426,7 +421,7 @@ export default function BOMManager() {
                             <td className="px-4 py-2 text-right font-medium text-th-text">{comp.quantity_per_unit}</td>
                             <td className="px-4 py-2 text-th-text-2">{comp.unit_of_measure || t("manufacturing.pcs")}</td>
                             <td className="px-4 py-2 text-center">
-                              {comp.is_critical && <span className="text-red-600 font-bold text-xs">{"⚠"}</span>}
+                              {comp.is_critical && <AlertTriangle className="w-4 h-4 text-red-600 mx-auto" />}
                             </td>
                           </tr>
                         ))}
@@ -436,8 +431,8 @@ export default function BOMManager() {
                     {bom.operations && bom.operations.length > 0 && (
                       <div className="border-t border-th-border">
                         <div className="px-4 py-2 bg-th-bg-3/50">
-                          <span className="text-[10px] font-bold text-th-text-2 uppercase tracking-wider">
-                            {"⚙️"} Operations / Machines ({bom.operations.length})
+                          <span className="text-[10px] font-bold text-th-text-2 uppercase tracking-wider flex items-center gap-1">
+                            <Settings className="w-3.5 h-3.5" /> Operations / Machines ({bom.operations.length})
                           </span>
                         </div>
                         <table className="w-full text-sm">
@@ -482,8 +477,9 @@ export default function BOMManager() {
 
       {/* Create BOM Modal */}
       {showCreate && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowCreate(false)}>
-          <div className="bg-th-bg rounded-2xl shadow-xl border border-th-border w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center md:justify-center p-0 md:p-4" onClick={() => setShowCreate(false)}>
+          <div className="bg-th-bg rounded-t-xl md:rounded-xl shadow-xl border border-th-border w-full md:max-w-2xl max-h-[85vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-th-border rounded-full mx-auto mt-3 md:hidden" />
             <div className="p-5 border-b border-th-border">
               <h3 className="font-bold text-th-text text-lg">{t("manufacturing.titleBOM")}</h3>
             </div>
@@ -495,6 +491,7 @@ export default function BOMManager() {
                     value={form.product_id}
                     onChange={(e) => setForm({ ...form, product_id: Number(e.target.value) })}
                     className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text"
+                    autoFocus
                   >
                     <option value={0}>{t("manufacturing.selectProduct")}</option>
                     {products.map((p) => (
@@ -521,6 +518,7 @@ export default function BOMManager() {
                   <label className="block text-xs font-semibold text-th-text-2 mb-1">{t("manufacturing.cycleTimeSec")} *</label>
                   <input
                     type="number"
+                    inputMode="decimal"
                     value={form.ideal_cycle_time_sec}
                     onChange={(e) => setForm({ ...form, ideal_cycle_time_sec: Number(e.target.value) })}
                     className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text"
@@ -530,6 +528,7 @@ export default function BOMManager() {
                   <label className="block text-xs font-semibold text-th-text-2 mb-1">{t("manufacturing.batchSize")}</label>
                   <input
                     type="number"
+                    inputMode="numeric"
                     value={form.batch_size}
                     onChange={(e) => setForm({ ...form, batch_size: e.target.value })}
                     className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text"
@@ -581,6 +580,7 @@ export default function BOMManager() {
                           <div className="flex gap-2 items-center flex-wrap">
                             <input
                               type="number"
+                              inputMode="decimal"
                               step="any"
                               value={comp.quantity_per_unit}
                               onChange={(e) => updateComponent(i, "quantity_per_unit", e.target.value)}
@@ -606,7 +606,7 @@ export default function BOMManager() {
                               />
                               {t("manufacturing.critical")}
                             </label>
-                            <button onClick={() => removeComponent(i)} className="text-red-500 text-xs hover:text-red-700 ml-auto">{"🗑"}</button>
+                            <button onClick={() => removeComponent(i)} className="text-red-500 hover:text-red-700 ml-auto"><Trash2 className="w-4 h-4" /></button>
                           </div>
                         </div>
                       </div>
@@ -621,7 +621,7 @@ export default function BOMManager() {
               {/* Operations / Machines */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-semibold text-th-text-2">{"⚙️"} Operations / Machines ({form.operations.length})</label>
+                  <label className="text-xs font-semibold text-th-text-2 flex items-center gap-1"><Settings className="w-3.5 h-3.5" /> Operations / Machines ({form.operations.length})</label>
                   <button onClick={addOperation} className="text-xs text-brand-600 hover:text-brand-700 font-semibold">
                     + Add Operation
                   </button>
@@ -658,6 +658,7 @@ export default function BOMManager() {
                           <div className="flex gap-2 items-center flex-wrap">
                             <input
                               type="number"
+                              inputMode="decimal"
                               step="any"
                               value={op.cycle_time_seconds}
                               onChange={(e) => updateOperation(i, "cycle_time_seconds", e.target.value)}
@@ -674,13 +675,14 @@ export default function BOMManager() {
                             </select>
                             <input
                               type="number"
+                              inputMode="decimal"
                               step="any"
                               value={op.labor_minutes}
                               onChange={(e) => updateOperation(i, "labor_minutes", e.target.value)}
                               placeholder="Labor (min)"
                               className="w-28 border border-th-border rounded px-2 py-1 text-sm bg-th-bg text-th-text"
                             />
-                            <button onClick={() => removeOperation(i)} className="text-red-500 text-xs hover:text-red-700 ml-auto">{"🗑"}</button>
+                            <button onClick={() => removeOperation(i)} className="text-red-500 hover:text-red-700 ml-auto"><Trash2 className="w-4 h-4" /></button>
                           </div>
                         </div>
                       </div>
@@ -699,7 +701,7 @@ export default function BOMManager() {
               <button
                 onClick={handleCreate}
                 disabled={!form.product_id || !form.production_line_id || (form.components.length === 0 && form.operations.length === 0) || submitting}
-                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-bold flex items-center gap-1.5"
+                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-lg text-sm font-bold flex items-center gap-1.5"
               >
                 {submitting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
                 {submitting ? t("manufacturing.creating") : t("manufacturing.createBom")}

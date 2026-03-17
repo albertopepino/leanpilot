@@ -1,0 +1,18 @@
+{
+  "title": "Planer audita",
+  "subtitle": "Planiranje i praćenje 6S, TPM, QC, Gemba i bezbednosnih audita",
+  "createSchedule": "Kreiraj raspored",
+  "auditType": "Tip audita",
+  "frequency": "Učestalost",
+  "nextDue": "Sledeći termin",
+  "lastCompleted": "Poslednji završen",
+  "overdue": "Prekoračen rok",
+  "markComplete": "Označi kao završeno",
+  "daily": "Dnevno",
+  "weekly": "Nedeljno",
+  "biweekly": "Dvonedeljno",
+  "monthly": "Mesečno",
+  "quarterly": "Kvartalno",
+  "assignedTo": "Dodeljeno",
+  "noSchedules": "Nema zakazanih audita"
+}

@@ -1,0 +1,18 @@
+{
+  "title": "Planificateur d'audits",
+  "subtitle": "Planifiez et suivez les audits 6S, TPM, QC, Gemba et Sécurité",
+  "createSchedule": "Créer un calendrier",
+  "auditType": "Type d'audit",
+  "frequency": "Fréquence",
+  "nextDue": "Prochaine échéance",
+  "lastCompleted": "Dernier achèvement",
+  "overdue": "En retard",
+  "markComplete": "Marquer comme terminé",
+  "daily": "Quotidien",
+  "weekly": "Hebdomadaire",
+  "biweekly": "Bihebdomadaire",
+  "monthly": "Mensuel",
+  "quarterly": "Trimestriel",
+  "assignedTo": "Attribué à",
+  "noSchedules": "Aucun audit planifié"
+}

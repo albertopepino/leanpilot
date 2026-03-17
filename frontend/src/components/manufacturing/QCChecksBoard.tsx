@@ -1,7 +1,23 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/stores/useI18n";
-import { qcApi, manufacturingApi, adminApi } from "@/lib/api";
+import { qcApi, adminApi } from "@/lib/api";
+import {
+  FlaskConical,
+  CheckCircle,
+  XCircle,
+  Clipboard,
+  Search,
+  Settings,
+  ClipboardCheck,
+  Play,
+  Siren,
+  Lock,
+  Trash2,
+  X,
+  Check,
+  Minus,
+} from "lucide-react";
 
 interface TemplateItem {
   id: number;
@@ -60,22 +76,22 @@ interface QCRecord {
 interface Line { id: number; name: string; }
 
 const STATUS_COLORS: Record<string, string> = {
-  in_progress: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300",
+  in_progress: "bg-brand-100 text-brand-800 dark:bg-brand-900/40 dark:text-brand-300",
   passed: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300",
   passed_with_deviations: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300",
   failed: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300",
-  voided: "bg-gray-100 text-gray-800 dark:bg-gray-900/40 dark:text-gray-300",
+  voided: "bg-th-bg-3 text-th-text-3",
 };
 
 export default function QCChecksBoard() {
   const { t } = useI18n();
 
   const CHECK_TYPES = [
-    { value: "line_clearance", label: t("manufacturing.checkTypeLine"), icon: "🧹" },
-    { value: "fga", label: t("manufacturing.checkTypeFGA"), icon: "🔍" },
-    { value: "pre_production_audit", label: t("manufacturing.checkTypePreProd"), icon: "📋" },
-    { value: "in_process", label: t("manufacturing.checkTypeInProcess"), icon: "⚙️" },
-    { value: "final_inspection", label: t("manufacturing.checkTypeFinal"), icon: "✅" },
+    { value: "line_clearance", label: t("manufacturing.checkTypeLine"), icon: <FlaskConical className="w-3.5 h-3.5 inline" /> },
+    { value: "fga", label: t("manufacturing.checkTypeFGA"), icon: <Search className="w-3.5 h-3.5 inline" /> },
+    { value: "pre_production_audit", label: t("manufacturing.checkTypePreProd"), icon: <Clipboard className="w-3.5 h-3.5 inline" /> },
+    { value: "in_process", label: t("manufacturing.checkTypeInProcess"), icon: <Settings className="w-3.5 h-3.5 inline" /> },
+    { value: "final_inspection", label: t("manufacturing.checkTypeFinal"), icon: <ClipboardCheck className="w-3.5 h-3.5 inline" /> },
   ];
 
   const STATUS_LABELS: Record<string, string> = {
@@ -294,7 +310,7 @@ export default function QCChecksBoard() {
   }
 
   return (
-    <div className="space-y-4" id="qc-checks-view">
+    <div className="max-w-[1400px] mx-auto space-y-6" id="qc-checks-view">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -308,15 +324,15 @@ export default function QCChecksBoard() {
         <div className="flex gap-2">
           <button
             onClick={() => setShowTemplateForm(true)}
-            className="px-4 py-2 bg-th-bg-3 hover:bg-th-hover text-th-text rounded-xl text-sm font-semibold flex items-center gap-1.5"
+            className="px-4 py-2 bg-th-bg-3 hover:bg-th-hover text-th-text rounded-lg text-sm font-semibold flex items-center gap-1.5"
           >
-            {"📋"} {t("manufacturing.newTemplate")}
+            <Clipboard className="w-4 h-4" /> {t("manufacturing.newTemplate")}
           </button>
           <button
             onClick={() => setShowNewCheck(true)}
-            className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-semibold flex items-center gap-1.5"
+            className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-semibold flex items-center gap-1.5"
           >
-            {"▶"} {t("manufacturing.startQCCheck")}
+            <Play className="w-4 h-4" /> {t("manufacturing.startQCCheck")}
           </button>
         </div>
       </div>
@@ -326,17 +342,17 @@ export default function QCChecksBoard() {
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
-          className="border border-th-border rounded-lg px-3 py-1.5 text-sm bg-th-bg text-th-text"
+          className="border border-th-border rounded-lg px-3 py-1.5 min-h-[44px] sm:min-h-0 text-sm bg-th-bg text-th-text"
         >
           <option value="">{t("manufacturing.allTypes")}</option>
           {CHECK_TYPES.map((ct) => (
-            <option key={ct.value} value={ct.value}>{ct.icon} {ct.label}</option>
+            <option key={ct.value} value={ct.value}>{ct.label}</option>
           ))}
         </select>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="border border-th-border rounded-lg px-3 py-1.5 text-sm bg-th-bg text-th-text"
+          className="border border-th-border rounded-lg px-3 py-1.5 min-h-[44px] sm:min-h-0 text-sm bg-th-bg text-th-text"
         >
           <option value="">{t("manufacturing.allStatuses")}</option>
           {Object.entries(STATUS_LABELS).map(([k, v]) => (
@@ -346,26 +362,28 @@ export default function QCChecksBoard() {
       </div>
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-sm border border-red-200 dark:border-red-800">
-          {error}
-          <button onClick={() => setError(null)} className="ml-2 font-bold">{"×"}</button>
+        <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-sm border border-red-200 dark:border-red-800 flex items-center gap-2">
+          <XCircle className="w-4 h-4 shrink-0" />
+          <span className="flex-1">{error}</span>
+          <button onClick={() => setError(null)} className="ml-2 font-bold min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center"><X className="w-4 h-4" /></button>
         </div>
       )}
       {success && (
-        <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-4 py-3 rounded-xl text-sm border border-green-200 dark:border-green-800">
-          {"✓"} {success}
-          <button onClick={() => setSuccess(null)} className="ml-2 font-bold">{"×"}</button>
+        <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-4 py-3 rounded-xl text-sm border border-green-200 dark:border-green-800 flex items-center gap-2">
+          <CheckCircle className="w-4 h-4 shrink-0" />
+          <span className="flex-1">{success}</span>
+          <button onClick={() => setSuccess(null)} className="ml-2 font-bold min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center"><X className="w-4 h-4" /></button>
         </div>
       )}
 
       {/* Records Table */}
       {filteredRecords.length === 0 ? (
-        <div className="bg-white dark:bg-th-bg-2 rounded-xl border border-th-border p-12 text-center">
-          <div className="text-4xl mb-3">{"🔍"}</div>
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-12 text-center">
+          <Search className="w-10 h-10 mx-auto mb-3 text-th-text-3" />
           <p className="text-th-text-3">{t("manufacturing.noChecks")}</p>
         </div>
       ) : (
-        <div className="bg-white dark:bg-th-bg-2 rounded-xl border border-th-border overflow-hidden">
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -392,11 +410,11 @@ export default function QCChecksBoard() {
                       </td>
                       <td className="px-4 py-3 text-th-text-2">{lineMap.get(rec.production_line_id) || "-"}</td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${STATUS_COLORS[rec.status] || "bg-gray-100 text-gray-800"}`}>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${STATUS_COLORS[rec.status] || "bg-th-bg-3 text-th-text-3"}`}>
                           {STATUS_LABELS[rec.status] || rec.status}
                         </span>
-                        {rec.andon_triggered && <span className="ml-1 text-[10px]">{"🚨"}</span>}
-                        {rec.hold_placed && <span className="ml-1 text-[10px]">{"🔒"}</span>}
+                        {rec.andon_triggered && <Siren className="ml-1 w-3 h-3 inline text-red-500" />}
+                        {rec.hold_placed && <Lock className="ml-1 w-3 h-3 inline text-yellow-600" />}
                       </td>
                       <td className="px-4 py-3">
                         {rec.overall_score_pct != null ? (
@@ -411,15 +429,15 @@ export default function QCChecksBoard() {
                           {rec.status === "in_progress" && (
                             <button
                               onClick={() => openExecution(rec)}
-                              className="px-2 py-1 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 rounded text-xs font-semibold hover:bg-brand-100 dark:hover:bg-brand-900/40"
+                              className="px-2 py-1 min-h-[44px] sm:min-h-0 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 rounded-lg text-xs font-semibold hover:bg-brand-100 dark:hover:bg-brand-900/40 flex items-center gap-1"
                             >
-                              {"▶"} {t("manufacturing.checkContinue")}
+                              <Play className="w-3 h-3" /> {t("manufacturing.checkContinue")}
                             </button>
                           )}
                           {rec.status === "in_progress" && (
                             <button
                               onClick={() => handleVoid(rec)}
-                              className="px-2 py-1 text-red-600 dark:text-red-400 rounded text-xs hover:bg-red-50 dark:hover:bg-red-900/20"
+                              className="px-2 py-1 min-h-[44px] sm:min-h-0 text-red-600 dark:text-red-400 rounded-lg text-xs hover:bg-red-50 dark:hover:bg-red-900/20"
                             >
                               {t("manufacturing.checkVoid")}
                             </button>
@@ -427,7 +445,7 @@ export default function QCChecksBoard() {
                           {rec.status !== "in_progress" && (
                             <button
                               onClick={() => openExecution(rec)}
-                              className="px-2 py-1 bg-th-bg-3 text-th-text-2 rounded text-xs hover:bg-th-hover"
+                              className="px-2 py-1 min-h-[44px] sm:min-h-0 bg-th-bg-3 text-th-text-2 rounded-lg text-xs hover:bg-th-hover"
                             >
                               {t("manufacturing.checkView")}
                             </button>
@@ -446,12 +464,12 @@ export default function QCChecksBoard() {
       {/* Templates List */}
       {templates.length > 0 && (
         <div>
-          <h3 className="text-lg font-bold text-th-text mb-3">{"📋"} {t("manufacturing.templates")} ({templates.length})</h3>
+          <h3 className="text-lg font-bold text-th-text mb-3 flex items-center gap-2"><Clipboard className="w-5 h-5" /> {t("manufacturing.templates")} ({templates.length})</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {templates.map((tpl) => {
               const typeInfo = CHECK_TYPES.find((ct) => ct.value === tpl.template_type);
               return (
-                <div key={tpl.id} className="bg-white dark:bg-th-bg-2 rounded-xl border border-th-border p-4">
+                <div key={tpl.id} className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-4">
                   <div className="flex items-start justify-between">
                     <div>
                       <h4 className="font-semibold text-th-text text-sm">{tpl.name}</h4>
@@ -474,8 +492,9 @@ export default function QCChecksBoard() {
 
       {/* Start New Check Modal */}
       {showNewCheck && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowNewCheck(false)}>
-          <div className="bg-th-bg rounded-2xl shadow-xl border border-th-border w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center md:justify-center p-0 md:p-4" onClick={() => setShowNewCheck(false)}>
+          <div className="bg-th-bg rounded-t-xl md:rounded-xl shadow-xl border border-th-border w-full md:max-w-md max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-th-border rounded-full mx-auto mt-3 md:hidden" />
             <div className="p-5 border-b border-th-border">
               <h3 className="font-bold text-th-text text-lg">{t("manufacturing.startCheck")}</h3>
             </div>
@@ -489,6 +508,7 @@ export default function QCChecksBoard() {
                     setSelectedTemplate(tpl || null);
                   }}
                   className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text"
+                  autoFocus
                 >
                   <option value="">{t("manufacturing.selectTemplate")}</option>
                   {templates.map((tpl) => (
@@ -524,7 +544,7 @@ export default function QCChecksBoard() {
               <button
                 onClick={handleStartCheck}
                 disabled={!selectedTemplate || !selectedLineId}
-                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-bold"
+                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-lg text-sm font-bold"
               >
                 {t("manufacturing.startCheck")}
               </button>
@@ -535,8 +555,9 @@ export default function QCChecksBoard() {
 
       {/* Execution Modal */}
       {activeRecord && activeTemplate && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setActiveRecord(null); setActiveTemplate(null); }}>
-          <div className="bg-th-bg rounded-2xl shadow-xl border border-th-border w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center md:justify-center p-0 md:p-4" onClick={() => { setActiveRecord(null); setActiveTemplate(null); }}>
+          <div className="bg-th-bg rounded-t-xl md:rounded-xl shadow-xl border border-th-border w-full md:max-w-2xl max-h-[85vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-th-border rounded-full mx-auto mt-3 md:hidden" />
             <div className="p-5 border-b border-th-border flex items-center justify-between">
               <div>
                 <h3 className="font-bold text-th-text text-lg">{activeTemplate.name}</h3>
@@ -588,15 +609,15 @@ export default function QCChecksBoard() {
                                     key={r}
                                     disabled={isCompleted}
                                     onClick={() => setCheckResults({ ...checkResults, [item.id]: { ...val, result: r } })}
-                                    className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+                                    className={`px-3 py-1 min-h-[44px] sm:min-h-0 rounded-lg text-xs font-bold transition ${
                                       val.result === r
                                         ? r === "pass" ? "bg-green-500 text-white"
                                           : r === "fail" ? "bg-red-500 text-white"
-                                            : "bg-gray-500 text-white"
+                                            : "bg-th-text-3 text-th-bg"
                                         : "bg-th-bg-3 text-th-text-2 hover:bg-th-hover"
                                     } ${isCompleted ? "opacity-60 cursor-not-allowed" : ""}`}
                                   >
-                                    {r === "pass" ? `✓ ${t("manufacturing.pass")}` : r === "fail" ? `✗ ${t("manufacturing.fail")}` : t("manufacturing.na")}
+                                    {r === "pass" ? <><Check className="w-3 h-3 inline" /> {t("manufacturing.pass")}</> : r === "fail" ? <><X className="w-3 h-3 inline" /> {t("manufacturing.fail")}</> : <><Minus className="w-3 h-3 inline" /> {t("manufacturing.na")}</>}
                                   </button>
                                 ))}
                               </div>
@@ -605,6 +626,7 @@ export default function QCChecksBoard() {
                               <div className="flex items-center gap-2">
                                 <input
                                   type="number"
+                                  inputMode="decimal"
                                   step="any"
                                   disabled={isCompleted}
                                   placeholder={t("manufacturing.measuredValue")}
@@ -622,7 +644,7 @@ export default function QCChecksBoard() {
                                 {item.unit && <span className="text-xs text-th-text-3">{item.unit}</span>}
                                 {val.result && (
                                   <span className={`text-xs font-bold ${val.result === "pass" ? "text-green-600" : "text-red-600"}`}>
-                                    {val.result === "pass" ? "✓" : "✗"}
+                                    {val.result === "pass" ? <CheckCircle className="w-4 h-4 inline" /> : <XCircle className="w-4 h-4 inline" />}
                                   </span>
                                 )}
                               </div>
@@ -658,7 +680,7 @@ export default function QCChecksBoard() {
                 <button
                   onClick={handleSubmitResults}
                   disabled={submitting}
-                  className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-bold flex items-center gap-1.5"
+                  className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-lg text-sm font-bold flex items-center gap-1.5"
                 >
                   {submitting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
                   {submitting ? t("manufacturing.completing") : t("manufacturing.completeCheck")}
@@ -671,8 +693,9 @@ export default function QCChecksBoard() {
 
       {/* Create Template Modal */}
       {showTemplateForm && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowTemplateForm(false)}>
-          <div className="bg-th-bg rounded-2xl shadow-xl border border-th-border w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center md:justify-center p-0 md:p-4" onClick={() => setShowTemplateForm(false)}>
+          <div className="bg-th-bg rounded-t-xl md:rounded-xl shadow-xl border border-th-border w-full md:max-w-2xl max-h-[85vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-th-border rounded-full mx-auto mt-3 md:hidden" />
             <div className="p-5 border-b border-th-border">
               <h3 className="font-bold text-th-text text-lg">{t("manufacturing.createQCTemplate")}</h3>
             </div>
@@ -686,6 +709,7 @@ export default function QCChecksBoard() {
                     onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })}
                     className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text"
                     placeholder="Line Clearance - Injection"
+                    autoFocus
                   />
                 </div>
                 <div>
@@ -715,18 +739,19 @@ export default function QCChecksBoard() {
                   <label className="block text-xs font-semibold text-th-text-2 mb-1">{t("manufacturing.passThresholdPct")}</label>
                   <input
                     type="number"
+                    inputMode="numeric"
                     value={templateForm.pass_threshold_pct}
                     onChange={(e) => setTemplateForm({ ...templateForm, pass_threshold_pct: Number(e.target.value) })}
                     className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text"
                   />
                 </div>
                 <div className="flex items-end pb-2">
-                  <label className="flex items-center gap-2 text-sm text-th-text">
+                  <label className="flex items-center gap-2 text-sm text-th-text min-h-[44px] sm:min-h-0 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={templateForm.critical_items_must_pass}
                       onChange={(e) => setTemplateForm({ ...templateForm, critical_items_must_pass: e.target.checked })}
-                      className="rounded"
+                      className="rounded w-5 h-5 sm:w-4 sm:h-4"
                     />
                     {t("manufacturing.criticalMustPass")}
                   </label>
@@ -737,7 +762,7 @@ export default function QCChecksBoard() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-semibold text-th-text-2">{t("manufacturing.checkPoints")} ({templateForm.items.length})</label>
-                  <button onClick={addTemplateItem} className="text-xs text-brand-600 hover:text-brand-700 font-semibold">
+                  <button onClick={addTemplateItem} className="text-xs text-brand-600 hover:text-brand-700 font-semibold min-h-[44px] sm:min-h-0">
                     {t("manufacturing.addCheckPoint")}
                   </button>
                 </div>
@@ -771,16 +796,16 @@ export default function QCChecksBoard() {
                               placeholder={t("manufacturing.specification")}
                               className="flex-1 border border-th-border rounded px-2 py-1 text-xs bg-th-bg text-th-text"
                             />
-                            <label className="flex items-center gap-1 text-xs text-th-text-2">
+                            <label className="flex items-center gap-1 text-xs text-th-text-2 min-h-[44px] sm:min-h-0 cursor-pointer">
                               <input
                                 type="checkbox"
                                 checked={item.is_critical}
                                 onChange={(e) => updateTemplateItem(i, "is_critical", e.target.checked)}
-                                className="rounded"
+                                className="rounded w-5 h-5 sm:w-4 sm:h-4"
                               />
                               {t("manufacturing.critical")}
                             </label>
-                            <button onClick={() => removeTemplateItem(i)} className="text-red-500 text-xs hover:text-red-700">{"🗑"}</button>
+                            <button onClick={() => removeTemplateItem(i)} className="text-red-500 hover:text-red-700 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center"><Trash2 className="w-3.5 h-3.5" /></button>
                           </div>
                         </div>
                       </div>
@@ -796,7 +821,7 @@ export default function QCChecksBoard() {
               <button
                 onClick={handleCreateTemplate}
                 disabled={!templateForm.name.trim() || templateForm.items.length === 0}
-                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-bold"
+                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-lg text-sm font-bold"
               >
                 {t("manufacturing.createQCTemplate")}
               </button>

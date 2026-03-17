@@ -1,0 +1,18 @@
+{
+  "title": "Passation de quart",
+  "subtitle": "Communication inter-équipes et synthèse de production",
+  "autoGenerate": "Générer automatiquement",
+  "acknowledge": "Accuser réception",
+  "acknowledged": "Accusé de réception",
+  "safetyIssues": "Problèmes de sécurité",
+  "qualityIssues": "Problèmes de qualité",
+  "equipmentIssues": "Problèmes d'équipements",
+  "materialIssues": "Problèmes de matériaux",
+  "pendingActions": "Actions en attente",
+  "productionSummary": "Synthèse de production",
+  "totalPieces": "Pièces totales",
+  "goodPieces": "Pièces conformes",
+  "scrapPieces": "Pièces rebutées",
+  "oee": "TRS",
+  "downtime": "Temps d'arrêt (min)"
+}

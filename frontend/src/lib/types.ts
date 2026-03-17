@@ -166,6 +166,9 @@ export interface FiveWhyCreate {
   countermeasures?: Array<string | { action: string; owner: string; dueDate: string; status: string }>;
   responsible?: string | null;
   due_date?: string | null;
+  ishikawa_id?: number | null;
+  countermeasure_owner?: string | null;
+  countermeasure_deadline?: string | null;
 }
 
 export interface IshikawaCauseCreate {
@@ -197,6 +200,12 @@ export interface KaizenCreate {
   target_date?: string | null;
   assigned_to_id?: number | null;
   owner?: string | null;
+  before_photo_url?: string | null;
+  after_photo_url?: string | null;
+  effort_level?: string | null;
+  impact_level?: string | null;
+  is_blitz?: boolean;
+  source_type?: string | null;
 }
 
 export interface SMEDStepCreate {
@@ -399,7 +408,7 @@ export interface CILTExecutionCreate {
 }
 
 export interface AndonEventCreate {
-  production_line_id: number;
+  production_line_id?: number;
   status: string;
   reason?: string | null;
   description?: string | null;
@@ -646,6 +655,38 @@ export interface CAPAUpdate {
   effectiveness_result?: string | null;
 }
 
+// ─── Waste Tracker ──────────────────────────────────────────────────────────
+
+export interface WasteEventCreate {
+  production_line_id?: number | null;
+  waste_type: string;
+  category?: string | null;
+  description: string;
+  estimated_cost?: number;
+  estimated_time_minutes?: number;
+  severity?: string;
+  status?: string;
+  root_cause?: string | null;
+  countermeasure?: string | null;
+  linked_kaizen_id?: number | null;
+  date_occurred: string;
+}
+
+export interface WasteEventUpdate {
+  production_line_id?: number | null;
+  waste_type?: string | null;
+  category?: string | null;
+  description?: string | null;
+  estimated_cost?: number | null;
+  estimated_time_minutes?: number | null;
+  severity?: string | null;
+  status?: string | null;
+  root_cause?: string | null;
+  countermeasure?: string | null;
+  linked_kaizen_id?: number | null;
+  date_occurred?: string | null;
+}
+
 // ─── Calendar ───────────────────────────────────────────────────────────────
 
 export type CalendarEventSource = "capa" | "kaizen" | "tpm_maintenance" | "tpm_equipment" | "six_s" | "gemba" | "production_order_start" | "production_order_end" | "cilt";
@@ -662,6 +703,127 @@ export interface CalendarEvent {
   production_line_name: string | null;
   source_id: number;
   view_key: string;
+}
+
+// ─── SQCDP ─────────────────────────────────────────────────────────────────
+
+export interface SQCDPEntryCreate {
+  production_line_id?: number | null;
+  date: string;
+  category: string;
+  status?: string;
+  metric_value?: number | null;
+  target_value?: number | null;
+  comment?: string | null;
+  action_required?: boolean;
+  action_owner?: string | null;
+  action_due_date?: string | null;
+  tier_level?: number;
+}
+
+export interface SQCDPMeetingCreate {
+  production_line_id?: number | null;
+  date: string;
+  tier_level?: number;
+  duration_min?: number | null;
+  attendee_count?: number | null;
+  notes?: string | null;
+  action_items?: any[];
+  escalated_items?: any[];
+}
+
+// ─── Shift Handover ────────────────────────────────────────────────────────
+
+export interface ShiftHandoverCreate {
+  production_line_id: number;
+  outgoing_shift_id?: number | null;
+  incoming_shift_id?: number | null;
+  date: string;
+  safety_issues?: string | null;
+  quality_issues?: string | null;
+  equipment_issues?: string | null;
+  material_issues?: string | null;
+  pending_actions?: any[];
+  notes?: string | null;
+}
+
+export interface ShiftHandoverUpdate {
+  safety_issues?: string | null;
+  quality_issues?: string | null;
+  equipment_issues?: string | null;
+  material_issues?: string | null;
+  pending_actions?: any[];
+  notes?: string | null;
+  status?: string | null;
+}
+
+// ─── Notifications ─────────────────────────────────────────────────────────
+
+export interface NotificationResponse {
+  id: number;
+  notification_type: string;
+  priority: string;
+  title: string;
+  message: string | null;
+  link: string | null;
+  is_read: boolean;
+  read_at: string | null;
+  source_type: string | null;
+  source_id: number | null;
+  created_at: string;
+}
+
+// ─── Leader Standard Work ──────────────────────────────────────────────────
+
+export interface LSWCreate {
+  title: string;
+  role: string;
+  frequency?: string;
+  estimated_time_min?: number | null;
+  tasks?: any[];
+}
+
+export interface LSWUpdate {
+  title?: string | null;
+  role?: string | null;
+  frequency?: string | null;
+  estimated_time_min?: number | null;
+  is_active?: boolean | null;
+  tasks?: any[] | null;
+}
+
+export interface LSWCompletionCreate {
+  lsw_id: number;
+  date: string;
+  completed_tasks?: any[];
+  completion_pct?: number | null;
+  notes?: string | null;
+}
+
+// ─── Audit Schedules ───────────────────────────────────────────────────────
+
+export interface AuditScheduleCreate {
+  audit_type: string;
+  title: string;
+  area?: string | null;
+  production_line_id?: number | null;
+  assigned_to_id?: number | null;
+  frequency?: string;
+  next_due_date: string;
+  escalation_days?: number;
+  notes?: string | null;
+}
+
+export interface AuditScheduleUpdate {
+  title?: string | null;
+  area?: string | null;
+  production_line_id?: number | null;
+  assigned_to_id?: number | null;
+  frequency?: string | null;
+  next_due_date?: string | null;
+  is_active?: boolean | null;
+  escalation_days?: number | null;
+  notes?: string | null;
 }
 
 // ─── Groups / Policies ─────────────────────────────────────────────────────
@@ -696,4 +858,69 @@ export interface GroupUpdate {
   description?: string;
   color?: string;
   is_active?: boolean;
+}
+
+// ─── Horizontal Deployment ──────────────────────────────────────────────────
+
+export interface HorizontalDeployCreate {
+  source_type: string;
+  source_id: number;
+  description: string;
+  target_lines: number[];
+}
+
+export interface HorizontalDeployResponse {
+  id: number;
+  factory_id: number;
+  source_type: string;
+  source_id: number;
+  description: string;
+  target_lines: number[];
+  completed_lines: number[];
+  deployed_by_id: number | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// ─── Reports ────────────────────────────────────────────────────────────────
+
+export interface OEEMonthlyReport {
+  month: number;
+  year: number;
+  lines: {
+    line_id: number;
+    line_name: string;
+    avg_oee: number;
+    avg_availability: number;
+    avg_performance: number;
+    avg_quality: number;
+    total_downtime_min: number;
+    record_count: number;
+  }[];
+  factory_summary: {
+    avg_oee: number;
+    avg_availability: number;
+    avg_performance: number;
+    avg_quality: number;
+    total_downtime_min: number;
+    record_count: number;
+  };
+  daily_trend: { date: string; oee: number }[];
+  top_downtime_reasons: { category: string; total_min: number }[];
+}
+
+export interface QCSummaryReport {
+  total_inspections: number;
+  passed: number;
+  failed: number;
+  pass_rate: number;
+  top_defects: { defect: string; count: number }[];
+  ncr_count: number;
+}
+
+export interface KaizenSavingsReport {
+  completed_count: number;
+  total_savings: number;
+  top_contributors: { responsible: string; count: number; savings: number }[];
 }

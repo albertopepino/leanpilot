@@ -1,0 +1,18 @@
+{
+  "title": "Audit Scheduler",
+  "subtitle": "Schedule and track 6S, TPM, QC, Gemba, and Safety audits",
+  "createSchedule": "Create Schedule",
+  "auditType": "Audit Type",
+  "frequency": "Frequency",
+  "nextDue": "Next Due",
+  "lastCompleted": "Last Completed",
+  "overdue": "Overdue",
+  "markComplete": "Mark Complete",
+  "daily": "Daily",
+  "weekly": "Weekly",
+  "biweekly": "Bi-weekly",
+  "monthly": "Monthly",
+  "quarterly": "Quarterly",
+  "assignedTo": "Assigned To",
+  "noSchedules": "No audit schedules"
+}

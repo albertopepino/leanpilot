@@ -128,6 +128,14 @@ async def export_my_data(
     )
     consents = consent_result.scalars().all()
 
+    # Audit log entries related to this user
+    audit_result = await db.execute(
+        select(AuditLog)
+        .where(AuditLog.user_id == current_user.id)
+        .order_by(AuditLog.timestamp.desc())
+    )
+    audit_entries = audit_result.scalars().all()
+
     # AI conversations with messages
     conv_result = await db.execute(
         select(AIConversation).where(AIConversation.user_id == current_user.id)
@@ -189,6 +197,18 @@ async def export_my_data(
             for c in consents
         ],
         "ai_conversations": conversations_data,
+        "audit_logs": [
+            {
+                "timestamp": a.timestamp.isoformat() if a.timestamp else None,
+                "action": a.action,
+                "resource_type": a.resource_type,
+                "resource_id": a.resource_id,
+                "detail": a.detail,
+                "ip_address": a.ip_address,
+                "legal_basis": a.legal_basis,
+            }
+            for a in audit_entries
+        ],
     }
 
 

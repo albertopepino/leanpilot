@@ -252,5 +252,15 @@
   "productNamePlaceholder": "np. Wał korbowy",
   "cancel": "Anuluj",
   "creating": "Tworzenie...",
-  "create": "Utwórz"
+  "create": "Utwórz",
+
+  "units": "sztuk",
+  "totalTime": "Czas Całkowity",
+  "availabilityLoss": "Strata Dostępności",
+  "performanceLoss": "Strata Wydajności",
+  "qualityLoss": "Strata Jakości",
+  "oeeWaterfallDesc": "Jak całkowity dostępny czas rozkłada się na OEE",
+
+  "weeklyHeatmap": "Tygodniowa Mapa Cieplna Produkcji",
+  "noData": "Brak danych"
 }

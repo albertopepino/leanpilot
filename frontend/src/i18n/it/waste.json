@@ -1,0 +1,58 @@
+{
+  "title": "Tracker Sprechi",
+  "subtitle": "Identifica ed elimina gli 8 sprechi (TIMWOODS)",
+  "loading": "Caricamento dati sprechi...",
+
+  "transport": "Trasporto",
+  "transportDesc": "Movimento non necessario di materiali o prodotti",
+  "inventory": "Scorte",
+  "inventoryDesc": "Prodotti o materiali in eccesso non in lavorazione",
+  "motion": "Movimento",
+  "motionDesc": "Movimento non necessario delle persone",
+  "waiting": "Attesa",
+  "waitingDesc": "Tempo di inattivita' in attesa della fase successiva",
+  "overproduction": "Sovrapproduzione",
+  "overproductionDesc": "Produrre piu' del necessario",
+  "overprocessing": "Sovralavorazione",
+  "overprocessingDesc": "Fare piu' lavoro di quanto richiesto dal cliente",
+  "defects": "Difetti",
+  "defectsDesc": "Rilavorazione, scarti e correzioni",
+  "skills": "Competenze (Talento non utilizzato)",
+  "skillsDesc": "Sottoutilizzare le capacita' e conoscenze delle persone",
+
+  "logWaste": "Registra Evento Spreco",
+  "wasteType": "Tipo di Spreco",
+  "area": "Area / Linea",
+  "description": "Descrizione",
+  "estimatedCost": "Costo Stimato",
+  "estimatedTime": "Tempo Perso Stimato (min)",
+  "rootCause": "Causa Radice",
+  "countermeasure": "Contromisura",
+  "severity": "Gravita'",
+  "severityHigh": "Alta",
+  "severityMedium": "Media",
+  "severityLow": "Bassa",
+
+  "totalEvents": "Eventi Totali",
+  "totalCost": "Impatto Costo Totale",
+  "totalTimeLost": "Tempo Totale Perso",
+  "topWasteType": "Tipo Spreco Principale",
+
+  "byType": "Per Tipo",
+  "byArea": "Per Area",
+  "trend": "Trend",
+
+  "noEvents": "Nessun evento spreco registrato",
+  "noEventsHint": "Inizia a identificare gli sprechi in reparto",
+
+  "saved": "Evento spreco registrato con successo",
+  "saveError": "Registrazione evento spreco fallita",
+  "deleted": "Evento spreco eliminato",
+
+  "last7": "Ultimi 7 giorni",
+  "last30": "Ultimi 30 giorni",
+  "last90": "Ultimi 90 giorni",
+  "allTime": "Tutto il Periodo",
+
+  "exportTitle": "Report Sprechi"
+}

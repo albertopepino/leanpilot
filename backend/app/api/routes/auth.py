@@ -4,7 +4,7 @@ Implements: rate limiting, account lockout, token revocation, audit logging.
 """
 import secrets
 import structlog
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -26,6 +26,7 @@ from app.schemas.auth import (
     LoginRequest, TokenResponse, UserCreate, UserResponse,
     LandingPageSignup, SignupResponse, PasswordChangeRequest,
     ConsentUpdateRequest, ConsentAcceptRequest,
+    ForgotPasswordRequest, ResetPasswordRequest,
 )
 from app.services.email_service import EmailService
 
@@ -484,6 +485,15 @@ async def change_password(
 ):
     """Change password. Requires current password verification."""
     if not verify_password(data.current_password, current_user.hashed_password):
+        await log_audit(
+            db, action="password_change_failed", resource_type="auth",
+            user_id=current_user.id, user_email=current_user.email,
+            factory_id=current_user.factory_id,
+            ip_address=get_client_ip(request),
+            detail="Incorrect current password provided",
+            legal_basis="GDPR Art. 32 — security of processing",
+        )
+        await db.commit()
         raise HTTPException(status_code=400, detail="Current password is incorrect")
 
     # H1: Validate password strength (defense-in-depth, supplements schema validation)
@@ -559,3 +569,137 @@ async def update_consent(
         await db.commit()
 
     return {"detail": "Consent preferences updated", "changes": changes}
+
+
+# ---------------------------------------------------------------------------
+# Forgot password — self-service password reset (GDPR Art. 32)
+# ---------------------------------------------------------------------------
+
+@router.post("/forgot-password")
+async def forgot_password(
+    request: Request,
+    data: ForgotPasswordRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Request a password reset token.
+    Always returns 200 to prevent email enumeration.
+    In dev mode (no SMTP), the token is returned in the response.
+    """
+    client_ip = get_client_ip(request)
+
+    # Rate limit to prevent abuse
+    check_rate_limit(
+        key=f"forgot:{client_ip}",
+        max_requests=3,
+        window_seconds=300,
+    )
+
+    result = await db.execute(select(User).where(User.email == data.email))
+    user = result.scalar_one_or_none()
+
+    # Generic response to prevent email enumeration
+    generic_response = {
+        "detail": "If an account with that email exists, a password reset link has been sent."
+    }
+
+    if not user or not user.is_active or user.is_deleted:
+        await log_audit(
+            db, action="password_reset_requested", resource_type="auth",
+            user_email=data.email, ip_address=client_ip,
+            detail="No matching active account found",
+        )
+        await db.commit()
+        return generic_response
+
+    # Generate a secure reset token with 1-hour expiry
+    reset_token = secrets.token_urlsafe(48)
+    user.reset_token = reset_token
+    user.reset_token_expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+
+    await log_audit(
+        db, action="password_reset_requested", resource_type="auth",
+        user_id=user.id, user_email=user.email,
+        factory_id=user.factory_id, ip_address=client_ip,
+        detail="Reset token generated (1h expiry)",
+        legal_basis="GDPR Art. 32 — security of processing",
+    )
+    await db.commit()
+
+    # In production, send email. In dev mode (no SMTP), log the token.
+    if settings.smtp_host:
+        logger.info("password_reset.email_queued", email=data.email)
+        # TODO: integrate with EmailService to send reset link
+    else:
+        logger.warning(
+            "password_reset.dev_mode",
+            email=data.email,
+            token=reset_token,
+            note="SMTP not configured — token logged for dev use",
+        )
+
+    response = generic_response
+    # In debug/dev mode, include the token for testing
+    if settings.debug and not settings.smtp_host:
+        response["_dev_reset_token"] = reset_token
+
+    return response
+
+
+@router.post("/reset-password")
+async def reset_password(
+    request: Request,
+    data: ResetPasswordRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Reset password using a valid reset token.
+    Validates token, updates password, clears the token.
+    """
+    client_ip = get_client_ip(request)
+
+    result = await db.execute(
+        select(User).where(
+            User.reset_token == data.token,
+            User.reset_token_expires_at > datetime.now(timezone.utc),
+        )
+    )
+    user = result.scalar_one_or_none()
+
+    if not user:
+        await log_audit(
+            db, action="password_reset_failed", resource_type="auth",
+            ip_address=client_ip,
+            detail="Invalid or expired reset token",
+        )
+        await db.commit()
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid or expired reset token",
+        )
+
+    # Validate password strength (defense-in-depth)
+    pwd_errors = validate_password_strength(data.new_password)
+    if pwd_errors:
+        raise HTTPException(status_code=400, detail=pwd_errors)
+
+    # Update password and clear reset token
+    user.hashed_password = get_password_hash(data.new_password)
+    user.password_changed_at = datetime.now(timezone.utc)
+    user.reset_token = None
+    user.reset_token_expires_at = None
+
+    # Reset any account lockout
+    user.failed_login_attempts = 0
+    user.locked_until = None
+
+    await log_audit(
+        db, action="password_reset_completed", resource_type="auth",
+        user_id=user.id, user_email=user.email,
+        factory_id=user.factory_id, ip_address=client_ip,
+        detail="Password reset via token",
+        legal_basis="GDPR Art. 32 — security of processing",
+    )
+    await db.commit()
+
+    return {"detail": "Password has been reset successfully. You can now log in with your new password."}

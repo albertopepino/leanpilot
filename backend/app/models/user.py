@@ -57,4 +57,8 @@ class User(TimestampMixin, Base):
     last_user_agent = Column(String(512), nullable=True)
     password_changed_at = Column(DateTime(timezone=True), nullable=True)
 
+    # Password reset
+    reset_token = Column(String(128), nullable=True, index=True)
+    reset_token_expires_at = Column(DateTime(timezone=True), nullable=True)
+
     factory = relationship("Factory", back_populates="users")

@@ -39,6 +39,13 @@ from app.models.ai import AIConversation, AIMessage, AIKaizenSuggestion
 from app.models.audit import AuditLog, ConsentRecord
 from app.models.company_settings import CompanySettings
 from app.models.groups import Group, GroupPolicy, user_groups
+from app.models.waste import WasteEvent
+from app.models.sqcdp import SQCDPEntry, SQCDPMeeting
+from app.models.shift_handover import ShiftHandover
+from app.models.notification import Notification
+from app.models.leader_standard_work import LeaderStandardWork, LSWCompletion
+from app.models.audit_schedule import AuditSchedule
+from app.models.horizontal_deploy import HorizontalDeployment
 
 __all__ = [
     "User",
@@ -93,4 +100,13 @@ __all__ = [
     "Group",
     "GroupPolicy",
     "user_groups",
+    "WasteEvent",
+    "SQCDPEntry",
+    "SQCDPMeeting",
+    "ShiftHandover",
+    "Notification",
+    "LeaderStandardWork",
+    "LSWCompletion",
+    "AuditSchedule",
+    "HorizontalDeployment",
 ]

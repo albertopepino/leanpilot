@@ -1,0 +1,15 @@
+{
+  "title": "Notifications",
+  "markAllRead": "Tout marquer comme lu",
+  "noNotifications": "Aucune notification",
+  "qcFail": "Contrôle qualité échoué",
+  "andonTriggered": "Andon déclenché",
+  "ncrCreated": "NCR créée",
+  "capaOverdue": "CAPA en retard",
+  "kaizenAssigned": "Kaizen attribué",
+  "tpmDue": "Maintenance TPM à effectuer",
+  "shiftHandover": "Passation de quart",
+  "escalation": "Escalade",
+  "auditDue": "Audit à effectuer",
+  "oeeDrop": "Alerte baisse du TRS"
+}

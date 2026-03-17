@@ -1,0 +1,18 @@
+{
+  "title": "Relevo de turno",
+  "subtitle": "Comunicación entre turnos y resumen de producción",
+  "autoGenerate": "Generar automáticamente",
+  "acknowledge": "Confirmar recepción",
+  "acknowledged": "Confirmado",
+  "safetyIssues": "Problemas de seguridad",
+  "qualityIssues": "Problemas de calidad",
+  "equipmentIssues": "Problemas de equipos",
+  "materialIssues": "Problemas de materiales",
+  "pendingActions": "Acciones pendientes",
+  "productionSummary": "Resumen de producción",
+  "totalPieces": "Piezas totales",
+  "goodPieces": "Piezas conformes",
+  "scrapPieces": "Piezas de desecho",
+  "oee": "OEE",
+  "downtime": "Tiempo de inactividad (min)"
+}

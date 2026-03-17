@@ -1,0 +1,58 @@
+{
+  "title": "Śledzenie Marnotrawstwa",
+  "subtitle": "Identyfikuj i eliminuj 8 rodzajów marnotrawstwa (TIMWOODS)",
+  "loading": "Ładowanie danych o marnotrawstwie...",
+
+  "transport": "Transport",
+  "transportDesc": "Niepotrzebne przemieszczanie materiałów lub produktów",
+  "inventory": "Zapasy",
+  "inventoryDesc": "Nadmiar produktów lub materiałów nieprzetwarzanych",
+  "motion": "Ruch",
+  "motionDesc": "Niepotrzebne przemieszczanie się osób",
+  "waiting": "Oczekiwanie",
+  "waitingDesc": "Czas bezczynności w oczekiwaniu na następny etap procesu",
+  "overproduction": "Nadprodukcja",
+  "overproductionDesc": "Produkowanie więcej niż jest potrzebne",
+  "overprocessing": "Nadmierne przetwarzanie",
+  "overprocessingDesc": "Wykonywanie więcej pracy niż wymaga klient",
+  "defects": "Wady",
+  "defectsDesc": "Poprawki, odpady i korekty",
+  "skills": "Umiejętności (Niewykorzystany talent)",
+  "skillsDesc": "Niedostateczne wykorzystanie umiejętności i wiedzy pracowników",
+
+  "logWaste": "Zarejestruj Zdarzenie Marnotrawstwa",
+  "wasteType": "Typ Marnotrawstwa",
+  "area": "Obszar / Linia",
+  "description": "Opis",
+  "estimatedCost": "Szacunkowy Koszt",
+  "estimatedTime": "Szacunkowy Utracony Czas (min)",
+  "rootCause": "Przyczyna Źródłowa",
+  "countermeasure": "Środek Zaradczy",
+  "severity": "Ważność",
+  "severityHigh": "Wysoka",
+  "severityMedium": "Średnia",
+  "severityLow": "Niska",
+
+  "totalEvents": "Łączna Liczba Zdarzeń",
+  "totalCost": "Łączny Wpływ Kosztowy",
+  "totalTimeLost": "Łączny Utracony Czas",
+  "topWasteType": "Główny Typ Marnotrawstwa",
+
+  "byType": "Wg Typu",
+  "byArea": "Wg Obszaru",
+  "trend": "Trend",
+
+  "noEvents": "Brak zarejestrowanych zdarzeń marnotrawstwa",
+  "noEventsHint": "Zacznij identyfikować marnotrawstwo na hali produkcyjnej",
+
+  "saved": "Zdarzenie marnotrawstwa zarejestrowane pomyślnie",
+  "saveError": "Nie udało się zarejestrować zdarzenia marnotrawstwa",
+  "deleted": "Zdarzenie marnotrawstwa usunięte",
+
+  "last7": "Ostatnie 7 dni",
+  "last30": "Ostatnie 30 dni",
+  "last90": "Ostatnie 90 dni",
+  "allTime": "Cały Okres",
+
+  "exportTitle": "Raport Marnotrawstwa"
+}

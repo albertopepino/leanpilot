@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { qcApi, manufacturingApi, adminApi } from "@/lib/api";
+import { Plus, X, Pencil } from "lucide-react";
 
 interface Defect {
   id: number;
@@ -116,7 +117,7 @@ export default function DefectCatalogAdmin() {
   }
 
   return (
-    <div className="space-y-4" id="defect-catalog-view">
+    <div className="max-w-[1400px] mx-auto space-y-6" id="defect-catalog-view">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-th-text">{t("manufacturing.titleDefectCatalog")}</h2>
@@ -124,21 +125,22 @@ export default function DefectCatalogAdmin() {
         </div>
         <button
           onClick={() => { resetForm(); setShowForm(true); }}
-          className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-semibold"
+          className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-semibold flex items-center gap-1.5"
         >
+          <Plus className="w-4 h-4" />
           {t("manufacturing.addDefectType")}
         </button>
       </div>
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-sm border border-red-200 dark:border-red-800">
-          {error}
-          <button onClick={() => setError(null)} className="ml-2 font-bold">&times;</button>
+        <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-sm border border-red-200 dark:border-red-800 flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={() => setError(null)} className="ml-2"><X className="w-4 h-4" /></button>
         </div>
       )}
 
       {/* Table */}
-      <div className="bg-white dark:bg-th-bg-2 rounded-xl border border-th-border overflow-x-auto">
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-th-border text-left text-th-text-3 text-xs uppercase">
@@ -169,14 +171,14 @@ export default function DefectCatalogAdmin() {
                 <td className="px-4 py-3">
                   <button
                     onClick={() => handleToggle(d)}
-                    className={`w-10 h-5 rounded-full transition-colors relative ${d.is_active ? "bg-green-500" : "bg-gray-300 dark:bg-gray-600"}`}
+                    className={`w-10 h-5 rounded-full transition-colors relative ${d.is_active ? "bg-green-500" : "bg-th-border"}`}
                   >
-                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${d.is_active ? "left-5" : "left-0.5"}`} />
+                    <span className={`absolute top-0.5 w-4 h-4 bg-th-bg rounded-full shadow transition-transform ${d.is_active ? "left-5" : "left-0.5"}`} />
                   </button>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <button onClick={() => handleEdit(d)} className="text-brand-600 hover:underline text-xs font-semibold">
-                    {t("common.edit")}
+                  <button onClick={() => handleEdit(d)} className="text-brand-600 hover:text-brand-700 text-xs font-semibold flex items-center gap-1 ml-auto">
+                    <Pencil className="w-3.5 h-3.5" /> {t("common.edit")}
                   </button>
                 </td>
               </tr>
@@ -195,7 +197,7 @@ export default function DefectCatalogAdmin() {
       {/* ═══ CREATE/EDIT FORM MODAL ═══ */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={resetForm}>
-          <div className="bg-th-bg rounded-2xl shadow-xl border border-th-border w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm w-full max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="p-5 border-b border-th-border">
               <h3 className="font-bold text-th-text text-lg">
                 {editId ? t("manufacturing.editDefectType") : t("manufacturing.newDefectType")}
@@ -212,12 +214,14 @@ export default function DefectCatalogAdmin() {
                     onChange={(e) => setForm({ ...form, code: e.target.value })}
                     className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text"
                     placeholder="DIM-001"
+                    autoFocus
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-th-text-2 mb-1">{t("manufacturing.sortOrder")}</label>
                   <input
                     type="number"
+                    inputMode="numeric"
                     value={form.sort_order}
                     onChange={(e) => setForm({ ...form, sort_order: parseInt(e.target.value) || 0 })}
                     className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text"
@@ -306,7 +310,7 @@ export default function DefectCatalogAdmin() {
               <button
                 onClick={handleSave}
                 disabled={!form.code.trim() || !form.name.trim()}
-                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-bold"
+                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-lg text-sm font-bold"
               >
                 {t("common.save")}
               </button>

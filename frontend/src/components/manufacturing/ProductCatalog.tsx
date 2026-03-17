@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { manufacturingApi } from "@/lib/api";
+import { Download, Upload, Plus, X, Check, Pencil } from "lucide-react";
 
 interface Product {
   id: number;
@@ -146,19 +147,17 @@ export default function ProductCatalog() {
   }
 
   return (
-    <div className="space-y-4" id="products-view">
+    <div className="max-w-[1400px] mx-auto space-y-6" id="products-view">
       <div className="flex items-center justify-between">
         <p className="text-sm text-th-text-3">{products.filter(p => p.is_active).length} active products</p>
         <div className="flex items-center gap-2">
           {/* Download Template */}
           <button
             onClick={handleDownloadTemplate}
-            className="px-3 py-2 border border-th-border text-th-text-2 hover:bg-th-bg-3 rounded-xl text-sm font-semibold flex items-center gap-1.5"
+            className="px-3 py-2 border border-th-border text-th-text-2 hover:bg-th-bg-3 rounded-lg text-sm font-semibold flex items-center gap-1.5"
             title="Download Excel template"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-            </svg>
+            <Download className="w-4 h-4" />
             Template
           </button>
 
@@ -173,15 +172,13 @@ export default function ProductCatalog() {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={importing}
-            className="px-3 py-2 border border-green-300 dark:border-green-700 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-xl text-sm font-semibold flex items-center gap-1.5 disabled:opacity-50"
+            className="px-3 py-2 border border-th-border text-th-text-2 hover:bg-th-bg-3 rounded-lg text-sm font-semibold flex items-center gap-1.5 disabled:opacity-50"
             title="Import products from Excel"
           >
             {importing ? (
-              <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
             ) : (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
+              <Upload className="w-4 h-4" />
             )}
             {importing ? "Importing..." : "Upload Excel"}
           </button>
@@ -189,28 +186,29 @@ export default function ProductCatalog() {
           {/* Add Product */}
           <button
             onClick={() => { resetForm(); setShowForm(true); }}
-            className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-semibold"
+            className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-semibold flex items-center gap-1.5"
           >
-            + Add Product
+            <Plus className="w-4 h-4" />
+            Add Product
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-sm border border-red-200 dark:border-red-800">
-          {error}
-          <button onClick={() => setError(null)} className="ml-2 font-bold">{"×"}</button>
+        <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-sm border border-red-200 dark:border-red-800 flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={() => setError(null)} className="ml-2"><X className="w-4 h-4" /></button>
         </div>
       )}
 
       {success && (
-        <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-4 py-3 rounded-xl text-sm border border-green-200 dark:border-green-800">
-          {"✓"} {success}
-          <button onClick={() => setSuccess(null)} className="ml-2 font-bold">{"×"}</button>
+        <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-4 py-3 rounded-xl text-sm border border-green-200 dark:border-green-800 flex items-center justify-between">
+          <span className="flex items-center gap-1.5"><Check className="w-4 h-4" /> {success}</span>
+          <button onClick={() => setSuccess(null)} className="ml-2"><X className="w-4 h-4" /></button>
         </div>
       )}
 
-      <div className="bg-white dark:bg-th-bg-2 rounded-xl border border-th-border overflow-x-auto">
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-th-border text-left text-th-text-3 text-xs uppercase">
@@ -234,13 +232,15 @@ export default function ProductCatalog() {
                 <td className="px-4 py-3">
                   <button
                     onClick={() => handleToggle(p)}
-                    className={`w-10 h-5 rounded-full transition-colors relative ${p.is_active ? "bg-green-500" : "bg-gray-300 dark:bg-gray-600"}`}
+                    className={`w-10 h-5 rounded-full transition-colors relative ${p.is_active ? "bg-green-500" : "bg-th-border"}`}
                   >
-                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${p.is_active ? "left-5" : "left-0.5"}`} />
+                    <span className={`absolute top-0.5 w-4 h-4 bg-th-bg rounded-full shadow transition-transform ${p.is_active ? "left-5" : "left-0.5"}`} />
                   </button>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <button onClick={() => handleEdit(p)} className="text-brand-600 hover:underline text-xs font-semibold">Edit</button>
+                  <button onClick={() => handleEdit(p)} className="text-brand-600 hover:text-brand-700 text-xs font-semibold flex items-center gap-1 ml-auto">
+                    <Pencil className="w-3.5 h-3.5" /> Edit
+                  </button>
                 </td>
               </tr>
             ))}
@@ -255,8 +255,9 @@ export default function ProductCatalog() {
 
       {/* Create/Edit Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={resetForm}>
-          <div className="bg-th-bg rounded-2xl shadow-xl border border-th-border w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center md:justify-center p-0 md:p-4" onClick={resetForm}>
+          <div className="rounded-t-xl md:rounded-xl border border-th-border bg-th-bg-2 shadow-sm w-full md:max-w-md max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-th-border rounded-full mx-auto mt-3 md:hidden" />
             <div className="p-5 border-b border-th-border">
               <h3 className="font-bold text-th-text text-lg">{editId ? "Edit Product" : "New Product"}</h3>
             </div>
@@ -265,7 +266,7 @@ export default function ProductCatalog() {
                 <div>
                   <label className="block text-xs font-semibold text-th-text-2 mb-1">Code *</label>
                   <input type="text" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })}
-                    className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text" placeholder="SKU-001" />
+                    className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text" placeholder="SKU-001" autoFocus />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-th-text-2 mb-1">UOM</label>
@@ -291,7 +292,7 @@ export default function ProductCatalog() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-th-text-2 mb-1">Manual Labor (min/unit)</label>
-                  <input type="number" step="any" value={form.labor_minutes_per_unit} onChange={(e) => setForm({ ...form, labor_minutes_per_unit: e.target.value })}
+                  <input type="number" inputMode="decimal" step="any" value={form.labor_minutes_per_unit} onChange={(e) => setForm({ ...form, labor_minutes_per_unit: e.target.value })}
                     className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text" placeholder="e.g. 5.5" />
                 </div>
               </div>
@@ -304,7 +305,7 @@ export default function ProductCatalog() {
             <div className="p-5 border-t border-th-border flex gap-3 justify-end">
               <button onClick={resetForm} className="px-4 py-2 rounded-lg text-sm font-semibold text-th-text-2 hover:bg-th-bg-3">{t("common.cancel")}</button>
               <button onClick={handleSave} disabled={!form.code.trim() || !form.name.trim()}
-                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-bold">{t("common.save")}</button>
+                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-lg text-sm font-bold">{t("common.save")}</button>
             </div>
           </div>
         </div>

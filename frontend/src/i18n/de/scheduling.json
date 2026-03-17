@@ -1,0 +1,18 @@
+{
+  "title": "Audit-Planer",
+  "subtitle": "Planung und Nachverfolgung von 6S-, TPM-, QC-, Gemba- und Sicherheitsaudits",
+  "createSchedule": "Zeitplan erstellen",
+  "auditType": "Audit-Typ",
+  "frequency": "Häufigkeit",
+  "nextDue": "Nächster Termin",
+  "lastCompleted": "Zuletzt abgeschlossen",
+  "overdue": "Überfällig",
+  "markComplete": "Als erledigt markieren",
+  "daily": "Täglich",
+  "weekly": "Wöchentlich",
+  "biweekly": "Zweiwöchentlich",
+  "monthly": "Monatlich",
+  "quarterly": "Vierteljährlich",
+  "assignedTo": "Zugewiesen an",
+  "noSchedules": "Keine Audit-Zeitpläne"
+}

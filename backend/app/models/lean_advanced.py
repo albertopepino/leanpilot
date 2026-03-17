@@ -49,6 +49,9 @@ class SixSAuditItem(TimestampMixin, Base):
     due_date = Column(DateTime(timezone=True))
     is_resolved = Column(Boolean, default=False)
 
+    # Phase 2 enhancements
+    photo_url = Column(String, nullable=True)  # photo evidence per item
+
     audit = relationship("SixSAudit", back_populates="items")
 
 
@@ -72,6 +75,10 @@ class VSMMap(TimestampMixin, Base):
     customer_demand_per_day = Column(Integer)
     notes = Column(Text)
 
+    # Phase 2 enhancements
+    supplier_name = Column(String, nullable=True)
+    customer_name = Column(String, nullable=True)
+
     steps = relationship("VSMStep", back_populates="vsm_map", order_by="VSMStep.step_order", cascade="all, delete-orphan")
 
 
@@ -90,6 +97,10 @@ class VSMStep(TimestampMixin, Base):
     is_bottleneck = Column(Boolean, default=False)
     is_kaizen_burst = Column(Boolean, default=False)  # Marked for improvement
     notes = Column(Text)
+
+    # Phase 2 enhancements
+    step_type = Column(String, default="process")  # process, inventory, info_flow, push, pull, kaizen_burst
+    value_add = Column(Boolean, default=True)       # value-add vs non-value-add
 
     vsm_map = relationship("VSMMap", back_populates="steps")
 
@@ -153,6 +164,10 @@ class GembaWalk(TimestampMixin, Base):
     theme = Column(String)  # safety, quality, productivity, 5s, flow
     summary = Column(Text)
 
+    # Phase 2 enhancements
+    route_id = Column(Integer, nullable=True)    # standard route
+    route_name = Column(String, nullable=True)   # standard route name
+
     observations = relationship("GembaObservation", back_populates="walk", cascade="all, delete-orphan")
 
 
@@ -169,6 +184,9 @@ class GembaObservation(TimestampMixin, Base):
     due_date = Column(DateTime(timezone=True))
     status = Column(String, default="open")  # open, in_progress, closed
     priority = Column(String, default="medium")  # low, medium, high, critical
+
+    # Phase 2 enhancements
+    linked_kaizen_id = Column(Integer, ForeignKey("kaizen_items.id"), nullable=True)  # auto-Kaizen
 
     walk = relationship("GembaWalk", back_populates="observations")
 

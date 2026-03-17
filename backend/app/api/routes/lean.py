@@ -109,6 +109,8 @@ async def update_kaizen_status(
         "id": item.id,
         "status": str(item.status).lower() if item.status else item.status,
         "title": item.title,
+        "actual_savings_eur": item.actual_savings_eur,
+        "expected_savings_eur": item.expected_savings_eur,
     }
 
 

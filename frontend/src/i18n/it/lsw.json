@@ -1,0 +1,19 @@
+{
+  "title": "Lavoro Standard del Leader",
+  "subtitle": "Checklist giornaliere per ruolo e monitoraggio",
+  "createTemplate": "Crea modello",
+  "role": "Ruolo",
+  "operator": "Operatore",
+  "supervisor": "Supervisore",
+  "manager": "Responsabile",
+  "frequency": "Frequenza",
+  "daily": "Giornaliero",
+  "weekly": "Settimanale",
+  "monthly": "Mensile",
+  "tasks": "Attività",
+  "addTask": "Aggiungi attività",
+  "todayTasks": "Attività di oggi",
+  "completionHistory": "Storico completamento",
+  "completion": "Completamento",
+  "noTemplates": "Nessun modello creato"
+}

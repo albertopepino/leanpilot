@@ -2,6 +2,26 @@
 import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  Hand,
+  RefreshCw,
+  Compass,
+  ClipboardList,
+  FileText,
+  Gauge,
+  Clock,
+  FlaskConical,
+  HelpCircle,
+  Fish,
+  Lightbulb,
+  Wrench,
+  Sparkles,
+  Bot,
+  Rocket,
+  ArrowRight,
+  ArrowLeft,
+  type LucideIcon,
+} from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -14,7 +34,7 @@ interface OnboardingProps {
 
 interface TutorialStep {
   id: string;
-  icon: string;
+  icon: LucideIcon;
   titleKey: string;
   descriptionKey: string;
   image?: string;
@@ -29,21 +49,21 @@ interface TutorialStep {
 const TUTORIAL_STEPS: TutorialStep[] = [
   {
     id: "welcome",
-    icon: "👋",
+    icon: Hand,
     titleKey: "onboarding.welcomeTitle",
     descriptionKey: "onboarding.welcomeDesc",
     category: "welcome",
   },
   {
     id: "dmaic",
-    icon: "🔄",
+    icon: RefreshCw,
     titleKey: "onboarding.dmaicTitle",
     descriptionKey: "onboarding.dmaicDesc",
     category: "welcome",
   },
   {
     id: "assessment",
-    icon: "🧭",
+    icon: Compass,
     titleKey: "onboarding.assessmentTitle",
     descriptionKey: "onboarding.assessmentDesc",
     highlightView: "assessment",
@@ -51,7 +71,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: "production-orders",
-    icon: "📋",
+    icon: ClipboardList,
     titleKey: "onboarding.productionOrdersTitle",
     descriptionKey: "onboarding.productionOrdersDesc",
     highlightView: "production-orders",
@@ -59,7 +79,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: "production-input",
-    icon: "📝",
+    icon: FileText,
     titleKey: "onboarding.productionInputTitle",
     descriptionKey: "onboarding.productionInputDesc",
     highlightView: "production",
@@ -67,7 +87,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: "oee-dashboard",
-    icon: "📊",
+    icon: Gauge,
     titleKey: "onboarding.oeeDashboardTitle",
     descriptionKey: "onboarding.oeeDashboardDesc",
     highlightView: "dashboard",
@@ -75,7 +95,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: "hourly",
-    icon: "⏱️",
+    icon: Clock,
     titleKey: "onboarding.hourlyTitle",
     descriptionKey: "onboarding.hourlyDesc",
     highlightView: "hourly",
@@ -83,7 +103,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: "qc-checks",
-    icon: "🧪",
+    icon: FlaskConical,
     titleKey: "onboarding.qcChecksTitle",
     descriptionKey: "onboarding.qcChecksDesc",
     highlightView: "qc-checks",
@@ -91,7 +111,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: "five-why",
-    icon: "❓",
+    icon: HelpCircle,
     titleKey: "onboarding.fiveWhyTitle",
     descriptionKey: "onboarding.fiveWhyDesc",
     highlightView: "five-why",
@@ -99,7 +119,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: "ishikawa",
-    icon: "🐟",
+    icon: Fish,
     titleKey: "onboarding.ishikawaTitle",
     descriptionKey: "onboarding.ishikawaDesc",
     highlightView: "ishikawa",
@@ -107,7 +127,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: "kaizen",
-    icon: "💡",
+    icon: Lightbulb,
     titleKey: "onboarding.kaizenTitle",
     descriptionKey: "onboarding.kaizenDesc",
     highlightView: "kaizen",
@@ -115,7 +135,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: "smed",
-    icon: "🔄",
+    icon: RefreshCw,
     titleKey: "onboarding.smedTitle",
     descriptionKey: "onboarding.smedDesc",
     highlightView: "smed",
@@ -123,7 +143,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: "tpm",
-    icon: "⚙️",
+    icon: Wrench,
     titleKey: "onboarding.tpmTitle",
     descriptionKey: "onboarding.tpmDesc",
     highlightView: "tpm",
@@ -131,7 +151,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: "six-s",
-    icon: "✨",
+    icon: Sparkles,
     titleKey: "onboarding.sixSTitle",
     descriptionKey: "onboarding.sixSDesc",
     highlightView: "six-s",
@@ -139,7 +159,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: "copilot",
-    icon: "🤖",
+    icon: Bot,
     titleKey: "onboarding.copilotTitle",
     descriptionKey: "onboarding.copilotDesc",
     highlightView: "copilot",
@@ -147,7 +167,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: "finish",
-    icon: "🚀",
+    icon: Rocket,
     titleKey: "onboarding.finishTitle",
     descriptionKey: "onboarding.finishDesc",
     category: "welcome",
@@ -210,6 +230,7 @@ export default function OnboardingTutorial({ onNavigate, onComplete }: Onboardin
   const [isAnimating, setIsAnimating] = useState(false);
 
   const step = TUTORIAL_STEPS[currentStep];
+  const Icon = step.icon;
   const totalSteps = TUTORIAL_STEPS.length;
   const progress = ((currentStep + 1) / totalSteps) * 100;
   const colors = CATEGORY_COLORS[step.category];
@@ -293,7 +314,7 @@ export default function OnboardingTutorial({ onNavigate, onComplete }: Onboardin
 
       {/* Step content card */}
       <div
-        className={`relative overflow-hidden rounded-2xl border ${colors.border} bg-th-bg-2 shadow-lg transition-all duration-200 ${
+        className={`relative overflow-hidden rounded-xl border border-th-border bg-th-bg-2 shadow-sm transition-all duration-200 ${
           isAnimating ? "opacity-0 scale-95" : "opacity-100 scale-100"
         }`}
       >
@@ -303,8 +324,8 @@ export default function OnboardingTutorial({ onNavigate, onComplete }: Onboardin
         <div className="relative z-10 p-8 md:p-12">
           {/* Icon */}
           <div className="flex justify-center mb-6">
-            <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-4xl shadow-lg`}>
-              {step.icon}
+            <div className={`w-20 h-20 rounded-xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center shadow-sm`}>
+              <Icon size={24} className="text-white" />
             </div>
           </div>
 
@@ -323,12 +344,10 @@ export default function OnboardingTutorial({ onNavigate, onComplete }: Onboardin
             <div className="flex justify-center mt-6">
               <button
                 onClick={goToTool}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r ${colors.gradient} text-white text-sm font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] transition-all`}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r ${colors.gradient} text-white text-sm font-semibold shadow-sm hover:shadow-md hover:scale-[1.02] transition-all`}
               >
                 {t("onboarding.tryItNow")}
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                </svg>
+                <ArrowRight size={16} />
               </button>
             </div>
           )}
@@ -340,15 +359,13 @@ export default function OnboardingTutorial({ onNavigate, onComplete }: Onboardin
         <button
           onClick={goBack}
           disabled={isFirst}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
             isFirst
               ? "opacity-0 cursor-default"
               : "bg-th-bg-2 border border-th-border text-th-text hover:bg-th-bg-3"
           }`}
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-          </svg>
+          <ArrowLeft size={16} />
           {t("common.back").replace("← ", "")}
         </button>
 
@@ -375,12 +392,10 @@ export default function OnboardingTutorial({ onNavigate, onComplete }: Onboardin
 
         <button
           onClick={goNext}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white shadow-md hover:shadow-lg hover:scale-[1.02] transition-all bg-gradient-to-r ${colors.gradient}`}
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white shadow-sm hover:shadow-md hover:scale-[1.02] transition-all bg-gradient-to-r ${colors.gradient}`}
         >
           {isLast ? t("onboarding.getStarted") : t("common.next")}
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-          </svg>
+          <ArrowRight size={16} />
         </button>
       </div>
 

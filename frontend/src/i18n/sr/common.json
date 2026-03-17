@@ -171,6 +171,10 @@
   "titleSafety": "Праћење безбедности",
   "navMindMap": "Мислена Мапа",
   "titleMindMap": "Мислена Мапа",
+
+  "navWaste": "Praćenje Rasipanja",
+  "titleWaste": "Praćenje Rasipanja (TIMWOODS)",
+
   "navConsolidated": "Konsolidovani OEE",
   "titleConsolidated": "Konsolidovani OEE",
   "navSettings": "Podešavanja",
@@ -179,5 +183,20 @@
   "navHome": "Pocetna",
   "titleHome": "Pocetna",
   "navMasterCalendar": "Glavni kalendar",
-  "titleMasterCalendar": "Glavni kalendar"
+  "titleMasterCalendar": "Glavni kalendar",
+
+  "navScorecard": "Lean kontrolna karta",
+  "titleScorecard": "Lean kontrolna karta",
+
+  "navSQCDP": "SQCDP tabla",
+  "titleSQCDP": "SQCDP tabla",
+  "navHandover": "Primopredaja smene",
+  "titleHandover": "Primopredaja smene",
+  "navLSW": "Standardni rad lidera",
+  "titleLSW": "Standardni rad lidera",
+  "navAuditScheduler": "Raspored revizija",
+  "titleAuditScheduler": "Raspored revizija",
+
+  "navHorizontalDeploy": "Horizontalno širenje",
+  "titleHorizontalDeploy": "Horizontalno širenje"
 }

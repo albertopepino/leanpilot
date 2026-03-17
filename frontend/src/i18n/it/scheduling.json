@@ -1,0 +1,18 @@
+{
+  "title": "Pianificatore Audit",
+  "subtitle": "Pianifica e monitora audit 6S, TPM, QC, Gemba e Sicurezza",
+  "createSchedule": "Crea pianificazione",
+  "auditType": "Tipo di audit",
+  "frequency": "Frequenza",
+  "nextDue": "Prossima scadenza",
+  "lastCompleted": "Ultimo completato",
+  "overdue": "In ritardo",
+  "markComplete": "Segna come completato",
+  "daily": "Giornaliero",
+  "weekly": "Settimanale",
+  "biweekly": "Bisettimanale",
+  "monthly": "Mensile",
+  "quarterly": "Trimestrale",
+  "assignedTo": "Assegnato a",
+  "noSchedules": "Nessun audit pianificato"
+}

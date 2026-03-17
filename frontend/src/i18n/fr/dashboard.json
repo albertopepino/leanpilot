@@ -252,5 +252,15 @@
   "productNamePlaceholder": "ex. Vilebrequin",
   "cancel": "Annuler",
   "creating": "Création...",
-  "create": "Créer"
+  "create": "Créer",
+
+  "units": "unités",
+  "totalTime": "Temps Total",
+  "availabilityLoss": "Perte de Disponibilité",
+  "performanceLoss": "Perte de Performance",
+  "qualityLoss": "Perte de Qualité",
+  "oeeWaterfallDesc": "Comment votre temps total disponible se décompose en OEE",
+
+  "weeklyHeatmap": "Carte Thermique de Production Hebdomadaire",
+  "noData": "Aucune donnée"
 }

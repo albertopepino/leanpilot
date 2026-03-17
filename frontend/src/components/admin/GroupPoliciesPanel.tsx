@@ -581,7 +581,7 @@ export default function GroupPoliciesPanel() {
       {/* ─── Group Create/Edit Modal ─────────────────────────────────────── */}
       {showGroupForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-th-bg rounded-2xl shadow-2xl border border-th-border w-full max-w-md mx-4 p-6 space-y-4">
+          <div className="bg-th-bg rounded-xl shadow-xl border border-th-border w-full max-w-md mx-4 p-6 space-y-4">
             <h3 className="text-lg font-bold text-th-text">
               {editingGroup ? t("admin.editGroup") : t("admin.addGroup")}
             </h3>

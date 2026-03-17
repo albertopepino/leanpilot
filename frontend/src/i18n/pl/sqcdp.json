@@ -1,0 +1,13 @@
+{
+  "title": "Tablica SQCDP",
+  "subtitle": "Codzienna tablica zarządzania wizualnego — Bezpieczeństwo, Jakość, Koszt, Dostawa, Ludzie",
+  "clickToAdd": "Kliknij, aby dodać wpis",
+  "actionItems": "Działania do podjęcia",
+  "actionRequired": "Wymagane działanie",
+  "owner": "Odpowiedzialny",
+  "logMeeting": "Zapisz spotkanie",
+  "attendees": "Uczestnicy",
+  "tier1": "Poziom 1 — Zespół",
+  "tier2": "Poziom 2 — Dział",
+  "tier3": "Poziom 3 — Zakład"
+}

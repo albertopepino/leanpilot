@@ -160,6 +160,10 @@
   "titleSafety": "Sicherheits-Tracker",
   "navMindMap": "Mind Map",
   "titleMindMap": "Mind Map",
+
+  "navWaste": "Verschwendungs-Tracker",
+  "titleWaste": "Verschwendungs-Tracker (TIMWOODS)",
+
   "navConsolidated": "OEE Konsolidiert",
   "titleConsolidated": "OEE Konsolidiert",
   "navSettings": "Einstellungen",
@@ -168,5 +172,20 @@
   "navHome": "Home",
   "titleHome": "Home",
   "navMasterCalendar": "Hauptkalender",
-  "titleMasterCalendar": "Hauptkalender"
+  "titleMasterCalendar": "Hauptkalender",
+
+  "navScorecard": "Lean Scorecard",
+  "titleScorecard": "Lean Scorecard",
+
+  "navSQCDP": "SQCDP-Tafel",
+  "titleSQCDP": "SQCDP-Tafel",
+  "navHandover": "Schichtübergabe",
+  "titleHandover": "Schichtübergabe",
+  "navLSW": "Führungskräfte-Standardarbeit",
+  "titleLSW": "Führungskräfte-Standardarbeit",
+  "navAuditScheduler": "Audit-Planung",
+  "titleAuditScheduler": "Audit-Planung",
+
+  "navHorizontalDeploy": "Horizontale Umsetzung",
+  "titleHorizontalDeploy": "Horizontale Umsetzung"
 }

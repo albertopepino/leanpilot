@@ -252,5 +252,15 @@
   "productNamePlaceholder": "z.B. Kurbelwelle",
   "cancel": "Abbrechen",
   "creating": "Wird erstellt...",
-  "create": "Erstellen"
+  "create": "Erstellen",
+
+  "units": "Einheiten",
+  "totalTime": "Gesamtzeit",
+  "availabilityLoss": "Verfügbarkeitsverlust",
+  "performanceLoss": "Leistungsverlust",
+  "qualityLoss": "Qualitätsverlust",
+  "oeeWaterfallDesc": "Wie sich Ihre verfügbare Gesamtzeit in OEE aufteilt",
+
+  "weeklyHeatmap": "Wöchentliche Produktions-Heatmap",
+  "noData": "Keine Daten"
 }

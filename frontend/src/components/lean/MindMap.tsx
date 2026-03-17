@@ -4,6 +4,24 @@ import { useI18n } from "@/stores/useI18n";
 import { advancedLeanApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
+import {
+  Brain,
+  Plus,
+  Trash2,
+  Edit3,
+  Palette,
+  ZoomIn,
+  ZoomOut,
+  Link,
+  Maximize,
+  FilePlus,
+  FolderOpen,
+  Save,
+  X,
+  ChevronRight,
+  ChevronDown,
+  HelpCircle,
+} from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -236,6 +254,7 @@ export default function MindMap() {
   }, [t]);
 
   const handleDelete = useCallback(async (id: number) => {
+    if (!confirm(t("improvement.confirmDeleteMindmap"))) return;
     try {
       await advancedLeanApi.deleteMindMap?.(id);
       flash("ok", t("improvement.mindmapDeleted") || "Deleted");
@@ -563,9 +582,9 @@ export default function MindMap() {
   return (
     <div className="h-full flex flex-col" data-print-area="true">
       {/* Top Bar */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-th-border bg-th-bg-2 flex-shrink-0 flex-wrap">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-th-border bg-th-bg-2 shadow-sm flex-shrink-0 flex-wrap">
         <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-          <span className="text-xl">🧠</span>
+          <Brain className="w-5 h-5 text-th-accent" />
           <input
             type="text"
             value={data.title}
@@ -578,28 +597,31 @@ export default function MindMap() {
         <div className="flex items-center gap-2 flex-wrap">
           {/* Zoom controls */}
           <div className="flex items-center gap-1 bg-th-bg-3 rounded-lg px-2 py-1">
-            <button onClick={() => { setZoom((z) => Math.min(3, z * 1.2)); setViewBox((v) => ({ ...v, w: v.w / 1.2, h: v.h / 1.2 })); }} className="text-th-text-2 hover:text-th-text p-0.5 text-sm font-bold">+</button>
+            <button onClick={() => { setZoom((z) => Math.min(3, z * 1.2)); setViewBox((v) => ({ ...v, w: v.w / 1.2, h: v.h / 1.2 })); }} className="text-th-text-2 hover:text-th-text p-0.5" aria-label={t("common.zoomIn")}><ZoomIn className="w-3.5 h-3.5" /></button>
             <span className="text-xs text-th-text-3 min-w-[40px] text-center">{Math.round(zoom * 100)}%</span>
-            <button onClick={() => { setZoom((z) => Math.max(0.3, z / 1.2)); setViewBox((v) => ({ ...v, w: v.w * 1.2, h: v.h * 1.2 })); }} className="text-th-text-2 hover:text-th-text p-0.5 text-sm font-bold">−</button>
+            <button onClick={() => { setZoom((z) => Math.max(0.3, z / 1.2)); setViewBox((v) => ({ ...v, w: v.w * 1.2, h: v.h * 1.2 })); }} className="text-th-text-2 hover:text-th-text p-0.5" aria-label={t("common.zoomOut")}><ZoomOut className="w-3.5 h-3.5" /></button>
           </div>
-          <button onClick={fitView} className="px-2.5 py-1 text-xs font-medium text-th-text-2 bg-th-bg-3 rounded-lg hover:bg-th-bg-hover transition" title={t("improvement.mindmapFitView") || "Fit view"}>
-            ⊞
+          <button onClick={fitView} className="px-2.5 py-1.5 text-th-text-2 bg-th-bg-3 rounded-lg hover:bg-th-bg-hover transition" title={t("improvement.mindmapFitView") || "Fit view"}>
+            <Maximize className="w-3.5 h-3.5" />
           </button>
 
           <div className="w-px h-6 bg-th-border" />
 
           {/* Actions */}
-          <button onClick={handleNew} className="px-3 py-1.5 text-xs font-medium text-th-text-2 bg-th-bg-3 rounded-lg hover:bg-th-bg-hover transition">
+          <button onClick={handleNew} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-th-text-2 bg-th-bg-3 rounded-lg hover:bg-th-bg-hover transition">
+            <FilePlus className="w-3.5 h-3.5" />
             {t("improvement.mindmapNew") || "New"}
           </button>
-          <button onClick={() => setShowList(!showList)} className="px-3 py-1.5 text-xs font-medium text-th-text-2 bg-th-bg-3 rounded-lg hover:bg-th-bg-hover transition">
+          <button onClick={() => setShowList(!showList)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-th-text-2 bg-th-bg-3 rounded-lg hover:bg-th-bg-hover transition">
+            <FolderOpen className="w-3.5 h-3.5" />
             {t("improvement.mindmapLoad") || "Load"} {savedMaps.length > 0 && `(${savedMaps.length})`}
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-3 py-1.5 text-xs font-semibold text-white bg-indigo-500 rounded-lg hover:bg-indigo-600 transition disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-th-accent rounded-lg hover:bg-th-accent-hover transition disabled:opacity-50"
           >
+            <Save className="w-3.5 h-3.5" />
             {saving ? "..." : (t("improvement.mindmapSave") || "Save")}
           </button>
 
@@ -660,7 +682,7 @@ export default function MindMap() {
 
       {/* Saved maps dropdown */}
       {showList && (
-        <div className="mx-4 mt-2 bg-th-bg-2 border border-th-border rounded-xl shadow-card max-h-48 overflow-y-auto">
+        <div className="mx-4 mt-2 rounded-xl border border-th-border bg-th-bg-2 shadow-sm max-h-48 overflow-y-auto">
           {savedMaps.length === 0 ? (
             <p className="p-3 text-sm text-th-text-3 text-center">{t("improvement.mindmapNoSaved") || "No saved mind maps"}</p>
           ) : (
@@ -670,7 +692,7 @@ export default function MindMap() {
                   <span className="text-sm font-medium text-th-text">{m.title}</span>
                   <span className="text-xs text-th-text-3 ml-2">{new Date(m.created_at).toLocaleDateString()}</span>
                 </button>
-                <button onClick={() => handleDelete(m.id)} className="text-xs text-red-500 hover:text-red-600 ml-2 px-2 py-1">✕</button>
+                <button onClick={() => handleDelete(m.id)} className="text-red-500 hover:text-red-600 ml-2 p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition" aria-label={t("improvement.mindmapDelete")}><Trash2 className="w-3.5 h-3.5" /></button>
               </div>
             ))
           )}
@@ -683,33 +705,33 @@ export default function MindMap() {
           <span className="text-xs text-th-text-3">{t("improvement.mindmapSelected") || "Selected"}:</span>
           <span className="text-sm font-medium text-th-text truncate max-w-[200px]">{selectedNode.text}</span>
           <div className="w-px h-5 bg-th-border" />
-          <button onClick={() => addChild(selectedNode.id)} className="px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition border border-emerald-200 dark:border-emerald-800" title="Tab">
-            + {t("improvement.mindmapAddChild") || "Add child"}
+          <button onClick={() => addChild(selectedNode.id)} className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition border border-emerald-200 dark:border-emerald-800" title="Tab">
+            <Plus className="w-3.5 h-3.5" /> {t("improvement.mindmapAddChild") || "Add child"}
           </button>
           <button
             onClick={() => { setConnectMode({ fromId: selectedNode.id }); }}
-            className={`px-2.5 py-1 text-xs font-medium rounded-lg transition border ${
+            className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg transition border ${
               connectMode?.fromId === selectedNode.id
                 ? "text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/40 border-indigo-300 dark:border-indigo-700"
                 : "text-th-text-2 bg-th-bg-3 border-th-border hover:bg-th-bg-hover"
             }`}
           >
-            🔗 {t("improvement.mindmapConnect") || "Connect"}
+            <Link className="w-3.5 h-3.5" /> {t("improvement.mindmapConnect") || "Connect"}
           </button>
-          <button onClick={() => handleNodeDoubleClick(selectedNode.id)} className="px-2.5 py-1 text-xs font-medium text-th-text-2 bg-th-bg-3 rounded-lg hover:bg-th-bg-hover transition border border-th-border">
-            ✏️ {t("improvement.mindmapEdit") || "Edit"}
+          <button onClick={() => handleNodeDoubleClick(selectedNode.id)} className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-th-text-2 bg-th-bg-3 rounded-lg hover:bg-th-bg-hover transition border border-th-border">
+            <Edit3 className="w-3.5 h-3.5" /> {t("improvement.mindmapEdit") || "Edit"}
           </button>
-          <button onClick={() => setColorPicker(colorPicker === selectedNode.id ? null : selectedNode.id)} className="px-2.5 py-1 text-xs font-medium text-th-text-2 bg-th-bg-3 rounded-lg hover:bg-th-bg-hover transition border border-th-border">
-            🎨
+          <button onClick={() => setColorPicker(colorPicker === selectedNode.id ? null : selectedNode.id)} className="px-2.5 py-1 text-th-text-2 bg-th-bg-3 rounded-lg hover:bg-th-bg-hover transition border border-th-border">
+            <Palette className="w-3.5 h-3.5" />
           </button>
           {hasChildren(selectedNode.id) && (
-            <button onClick={() => toggleCollapse(selectedNode.id)} className="px-2.5 py-1 text-xs font-medium text-th-text-2 bg-th-bg-3 rounded-lg hover:bg-th-bg-hover transition border border-th-border">
-              {selectedNode.collapsed ? "▸ Expand" : "▾ Collapse"}
+            <button onClick={() => toggleCollapse(selectedNode.id)} className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-th-text-2 bg-th-bg-3 rounded-lg hover:bg-th-bg-hover transition border border-th-border">
+              {selectedNode.collapsed ? <><ChevronRight className="w-3.5 h-3.5" /> Expand</> : <><ChevronDown className="w-3.5 h-3.5" /> Collapse</>}
             </button>
           )}
           {selectedNode.parentId && (
-            <button onClick={() => deleteNode(selectedNode.id)} className="px-2.5 py-1 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition border border-red-200 dark:border-red-800" title="Delete">
-              🗑️ {t("improvement.mindmapDelete") || "Delete"}
+            <button onClick={() => deleteNode(selectedNode.id)} className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition border border-red-200 dark:border-red-800" title="Delete">
+              <Trash2 className="w-3.5 h-3.5" /> {t("improvement.mindmapDelete") || "Delete"}
             </button>
           )}
 
@@ -734,7 +756,7 @@ export default function MindMap() {
       {/* Connect mode banner */}
       {connectMode && (
         <div className="px-4 py-2 bg-indigo-50 dark:bg-indigo-950/30 border-b border-indigo-200 dark:border-indigo-800 text-sm text-indigo-700 dark:text-indigo-300 flex items-center gap-2 flex-shrink-0">
-          <span>🔗</span>
+          <Link className="w-4 h-4" />
           <span>{t("improvement.mindmapClickToConnect") || "Click another node to create a cross-connection"}</span>
           <button onClick={() => setConnectMode(null)} className="ml-auto text-xs px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 rounded hover:bg-indigo-200 dark:hover:bg-indigo-800/40">
             {t("improvement.mindmapCancel") || "Cancel"}
@@ -1002,10 +1024,10 @@ export default function MindMap() {
 
         {/* Connector editing overlay */}
         {editingConnectorId && (
-          <div className="absolute top-4 right-4 bg-th-bg-2 border border-th-border rounded-xl shadow-card p-4 w-64 z-10">
+          <div className="absolute top-4 right-4 rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-4 w-64 z-10">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-semibold text-th-text">{t("improvement.mindmapConnectorLabel") || "Connection label"}</span>
-              <button onClick={() => setEditingConnectorId(null)} className="text-th-text-3 hover:text-th-text">✕</button>
+              <button onClick={() => setEditingConnectorId(null)} className="text-th-text-3 hover:text-th-text p-0.5 rounded-lg hover:bg-th-bg-3 transition" aria-label={t("improvement.mindmapCancel")}><X className="w-4 h-4" /></button>
             </div>
             <input
               autoFocus
@@ -1013,21 +1035,22 @@ export default function MindMap() {
               onChange={(e) => setConnectorLabel(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") commitConnectorEdit(); }}
               placeholder={t("improvement.mindmapLabelPlaceholder") || "e.g., relates to, causes..."}
-              className="w-full px-3 py-2 text-sm bg-th-bg border border-th-border rounded-lg text-th-text outline-none focus:border-indigo-500"
+              className="w-full px-3 py-2 text-sm bg-th-bg border border-th-border rounded-lg text-th-text outline-none focus:border-th-accent"
             />
             <div className="flex gap-2 mt-3">
-              <button onClick={commitConnectorEdit} className="flex-1 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-500 rounded-lg hover:bg-indigo-600">
+              <button onClick={commitConnectorEdit} className="flex-1 px-3 py-1.5 text-xs font-semibold text-white bg-th-accent rounded-lg hover:bg-th-accent-hover transition">
                 {t("improvement.mindmapApply") || "Apply"}
               </button>
-              <button onClick={() => deleteConnector(editingConnectorId)} className="px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30">
-                {t("improvement.mindmapRemove") || "Remove"}
+              <button onClick={() => deleteConnector(editingConnectorId)} className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition">
+                <Trash2 className="w-3 h-3" /> {t("improvement.mindmapRemove") || "Remove"}
               </button>
             </div>
           </div>
         )}
 
         {/* Help hint */}
-        <div className="absolute bottom-3 left-3 text-[10px] text-th-text-3 bg-th-bg-2/80 backdrop-blur px-2.5 py-1.5 rounded-lg border border-th-border">
+        <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-[10px] text-th-text-3 bg-th-bg-2/80 backdrop-blur px-2.5 py-1.5 rounded-lg border border-th-border">
+          <HelpCircle className="w-3 h-3 flex-shrink-0" />
           {t("improvement.mindmapHelp") || "Double-click to edit • Tab to add child • Drag to move • Scroll to zoom • Alt+drag to pan"}
         </div>
       </div>

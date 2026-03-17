@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { calendarApi } from "@/lib/api";
 import type { CalendarEvent, CalendarEventSource } from "@/lib/types";
+import { AlertCircle, Lightbulb, Wrench, ClipboardList, CheckCircle, Footprints, Play, Square, ShieldCheck, type LucideIcon } from "lucide-react";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -25,16 +26,28 @@ const SOURCE_COLORS: Record<string, { bg: string; text: string }> = {
   cilt: { bg: "bg-violet-100 dark:bg-violet-900/30", text: "text-violet-700 dark:text-violet-300" },
 };
 
-const SOURCE_LABELS: Record<string, { key: string; icon: string }> = {
-  capa: { key: "calendar.sourceCapa", icon: "🔴" },
-  kaizen: { key: "calendar.sourceKaizen", icon: "💡" },
-  tpm_maintenance: { key: "calendar.sourceTpm", icon: "🔧" },
-  tpm_equipment: { key: "calendar.sourceTpmScheduled", icon: "📋" },
-  six_s: { key: "calendar.sourceSixS", icon: "✅" },
-  gemba: { key: "calendar.sourceGemba", icon: "🚶" },
-  production_order_start: { key: "calendar.sourcePoStart", icon: "▶️" },
-  production_order_end: { key: "calendar.sourcePoEnd", icon: "⏹️" },
-  cilt: { key: "calendar.sourceCilt", icon: "🛡️" },
+const SOURCE_ICONS: Record<string, LucideIcon> = {
+  capa: AlertCircle,
+  kaizen: Lightbulb,
+  tpm_maintenance: Wrench,
+  tpm_equipment: ClipboardList,
+  six_s: CheckCircle,
+  gemba: Footprints,
+  production_order_start: Play,
+  production_order_end: Square,
+  cilt: ShieldCheck,
+};
+
+const SOURCE_LABELS: Record<string, { key: string }> = {
+  capa: { key: "calendar.sourceCapa" },
+  kaizen: { key: "calendar.sourceKaizen" },
+  tpm_maintenance: { key: "calendar.sourceTpm" },
+  tpm_equipment: { key: "calendar.sourceTpmScheduled" },
+  six_s: { key: "calendar.sourceSixS" },
+  gemba: { key: "calendar.sourceGemba" },
+  production_order_start: { key: "calendar.sourcePoStart" },
+  production_order_end: { key: "calendar.sourcePoEnd" },
+  cilt: { key: "calendar.sourceCilt" },
 };
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -241,7 +254,7 @@ export default function MasterCalendar({ onNavigate }: MasterCalendarProps) {
         className={`w-full text-left truncate rounded px-1.5 py-0.5 text-[11px] font-medium transition-opacity hover:opacity-80 ${colors.bg} ${colors.text} ${compact ? "" : "mb-0.5"}`}
         title={ev.title}
       >
-        {label && <span className="mr-1">{label.icon}</span>}
+        {(() => { const SIcon = SOURCE_ICONS[ev.source]; return SIcon ? <SIcon size={10} className="mr-1 inline-block" /> : null; })()}
         {ev.title}
       </button>
     );
@@ -394,16 +407,17 @@ export default function MasterCalendar({ onNavigate }: MasterCalendarProps) {
     const label = SOURCE_LABELS[ev.source];
 
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setSelectedEvent(null)}>
+      <div className="fixed inset-0 z-50 flex items-end md:items-center md:justify-center bg-black/40 p-0 md:p-4" onClick={() => setSelectedEvent(null)}>
         <div
-          className="bg-th-bg-2 rounded-2xl shadow-xl border border-th-border w-full max-w-md mx-4 overflow-hidden"
+          className="bg-th-bg-2 rounded-t-xl md:rounded-xl shadow-xl border border-th-border w-full md:max-w-md max-h-[85vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
+          <div className="w-10 h-1 bg-th-border rounded-full mx-auto mt-3 md:hidden" />
           {/* Header */}
           <div className={`px-5 py-4 ${colors.bg}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                {label && <span className="text-lg">{label.icon}</span>}
+                {(() => { const SIcon = SOURCE_ICONS[ev.source]; return SIcon ? <SIcon size={16} className={colors.text} /> : null; })()}
                 <span className={`text-xs font-semibold uppercase tracking-wide ${colors.text}`}>
                   {t(label?.key || ev.source)}
                 </span>
@@ -566,13 +580,13 @@ export default function MasterCalendar({ onNavigate }: MasterCalendarProps) {
                   <button
                     key={source}
                     onClick={() => toggleSource(source)}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition ${
+                    className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition flex items-center gap-1.5 ${
                       active
                         ? `${colors.bg} ${colors.text} border-current`
                         : "border-th-border text-th-text-3 opacity-50 hover:opacity-75"
                     }`}
                   >
-                    {label && <span className="mr-1">{label.icon}</span>}
+                    {(() => { const SIcon = SOURCE_ICONS[source]; return SIcon ? <SIcon size={12} /> : null; })()}
                     {t(label?.key || source)}
                   </button>
                 );

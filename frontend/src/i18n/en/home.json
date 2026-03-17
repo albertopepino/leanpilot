@@ -3,6 +3,7 @@
   "goodAfternoon": "Good afternoon",
   "goodEvening": "Good evening",
   "loadingData": "Loading latest data...",
+  "liveData": "Live",
 
   "yesterdaySummary": "Yesterday's Summary",
   "kpiOEE": "OEE",
@@ -10,6 +11,29 @@
   "kpiQuality": "Quality Rate",
   "kpiAndon": "Active Alerts",
   "kpiAndonSub": "Active Andon alerts",
+
+  "availability": "Availability",
+  "performanceLabel": "Performance",
+  "qualityLabel": "Quality",
+  "weekTrend": "7-Day Trend",
+
+  "sqcdpBoard": "SQCDP Board",
+  "sqcdpSafety": "Safety",
+  "sqcdpQuality": "Quality",
+  "sqcdpCost": "Cost",
+  "sqcdpDelivery": "Delivery",
+  "sqcdpPeople": "People",
+  "daysNoIncident": "Days without incident",
+  "defectRate": "Defect rate",
+  "scrapCost": "Scrap cost today",
+  "onTimeDelivery": "On-time delivery",
+  "attendance": "Attendance",
+  "days": "days",
+
+  "hourlyOutput": "Hourly Output",
+  "outputVsTarget": "Actual vs Target",
+  "actual": "Actual",
+  "totalOutput": "Total Output",
 
   "quickActions": "Quick Actions",
   "actionProduction": "Production Input",
@@ -34,5 +58,15 @@
   "capaActions": "CAPA Actions",
   "kaizenItems": "Kaizen In Progress",
   "ncrOpen": "Open NCRs",
-  "gembaFindings": "Gemba Findings"
+  "gembaFindings": "Gemba Findings",
+
+  "leanJourney": "Lean Journey",
+  "leanJourneyDesc": "Your DMAIC progress across all modules",
+  "viewAssessment": "View Assessment",
+  "phaseDefine": "Define",
+  "phaseMeasure": "Measure",
+  "phaseAnalyze": "Analyze",
+  "phaseImprove": "Improve",
+  "phaseControl": "Control",
+  "modules": "modules"
 }

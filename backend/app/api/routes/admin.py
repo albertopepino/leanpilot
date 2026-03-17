@@ -17,8 +17,8 @@ from sqlalchemy.orm import selectinload
 from app.db.session import get_db
 from app.core.config import get_settings
 from app.core.security import (
-    get_current_active_admin, get_password_hash, require_factory,
-    log_audit, get_client_ip,
+    get_current_active_admin, get_current_user, get_password_hash,
+    require_factory, log_audit, get_client_ip,
 )
 from app.models.user import User, UserRole
 from app.models.audit import AuditLog
@@ -273,8 +273,8 @@ async def get_permissions(
 
 @router.get("/my-permissions")
 async def get_my_permissions(
-    request: Request,
     db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
 ):
     """Return tab permissions for the current user.
 
@@ -282,13 +282,8 @@ async def get_my_permissions(
     the highest permission level per tab wins (full > modify > view > hidden).
     Falls back to role-based TAB_PERMISSIONS if the user has no group memberships.
     """
-    from app.core.security import get_current_user
     from app.models.groups import Group, GroupPolicy, user_groups
 
-    user = await get_current_user(
-        token=request.headers.get("Authorization", "").replace("Bearer ", ""),
-        db=db,
-    )
     role = user.role.value if hasattr(user.role, "value") else user.role
     role_perms = TAB_PERMISSIONS.get(role, TAB_PERMISSIONS["viewer"])
 

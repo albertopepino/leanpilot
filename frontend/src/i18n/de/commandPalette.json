@@ -1,0 +1,17 @@
+{
+  "title": "Befehlspalette",
+  "placeholder": "Seiten, Aktionen suchen...",
+  "searchLabel": "Befehle suchen",
+  "results": "Ergebnisse",
+  "noResults": "Keine Ergebnisse gefunden.",
+  "recent": "Zuletzt verwendet",
+  "quickActions": "Schnellaktionen",
+  "navigation": "Navigation",
+  "hintNavigate": "navigieren",
+  "hintSelect": "auswählen",
+  "hintClose": "schließen",
+  "newKaizen": "Neues Kaizen-Event",
+  "logProduction": "Produktionsdaten erfassen",
+  "reportIssue": "Problem melden (NCR)",
+  "startGemba": "Gemba Walk starten"
+}

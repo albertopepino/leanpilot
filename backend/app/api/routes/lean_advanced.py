@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 
@@ -164,6 +164,70 @@ async def log_tpm_maintenance(
     return {"id": record.id}
 
 
+@router.get("/tpm/equipment/{equipment_id}/metrics")
+async def get_equipment_metrics(
+    equipment_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Calculate MTBF and MTTR for equipment from maintenance records."""
+    from sqlalchemy import select, func, and_
+    from app.models.lean_advanced import TPMEquipment, TPMMaintenanceRecord
+
+    fid = require_factory(user)
+
+    # Get equipment
+    eq_q = select(TPMEquipment).where(
+        TPMEquipment.id == equipment_id,
+        TPMEquipment.factory_id == fid,
+    )
+    eq_r = await db.execute(eq_q)
+    equipment = eq_r.scalar_one_or_none()
+    if not equipment:
+        raise HTTPException(404, "Equipment not found")
+
+    # Get corrective maintenance records (breakdowns)
+    maint_q = select(TPMMaintenanceRecord).where(
+        and_(
+            TPMMaintenanceRecord.equipment_id == equipment_id,
+            TPMMaintenanceRecord.maintenance_type == "corrective",
+        )
+    ).order_by(TPMMaintenanceRecord.date_performed)
+    maint_r = await db.execute(maint_q)
+    breakdowns = maint_r.scalars().all()
+
+    # Calculate MTBF (mean time between failures)
+    mtbf_hours = None
+    if len(breakdowns) >= 2:
+        total_hours = 0
+        for i in range(1, len(breakdowns)):
+            delta = breakdowns[i].date_performed - breakdowns[i - 1].date_performed
+            total_hours += delta.total_seconds() / 3600
+        mtbf_hours = round(total_hours / (len(breakdowns) - 1), 1)
+
+    # Calculate MTTR (mean time to repair)
+    mttr_hours = None
+    repair_times = [b.duration_min for b in breakdowns if b.duration_min]
+    if repair_times:
+        mttr_hours = round(sum(repair_times) / len(repair_times) / 60, 1)
+
+    # Update equipment record with calculated values
+    if mtbf_hours is not None:
+        equipment.mtbf_hours = mtbf_hours
+    if mttr_hours is not None:
+        equipment.mttr_hours = mttr_hours
+    await db.commit()
+
+    return {
+        "equipment_id": equipment_id,
+        "equipment_name": equipment.name,
+        "mtbf_hours": mtbf_hours,
+        "mttr_hours": mttr_hours,
+        "total_breakdowns": len(breakdowns),
+        "availability_pct": round(mtbf_hours / (mtbf_hours + mttr_hours) * 100, 1) if mtbf_hours and mttr_hours else None,
+    }
+
+
 # ---- CILT ----
 
 @router.post("/cilt/standards")
@@ -222,7 +286,7 @@ async def create_andon_event(
 @router.post("/andon/{event_id}/resolve")
 async def resolve_andon(
     event_id: int,
-    data: AndonResolve = None,
+    data: AndonResolve | None = Body(default=None),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
