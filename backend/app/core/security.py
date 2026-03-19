@@ -17,7 +17,7 @@ from app.core.config import get_settings
 from app.db.session import get_db
 
 logger = structlog.get_logger(__name__)
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
 settings = get_settings()
 
@@ -79,6 +79,24 @@ def validate_password_strength(password: str) -> list[str]:
 # Rate limiting (Redis-backed with in-memory fallback)
 # ---------------------------------------------------------------------------
 _fallback_attempts: dict[str, list[float]] = {}
+_FALLBACK_MAX_KEYS = 10_000
+_FALLBACK_TTL_SECONDS = 3600  # 1 hour
+
+
+def _prune_fallback_attempts() -> None:
+    """Evict stale entries from the in-memory rate limiter to prevent OOM."""
+    if len(_fallback_attempts) <= _FALLBACK_MAX_KEYS:
+        return
+    now = time.time()
+    cutoff = now - _FALLBACK_TTL_SECONDS
+    stale_keys = [k for k, v in _fallback_attempts.items() if not v or v[-1] < cutoff]
+    for k in stale_keys:
+        del _fallback_attempts[k]
+    # If still over limit, remove oldest entries
+    if len(_fallback_attempts) > _FALLBACK_MAX_KEYS:
+        sorted_keys = sorted(_fallback_attempts, key=lambda k: _fallback_attempts[k][-1] if _fallback_attempts[k] else 0)
+        for k in sorted_keys[:len(_fallback_attempts) - _FALLBACK_MAX_KEYS]:
+            del _fallback_attempts[k]
 
 
 def check_rate_limit(key: str, max_requests: int, window_seconds: int = 60):
@@ -106,6 +124,7 @@ def check_rate_limit(key: str, max_requests: int, window_seconds: int = 60):
         except Exception:
             pass  # Fall through to in-memory
 
+    _prune_fallback_attempts()
     now = time.time()
     cutoff = now - window_seconds
     attempts = _fallback_attempts.get(key, [])
@@ -165,7 +184,18 @@ def create_refresh_token(data: dict) -> str:
     return jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
 
 
-_fallback_blacklist: set[str] = set()
+_fallback_blacklist: dict[str, float] = {}  # jti -> expiry timestamp
+_BLACKLIST_MAX_ENTRIES = 10_000
+
+
+def _prune_fallback_blacklist() -> None:
+    """Evict expired entries from the in-memory token blacklist."""
+    if len(_fallback_blacklist) <= _BLACKLIST_MAX_ENTRIES:
+        return
+    now = time.time()
+    expired = [jti for jti, exp in _fallback_blacklist.items() if exp < now]
+    for jti in expired:
+        del _fallback_blacklist[jti]
 
 
 def revoke_token(token: str):
@@ -185,7 +215,8 @@ def revoke_token(token: str):
                 return
             except Exception:
                 pass
-        _fallback_blacklist.add(jti)
+        _prune_fallback_blacklist()
+        _fallback_blacklist[jti] = exp
     except JWTError:
         pass  # Token already expired or invalid — no-op
 
@@ -198,7 +229,13 @@ def _is_token_revoked(jti: str) -> bool:
             return r.exists(f"bl:{jti}") > 0
         except Exception:
             pass
-    return jti in _fallback_blacklist
+    exp = _fallback_blacklist.get(jti)
+    if exp is None:
+        return False
+    if exp < time.time():
+        del _fallback_blacklist[jti]
+        return False
+    return True
 
 
 def decode_token(token: str, expected_type: str = "access") -> dict:
@@ -233,12 +270,25 @@ def decode_token(token: str, expected_type: str = "access") -> dict:
 # ---------------------------------------------------------------------------
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    request: Request,
+    token: str | None = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db),
 ):
     from app.models.user import User
 
-    payload = decode_token(token, expected_type="access")
+    # 1. Try httpOnly cookie first (browser clients)
+    resolved_token = request.cookies.get("access_token")
+    # 2. Fall back to Authorization header (API / mobile clients)
+    if not resolved_token:
+        resolved_token = token
+    if not resolved_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    payload = decode_token(resolved_token, expected_type="access")
     user_id = payload["sub"]
 
     result = await db.execute(select(User).where(User.id == int(user_id)))
@@ -263,13 +313,15 @@ async def get_current_active_admin(
 ):
     """Dependency that requires the current user to be a factory admin."""
     from app.models.user import UserRole
-    if user.role != UserRole.ADMIN:
+    # Compare case-insensitively to handle UPPERCASE enum values from PostgreSQL
+    user_role_str = (user.role.value if hasattr(user.role, "value") else str(user.role)).lower()
+    if user_role_str != UserRole.ADMIN.value:
         await log_audit(
             db, action="admin_check_failed", resource_type="auth",
             user_id=user.id, user_email=user.email,
             factory_id=user.factory_id,
             ip_address=get_client_ip(request),
-            detail=f"Admin access denied for role {user.role.value if hasattr(user.role, 'value') else user.role}",
+            detail=f"Admin access denied for role {user_role_str}",
         )
         await db.commit()
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
@@ -299,7 +351,7 @@ def require_role(minimum_role: str):
         user=Depends(get_current_user),
         db: AsyncSession = Depends(get_db),
     ):
-        user_role = user.role.value if hasattr(user.role, "value") else user.role
+        user_role = (user.role.value if hasattr(user.role, "value") else str(user.role)).lower()
         user_level = _ROLE_LEVELS.get(user_role, 0)
         if user_level < min_level:
             await log_audit(
@@ -397,6 +449,28 @@ def require_permission(tab_id: str, minimum: str = "view"):
 # Tenant isolation helpers
 # ---------------------------------------------------------------------------
 
+async def apply_rls(
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """FastAPI dependency — sets Postgres RLS session variables based on current user.
+
+    Injects SET LOCAL app.current_factory_id and app.is_admin into the
+    current transaction so that Row Level Security policies filter rows
+    automatically.  Returns the user object so it can replace
+    ``get_current_user`` in route signatures that also need RLS.
+    """
+    from app.db.session import set_rls_context
+    from app.models.user import UserRole
+
+    is_admin = (
+        (user.role.value if hasattr(user.role, "value") else str(user.role)).lower()
+        == UserRole.ADMIN.value
+    )
+    await set_rls_context(db, factory_id=user.factory_id, is_admin=is_admin)
+    return user
+
+
 def require_factory(user) -> int:
     """Extract and validate factory_id from user. Raises 400 if not assigned."""
     if not user.factory_id:
@@ -472,3 +546,47 @@ def get_client_ip(request: Request) -> str:
         parts = [p.strip() for p in forwarded.split(",")]
         return parts[-1] if parts else "unknown"
     return request.client.host if request.client else "unknown"
+
+
+# ---------------------------------------------------------------------------
+# Cookie helpers — httpOnly secure cookie auth (GDPR Art. 32)
+# ---------------------------------------------------------------------------
+
+def set_auth_cookies(response, access_token: str, refresh_token: str) -> None:
+    """Set httpOnly access + refresh cookies on a FastAPI Response."""
+    is_secure = not settings.debug  # Allow non-secure in dev (http://localhost)
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=is_secure,
+        samesite="lax",
+        max_age=settings.access_token_expire_minutes * 60,
+        path="/",
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=is_secure,
+        samesite="lax",
+        max_age=settings.refresh_token_expire_days * 86400,
+        path="/api/v1/auth",  # Only sent to auth endpoints
+    )
+    # Non-httpOnly flag so the frontend JS can detect "logged in" state
+    response.set_cookie(
+        key="logged_in",
+        value="1",
+        httponly=False,
+        secure=is_secure,
+        samesite="lax",
+        max_age=settings.refresh_token_expire_days * 86400,
+        path="/",
+    )
+
+
+def clear_auth_cookies(response) -> None:
+    """Delete all auth cookies on logout."""
+    response.delete_cookie(key="access_token", path="/")
+    response.delete_cookie(key="refresh_token", path="/api/v1/auth")
+    response.delete_cookie(key="logged_in", path="/")

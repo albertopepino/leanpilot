@@ -50,6 +50,20 @@ services:
       retries: 3
       start_period: 30s
 
+  worker:
+    build: ./backend
+    restart: always
+    command: arq app.workers.tasks.WorkerSettings
+    env_file: ./backend/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://leanpilot:${DB_PASSWORD}@db:5432/leanpilot
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+
   frontend:
     build:
       context: ./frontend
@@ -63,6 +77,12 @@ services:
         condition: service_healthy
     expose:
       - "3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   nginx:
     image: nginx:alpine
@@ -77,6 +97,12 @@ services:
     depends_on:
       - frontend
       - backend
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
   certbot:
     image: certbot/certbot

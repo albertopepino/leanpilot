@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { qcApi } from "@/lib/api";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import {
   Upload,
   ClipboardList,
@@ -71,6 +72,8 @@ export default function QCPolicyRepository() {
   const [filterCategory, setFilterCategory] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [confirmDelete, setConfirmDelete] = useState<{ open: boolean; doc: PolicyDoc | null }>({ open: false, doc: null });
+
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -82,7 +85,8 @@ export default function QCPolicyRepository() {
   const fetchDocs = useCallback(async () => {
     try {
       const res = await qcApi.listPolicies(filterCategory || undefined);
-      setDocs(res.data ?? res);
+      const raw = res.data ?? res;
+      setDocs(Array.isArray(raw) ? raw : []);
     } catch {
       setError(t("manufacturing.failedLoadDocs"));
     } finally {
@@ -129,8 +133,14 @@ export default function QCPolicyRepository() {
     }
   };
 
-  const handleDelete = async (doc: PolicyDoc) => {
-    if (!confirm(t("manufacturing.removeConfirm", { title: doc.title }))) return;
+  const handleDelete = (doc: PolicyDoc) => {
+    setConfirmDelete({ open: true, doc });
+  };
+
+  const executeDelete = async () => {
+    const doc = confirmDelete.doc;
+    setConfirmDelete({ open: false, doc: null });
+    if (!doc) return;
     try {
       await qcApi.deletePolicy(doc.id);
       await fetchDocs();
@@ -379,6 +389,14 @@ export default function QCPolicyRepository() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmDelete.open}
+        title={t("manufacturing.deleteDocument") || "Delete Document"}
+        message={t("manufacturing.removeConfirm", { title: confirmDelete.doc?.title ?? "" }) || "Are you sure?"}
+        onConfirm={executeDelete}
+        onCancel={() => setConfirmDelete({ open: false, doc: null })}
+      />
     </div>
   );
 }

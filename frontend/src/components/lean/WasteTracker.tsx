@@ -16,6 +16,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import {
   Truck,
   Package,
@@ -170,6 +171,9 @@ export default function WasteTracker() {
   // Edit mode
   const [editingId, setEditingId] = useState<number | null>(null);
 
+  // Confirm dialog
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+
   /* ---- Data fetching ---- */
 
   const fetchData = useCallback(async () => {
@@ -274,7 +278,6 @@ export default function WasteTracker() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm(t("waste.confirmDelete"))) return;
     try {
       await wasteApi.remove(id);
       fetchData();
@@ -561,7 +564,7 @@ export default function WasteTracker() {
                           {t("waste.edit")}
                         </button>
                         <button
-                          onClick={() => handleDelete(ev.id)}
+                          onClick={() => setConfirmDeleteId(ev.id)}
                           className="text-red-500 hover:text-red-400 text-xs font-medium"
                         >
                           {t("waste.delete")}
@@ -806,6 +809,18 @@ export default function WasteTracker() {
           {view === "form" && renderForm()}
         </>
       )}
+
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        title={t("common.confirmDelete")}
+        message={t("waste.confirmDelete")}
+        variant="danger"
+        onConfirm={() => {
+          if (confirmDeleteId !== null) handleDelete(confirmDeleteId);
+          setConfirmDeleteId(null);
+        }}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </div>
   );
 }

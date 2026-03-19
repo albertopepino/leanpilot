@@ -3,6 +3,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { advancedLeanApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
+import { useAutoSave, AutoSaveIndicator } from "@/hooks/useAutoSave";
 import ExportToolbar from "@/components/ui/ExportToolbar";
 import {
   Map,
@@ -54,6 +55,7 @@ interface VSMMap {
 interface SavedVSM extends VSMMap {
   id: number;
   created_at?: string;
+  future_steps?: VSMStep[];
 }
 
 /* ──────────────────────────── Constants ──────────────────────── */
@@ -191,6 +193,25 @@ export default function VSMEditor() {
     setTimeout(() => setToastMsg(null), 3500);
   }, []);
 
+  /* ── Auto-save ── */
+  const autoSaveData = useMemo(() => ({
+    title, productFamily, taktTime, customerDemand, currentSteps, futureSteps,
+  }), [title, productFamily, taktTime, customerDemand, currentSteps, futureSteps]);
+
+  const autoSaveFn = useCallback(async (d: typeof autoSaveData) => {
+    if (!d.title.trim()) return; // don't auto-save untitled maps
+    await advancedLeanApi.createVSM({
+      title: d.title,
+      product_family: d.productFamily,
+      takt_time_sec: d.taktTime,
+      customer_demand_per_day: d.customerDemand,
+      steps: d.currentSteps,
+      future_steps: d.futureSteps,
+    });
+  }, []);
+
+  const { status: autoSaveStatus } = useAutoSave(autoSaveData, autoSaveFn, { delay: 5000 });
+
   /* ── Step CRUD ── */
   const addStep = useCallback(() => {
     setSteps((prev) => [...prev, { ...EMPTY_STEP }]);
@@ -249,7 +270,7 @@ export default function VSMEditor() {
     setShowLoadPanel(true);
     try {
       const res = await advancedLeanApi.listVSM();
-      setSavedMaps(res.data ?? []);
+      setSavedMaps(Array.isArray(res.data) ? res.data : []);
     } catch {
       setSavedMaps([]);
       toast(t("improvement.vsmLoadError"));
@@ -265,7 +286,7 @@ export default function VSMEditor() {
       setTaktTime(map.takt_time_sec);
       setCustomerDemand(map.customer_demand_per_day);
       setCurrentSteps(map.steps ?? []);
-      setFutureSteps((map as any).future_steps ?? []);
+      setFutureSteps(map.future_steps ?? []);
       setShowLoadPanel(false);
       setMapState("current");
       toast(t("improvement.vsmLoaded"));
@@ -300,6 +321,7 @@ export default function VSMEditor() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <AutoSaveIndicator status={autoSaveStatus} />
             <ExportToolbar
               onPrint={() => printView({ title: t("improvement.vsmTitle") || "Value Stream Map", subtitle: title })}
               onExportExcel={() => exportToExcel({
@@ -529,7 +551,7 @@ export default function VSMEditor() {
             </div>
             <div className="mt-1 text-[9px] text-th-text-3 font-medium flex items-center gap-0.5">
               <span className="inline-block w-5 h-px bg-th-text-3" />
-              <span>MRP</span>
+              <span>{t("improvement.vsmMRP")}</span>
               <ArrowRight className="w-3 h-3" />
             </div>
           </div>
@@ -555,7 +577,7 @@ export default function VSMEditor() {
                 <div className="mb-1 h-5 flex items-center">
                   <div className="text-[9px] text-th-text-3 flex items-center gap-0.5">
                     <span className="inline-block w-3 h-px bg-th-text-3" />
-                    <span>{idx === 0 ? "Schedule" : "Signal"}</span>
+                    <span>{idx === 0 ? t("improvement.vsmSchedule") : t("improvement.vsmSignal")}</span>
                   </div>
                 </div>
 
@@ -679,7 +701,7 @@ export default function VSMEditor() {
           <div className="flex flex-col items-center shrink-0">
             <div className="mb-1 h-5 flex items-center">
               <div className="text-[9px] text-th-text-3 flex items-center gap-0.5">
-                <span>Order</span>
+                <span>{t("improvement.vsmOrder")}</span>
               </div>
             </div>
             <div className="w-28 bg-th-bg-3 rounded-xl p-3 border-2 border-dashed border-th-border text-center">

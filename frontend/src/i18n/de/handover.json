@@ -14,5 +14,8 @@
   "goodPieces": "Gutteile",
   "scrapPieces": "Ausschuss",
   "oee": "OEE",
-  "downtime": "Stillstandzeit (Min.)"
+  "downtime": "Stillstandzeit (Min.)",
+  "manual": "Manuelle Eingabe",
+  "scrap": "Ausschuss",
+  "recent": "Letzte Schichtübergaben"
 }

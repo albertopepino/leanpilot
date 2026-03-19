@@ -15,15 +15,15 @@ export default function LanguageSwitcher() {
   const { locale, setLocale } = useI18n();
 
   return (
-    <div className="flex bg-gray-100 dark:bg-white/10 rounded-lg p-0.5 gap-0.5 flex-wrap" role="listbox" aria-label="Select language">
+    <div className="flex bg-th-bg-3 rounded-lg p-0.5 gap-0.5 flex-wrap" role="listbox" aria-label="Select language">
       {LANGUAGES.map((opt) => (
         <button
           key={opt.value}
           onClick={() => setLocale(opt.value)}
           className={`px-1.5 py-1 rounded-md text-[10px] font-bold transition ${
             locale === opt.value
-              ? "bg-white dark:bg-white/20 text-brand-700 dark:text-white shadow"
-              : "text-gray-400 dark:text-brand-300 opacity-60 hover:opacity-100 hover:text-gray-700 dark:hover:text-white"
+              ? "bg-th-card text-brand-700 dark:text-white shadow"
+              : "text-th-text-3 opacity-60 hover:opacity-100 hover:text-th-text"
           }`}
           title={opt.flag}
           role="option"

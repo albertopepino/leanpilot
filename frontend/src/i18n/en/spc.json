@@ -1,0 +1,65 @@
+{
+  "title": "SPC Charts",
+  "subtitle": "Statistical Process Control — Monitor process stability and capability",
+
+  "xbarR": "X-bar R",
+  "xbarS": "X-bar S",
+  "pChart": "p-Chart",
+  "npChart": "np-Chart",
+  "cChart": "c-Chart",
+  "uChart": "u-Chart",
+
+  "chartType": "Chart Type",
+  "subgroupSize": "Subgroup Size",
+  "usl": "USL",
+  "lsl": "LSL",
+  "dataSource": "Data Source",
+  "manualEntry": "Manual Entry",
+  "fromInspections": "From Inspections",
+  "productionLine": "Production Line",
+  "allLines": "All Lines",
+  "dateFrom": "Date From",
+  "dateTo": "Date To",
+  "calculate": "Calculate",
+
+  "manualHintVariable": "Enter one subgroup per line, values separated by commas",
+  "manualHintAttribute": "Enter one value per line (defectives or defect count)",
+
+  "needMoreData": "At least 2 subgroups required for SPC analysis",
+  "calculationError": "Calculation failed. Please check your data.",
+
+  "cp": "Cp",
+  "cpk": "Cpk",
+  "pctInControl": "% In Control",
+  "totalSubgroups": "Subgroups",
+  "sigmaLevel": "Sigma Level",
+
+  "chartLabel": "Control Chart",
+  "subgroup": "Subgroup",
+  "value": "Value",
+  "dataPoints": "Data Points",
+  "centerLine": "Center Line",
+
+  "rule1": "Rule 1: Beyond 3σ",
+  "rule2": "Rule 2: 9 same side",
+  "rule3": "Rule 3: 6 trending",
+  "rule4": "Rule 4: 14 alternating",
+
+  "rule1Desc": "One point beyond 3 standard deviations from center line",
+  "rule2Desc": "Nine consecutive points on same side of center line",
+  "rule3Desc": "Six consecutive points steadily increasing or decreasing",
+  "rule4Desc": "Fourteen consecutive points alternating up and down",
+
+  "processCapability": "Process Capability",
+  "mean": "Mean",
+  "stdDev": "Std Dev",
+  "specLimits": "LSL / USL",
+  "excellent": "Excellent",
+  "capable": "Capable",
+  "marginal": "Marginal",
+  "incapable": "Incapable",
+
+  "outOfControl": "Out-of-Control Points",
+  "rule": "Rule",
+  "ruleDescription": "Description"
+}

@@ -98,5 +98,11 @@
   "groupNoMembers": "Nema članova u ovoj grupi",
   "groupPoliciesSaved": "Politike sačuvane",
   "groupPoliciesNote": "Kada korisnik pripada više grupa, primenjuje se najširi nivo dozvola po alatu.",
-  "groupFallbackNote": "Korisnici bez grupe koriste podrazumevane dozvole zasnovane na ulozi."
+  "groupFallbackNote": "Korisnici bez grupe koriste podrazumevane dozvole zasnovane na ulozi.",
+
+  "downloadTemplates": "Preuzmi Sablone",
+  "downloadTemplatesDesc": "Preuzmite CSV sablone sa zaglavljima i primerima podataka.",
+  "uploadImport": "Otpremi i Importuj",
+  "uploadImportDesc": "Izaberite tip podataka, otpremite CSV, validirajte i importujte.",
+  "importResults": "Rezultati Importa"
 }

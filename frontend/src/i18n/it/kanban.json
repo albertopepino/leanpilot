@@ -1,0 +1,64 @@
+{
+  "title": "Kanban Board",
+  "subtitle": "Gestione produzione pull-system con limiti WIP",
+  "boardView": "Bacheca",
+  "newBoard": "Nuova Bacheca",
+  "createBoard": "Crea Bacheca",
+  "boardName": "Nome Bacheca",
+  "boardNamePlaceholder": "es. Bacheca Produzione Principale",
+  "noBoards": "Nessuna bacheca. Creane una per iniziare.",
+
+  "col_backlog": "Arretrato",
+  "col_in_queue": "In Coda",
+  "col_in_progress": "In Corso",
+  "col_done": "Completato",
+  "col_shipped": "Spedito",
+  "column": "Colonna",
+  "emptyColumn": "Nessuna scheda in questa colonna",
+
+  "addCard": "Aggiungi Scheda",
+  "newCard": "Nuova Scheda",
+  "editCard": "Modifica Scheda",
+  "createCard": "Crea Scheda",
+  "updateCard": "Aggiorna Scheda",
+  "confirmDeleteCard": "Eliminare questa scheda?",
+
+  "orderNumber": "Ordine #",
+  "productName": "Nome Prodotto",
+  "quantity": "Quantita",
+  "priority": "Priorita",
+  "priority_low": "Bassa",
+  "priority_medium": "Media",
+  "priority_high": "Alta",
+  "priority_urgent": "Urgente",
+  "dueDate": "Data Scadenza",
+  "assignedLine": "Linea Assegnata",
+  "description": "Descrizione",
+  "descriptionPlaceholder": "Descrizione scheda...",
+  "titlePlaceholder": "Inserisci titolo scheda...",
+  "unassigned": "Non assegnato",
+
+  "pull": "PULL",
+  "leadTime": "Lead Time",
+  "cycleTime": "Tempo Ciclo",
+
+  "filters": "Filtri",
+  "allPriorities": "Tutte le Priorita",
+  "allLines": "Tutte le Linee",
+
+  "totalWIP": "WIP Totale",
+  "avgLeadTime": "Lead Time Medio",
+  "throughput": "Produttivita",
+  "onTimeDelivery": "Consegna Puntuale",
+
+  "saving": "Salvataggio...",
+  "cancel": "Annulla",
+
+  "blocked": "Bloccato",
+  "markBlocked": "Segna come Bloccato",
+  "blockedReasonPlaceholder": "Motivo del blocco...",
+  "cardAge": "Età",
+  "days": "giorni",
+
+  "exportTitle": "Esportazione Kanban Board"
+}

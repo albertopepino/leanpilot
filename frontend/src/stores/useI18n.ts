@@ -1,10 +1,19 @@
 import { create } from "zustand";
 
 export type Locale = "en" | "it" | "de" | "es" | "fr" | "pl" | "sr";
+export type Direction = "ltr" | "rtl";
 type Translations = Record<string, string>;
+
+/** Returns the text direction for a given locale (future-proofed for RTL languages). */
+export function getDirection(locale: Locale): Direction {
+  // All current locales are LTR. Add RTL locales here when needed (e.g. "ar").
+  const rtlLocales: Locale[] = [];
+  return rtlLocales.includes(locale) ? "rtl" : "ltr";
+}
 
 interface I18nStore {
   locale: Locale;
+  direction: Direction;
   ready: boolean;
   translations: Record<string, Translations>;
   setLocale: (locale: Locale) => Promise<void>;
@@ -40,6 +49,24 @@ const DOMAINS = [
   "notifications",
   "lsw",
   "scheduling",
+  "quality",
+  "spc",
+  "help",
+  "glossary",
+  "wizard",
+  "kanban",
+  "pokayoke",
+  "cookie",
+  "cta",
+  "features",
+  "footer",
+  "hero",
+  "nav",
+  "pricing",
+  "privacy",
+  "problem",
+  "social",
+  "shopfloor",
 ];
 
 async function loadTranslations(locale: Locale): Promise<Record<string, Translations>> {
@@ -58,6 +85,7 @@ async function loadTranslations(locale: Locale): Promise<Record<string, Translat
 
 export const useI18n = create<I18nStore>((set, get) => ({
   locale: "en",
+  direction: "ltr" as Direction,
   ready: false,
   translations: {},
 
@@ -67,20 +95,24 @@ export const useI18n = create<I18nStore>((set, get) => ({
       ? localStorage.getItem("leanpilot_locale")
       : null) as Locale | null;
     const locale = saved || "en";
+    const direction = getDirection(locale);
     const translations = await loadTranslations(locale);
     if (typeof window !== "undefined") {
       document.documentElement.lang = locale;
+      document.documentElement.dir = direction;
     }
-    set({ locale, translations, ready: true });
+    set({ locale, direction, translations, ready: true });
   },
 
   setLocale: async (locale) => {
+    const direction = getDirection(locale);
     const translations = await loadTranslations(locale);
     if (typeof window !== "undefined") {
       localStorage.setItem("leanpilot_locale", locale);
       document.documentElement.lang = locale;
+      document.documentElement.dir = direction;
     }
-    set({ locale, translations, ready: true });
+    set({ locale, direction, translations, ready: true });
   },
 
   t: (key, replacements) => {

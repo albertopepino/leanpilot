@@ -7,7 +7,6 @@
   "auditResults": "{area} — Résultats de l'audit 6S",
   "maturityLevel": "Niveau de maturité {level}",
   "scorePoor": "1=Insuffisant 5=Excellent",
-
   "catSort": "Trier (Seiri)",
   "catSortShort": "Trier",
   "catSortDesc": "Éliminer les éléments inutiles",
@@ -26,7 +25,6 @@
   "catSafety": "Sécurité",
   "catSafetyShort": "Sécurité",
   "catSafetyDesc": "Identification des risques",
-
   "sort_q1": "Tous les éléments inutiles ont-ils été retirés de la zone ?",
   "sort_q2": "Les éléments étiquetés en rouge sont-ils correctement identifiés ?",
   "sort_q3": "Y a-t-il une distinction claire entre le nécessaire et le superflu ?",
@@ -57,18 +55,15 @@
   "safety_q3": "Les risques de sécurité sont-ils identifiés et traités ?",
   "safety_q4": "Les fiches SDS/MSDS sont-elles accessibles ?",
   "safety_q5": "Le matériel de lutte contre l'incendie est-il inspecté et accessible ?",
-
   "scoreBelowAvg": "Insuffisant",
   "scoreAverage": "Moyen",
   "scoreGood": "Bien",
   "scoreExcellent": "Excellent",
-
   "matWorldClass": "Classe mondiale",
   "matSustainable": "Durable",
   "matStandardized": "Standardisé",
   "matDeveloping": "En développement",
   "matInitial": "Initial",
-
   "saveError": "Impossible d'enregistrer l'audit",
   "currentAudit": "Audit en cours",
   "previousAudit": "Audit précédent",
@@ -98,7 +93,6 @@
   "nextCategory": "Suivant →",
   "saving": "Enregistrement...",
   "submitAudit": "Soumettre l'audit",
-
   "tpmTitle": "Tableau de bord TPM",
   "tpmSubtitle": "Total Productive Maintenance — Zéro panne, zéro défaut",
   "tpmRunning": "En marche",
@@ -113,7 +107,6 @@
   "statusMaintenance": "MAINTENANCE",
   "statusBreakdown": "PANNE",
   "nextPm": "Prochain PM",
-
   "demoMode": "Démo",
   "tpmAddEquipment": "Ajouter un équipement",
   "tpmEqName": "Nom de l'équipement",
@@ -170,7 +163,6 @@
   "dayFri": "Ven",
   "daySat": "Sam",
   "daySun": "Dim",
-
   "pillarAutonomous": "Maintenance autonome",
   "pillarPlanned": "Maintenance planifiée",
   "pillarQuality": "Maintenance qualité",
@@ -179,7 +171,6 @@
   "pillarTraining": "Formation et éducation",
   "pillarSafety": "Sécurité et environnement",
   "pillarOffice": "TPM de bureau",
-
   "eqCncLathe": "Tour CNC #1",
   "eqHydraulicPress": "Presse hydraulique",
   "eqWeldingRobot": "Robot de soudure #3",
@@ -190,7 +181,6 @@
   "areaAssembly": "Assemblage",
   "areaPackaging": "Conditionnement",
   "areaFinishing": "Finition",
-
   "ciltTitle": "Checklist CILT",
   "ciltSubtitle": "Maintenance autonome",
   "ciltProgress": "Avancement",
@@ -206,7 +196,6 @@
   "ciltSkipBtn": "Passer",
   "ciltDescribeIssue": "Décrivez l'anomalie...",
   "ciltStandard": "Standard",
-
   "ciltCatC": "Nettoyage",
   "ciltCatI": "Inspection",
   "ciltCatL": "Lubrification",
@@ -214,10 +203,8 @@
   "ciltFreqDaily": "Quotidien",
   "ciltFreqWeekly": "Hebdomadaire",
   "ciltFreqMonthly": "Mensuel",
-
   "ciltViewExecute": "Exécuter la checklist",
   "ciltViewStandards": "Gérer les standards",
-
   "ciltLoadError": "Impossible de charger les standards CILT",
   "ciltStdCreated": "Standard créé avec succès",
   "ciltStdError": "Impossible de créer le standard",
@@ -271,12 +258,10 @@
   "ciltTime": "Temps",
   "ciltStatus": "Statut",
   "ciltNotes": "Notes",
-
   "catCleaning": "Nettoyage",
   "catInspection": "Inspection",
   "catLubrication": "Lubrification",
   "catTightening": "Serrage",
-
   "cilt_clean1": "Nettoyer l'extérieur de la machine et le bac à copeaux",
   "cilt_clean1_std": "Aucun copeau, huile ou débris visible",
   "cilt_clean2": "Essuyer le panneau de commande et les capteurs",
@@ -295,8 +280,12 @@
   "cilt_tight1_std": "Couple : 45 Nm",
   "cilt_tight2": "Vérifier les boulons de fondation",
   "cilt_tight2_std": "Couple : 120 Nm, aucun mouvement visible",
-
   "freqDaily": "quotidien",
   "freqWeekly": "hebdomadaire",
-  "freqMonthly": "mensuel"
+  "freqMonthly": "mensuel",
+  "tpmFleetHealth": "Santé du Parc",
+  "tpmOverdueAlerts": "Alertes en Retard",
+  "tpmEquipmentOverdue": "{count} équipement en retard",
+  "tpmEquipmentOverduePlural": "{count} équipements en retard",
+  "tpmDueSince": "Dû depuis"
 }

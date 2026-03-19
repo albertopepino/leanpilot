@@ -1,6 +1,2 @@
-"use client";
-import CILTChecklist from "@/components/lean/CILTChecklist";
-
-export default function CILTRoute() {
-  return <CILTChecklist />;
-}
+import { redirect } from "next/navigation";
+export default function LegacyImproveCILT() { redirect("/improvement/tpm"); }

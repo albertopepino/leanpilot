@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, and_
 from sqlalchemy.orm import selectinload
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, date
 
 from app.models.lean_advanced import (
     SixSAudit, SixSAuditItem, SixSCategory,
@@ -55,12 +55,13 @@ class SixSService:
         return audit
 
     @staticmethod
-    async def list_audits(db: AsyncSession, factory_id: int, limit: int = 50):
+    async def list_audits(db: AsyncSession, factory_id: int, skip: int = 0, limit: int = 50):
         result = await db.execute(
             select(SixSAudit)
             .options(selectinload(SixSAudit.items))
             .where(SixSAudit.factory_id == factory_id)
             .order_by(SixSAudit.created_at.desc())
+            .offset(skip)
             .limit(limit)
         )
         return result.scalars().all()
@@ -124,12 +125,14 @@ class VSMService:
         return vsm
 
     @staticmethod
-    async def list_maps(db: AsyncSession, factory_id: int):
+    async def list_maps(db: AsyncSession, factory_id: int, skip: int = 0, limit: int = 50):
         result = await db.execute(
             select(VSMMap)
             .options(selectinload(VSMMap.steps))
             .where(VSMMap.factory_id == factory_id)
             .order_by(VSMMap.created_at.desc())
+            .offset(skip)
+            .limit(limit)
         )
         return result.scalars().all()
 
@@ -162,9 +165,13 @@ class A3Service:
         return report
 
     @staticmethod
-    async def list_reports(db: AsyncSession, factory_id: int):
+    async def list_reports(db: AsyncSession, factory_id: int, skip: int = 0, limit: int = 50):
         result = await db.execute(
-            select(A3Report).where(A3Report.factory_id == factory_id).order_by(A3Report.created_at.desc())
+            select(A3Report)
+            .where(A3Report.factory_id == factory_id)
+            .order_by(A3Report.created_at.desc())
+            .offset(skip)
+            .limit(limit)
         )
         return result.scalars().all()
 
@@ -215,12 +222,14 @@ class GembaService:
         return walk
 
     @staticmethod
-    async def list_walks(db: AsyncSession, factory_id: int):
+    async def list_walks(db: AsyncSession, factory_id: int, skip: int = 0, limit: int = 50):
         result = await db.execute(
             select(GembaWalk)
             .options(selectinload(GembaWalk.observations))
             .where(GembaWalk.factory_id == factory_id)
             .order_by(GembaWalk.walk_date.desc())
+            .offset(skip)
+            .limit(limit)
         )
         return result.scalars().all()
 
@@ -431,13 +440,77 @@ class AndonService:
     @staticmethod
     async def get_current_status(db: AsyncSession, factory_id: int):
         """Get current Andon status for all lines (latest unresolved event per line)."""
-        from sqlalchemy import and_
         result = await db.execute(
             select(AndonEvent)
             .where(and_(AndonEvent.factory_id == factory_id, AndonEvent.resolved_at.is_(None)))
             .order_by(AndonEvent.triggered_at.desc())
         )
         return result.scalars().all()
+
+    @staticmethod
+    async def check_escalation(db: AsyncSession, factory_id: int) -> list[dict]:
+        """Find unresolved andon events that exceed escalation thresholds and auto-escalate.
+
+        Default thresholds (minutes without acknowledgement/resolution):
+          yellow -> red: 10 min
+          red -> red (re-escalate): 5 min
+          blue -> red: 15 min
+
+        Returns list of escalated event summaries.
+        """
+        thresholds = {
+            "yellow": 10,
+            "red": 5,
+            "blue": 15,
+        }
+        now = datetime.now(timezone.utc)
+
+        result = await db.execute(
+            select(AndonEvent).where(
+                and_(
+                    AndonEvent.factory_id == factory_id,
+                    AndonEvent.resolved_at.is_(None),
+                )
+            )
+        )
+        events = result.scalars().all()
+        escalated = []
+
+        for event in events:
+            status_key = (event.status or "").lower()
+            threshold_min = thresholds.get(status_key)
+            if threshold_min is None:
+                continue
+
+            # Check time since last escalation or trigger
+            reference_time = event.escalated_at or event.triggered_at
+            if reference_time is None:
+                continue
+
+            elapsed_min = (now - reference_time).total_seconds() / 60
+            if elapsed_min >= threshold_min:
+                # Escalate: bump severity to red if not already, increment counter
+                previous_status = event.status
+                if status_key != "red":
+                    event.status = "red"
+                event.escalated_at = now
+                event.escalation_count = (event.escalation_count or 0) + 1
+                event.escalated = True
+
+                escalated.append({
+                    "event_id": event.id,
+                    "production_line_id": event.production_line_id,
+                    "previous_status": previous_status,
+                    "new_status": event.status,
+                    "escalation_count": event.escalation_count,
+                    "elapsed_minutes": round(elapsed_min, 1),
+                    "reason": event.reason,
+                })
+
+        if escalated:
+            await db.flush()
+
+        return escalated
 
 
 class HourlyProductionService:
@@ -515,3 +588,63 @@ class HourlyProductionService:
             "overall_win": total_actual >= total_target,
             "win_rate_pct": round(sum(1 for h in hours if h.is_win) / max(len(hours), 1) * 100, 1),
         }
+
+
+class AuditScheduleService:
+    """Auto-recurrence logic for audit schedules."""
+
+    FREQ_DAYS = {
+        "daily": 1,
+        "weekly": 7,
+        "biweekly": 14,
+        "monthly": 30,
+        "quarterly": 90,
+    }
+
+    @staticmethod
+    async def complete_and_create_next(db: AsyncSession, schedule_id: int, factory_id: int):
+        """Mark an audit schedule as completed and auto-create the next recurrence.
+
+        Returns (completed_schedule, next_schedule).
+        """
+        from app.models.audit_schedule import AuditSchedule
+
+        result = await db.execute(
+            select(AuditSchedule).where(
+                AuditSchedule.id == schedule_id,
+                AuditSchedule.factory_id == factory_id,
+            )
+        )
+        schedule = result.scalar_one_or_none()
+        if not schedule:
+            from fastapi import HTTPException
+            raise HTTPException(404, "Schedule not found")
+
+        today = date.today()
+        schedule.last_completed_date = today
+
+        # Calculate next due date
+        delta_days = AuditScheduleService.FREQ_DAYS.get(schedule.frequency, 30)
+        next_due = today + timedelta(days=delta_days)
+        schedule.next_due_date = next_due
+
+        # Auto-create the next scheduled audit entry
+        next_schedule = AuditSchedule(
+            factory_id=schedule.factory_id,
+            created_by_id=schedule.created_by_id,
+            audit_type=schedule.audit_type,
+            title=schedule.title,
+            area=schedule.area,
+            production_line_id=schedule.production_line_id,
+            assigned_to_id=schedule.assigned_to_id,
+            frequency=schedule.frequency,
+            next_due_date=next_due,
+            last_completed_date=None,
+            is_active=True,
+            escalation_days=schedule.escalation_days,
+            notes=schedule.notes,
+        )
+        db.add(next_schedule)
+        await db.flush()
+
+        return schedule, next_schedule

@@ -52,12 +52,13 @@ class FiveWhyService:
         return analysis
 
     @staticmethod
-    async def list_by_factory(db: AsyncSession, factory_id: int, limit: int = 50):
+    async def list_by_factory(db: AsyncSession, factory_id: int, skip: int = 0, limit: int = 50):
         result = await db.execute(
             select(FiveWhyAnalysis)
             .options(selectinload(FiveWhyAnalysis.steps))
             .where(FiveWhyAnalysis.factory_id == factory_id)
             .order_by(FiveWhyAnalysis.created_at.desc())
+            .offset(skip)
             .limit(limit)
         )
         return result.scalars().unique().all()
@@ -131,12 +132,13 @@ class IshikawaService:
         return analysis
 
     @staticmethod
-    async def list_by_factory(db: AsyncSession, factory_id: int, limit: int = 50):
+    async def list_by_factory(db: AsyncSession, factory_id: int, skip: int = 0, limit: int = 50):
         result = await db.execute(
             select(IshikawaAnalysis)
             .options(selectinload(IshikawaAnalysis.causes))
             .where(IshikawaAnalysis.factory_id == factory_id)
             .order_by(IshikawaAnalysis.created_at.desc())
+            .offset(skip)
             .limit(limit)
         )
         return result.scalars().unique().all()
@@ -201,6 +203,17 @@ class KaizenService:
         db.add(item)
         await db.flush()
         return item
+
+    @staticmethod
+    async def list_by_factory(db: AsyncSession, factory_id: int, skip: int = 0, limit: int = 50):
+        result = await db.execute(
+            select(KaizenItem)
+            .where(KaizenItem.factory_id == factory_id)
+            .order_by(KaizenItem.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+        )
+        return result.scalars().all()
 
     @staticmethod
     async def update_status(
@@ -316,6 +329,18 @@ class KaizenService:
 
 class SMEDService:
     """SMED (Single-Minute Exchange of Die) - core Lean tool, no AI."""
+
+    @staticmethod
+    async def list_by_factory(db: AsyncSession, factory_id: int, skip: int = 0, limit: int = 50):
+        result = await db.execute(
+            select(SMEDRecord)
+            .options(selectinload(SMEDRecord.steps))
+            .where(SMEDRecord.factory_id == factory_id)
+            .order_by(SMEDRecord.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+        )
+        return result.scalars().unique().all()
 
     @staticmethod
     async def create(

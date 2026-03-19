@@ -1,13 +1,13 @@
 """Phase 1-4: SQCDP, Shift Handover, Notifications, LSW, Audit Schedules
 
 Revision ID: 011
-Revises: 010
+Revises: 010_audit_fixes
 """
 from alembic import op
 import sqlalchemy as sa
 
 revision = "011"
-down_revision = "010"
+down_revision = "010_audit_fixes"
 branch_labels = None
 depends_on = None
 

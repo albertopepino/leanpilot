@@ -57,5 +57,25 @@
   "copilotDesc": "Vaš asistent za proizvodnju pokretan veštačkom inteligencijom.\nPostavljajte pitanja o Lean metodologiji, zatražite pomoć u tumačenju vaših OEE podataka ili osmislite ideje za unapređenje.\n\nCopilot razume kontekst vaše fabrike i govori vaš jezik.",
 
   "finishTitle": "Sve je spremno! 🎉",
-  "finishDesc": "Sada poznajete glavne alate u LeanPilot-u.\n\nPočnite sa Lean Assessment-om da biste otkrili prioritete za unapređenje, a zatim istražite svaki alat sopstvenim tempom.\n\nUvek možete ponovo pokrenuti ovaj vodič iz Podešavanja."
+  "finishDesc": "Sada poznajete glavne alate u LeanPilot-u.\n\nPočnite sa Lean Assessment-om da biste otkrili prioritete za unapređenje, a zatim istražite svaki alat sopstvenim tempom.\n\nUvek možete ponovo pokrenuti ovaj vodič iz Podešavanja.",
+
+  "welcomeAriaLabel": "Dobrodošli u LeanPilot",
+  "welcomeModalDesc": "Vaš Lean Manufacturing OS je spreman. Kako želite da počnete?",
+  "welcomeOptionTour": "Brzi Obilazak",
+  "welcomeOptionTourDesc": "Pogledajte glavne alate za 2 minuta",
+  "welcomeOptionSetup": "Podesite Fabriku",
+  "welcomeOptionSetupDesc": "Kreirajte linije, proizvode i prvi OEE rezultat",
+  "welcomeOptionJump": "Počnite Odmah",
+  "welcomeOptionJumpDesc": "Istražujte samostalno",
+  "welcomeDontShowAgain": "Ne prikazuj ponovo",
+
+  "checklistTitle": "Prvi Koraci",
+  "checklistProgress": "{done} od {total} završeno",
+  "hideChecklist": "Sakrij listu",
+  "checkAccount": "Kreirajte nalog",
+  "checkLines": "Dodajte proizvodne linije",
+  "checkProducts": "Dodajte proizvode",
+  "checkProduction": "Zabeležite prvu proizvodnju",
+  "checkAssessment": "Završite Lean procenu",
+  "checkTeam": "Podesite tim"
 }

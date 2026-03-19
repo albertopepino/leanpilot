@@ -240,5 +240,15 @@
   "maturityLevel": "Maturity Level",
   "category": "Category",
   "score": "Score",
-  "level": "Level"
+  "level": "Level",
+
+  "catLeadership": "Leadership",
+  "catStrategy": "Strategy",
+  "catPeople": "People",
+  "catPartnerships": "Partnerships & Resources",
+  "catProcesses": "Processes",
+  "catCustomer_results": "Customer Results",
+  "catPeople_results": "People Results",
+  "catSociety_results": "Society Results",
+  "catKey_results": "Key Results"
 }

@@ -48,8 +48,8 @@ class Settings(BaseSettings):
     # Redis
     redis_url: str = "redis://localhost:6379/0"
 
-    # CORS (comma-separated origins for production)
-    cors_origins: str = "http://localhost:3000,http://localhost:3001"
+    # CORS (comma-separated origins for production — empty default for security)
+    cors_origins: str = ""
 
     # Data retention (days) — GDPR Art. 5(1)(e) storage limitation
     retention_ai_conversations_days: int = 90
@@ -75,6 +75,18 @@ class Settings(BaseSettings):
                     "FATAL: SECRET_KEY is not configured. "
                     "Set a strong SECRET_KEY in your .env file before running in production. "
                     "Generate one with: python -c \"import secrets; print(secrets.token_urlsafe(64))\""
+                )
+        return self
+
+    @model_validator(mode="after")
+    def _validate_cors_origins(self) -> "Settings":
+        if self.cors_origins and not self.debug:
+            if "localhost" in self.cors_origins:
+                warnings.warn(
+                    "CORS origins contain 'localhost' in non-debug mode. "
+                    "This is insecure for production. Set cors_origins to your "
+                    "production domain(s) (e.g., 'https://lean.autopilot.rs').",
+                    stacklevel=2,
                 )
         return self
 

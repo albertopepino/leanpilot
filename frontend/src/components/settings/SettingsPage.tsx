@@ -9,6 +9,7 @@ import { useCompanyBranding } from "@/stores/useCompanyBranding";
 import LogoUpload from "@/components/settings/LogoUpload";
 import TwoFactorSetup from "@/components/settings/TwoFactorSetup";
 import { resetOnboarding } from "@/components/onboarding/OnboardingTutorial";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import {
   Settings,
   User,
@@ -54,21 +55,24 @@ export default function SettingsPage() {
   // Factory info
   const [factoryName, setFactoryName] = useState("");
 
+  // Confirm dialog
+  const [confirmRemoveLogo, setConfirmRemoveLogo] = useState(false);
+
   useEffect(() => {
     if (user) {
       setFullName(user.full_name || "");
       setLanguage((user.language || "en") as Locale);
-      setAiConsent((user as any).ai_consent || false);
-      setMarketingConsent((user as any).marketing_consent || false);
+      setAiConsent(user.ai_consent || false);
+      setMarketingConsent(user.marketing_consent || false);
     }
     adminApi.getFactory().then((r) => {
-      setFactoryName((r.data as any)?.name || "");
+      const factory = r.data ?? r;
+      setFactoryName(factory?.name || "");
     }).catch(() => {});
     fetchLogo();
   }, [user]);
 
   const handleDeleteLogo = async () => {
-    if (!confirm(t("settings.confirmRemoveLogo"))) return;
     try {
       await adminApi.deleteLogo();
       clearLogo();
@@ -329,7 +333,7 @@ export default function SettingsPage() {
                 className="h-16 max-w-[200px] object-contain rounded-lg border border-th-border bg-white p-2"
               />
               <button
-                onClick={handleDeleteLogo}
+                onClick={() => setConfirmRemoveLogo(true)}
                 className="text-sm text-red-500 hover:text-red-700 transition"
               >
                 {t("settings.removeLogo")}
@@ -478,6 +482,18 @@ export default function SettingsPage() {
           {t("settings.replayTutorial") || "Replay Tutorial"}
         </button>
       </section>
+
+      <ConfirmDialog
+        open={confirmRemoveLogo}
+        title={t("common.confirmDelete")}
+        message={t("settings.confirmRemoveLogo")}
+        variant="warning"
+        onConfirm={() => {
+          handleDeleteLogo();
+          setConfirmRemoveLogo(false);
+        }}
+        onCancel={() => setConfirmRemoveLogo(false)}
+      />
 
       {/* App Info */}
       <section className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">

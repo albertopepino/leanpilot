@@ -15,5 +15,11 @@
   "todayTasks": "Dzisiejsze zadania",
   "completionHistory": "Historia realizacji",
   "completion": "Realizacja",
-  "noTemplates": "Nie utworzono jeszcze szablonów"
+  "noTemplates": "Nie utworzono jeszcze szablonów",
+  "newTemplate": "Nowy szablon",
+  "startChecklist": "Rozpocznij listę kontrolną",
+  "saveCompletion": "Zapisz ukończenie",
+  "today": "Dzisiaj",
+  "templates": "Szablony",
+  "history": "Historia"
 }

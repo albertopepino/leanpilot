@@ -32,7 +32,6 @@
   "remove": "Supprimer",
   "saveAnalysis": "Enregistrer l'analyse",
   "exportPdf": "Exporter en PDF",
-
   "savedAnalyses": "Analyses enregistrées",
   "newAnalysis": "Nouvelle analyse",
   "loadError": "Impossible de charger les analyses",
@@ -60,7 +59,6 @@
   "close": "Fermer",
   "loading": "Chargement...",
   "retry": "Réessayer",
-
   "ishikawaTitle": "Diagramme Ishikawa (en arêtes de poisson)",
   "effectProblem": "Effet / Problème",
   "effectPlaceholder": "Quel est le problème ou l'effet indésirable ?",
@@ -89,7 +87,6 @@
   "showAll": "Tout afficher",
   "category": "Catégorie",
   "cause": "Cause",
-
   "paretoTitle": "Analyse Pareto",
   "paretoSubtitle": "Concentrez-vous sur le peu qui compte — règle 80/20",
   "categories": "Catégories",
@@ -109,7 +106,6 @@
   "itSystemDown": "Système informatique en panne",
   "other": "Autre",
   "topContributor": "Principal Contributeur",
-
   "a3Title": "Rapport de résolution de problèmes A3",
   "a3Subtitle": "Pensée structurée sur une seule feuille",
   "a3TitlePlaceholder": "Titre du rapport A3...",
@@ -137,7 +133,6 @@
   "results": "8. Résultats",
   "resultsHint": "Documentez les résultats réels, les données et les leçons apprises.",
   "workflow": "Flux de statut",
-
   "owner": "Responsable",
   "ownerPlaceholder": "Nom du responsable A3...",
   "date": "Date",
@@ -146,7 +141,6 @@
   "statusInReview": "En révision",
   "statusApproved": "Approuvé",
   "statusClosed": "Clôturé",
-
   "newReport": "Nouveau",
   "loadReport": "Charger",
   "saveReport": "Enregistrer",
@@ -159,9 +153,7 @@
   "loadedDemo": "Données de démo affichées (API indisponible).",
   "statusUpdated": "Statut mis à jour.",
   "statusFailed": "Impossible de mettre à jour le statut sur le serveur.",
-
   "investigateWith5Why": "Analyser avec 5 Pourquoi",
-
   "dsDowntime": "Causes d'arrêt",
   "dsDefects": "Types de défauts",
   "dsScrap": "Motifs de rebut",
@@ -214,8 +206,36 @@
   "andonMaintenance": "Appel maintenance",
   "andonQuality": "Arrêt qualité",
   "andonSafety": "Arrêt sécurité",
-
   "validationMinWhys": "Au moins 2 Pourquoi sont requis",
   "statusImplementing": "En cours de mise en œuvre",
-  "statusCompleted": "Terminé"
+  "statusCompleted": "Terminé",
+  "fishboneView": "Arête de poisson",
+  "listView": "Vue en liste",
+  "listViewDesc": "Liste structurée de toutes les causes par catégorie",
+  "voteUp": "Ajouter un vote",
+  "voteDown": "Retirer un vote",
+  "topCauses": "Causes les plus votées",
+  "trackWithKaizen": "Suivre avec Kaizen",
+  "pdcaCycle": "Cycle PDCA",
+  "pdcaPlan": "Planifier",
+  "pdcaDo": "Réaliser",
+  "pdcaCheck": "Vérifier",
+  "pdcaAct": "Agir",
+  "mentorReview": "Revue du Mentor",
+  "mentorReviewHint": "Faites réviser cet A3 par un mentor pour la qualité et l'exhaustivité",
+  "reviewerName": "Nom du Réviseur",
+  "reviewerNamePlaceholder": "Nom du mentor / coach...",
+  "reviewDate": "Date de Revue",
+  "approvalStatus": "Statut d'Approbation",
+  "mentorDraft": "Brouillon",
+  "mentorReviewed": "Révisé",
+  "mentorApproved": "Approuvé",
+  "reviewComments": "Commentaires de Revue",
+  "reviewCommentsPlaceholder": "Retours et suggestions du mentor...",
+  "suggestedNextSteps": "Prochaines Étapes Suggérées",
+  "nextStepsDesc": "Sur la base de l'analyse des causes, envisagez ces actions de suivi",
+  "createKaizen": "Créer Kaizen",
+  "openIshikawa": "Ouvrir Ishikawa",
+  "noParetoData": "Aucune donnée disponible pour l'analyse de Pareto",
+  "confirmDelete": "Etes-vous sur de vouloir supprimer cette analyse?"
 }

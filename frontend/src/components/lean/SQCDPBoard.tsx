@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useI18n } from '@/stores/useI18n';
-import { Shield, CheckCircle, DollarSign, Truck, Users, Plus, Calendar, ChevronLeft, ChevronRight, MessageSquare, AlertTriangle } from 'lucide-react';
+import { Shield, CheckCircle, DollarSign, Truck, Users, Plus, Calendar, ChevronLeft, ChevronRight, MessageSquare, AlertTriangle, Grid3X3, LayoutList, ArrowUpCircle } from 'lucide-react';
 import PageHeader from '@/components/ui/PageHeader';
+import { useToast } from '@/stores/useToast';
 
 interface SQCDPEntry {
   id: number;
@@ -27,15 +28,15 @@ interface Meeting {
   duration_min: number | null;
   attendee_count: number | null;
   notes: string | null;
-  action_items: any[];
+  action_items: { description: string; owner?: string; due_date?: string }[];
 }
 
 const CATEGORIES = [
-  { key: 'safety', icon: Shield, color: 'red', label: 'Safety' },
-  { key: 'quality', icon: CheckCircle, color: 'blue', label: 'Quality' },
-  { key: 'cost', icon: DollarSign, color: 'green', label: 'Cost' },
-  { key: 'delivery', icon: Truck, color: 'amber', label: 'Delivery' },
-  { key: 'people', icon: Users, color: 'purple', label: 'People' },
+  { key: 'safety', icon: Shield, color: 'red', labelKey: 'sqcdp.catSafety' },
+  { key: 'quality', icon: CheckCircle, color: 'blue', labelKey: 'sqcdp.catQuality' },
+  { key: 'cost', icon: DollarSign, color: 'green', labelKey: 'sqcdp.catCost' },
+  { key: 'delivery', icon: Truck, color: 'amber', labelKey: 'sqcdp.catDelivery' },
+  { key: 'people', icon: Users, color: 'purple', labelKey: 'sqcdp.catPeople' },
 ];
 
 const STATUS_COLORS: Record<string, string> = {
@@ -52,6 +53,7 @@ const STATUS_BG: Record<string, string> = {
 
 export default function SQCDPBoard() {
   const { t } = useI18n();
+  const toast = useToast();
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [tierLevel, setTierLevel] = useState(1);
   const [entries, setEntries] = useState<SQCDPEntry[]>([]);
@@ -59,18 +61,81 @@ export default function SQCDPBoard() {
   const [editModal, setEditModal] = useState<string | null>(null);
   const [meetingModal, setMeetingModal] = useState(false);
   const [formData, setFormData] = useState({ status: 'green', metric_value: '', target_value: '', comment: '', action_required: false, action_owner: '', action_due_date: '' });
+  const [viewMode, setViewMode] = useState<'daily' | 'monthly'>('daily');
+  const [monthlyData, setMonthlyData] = useState<Record<string, SQCDPEntry[]>>({});
+  const [monthlyLoading, setMonthlyLoading] = useState(false);
+  const [selectedCell, setSelectedCell] = useState<{ date: string; category: string } | null>(null);
 
   useEffect(() => {
     fetchEntries();
   }, [date, tierLevel]);
+
+  // Fetch 30-day data for monthly view
+  useEffect(() => {
+    if (viewMode !== 'monthly') return;
+    let cancelled = false;
+    (async () => {
+      setMonthlyLoading(true);
+      const result: Record<string, SQCDPEntry[]> = {};
+      try {
+        const { default: api } = await import('@/lib/api');
+        for (let i = 29; i >= 0; i--) {
+          const d = new Date(date);
+          d.setDate(d.getDate() - i);
+          const dateStr = d.toISOString().split('T')[0];
+          try {
+            const res = await api.get('/sqcdp/entries', { params: { target_date: dateStr, tier_level: tierLevel } });
+            if (!cancelled) result[dateStr] = res.data || [];
+          } catch { if (!cancelled) result[dateStr] = []; }
+        }
+        if (!cancelled) setMonthlyData(result);
+      } catch {
+        toast.error(t('sqcdp.loadFailed') || 'Failed to load monthly data');
+      }
+      if (!cancelled) setMonthlyLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [viewMode, date, tierLevel]);
+
+  // Generate 30-day date range ending at selected date
+  const thirtyDays = useMemo(() => {
+    const days: string[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(date);
+      d.setDate(d.getDate() - i);
+      days.push(d.toISOString().split('T')[0]);
+    }
+    return days;
+  }, [date]);
+
+  // Monthly summary: count green/amber/red per category
+  const monthlySummary = useMemo(() => {
+    const summary: Record<string, { green: number; amber: number; red: number; noData: number }> = {};
+    for (const cat of CATEGORIES) {
+      const counts = { green: 0, amber: 0, red: 0, noData: 0 };
+      for (const d of thirtyDays) {
+        const dayEntries = monthlyData[d] || [];
+        const entry = dayEntries.find(e => e.category === cat.key);
+        if (!entry) counts.noData++;
+        else if (entry.status === 'green') counts.green++;
+        else if (entry.status === 'amber') counts.amber++;
+        else counts.red++;
+      }
+      summary[cat.key] = counts;
+    }
+    return summary;
+  }, [monthlyData, thirtyDays]);
 
   async function fetchEntries() {
     setLoading(true);
     try {
       const { default: api } = await import('@/lib/api');
       const res = await api.get('/sqcdp/entries', { params: { target_date: date, tier_level: tierLevel } });
-      setEntries(res.data);
-    } catch { setEntries([]); }
+      setEntries(Array.isArray(res.data) ? res.data : []);
+    } catch {
+      setEntries([]);
+      toast.error(t('sqcdp.loadFailed') || 'Failed to load SQCDP entries');
+    }
     setLoading(false);
   }
 
@@ -114,7 +179,9 @@ export default function SQCDPBoard() {
       }
       setEditModal(null);
       fetchEntries();
-    } catch {}
+    } catch {
+      toast.error(t('sqcdp.saveFailed') || 'Failed to save SQCDP entry');
+    }
   }
 
   async function saveMeeting(notes: string, attendees: string) {
@@ -128,7 +195,9 @@ export default function SQCDPBoard() {
         notes: notes || null,
       });
       setMeetingModal(false);
-    } catch {}
+    } catch {
+      toast.error(t('sqcdp.meetingSaveFailed') || 'Failed to log meeting');
+    }
   }
 
   function openEdit(category: string) {
@@ -146,6 +215,28 @@ export default function SQCDPBoard() {
   }
 
   const actionItems = entries.filter(e => e.action_required);
+
+  /** Compute T1->T2 escalation status for an action item */
+  function getEscalationBadge(item: SQCDPEntry): { label: string; style: string; autoT2: boolean } | null {
+    if (item.tier_level !== 1 || !item.action_required) return null;
+    const ageMs = Date.now() - new Date(item.created_at).getTime();
+    const ageHours = ageMs / (1000 * 60 * 60);
+    if (ageHours >= 48) {
+      return {
+        label: t('sqcdp.autoEscalatedT2'),
+        style: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 border border-red-300 dark:border-red-700',
+        autoT2: true,
+      };
+    }
+    if (ageHours >= 24) {
+      return {
+        label: t('sqcdp.suggestEscalateT2'),
+        style: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-300 dark:border-amber-700',
+        autoT2: false,
+      };
+    }
+    return null;
+  }
 
   return (
     <div className="p-4 md:p-6 space-y-6">
@@ -170,9 +261,145 @@ export default function SQCDPBoard() {
         <button onClick={() => setMeetingModal(true)} className="flex items-center gap-2 px-3 py-1.5 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-500 transition">
           <MessageSquare size={14} /> {t('sqcdp.logMeeting') || 'Log Meeting'}
         </button>
+
+        {/* View Mode Toggle */}
+        <div className="flex gap-1 bg-th-card rounded-lg border border-th-border p-1 ml-auto">
+          <button onClick={() => setViewMode('daily')} className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition ${viewMode === 'daily' ? 'bg-brand-600 text-white' : 'text-th-text-3 hover:bg-th-bg-hover'}`}>
+            <LayoutList size={12} /> {t('sqcdp.dailyView') || 'Daily'}
+          </button>
+          <button onClick={() => setViewMode('monthly')} className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition ${viewMode === 'monthly' ? 'bg-brand-600 text-white' : 'text-th-text-3 hover:bg-th-bg-hover'}`}>
+            <Grid3X3 size={12} /> {t('sqcdp.monthlyView') || 'Monthly'}
+          </button>
+        </div>
       </div>
 
+      {/* ============ Monthly 30-Day Grid ============ */}
+      {viewMode === 'monthly' && (
+        <div className="space-y-4">
+          {monthlyLoading ? (
+            <div className="bg-th-card rounded-xl border border-th-border p-8 text-center">
+              <p className="text-sm text-th-text-3 animate-pulse">{t('common.loading') || 'Loading...'}</p>
+            </div>
+          ) : (
+            <>
+              {/* Heatmap Grid */}
+              <div className="bg-th-card rounded-xl border border-th-border p-4 overflow-x-auto">
+                <div className="min-w-[700px]">
+                  {/* Day number header */}
+                  <div className="flex items-center gap-px mb-1">
+                    <div className="w-16 shrink-0" />
+                    {thirtyDays.map(d => {
+                      const dayNum = new Date(d).getDate();
+                      return (
+                        <div key={d} className="flex-1 text-center text-[9px] text-th-text-3 font-mono">
+                          {dayNum}
+                        </div>
+                      );
+                    })}
+                    <div className="w-32 shrink-0 text-[10px] text-th-text-3 text-center font-bold uppercase tracking-wider pl-2">
+                      {t('sqcdp.summary') || 'Summary'}
+                    </div>
+                  </div>
+
+                  {/* Category rows */}
+                  {CATEGORIES.map(cat => {
+                    const summary = monthlySummary[cat.key] || { green: 0, amber: 0, red: 0, noData: 0 };
+                    return (
+                      <div key={cat.key} className="flex items-center gap-px mb-px">
+                        <div className="w-16 shrink-0 text-xs font-bold text-th-text uppercase tracking-wide flex items-center gap-1.5 pr-2">
+                          {t(cat.labelKey).charAt(0)}
+                        </div>
+                        {thirtyDays.map(d => {
+                          const dayEntries = monthlyData[d] || [];
+                          const entry = dayEntries.find(e => e.category === cat.key);
+                          const status = entry?.status;
+                          let cellBg = 'bg-gray-200 dark:bg-gray-700/40';
+                          if (status === 'green') cellBg = 'bg-emerald-500';
+                          else if (status === 'amber') cellBg = 'bg-amber-500';
+                          else if (status === 'red') cellBg = 'bg-rose-500';
+
+                          const isSelected = selectedCell?.date === d && selectedCell?.category === cat.key;
+
+                          return (
+                            <button
+                              key={d}
+                              onClick={() => setSelectedCell(isSelected ? null : { date: d, category: cat.key })}
+                              className={`flex-1 h-7 rounded-sm transition-all ${cellBg} ${isSelected ? 'ring-2 ring-brand-500 ring-offset-1 ring-offset-th-card scale-110 z-10' : 'hover:opacity-80'}`}
+                              title={`${t(cat.labelKey)} - ${d}: ${status || t('sqcdp.noData')}${entry?.comment ? ` — ${entry.comment}` : ''}`}
+                            />
+                          );
+                        })}
+                        {/* Summary counts */}
+                        <div className="w-32 shrink-0 flex items-center gap-1 pl-2">
+                          <span className="flex items-center gap-0.5 text-[10px]">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                            <span className="text-th-text-2 font-bold">{summary.green}</span>
+                          </span>
+                          <span className="flex items-center gap-0.5 text-[10px]">
+                            <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />
+                            <span className="text-th-text-2 font-bold">{summary.amber}</span>
+                          </span>
+                          <span className="flex items-center gap-0.5 text-[10px]">
+                            <span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />
+                            <span className="text-th-text-2 font-bold">{summary.red}</span>
+                          </span>
+                          <span className="flex items-center gap-0.5 text-[10px]">
+                            <span className="w-2 h-2 rounded-full bg-gray-400 inline-block" />
+                            <span className="text-th-text-3">{summary.noData}</span>
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Legend */}
+                  <div className="flex items-center gap-4 mt-3 pt-3 border-t border-th-border text-[10px] text-th-text-3">
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" />{t('sqcdp.good') || 'Good'}</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-amber-500 inline-block" />{t('sqcdp.warning') || 'Warning'}</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-rose-500 inline-block" />{t('sqcdp.critical') || 'Critical'}</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-gray-400 inline-block" />{t('sqcdp.noData') || 'No data'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Selected cell detail */}
+              {selectedCell && (() => {
+                const dayEntries = monthlyData[selectedCell.date] || [];
+                const entry = dayEntries.find(e => e.category === selectedCell.category);
+                const cat = CATEGORIES.find(c => c.key === selectedCell.category);
+                return (
+                  <div className="bg-th-card rounded-xl border border-th-border p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-bold text-th-text">{cat ? t(cat.labelKey) : ''} — {selectedCell.date}</h4>
+                      <button onClick={() => setSelectedCell(null)} className="text-th-text-3 hover:text-th-text text-xs">
+                        {t('common.close') || 'Close'}
+                      </button>
+                    </div>
+                    {entry ? (
+                      <div className="space-y-1 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="text-th-text-3">{t('common.status') || 'Status'}:</span>
+                          <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${STATUS_COLORS[entry.status]} text-white`}>{entry.status}</span>
+                        </div>
+                        {entry.metric_value != null && (
+                          <div><span className="text-th-text-3">{t('common.actual') || 'Value'}:</span> <span className="text-th-text font-semibold">{entry.metric_value}{entry.target_value ? ` / ${entry.target_value}` : ''}</span></div>
+                        )}
+                        {entry.comment && <div><span className="text-th-text-3">{t('common.notes') || 'Comment'}:</span> <span className="text-th-text">{entry.comment}</span></div>}
+                        {entry.action_required && <div className="text-amber-500 text-xs font-medium">{t('sqcdp.actionRequired') || 'Action Required'}{entry.action_owner ? ` — ${entry.action_owner}` : ''}</div>}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-th-text-3 italic">{t('sqcdp.noEntryForDate') || 'No entry for this date'}</p>
+                    )}
+                  </div>
+                );
+              })()}
+            </>
+          )}
+        </div>
+      )}
+
       {/* SQCDP Cards */}
+      {viewMode === 'daily' && (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {CATEGORIES.map(cat => {
           const entry = getEntry(cat.key);
@@ -183,7 +410,7 @@ export default function SQCDPBoard() {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Icon size={18} className="text-th-text-2" />
-                  <span className="text-sm font-bold uppercase tracking-wide text-th-text">{cat.label}</span>
+                  <span className="text-sm font-bold uppercase tracking-wide text-th-text">{t(cat.labelKey)}</span>
                 </div>
                 <div className={`w-4 h-4 rounded-full ${STATUS_COLORS[status]}`} />
               </div>
@@ -198,20 +425,31 @@ export default function SQCDPBoard() {
         })}
       </div>
 
+      )}
+
       {/* Action Items */}
       {actionItems.length > 0 && (
         <div className="bg-th-card rounded-xl border border-th-border p-4">
           <h3 className="text-sm font-semibold text-th-text mb-3">{t('sqcdp.actionItems') || 'Action Items'}</h3>
           <div className="space-y-2">
-            {actionItems.map(item => (
-              <div key={item.id} className="flex items-center gap-3 text-sm">
-                <div className={`w-2 h-2 rounded-full ${STATUS_COLORS[item.status]}`} />
-                <span className="uppercase text-xs font-bold text-th-text-3 w-16">{item.category}</span>
-                <span className="flex-1 text-th-text">{item.comment}</span>
-                <span className="text-th-text-3">{item.action_owner}</span>
-                {item.action_due_date && <span className="text-xs text-th-text-3">{item.action_due_date}</span>}
-              </div>
-            ))}
+            {actionItems.map(item => {
+              const esc = getEscalationBadge(item);
+              return (
+                <div key={item.id} className="flex items-center gap-3 text-sm">
+                  <div className={`w-2 h-2 rounded-full ${STATUS_COLORS[item.status]}`} />
+                  <span className="uppercase text-xs font-bold text-th-text-3 w-16">{item.category}</span>
+                  <span className="flex-1 text-th-text">{item.comment}</span>
+                  {esc && (
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap ${esc.style}`}>
+                      <ArrowUpCircle className="w-3 h-3" />
+                      {esc.label}
+                    </span>
+                  )}
+                  <span className="text-th-text-3">{item.action_owner}</span>
+                  {item.action_due_date && <span className="text-xs text-th-text-3">{item.action_due_date}</span>}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

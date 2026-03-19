@@ -57,5 +57,25 @@
   "copilotDesc": "Votre assistant de fabrication propulsé par l'IA.\nPosez des questions sur la méthodologie Lean, obtenez de l'aide pour interpréter vos données OEE ou brainstormez des idées d'amélioration.\n\nLe Copilot comprend le contexte de votre usine et parle votre langue.",
 
   "finishTitle": "Vous êtes prêt ! 🎉",
-  "finishDesc": "Vous connaissez maintenant les principaux outils de LeanPilot.\n\nCommencez par le Lean Assessment pour découvrir vos priorités d'amélioration, puis explorez chaque outil à votre rythme.\n\nVous pouvez toujours relancer ce tutoriel depuis les Paramètres."
+  "finishDesc": "Vous connaissez maintenant les principaux outils de LeanPilot.\n\nCommencez par le Lean Assessment pour découvrir vos priorités d'amélioration, puis explorez chaque outil à votre rythme.\n\nVous pouvez toujours relancer ce tutoriel depuis les Paramètres.",
+
+  "welcomeAriaLabel": "Bienvenue sur LeanPilot",
+  "welcomeModalDesc": "Votre système Lean Manufacturing est prêt. Comment voulez-vous commencer ?",
+  "welcomeOptionTour": "Faire un Tour Rapide",
+  "welcomeOptionTourDesc": "Découvrez les outils principaux en 2 minutes",
+  "welcomeOptionSetup": "Configurer Votre Usine",
+  "welcomeOptionSetupDesc": "Créez des lignes, produits et votre premier OEE",
+  "welcomeOptionJump": "Commencer Directement",
+  "welcomeOptionJumpDesc": "Explorez par vous-même",
+  "welcomeDontShowAgain": "Ne plus afficher",
+
+  "checklistTitle": "Premiers Pas",
+  "checklistProgress": "{done} sur {total} terminés",
+  "hideChecklist": "Masquer la checklist",
+  "checkAccount": "Créer votre compte",
+  "checkLines": "Ajouter des lignes de production",
+  "checkProducts": "Ajouter des produits",
+  "checkProduction": "Enregistrer la première production",
+  "checkAssessment": "Compléter l'évaluation Lean",
+  "checkTeam": "Configurer votre équipe"
 }

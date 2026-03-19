@@ -252,6 +252,7 @@ class NonConformanceReport(TimestampMixin, Base):
 
     detected_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     quantity_affected = Column(Integer, nullable=True)
+    batch_lot_number = Column(String, nullable=True)
     disposition = Column(String, nullable=True)
     disposition_notes = Column(Text, nullable=True)
     root_cause = Column(Text, nullable=True)

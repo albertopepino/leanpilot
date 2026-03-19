@@ -9,5 +9,25 @@
   "attendees": "Participants",
   "tier1": "Niveau 1 — Équipe",
   "tier2": "Niveau 2 — Service",
-  "tier3": "Niveau 3 — Usine"
+  "tier3": "Niveau 3 — Usine",
+  "dailyView": "Quotidien",
+  "monthlyView": "Mensuel",
+  "summary": "Synthese",
+  "good": "Bon",
+  "warning": "Attention",
+  "critical": "Critique",
+  "noData": "Aucune donnee",
+  "noEntryForDate": "Aucune entree pour cette date",
+
+  "catSafety": "Securite",
+  "catQuality": "Qualite",
+  "catCost": "Cout",
+  "catDelivery": "Livraison",
+  "catPeople": "Personnel",
+
+  "suggestEscalateT2": "Envisager escalade T2",
+  "autoEscalatedT2": "Auto-escalade vers T2",
+  "loadFailed": "Echec du chargement SQCDP",
+  "saveFailed": "Echec de sauvegarde SQCDP",
+  "meetingSaveFailed": "Echec enregistrement reunion"
 }

@@ -82,7 +82,8 @@ export default function CAPABoard() {
   const fetchData = useCallback(async () => {
     try {
       const res = await qcApi.listCAPAs({ status: filterStatus || undefined });
-      setCAPAs(res.data ?? res);
+      const raw = res.data ?? res;
+      setCAPAs(Array.isArray(raw) ? raw : []);
     } catch {
       setError(t("manufacturing.failedLoadCAPA"));
     } finally {

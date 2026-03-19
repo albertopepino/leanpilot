@@ -1,6 +1,2 @@
-"use client";
-import LeanAssessment from "@/components/lean/LeanAssessment";
-
-export default function AssessmentRoute() {
-  return <LeanAssessment />;
-}
+import { redirect } from "next/navigation";
+export default function LegacyGSAssessment() { redirect("/system/settings"); }

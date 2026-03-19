@@ -14,5 +14,8 @@
   "goodPieces": "Good Pieces",
   "scrapPieces": "Scrap Pieces",
   "oee": "OEE",
-  "downtime": "Downtime (min)"
+  "downtime": "Downtime (min)",
+  "manual": "Manual Entry",
+  "scrap": "Scrap",
+  "recent": "Recent Handovers"
 }

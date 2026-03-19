@@ -1,0 +1,65 @@
+{
+  "title": "SPC-Diagramme",
+  "subtitle": "Statistische Prozesskontrolle — Prozessstabilität und -fähigkeit überwachen",
+
+  "xbarR": "X-bar R",
+  "xbarS": "X-bar S",
+  "pChart": "p-Karte",
+  "npChart": "np-Karte",
+  "cChart": "c-Karte",
+  "uChart": "u-Karte",
+
+  "chartType": "Diagrammtyp",
+  "subgroupSize": "Untergruppengröße",
+  "usl": "OGW",
+  "lsl": "UGW",
+  "dataSource": "Datenquelle",
+  "manualEntry": "Manuelle Eingabe",
+  "fromInspections": "Aus Prüfungen",
+  "productionLine": "Produktionslinie",
+  "allLines": "Alle Linien",
+  "dateFrom": "Datum Von",
+  "dateTo": "Datum Bis",
+  "calculate": "Berechnen",
+
+  "manualHintVariable": "Eine Untergruppe pro Zeile, Werte durch Kommas getrennt",
+  "manualHintAttribute": "Ein Wert pro Zeile (Fehlerhafte oder Fehleranzahl)",
+
+  "needMoreData": "Mindestens 2 Untergruppen für SPC-Analyse erforderlich",
+  "calculationError": "Berechnung fehlgeschlagen. Bitte Daten prüfen.",
+
+  "cp": "Cp",
+  "cpk": "Cpk",
+  "pctInControl": "% Unter Kontrolle",
+  "totalSubgroups": "Untergruppen",
+  "sigmaLevel": "Sigma-Niveau",
+
+  "chartLabel": "Regelkarte",
+  "subgroup": "Untergruppe",
+  "value": "Wert",
+  "dataPoints": "Datenpunkte",
+  "centerLine": "Mittellinie",
+
+  "rule1": "Regel 1: Jenseits 3σ",
+  "rule2": "Regel 2: 9 gleiche Seite",
+  "rule3": "Regel 3: 6 Trend",
+  "rule4": "Regel 4: 14 alternierend",
+
+  "rule1Desc": "Ein Punkt jenseits 3 Standardabweichungen von der Mittellinie",
+  "rule2Desc": "Neun aufeinanderfolgende Punkte auf derselben Seite der Mittellinie",
+  "rule3Desc": "Sechs aufeinanderfolgende stetig steigende oder fallende Punkte",
+  "rule4Desc": "Vierzehn aufeinanderfolgende Punkte abwechselnd auf und ab",
+
+  "processCapability": "Prozessfähigkeit",
+  "mean": "Mittelwert",
+  "stdDev": "Std.Abw.",
+  "specLimits": "UGW / OGW",
+  "excellent": "Ausgezeichnet",
+  "capable": "Fähig",
+  "marginal": "Grenzwertig",
+  "incapable": "Nicht fähig",
+
+  "outOfControl": "Außer-Kontrolle-Punkte",
+  "rule": "Regel",
+  "ruleDescription": "Beschreibung"
+}

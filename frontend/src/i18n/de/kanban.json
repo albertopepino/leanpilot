@@ -1,0 +1,64 @@
+{
+  "title": "Kanban-Board",
+  "subtitle": "Pull-System-Produktionsmanagement mit WIP-Limits",
+  "boardView": "Board",
+  "newBoard": "Neues Board",
+  "createBoard": "Board erstellen",
+  "boardName": "Board-Name",
+  "boardNamePlaceholder": "z.B. Hauptproduktionsboard",
+  "noBoards": "Keine Boards vorhanden. Erstellen Sie eines.",
+
+  "col_backlog": "Rueckstand",
+  "col_in_queue": "In Warteschlange",
+  "col_in_progress": "In Bearbeitung",
+  "col_done": "Erledigt",
+  "col_shipped": "Versendet",
+  "column": "Spalte",
+  "emptyColumn": "Keine Karten in dieser Spalte",
+
+  "addCard": "Karte hinzufuegen",
+  "newCard": "Neue Karte",
+  "editCard": "Karte bearbeiten",
+  "createCard": "Karte erstellen",
+  "updateCard": "Karte aktualisieren",
+  "confirmDeleteCard": "Diese Karte loeschen?",
+
+  "orderNumber": "Auftrag #",
+  "productName": "Produktname",
+  "quantity": "Menge",
+  "priority": "Prioritaet",
+  "priority_low": "Niedrig",
+  "priority_medium": "Mittel",
+  "priority_high": "Hoch",
+  "priority_urgent": "Dringend",
+  "dueDate": "Faelligkeitsdatum",
+  "assignedLine": "Zugewiesene Linie",
+  "description": "Beschreibung",
+  "descriptionPlaceholder": "Kartenbeschreibung...",
+  "titlePlaceholder": "Kartentitel eingeben...",
+  "unassigned": "Nicht zugewiesen",
+
+  "pull": "PULL",
+  "leadTime": "Durchlaufzeit",
+  "cycleTime": "Zykluszeit",
+
+  "filters": "Filter",
+  "allPriorities": "Alle Prioritaeten",
+  "allLines": "Alle Linien",
+
+  "totalWIP": "Gesamt-WIP",
+  "avgLeadTime": "Mittlere Durchlaufzeit",
+  "throughput": "Durchsatz",
+  "onTimeDelivery": "Puenktliche Lieferung",
+
+  "saving": "Speichern...",
+  "cancel": "Abbrechen",
+
+  "blocked": "Blockiert",
+  "markBlocked": "Als blockiert markieren",
+  "blockedReasonPlaceholder": "Grund der Blockierung...",
+  "cardAge": "Alter",
+  "days": "Tage",
+
+  "exportTitle": "Kanban-Board Export"
+}

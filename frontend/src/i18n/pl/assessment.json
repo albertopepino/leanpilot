@@ -240,5 +240,15 @@
   "maturityLevel": "Poziom dojrzałości",
   "category": "Kategoria",
   "score": "Wynik",
-  "level": "Poziom"
+  "level": "Poziom",
+
+  "catLeadership": "Przywództwo",
+  "catStrategy": "Strategia",
+  "catPeople": "Ludzie",
+  "catPartnerships": "Partnerstwa i Zasoby",
+  "catProcesses": "Procesy",
+  "catCustomer_results": "Wyniki Klientów",
+  "catPeople_results": "Wyniki Pracowników",
+  "catSociety_results": "Wyniki Społeczne",
+  "catKey_results": "Kluczowe Wyniki"
 }

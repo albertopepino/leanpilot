@@ -1,6 +1,2 @@
-"use client";
-import QCChecksBoard from "@/components/manufacturing/QCChecksBoard";
-
-export default function QCChecksRoute() {
-  return <QCChecksBoard />;
-}
+import { redirect } from "next/navigation";
+export default function LegacyQC() { redirect("/quality"); }

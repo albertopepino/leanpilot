@@ -15,5 +15,11 @@
   "todayTasks": "Tareas de hoy",
   "completionHistory": "Historial de cumplimiento",
   "completion": "Cumplimiento",
-  "noTemplates": "Aún no se han creado plantillas"
+  "noTemplates": "Aún no se han creado plantillas",
+  "newTemplate": "Nueva Plantilla",
+  "startChecklist": "Iniciar Lista de Verificación",
+  "saveCompletion": "Guardar Finalización",
+  "today": "Hoy",
+  "templates": "Plantillas",
+  "history": "Historial"
 }

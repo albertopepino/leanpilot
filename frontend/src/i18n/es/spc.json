@@ -1,0 +1,65 @@
+{
+  "title": "Gráficos SPC",
+  "subtitle": "Control Estadístico de Proceso — Monitorear estabilidad y capacidad del proceso",
+
+  "xbarR": "X-bar R",
+  "xbarS": "X-bar S",
+  "pChart": "Gráfico p",
+  "npChart": "Gráfico np",
+  "cChart": "Gráfico c",
+  "uChart": "Gráfico u",
+
+  "chartType": "Tipo de Gráfico",
+  "subgroupSize": "Tamaño Subgrupo",
+  "usl": "LSE",
+  "lsl": "LIE",
+  "dataSource": "Fuente de Datos",
+  "manualEntry": "Entrada Manual",
+  "fromInspections": "Desde Inspecciones",
+  "productionLine": "Línea de Producción",
+  "allLines": "Todas las Líneas",
+  "dateFrom": "Fecha Desde",
+  "dateTo": "Fecha Hasta",
+  "calculate": "Calcular",
+
+  "manualHintVariable": "Ingrese un subgrupo por línea, valores separados por comas",
+  "manualHintAttribute": "Ingrese un valor por línea (defectuosos o conteo de defectos)",
+
+  "needMoreData": "Se necesitan al menos 2 subgrupos para análisis SPC",
+  "calculationError": "Error en el cálculo. Verifique los datos.",
+
+  "cp": "Cp",
+  "cpk": "Cpk",
+  "pctInControl": "% Bajo Control",
+  "totalSubgroups": "Subgrupos",
+  "sigmaLevel": "Nivel Sigma",
+
+  "chartLabel": "Carta de Control",
+  "subgroup": "Subgrupo",
+  "value": "Valor",
+  "dataPoints": "Puntos de Datos",
+  "centerLine": "Línea Central",
+
+  "rule1": "Regla 1: Más allá de 3σ",
+  "rule2": "Regla 2: 9 mismo lado",
+  "rule3": "Regla 3: 6 en tendencia",
+  "rule4": "Regla 4: 14 alternados",
+
+  "rule1Desc": "Un punto más allá de 3 desviaciones estándar de la línea central",
+  "rule2Desc": "Nueve puntos consecutivos del mismo lado de la línea central",
+  "rule3Desc": "Seis puntos consecutivos en constante aumento o disminución",
+  "rule4Desc": "Catorce puntos consecutivos alternando arriba y abajo",
+
+  "processCapability": "Capacidad de Proceso",
+  "mean": "Media",
+  "stdDev": "Desv. Est.",
+  "specLimits": "LIE / LSE",
+  "excellent": "Excelente",
+  "capable": "Capaz",
+  "marginal": "Marginal",
+  "incapable": "Incapaz",
+
+  "outOfControl": "Puntos Fuera de Control",
+  "rule": "Regla",
+  "ruleDescription": "Descripción"
+}

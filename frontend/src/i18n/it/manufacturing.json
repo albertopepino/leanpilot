@@ -48,7 +48,6 @@
   "materialsAdded": "{count} materiali aggiunti",
   "errorsCount": "{count} errori",
   "noNewData": "Nessun nuovo dato da importare",
-
   "ordersTotal": "{count} ordini totali",
   "newOrder": "+ Nuovo ordine",
   "newProductionOrder": "Nuovo ordine di produzione",
@@ -78,11 +77,10 @@
   "actualStart": "Inizio effettivo",
   "actualEnd": "Fine effettiva",
   "notes": "Note",
-  "created": "Creato",
+  "created": "Creata",
   "orderLines": "Linee ordine",
   "failedUpdateOrder": "Aggiornamento ordine non riuscito",
   "viewOnlyNotice": "Accesso in sola lettura agli ordini di produzione",
-
   "titleQCPolicies": "Archivio documenti QC",
   "documentsStored": "{count} documenti archiviati",
   "documentsStoredSingular": "{count} documento archiviato",
@@ -111,7 +109,6 @@
   "removeConfirm": "Rimuovere \"{title}\" dall'archivio?",
   "uploadedSuccess": "\"{title}\" caricato con successo",
   "fileFormatHint": "PDF, Word (.docx), JPEG, PNG — Max 20 MB",
-
   "titleQCChecks": "Controlli qualità",
   "checksRecorded": "{count} controlli registrati",
   "checksRecordedSingular": "{count} controllo registrato",
@@ -172,7 +169,6 @@
   "measuredValue": "Valore misurato",
   "enterObservation": "Inserisci osservazione...",
   "templates": "Modelli",
-
   "titleNCR": "Rapporti di non conformità",
   "ncrTotal": "{count} NCR totali",
   "ncrTotalSingular": "{count} NCR totale",
@@ -209,7 +205,6 @@
   "failedCreateNCR": "Creazione NCR non riuscita",
   "failedUpdateNCR": "Aggiornamento NCR non riuscito",
   "saving": "Salvataggio...",
-
   "titleCAPA": "Azioni correttive e preventive",
   "capaTotal": "{count} CAPA",
   "capaCorrective": "correttive",
@@ -238,7 +233,6 @@
   "effectivenessResult": "Risultato di efficacia",
   "effectivenessHint": "L'azione è stata efficace? Descrivi l'esito...",
   "timeline": "Cronologia",
-  "created": "Creata",
   "due": "Scadenza",
   "implemented": "Implementata",
   "verified": "Verificata",
@@ -253,7 +247,6 @@
   "capaCreated": "CAPA creata con successo",
   "capaUpdated": "CAPA aggiornata",
   "view": "Visualizza",
-
   "titleDefectCatalog": "Catalogo difetti",
   "defectTypesConfigured": "{count} tipi di difetto configurati",
   "addDefectType": "+ Aggiungi tipo di difetto",
@@ -276,5 +269,17 @@
   "catContamination": "contaminazione",
   "catPackaging": "imballaggio",
   "catOther": "altro",
-  "noneOption": "— Nessuno —"
+  "noneOption": "— Nessuno —",
+  "productCode": "Codice Prodotto",
+  "productName": "Nome Prodotto",
+  "productNamePlaceholder": "es. Albero a gomiti",
+  "batchLotNumber": "Numero Lotto / Batch",
+  "productionOrder": "Ordine di Produzione",
+  "activeProducts": "prodotti attivi",
+  "addProduct": "Aggiungi Prodotto",
+  "editProduct": "Modifica Prodotto",
+  "newProduct": "Nuovo Prodotto",
+  "noProducts": "Nessun prodotto ancora. Aggiungi manualmente o carica un file Excel.",
+  "productFamily": "Famiglia Prodotto",
+  "laborMin": "Manodopera (min)"
 }

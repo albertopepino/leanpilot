@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
 from app.db.session import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_factory
 from app.models.safety import SafetyIncident
 from app.schemas.safety import (
     SafetyIncidentCreate, SafetyIncidentUpdate, SafetyIncidentResponse,
@@ -21,7 +21,7 @@ async def create_incident(
     current_user=Depends(get_current_user),
 ):
     incident = SafetyIncident(
-        factory_id=current_user.factory_id,
+        factory_id=require_factory(current_user),
         created_by_id=current_user.id,
         **data.model_dump(),
     )
@@ -39,11 +39,12 @@ async def list_incidents(
     line_id: int = Query(None),
     date_from: date = Query(None),
     date_to: date = Query(None),
-    limit: int = Query(200),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, le=200),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    q = select(SafetyIncident).where(SafetyIncident.factory_id == current_user.factory_id)
+    q = select(SafetyIncident).where(SafetyIncident.factory_id == require_factory(current_user))
     if incident_type:
         q = q.where(SafetyIncident.incident_type == incident_type)
     if severity:
@@ -56,7 +57,7 @@ async def list_incidents(
         q = q.where(SafetyIncident.date >= date_from)
     if date_to:
         q = q.where(SafetyIncident.date <= date_to)
-    q = q.order_by(SafetyIncident.date.desc()).limit(limit)
+    q = q.order_by(SafetyIncident.date.desc()).offset(skip).limit(limit)
     result = await db.execute(q)
     return result.scalars().all()
 
@@ -71,7 +72,7 @@ async def update_incident(
     result = await db.execute(
         select(SafetyIncident).where(
             SafetyIncident.id == incident_id,
-            SafetyIncident.factory_id == current_user.factory_id,
+            SafetyIncident.factory_id == require_factory(current_user),
         )
     )
     incident = result.scalar_one_or_none()
@@ -93,7 +94,7 @@ async def delete_incident(
     result = await db.execute(
         select(SafetyIncident).where(
             SafetyIncident.id == incident_id,
-            SafetyIncident.factory_id == current_user.factory_id,
+            SafetyIncident.factory_id == require_factory(current_user),
         )
     )
     incident = result.scalar_one_or_none()
@@ -110,34 +111,49 @@ async def get_stats(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    base = select(SafetyIncident).where(SafetyIncident.factory_id == current_user.factory_id)
+    fid = require_factory(current_user)
+    base_where = [SafetyIncident.factory_id == fid]
     if line_id:
-        base = base.where(SafetyIncident.production_line_id == line_id)
+        base_where.append(SafetyIncident.production_line_id == line_id)
 
-    # All incidents
-    result = await db.execute(base.order_by(SafetyIncident.date.desc()))
-    incidents = result.scalars().all()
+    # Total count via SQL
+    total_result = await db.execute(
+        select(func.count(SafetyIncident.id)).where(*base_where)
+    )
+    total = total_result.scalar() or 0
 
-    total = len(incidents)
-    open_count = sum(1 for i in incidents if i.status in ("open", "investigating"))
+    # Open count via SQL
+    open_result = await db.execute(
+        select(func.count(SafetyIncident.id)).where(
+            *base_where,
+            SafetyIncident.status.in_(("open", "investigating")),
+        )
+    )
+    open_count = open_result.scalar() or 0
 
-    # Days without incident
+    # Days without incident — only need the most recent date
     today = date.today()
-    if total > 0:
-        last_date = incidents[0].date
-        days_without = (today - last_date).days
-    else:
-        days_without = 0
+    last_date_result = await db.execute(
+        select(func.max(SafetyIncident.date)).where(*base_where)
+    )
+    last_date = last_date_result.scalar()
+    days_without = (today - last_date).days if last_date else 0
 
-    # Count by type
-    by_type: dict[str, int] = {}
-    for inc in incidents:
-        by_type[inc.incident_type] = by_type.get(inc.incident_type, 0) + 1
+    # Count by type via SQL GROUP BY
+    type_result = await db.execute(
+        select(SafetyIncident.incident_type, func.count(SafetyIncident.id))
+        .where(*base_where)
+        .group_by(SafetyIncident.incident_type)
+    )
+    by_type = {row[0]: row[1] for row in type_result.all()}
 
-    # Count by severity
-    by_severity: dict[str, int] = {}
-    for inc in incidents:
-        by_severity[inc.severity] = by_severity.get(inc.severity, 0) + 1
+    # Count by severity via SQL GROUP BY
+    sev_result = await db.execute(
+        select(SafetyIncident.severity, func.count(SafetyIncident.id))
+        .where(*base_where)
+        .group_by(SafetyIncident.severity)
+    )
+    by_severity = {row[0]: row[1] for row in sev_result.all()}
 
     return {
         "days_without_incident": days_without,

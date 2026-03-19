@@ -29,8 +29,10 @@ import type {
 const api = axios.create({
   baseURL: "/api/v1",
   headers: { "Content-Type": "application/json" },
+  withCredentials: true,  // Send httpOnly cookies with every request
 });
 
+// Backwards-compatible: also send Authorization header if a legacy token exists
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("leanpilot_token");
   if (token) {
@@ -40,10 +42,10 @@ api.interceptors.request.use((config) => {
 });
 
 let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
+let refreshSubscribers: (() => void)[] = [];
 
-function onTokenRefreshed(token: string) {
-  refreshSubscribers.forEach((cb) => cb(token));
+function onTokenRefreshed() {
+  refreshSubscribers.forEach((cb) => cb());
   refreshSubscribers = [];
 }
 
@@ -54,12 +56,14 @@ api.interceptors.response.use(
     // Skip redirect for auth endpoints — let the caller handle 401
     const isAuthEndpoint = originalRequest?.url?.includes("/auth/");
     if (err.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
-      const refreshToken = localStorage.getItem("leanpilot_refresh");
-      if (refreshToken) {
+      // Try cookie-based refresh first (no body needed — cookie sent automatically)
+      const hasRefreshCookie = document.cookie.includes("logged_in=");
+      const hasLegacyRefresh = !!localStorage.getItem("leanpilot_refresh");
+
+      if (hasRefreshCookie || hasLegacyRefresh) {
         if (isRefreshing) {
           return new Promise((resolve) => {
-            refreshSubscribers.push((token: string) => {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
+            refreshSubscribers.push(() => {
               resolve(api(originalRequest));
             });
           });
@@ -67,14 +71,21 @@ api.interceptors.response.use(
         originalRequest._retry = true;
         isRefreshing = true;
         try {
-          const res = await api.post("/auth/refresh", { refresh_token: refreshToken });
-          const newToken = res.data.access_token;
-          localStorage.setItem("leanpilot_token", newToken);
+          // Send refresh request — cookie is sent automatically via withCredentials.
+          // Also send legacy body token if present (backwards-compatible).
+          const legacyRefresh = localStorage.getItem("leanpilot_refresh");
+          const refreshPayload = legacyRefresh ? { refresh_token: legacyRefresh } : {};
+          const res = await api.post("/auth/refresh", refreshPayload);
+
+          // If the server still returns tokens in the body, update legacy storage
+          if (res.data.access_token) {
+            localStorage.setItem("leanpilot_token", res.data.access_token);
+          }
           if (res.data.refresh_token) {
             localStorage.setItem("leanpilot_refresh", res.data.refresh_token);
           }
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          onTokenRefreshed(newToken);
+
+          onTokenRefreshed();
           isRefreshing = false;
           return api(originalRequest);
         } catch {
@@ -113,6 +124,8 @@ export const oeeApi = {
     api.get(`/oee/loss-waterfall/${lineId}`, { params: { days } }),
   getAlerts: (lineId: number, thresholdPct = 10) =>
     api.get(`/oee/alerts/${lineId}`, { params: { threshold_pct: thresholdPct } }),
+  getLosses: (lineId: number, startDate?: string, endDate?: string) =>
+    api.get(`/oee/losses/${lineId}`, { params: { start_date: startDate, end_date: endDate } }),
 };
 
 export const leanApi = {
@@ -207,8 +220,9 @@ export const authApi = {
     });
   },
   register: (data: RegisterData) => api.post("/auth/register", data),
-  refresh: (refreshToken: string) =>
-    api.post("/auth/refresh", { refresh_token: refreshToken }),
+  refresh: (refreshToken?: string) =>
+    api.post("/auth/refresh", refreshToken ? { refresh_token: refreshToken } : {}),
+  logout: () => api.post("/auth/logout"),
   me: () => api.get("/auth/me"),
   updateProfile: (data: { full_name?: string; language?: string }) =>
     api.patch("/auth/me", data),
@@ -238,6 +252,7 @@ export const adminApi = {
   getAuditLogs: (params?: { action?: string; limit?: number; offset?: number }) =>
     api.get("/admin/audit-logs", { params }),
   getPermissions: () => api.get("/admin/permissions"),
+  updatePermissions: (data: Record<string, Record<string, string>>) => api.put("/admin/permissions", data),
   getMyPermissions: () => api.get("/admin/my-permissions"),
   getFactory: () => api.get("/admin/factory"),
   exportData: () =>

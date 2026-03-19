@@ -1,8 +1,9 @@
 "use client";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { advancedLeanApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
+import { useAutoSave, AutoSaveIndicator } from "@/hooks/useAutoSave";
 import ExportToolbar from "@/components/ui/ExportToolbar";
 import {
   FileSpreadsheet,
@@ -255,6 +256,22 @@ export default function A3Report() {
     setMentorReview((prev) => ({ ...prev, [key]: value }));
   };
 
+  /* ---- Auto-save ------------------------------------------------ */
+  const autoSaveData = useMemo(() => ({ ...data, mentorReview }), [data, mentorReview]);
+
+  const autoSaveFn = useCallback(async (d: typeof autoSaveData) => {
+    if (!d.title.trim()) return;
+    await advancedLeanApi.createA3({
+      ...d,
+      mentor_name: d.mentorReview.reviewerName || null,
+      mentor_date: d.mentorReview.reviewDate || null,
+      mentor_feedback: d.mentorReview.comments || null,
+      mentor_status: d.mentorReview.approvalStatus || null,
+    });
+  }, []);
+
+  const { status: autoSaveStatus } = useAutoSave(autoSaveData, autoSaveFn, { delay: 5000 });
+
   /* ---- Derived -------------------------------------------------- */
   const filledSections = SECTION_DEFS.filter(
     (s) => data[s.key]?.trim(),
@@ -446,6 +463,20 @@ export default function A3Report() {
           placeholder={t(`problem-solving.${section.hintKey}`)}
         />
       )}
+
+      {/* Track with Kaizen — shown only for countermeasures section */}
+      {section.key === "countermeasures" && !isPrintView && data.countermeasures.trim().length > 0 && (
+        <div className="mt-3 pt-3 border-t border-th-border">
+          <a
+            href={`#kaizen?title=${encodeURIComponent(data.title)}&description=${encodeURIComponent(data.countermeasures.slice(0, 200))}`}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-500 hover:text-brand-600 transition-colors"
+          >
+            <Zap className="w-3.5 h-3.5" />
+            {t("problem-solving.trackWithKaizen") || "Track with Kaizen"}
+            <ArrowRight className="w-3 h-3" />
+          </a>
+        </div>
+      )}
     </div>
   );
 
@@ -488,6 +519,7 @@ export default function A3Report() {
 
           {/* Action buttons */}
           <div className="flex items-center gap-2 flex-wrap">
+            <AutoSaveIndicator status={autoSaveStatus} />
             <button
               type="button"
               onClick={handleNew}

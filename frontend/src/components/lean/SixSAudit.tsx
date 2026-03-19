@@ -68,17 +68,17 @@ const QUESTION_KEYS: Record<string, string[]> = {
   safety: ["safety_q1", "safety_q2", "safety_q3", "safety_q4", "safety_q5"],
 };
 
-const AREA_PRESETS = [
-  "Production Floor",
-  "Warehouse",
-  "Assembly Line",
-  "Quality Lab",
-  "Packaging",
-  "Receiving Dock",
-  "Shipping Dock",
-  "Tool Crib",
-  "Maintenance Shop",
-  "Office Area",
+const AREA_PRESET_ITEMS = [
+  { value: "Production Floor", labelKey: "common.areaProductionFloor" },
+  { value: "Warehouse", labelKey: "common.areaWarehouse" },
+  { value: "Assembly Line", labelKey: "common.areaAssemblyLine" },
+  { value: "Quality Lab", labelKey: "common.areaQualityLab" },
+  { value: "Packaging", labelKey: "common.areaPackaging" },
+  { value: "Receiving Dock", labelKey: "common.areaReceivingDock" },
+  { value: "Shipping Dock", labelKey: "common.areaShippingDock" },
+  { value: "Tool Crib", labelKey: "common.areaToolCrib" },
+  { value: "Maintenance Shop", labelKey: "common.areaMaintenanceShop" },
+  { value: "Office Area", labelKey: "common.areaOfficeArea" },
 ];
 
 const SCORE_LABELS: Record<number, { key: string; fallback: string }> = {
@@ -616,9 +616,9 @@ export default function SixSAudit() {
                 />
                 <YAxis tick={{ fill: "#64748b", fontSize: 10 }} domain={[0, 100]} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #334155", borderRadius: "8px", fontSize: 12 }}
-                  labelStyle={{ color: "#94a3b8" }}
-                  itemStyle={{ color: "#a5b4fc" }}
+                  contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-primary)', borderRadius: '8px', fontSize: 12, color: 'var(--text-primary)' }}
+                  labelStyle={{ color: "var(--text-secondary)" }}
+                  itemStyle={{ color: "var(--text-primary)" }}
                 />
                 <Area type="monotone" dataKey="score" stroke="#6366f1" fill="url(#trendGrad6s)" strokeWidth={2} dot={{ r: 3, fill: "#6366f1", stroke: "#fff", strokeWidth: 1.5 }} />
               </AreaChart>
@@ -732,9 +732,9 @@ export default function SixSAudit() {
                 />
                 <YAxis tick={{ fill: "#64748b", fontSize: 10 }} domain={[0, 100]} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #334155", borderRadius: "8px", fontSize: 12 }}
-                  labelStyle={{ color: "#94a3b8" }}
-                  itemStyle={{ color: "#a5b4fc" }}
+                  contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-primary)', borderRadius: '8px', fontSize: 12, color: 'var(--text-primary)' }}
+                  labelStyle={{ color: "var(--text-secondary)" }}
+                  itemStyle={{ color: "var(--text-primary)" }}
                 />
                 <Area type="monotone" dataKey="score" stroke="#6366f1" fill="url(#trendGrad6sHist)" strokeWidth={2} dot={{ r: 3, fill: "#6366f1", stroke: "#fff", strokeWidth: 1.5 }} />
               </AreaChart>
@@ -828,17 +828,17 @@ export default function SixSAudit() {
           className="w-full px-4 py-2.5 border border-th-border rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm bg-th-input text-th-text mb-3 transition"
         />
         <div className="flex flex-wrap gap-2">
-          {AREA_PRESETS.map((area) => (
+          {AREA_PRESET_ITEMS.map((item) => (
             <button
-              key={area}
-              onClick={() => setAreaName(area)}
+              key={item.value}
+              onClick={() => setAreaName(item.value)}
               className={`text-xs px-3 py-1.5 rounded-lg border transition ${
-                areaName === area
+                areaName === item.value
                   ? "bg-brand-500/10 border-brand-500/50 text-brand-600 dark:text-brand-400 font-semibold"
                   : "border-th-border text-th-text-3 hover:border-brand-400 hover:text-brand-600"
               }`}
             >
-              {area}
+              {t(item.labelKey)}
             </button>
           ))}
         </div>

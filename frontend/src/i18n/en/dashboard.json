@@ -16,7 +16,6 @@
   "gapToWorldClass": "Gap to World Class",
   "oeeTrend": "OEE Trend",
   "chartPlaceholder": "Chart renders here with recharts when connected to real data",
-
   "prodTitle": "Log Production Data",
   "productionLine": "Production Line",
   "date": "Date",
@@ -29,7 +28,6 @@
   "optionalNotes": "Optional notes...",
   "saveProductionRecord": "Save Production Record",
   "liveOeePreview": "Live OEE Preview",
-
   "hourlyTitle": "Hourly Production",
   "hourlyTarget": "Target",
   "hourlyActual": "Actual",
@@ -40,7 +38,6 @@
   "result": "Result",
   "cumDelta": "Cum. Delta",
   "notesPlaceholder": "Notes...",
-
   "andonTitle": "Andon Board",
   "andonSubtitle": "Real-time production status",
   "factoryFloorLive": "Factory Floor — Live",
@@ -54,7 +51,6 @@
   "changeoverDesc": "Setup / material change",
   "activeStoppages": "Active Stoppages",
   "since": "Since",
-
   "demoLine1": "Assembly Line 1",
   "demoLine2": "Assembly Line 2",
   "demoWeldA": "Welding Cell A",
@@ -63,15 +59,12 @@
   "demoPackaging": "Packaging Line",
   "demoCNC": "CNC Machining",
   "demoQualityLab": "Quality Lab",
-
   "demoIssueJig": "Broken positioning jig — waiting for replacement",
   "demoIssueWire": "Wire feed sensor intermittent — maintenance called",
   "demoIssueChangeover": "Format change A → B in progress",
   "demoIssueInspection": "Incoming material inspection pending",
-
   "demoNoteMaterialDelay": "Material delay from warehouse",
   "demoNoteToolChange": "Planned tool change",
-
   "reasonCode": "Reason",
   "selectReason": "— Select —",
   "reason_breakdown": "Breakdown",
@@ -82,21 +75,17 @@
   "reason_minor_stop": "Minor stop",
   "reason_planned": "Planned stop",
   "reason_other": "Other",
-
   "analyzeInPareto": "Analyze losses in Pareto",
-
   "saving": "Saving...",
   "resetForm": "Reset",
   "saveSuccess": "Production record saved successfully",
   "saveError": "Failed to save production record",
   "recentRecords": "Recent Records",
   "noRecordsYet": "No production records yet",
-
   "validationRequired": "This field is required",
   "validationPositive": "Must be greater than 0",
   "validationRunExceedsPlanned": "Run time cannot exceed planned time",
   "validationGoodExceedsTotal": "Good pieces cannot exceed total pieces",
-
   "downtimeEvents": "Downtime Events",
   "addDowntime": "Add Downtime",
   "noDowntimeYet": "No downtime events added",
@@ -105,7 +94,6 @@
   "unplanned": "Unplanned",
   "durationMin": "Duration (min)",
   "remove": "Remove",
-
   "scrapEntries": "Scrap / Defects",
   "addScrap": "Add Scrap Entry",
   "noScrapYet": "No scrap entries added",
@@ -118,7 +106,6 @@
   "defect_material": "Material defect",
   "defect_contamination": "Contamination",
   "defect_other": "Other",
-
   "andonTriggerAlert": "Trigger Alert",
   "andonResolve": "Resolve",
   "andonSelectLine": "Select line",
@@ -152,7 +139,6 @@
   "andonNoActiveAlerts": "No active alerts — all lines running",
   "andonResolving": "Resolving...",
   "andonResolved": "Resolved",
-
   "shift": "Shift",
   "shiftMorning": "Morning",
   "shiftAfternoon": "Afternoon",
@@ -160,7 +146,6 @@
   "selectLine": "-- Select line --",
   "loadingLines": "Loading lines...",
   "noLinesAvailable": "No production lines available",
-
   "today": "Today",
   "saveAll": "Save All",
   "saveAllSuccess": "All rows saved successfully",
@@ -185,7 +170,6 @@
   "errorLoadingData": "Failed to load data",
   "retry": "Retry",
   "noDataForDate": "No data for this date",
-
   "allLines": "All Lines",
   "last14": "Last 14 days",
   "usingDemoData": "showing demo data",
@@ -212,9 +196,13 @@
   "setupAdjustments": "Setup & Adjustments",
   "minorStops": "Minor Stops",
   "reducedSpeed": "Reduced Speed",
+  "equipmentFailure": "Equipment Failure",
+  "setupAdjustment": "Setup & Adjustment",
+  "idlingMinorStops": "Idling & Minor Stops",
+  "processDefects": "Process Defects",
+  "reducedYield": "Reduced Yield",
   "startupLosses": "Startup Losses",
   "liveAutoRefresh": "Live — auto-refresh 60s",
-
   "andonHistory": "Alert History",
   "andonByCategory": "Alerts by Category",
   "andonLineStatus": "Line Status",
@@ -253,14 +241,35 @@
   "cancel": "Cancel",
   "creating": "Creating...",
   "create": "Create",
-
   "units": "units",
   "totalTime": "Total Time",
   "availabilityLoss": "Availability Loss",
   "performanceLoss": "Performance Loss",
   "qualityLoss": "Quality Loss",
   "oeeWaterfallDesc": "How your total available time breaks down into OEE",
-
   "weeklyHeatmap": "Weekly Production Heatmap",
-  "noData": "No data"
+  "noData": "No data",
+  "overview": "Overview",
+  "lossAnalysis": "Loss Analysis",
+  "noAndonEvents": "No data yet. Andon events will appear here when production lines report status.",
+  "totalAvailable": "Available Time",
+  "productiveTime": "Productive Time",
+  "totalLosses": "Total Losses",
+  "lossRatio": "Loss Ratio",
+  "sixBigLossesWaterfall": "Six Big Losses Waterfall",
+  "sixBigLossesDesc": "Minutes lost per loss category with cumulative productive time line",
+  "lossBreakdown": "Loss Breakdown",
+  "andonLegend": "Legend",
+  "andonGreen": "Running",
+  "andonYellow": "Caution",
+  "andonRed": "Stopped",
+  "andonGray": "Offline",
+  "cumulativeLineChart": "Cumulative Line Chart",
+  "noRecords": "No recent records found.",
+  "recentRecords": "Recent Records",
+  "good": "Good",
+  "runMin": "Run (min)",
+  "modeHourly": "Hourly",
+  "modeShift": "Per Shift",
+  "modeDaily": "Daily"
 }

@@ -4,6 +4,8 @@ import { useI18n } from "@/stores/useI18n";
 import { useAuth } from "@/hooks/useAuth";
 import { adminApi, manufacturingApi } from "@/lib/api";
 import GroupPoliciesPanel from "./GroupPoliciesPanel";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import { useToast } from "@/stores/useToast";
 import {
   Shield, Users, Building, Key, Activity, Database, Settings,
   Plus, Trash2, Edit3, Lock, Download, X, CheckCircle, XCircle,
@@ -38,6 +40,54 @@ interface AuditEntry {
   ip_address: string | null;
   timestamp: string;
   legal_basis: string | null;
+}
+
+interface ProductionLine {
+  id: number;
+  name: string;
+  product_type: string | null;
+  target_oee: number;
+  target_cycle_time_seconds: number | null;
+  is_active: boolean;
+  shifts?: Shift[];
+}
+
+interface Shift {
+  id: number;
+  name: string;
+  start_hour: number;
+  end_hour: number;
+  planned_minutes: number;
+  production_line_id: number;
+}
+
+interface WorkCenter {
+  id: number;
+  name: string;
+  description: string | null;
+  machine_type: string | null;
+  capacity_units_per_hour: number | null;
+  production_line_id: number;
+  is_active?: boolean;
+}
+
+interface Product {
+  id: number;
+  code: string;
+  name: string;
+  product_family: string | null;
+  unit_of_measure: string;
+  is_active: boolean;
+}
+
+interface FactoryData {
+  id: number;
+  name: string;
+  timezone: string | null;
+  production_lines?: ProductionLine[];
+  user_count?: number;
+  data_controller?: string;
+  [key: string]: unknown;
 }
 
 type Tab = "users" | "audit" | "permissions" | "factory" | "setup" | "groups";
@@ -87,7 +137,7 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState<Tab>("users");
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([]);
-  const [factory, setFactory] = useState<any>(null);
+  const [factory, setFactory] = useState<FactoryData | null>(null);
   const [permissions, setPermissions] = useState<Record<string, Record<string, string>>>({});
   const [loading, setLoading] = useState(false);
   const [showUserForm, setShowUserForm] = useState(false);
@@ -101,48 +151,60 @@ export default function AdminPanel() {
   const [exportState, setExportState] = useState<ExportState>("idle");
 
   // Factory Setup state
-  const [prodLines, setProdLines] = useState<any[]>([]);
-  const [workCenters, setWorkCenters] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
-  const [editingLine, setEditingLine] = useState<any | null>(null);
-  const [editingWC, setEditingWC] = useState<any | null>(null);
-  const [editingShift, setEditingShift] = useState<any | null>(null);
+  const [prodLines, setProdLines] = useState<ProductionLine[]>([]);
+  const [workCenters, setWorkCenters] = useState<WorkCenter[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [editingLine, setEditingLine] = useState<ProductionLine | null>(null);
+  const [editingWC, setEditingWC] = useState<WorkCenter | null>(null);
+  const [editingShift, setEditingShift] = useState<Shift | null>(null);
   const [expandedLine, setExpandedLine] = useState<number | null>(null);
   const [showLineForm, setShowLineForm] = useState(false);
   const [showWCForm, setShowWCForm] = useState(false);
   const [showShiftForm, setShowShiftForm] = useState<number | null>(null); // line_id
   const [showProductForm, setShowProductForm] = useState(false);
-  const [lineForm, setLineForm] = useState({ name: "", product_type: "", target_oee: 85, target_cycle_time_seconds: "" as any });
-  const [wcForm, setWCForm] = useState({ name: "", description: "", machine_type: "", capacity_units_per_hour: "" as any, production_line_id: 0 });
+  const [lineForm, setLineForm] = useState({ name: "", product_type: "", target_oee: 85, target_cycle_time_seconds: "" as string | number });
+  const [wcForm, setWCForm] = useState({ name: "", description: "", machine_type: "", capacity_units_per_hour: "" as string | number, production_line_id: 0 });
   const [shiftForm, setShiftForm] = useState({ name: "", start_hour: 6, end_hour: 14, planned_minutes: 480 });
   const [productForm, setProductForm] = useState({ code: "", name: "", product_family: "", unit_of_measure: "pcs" });
+  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; title: string; message: string; onConfirm: () => void }>({ open: false, title: "", message: "", onConfirm: () => {} });
+  const toast = useToast();
 
   const loadUsers = useCallback(async () => {
     try {
       const res = await adminApi.listUsers();
-      setUsers(res.data);
-    } catch { /* ignore */ }
-  }, []);
+      setUsers(Array.isArray(res.data) ? res.data : []);
+    } catch {
+      console.error("[AdminPanel] Failed to load users");
+      toast.error(t("admin.loadUsersFailed") || "Failed to load users");
+    }
+  }, [t, toast]);
 
   const loadAuditLogs = useCallback(async () => {
     try {
       const res = await adminApi.getAuditLogs({ limit: 50 });
-      setAuditLogs(res.data);
-    } catch { /* ignore */ }
-  }, []);
+      setAuditLogs(Array.isArray(res.data) ? res.data : []);
+    } catch {
+      console.error("[AdminPanel] Failed to load audit logs");
+      toast.error(t("admin.loadAuditFailed") || "Failed to load audit logs");
+    }
+  }, [t, toast]);
 
   const loadFactory = useCallback(async () => {
     try {
       const res = await adminApi.getFactory();
-      setFactory(res.data);
-    } catch { /* ignore */ }
+      setFactory(res.data ?? null);
+    } catch {
+      console.error("[AdminPanel] Failed to load factory data");
+    }
   }, []);
 
   const loadPermissions = useCallback(async () => {
     try {
       const res = await adminApi.getPermissions();
-      setPermissions(res.data.permissions || {});
-    } catch { /* ignore */ }
+      setPermissions(res.data?.permissions || {});
+    } catch {
+      console.error("[AdminPanel] Failed to load permissions");
+    }
   }, []);
 
   const loadSetupData = useCallback(async () => {
@@ -155,8 +217,11 @@ export default function AdminPanel() {
       setProdLines(linesRes.data || []);
       setWorkCenters(wcRes.data || []);
       setProducts(prodRes.data || []);
-    } catch { /* ignore */ }
-  }, []);
+    } catch {
+      console.error("[AdminPanel] Failed to load setup data");
+      toast.error(t("admin.loadSetupFailed") || "Failed to load factory setup data");
+    }
+  }, [t, toast]);
 
   const handleCreateLine = async () => {
     clearMessages(); setLoading(true);
@@ -165,7 +230,7 @@ export default function AdminPanel() {
         name: lineForm.name,
         product_type: lineForm.product_type || null,
         target_oee: lineForm.target_oee,
-        target_cycle_time_seconds: lineForm.target_cycle_time_seconds || null,
+        target_cycle_time_seconds: lineForm.target_cycle_time_seconds ? Number(lineForm.target_cycle_time_seconds) : null,
       });
       setSuccess(t("admin.lineCreated"));
       setShowLineForm(false);
@@ -183,7 +248,7 @@ export default function AdminPanel() {
         name: lineForm.name,
         product_type: lineForm.product_type || null,
         target_oee: lineForm.target_oee,
-        target_cycle_time_seconds: lineForm.target_cycle_time_seconds || null,
+        target_cycle_time_seconds: lineForm.target_cycle_time_seconds ? Number(lineForm.target_cycle_time_seconds) : null,
       });
       setSuccess(t("admin.lineUpdated"));
       setEditingLine(null);
@@ -192,13 +257,23 @@ export default function AdminPanel() {
     setLoading(false);
   };
 
-  const handleDeleteLine = async (id: number) => {
-    if (!confirm(t("admin.confirmDeleteLine"))) return;
-    try {
-      await adminApi.deleteProductionLine(id);
-      setSuccess(t("admin.lineDeleted"));
-      loadSetupData();
-    } catch (err: any) { setError(err.response?.data?.detail || "Failed"); }
+  const handleDeleteLine = (id: number) => {
+    setConfirmDialog({
+      open: true,
+      title: t("admin.confirmDeleteLine") || "Delete production line?",
+      message: t("admin.confirmDeleteLineMsg") || "This action cannot be undone.",
+      onConfirm: async () => {
+        setConfirmDialog((prev) => ({ ...prev, open: false }));
+        try {
+          await adminApi.deleteProductionLine(id);
+          setSuccess(t("admin.lineDeleted"));
+          loadSetupData();
+        } catch (err: unknown) {
+          const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || "Failed";
+          setError(msg);
+        }
+      },
+    });
   };
 
   const handleCreateShift = async (lineId: number) => {
@@ -219,13 +294,23 @@ export default function AdminPanel() {
     setLoading(false);
   };
 
-  const handleDeleteShift = async (id: number) => {
-    if (!confirm(t("admin.confirmDeleteShift"))) return;
-    try {
-      await adminApi.deleteShift(id);
-      setSuccess(t("admin.shiftDeleted"));
-      loadSetupData();
-    } catch (err: any) { setError(err.response?.data?.detail || "Failed"); }
+  const handleDeleteShift = (id: number) => {
+    setConfirmDialog({
+      open: true,
+      title: t("admin.confirmDeleteShift") || "Delete shift?",
+      message: t("admin.confirmDeleteShiftMsg") || "This action cannot be undone.",
+      onConfirm: async () => {
+        setConfirmDialog((prev) => ({ ...prev, open: false }));
+        try {
+          await adminApi.deleteShift(id);
+          setSuccess(t("admin.shiftDeleted"));
+          loadSetupData();
+        } catch (err: unknown) {
+          const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || "Failed";
+          setError(msg);
+        }
+      },
+    });
   };
 
   const handleCreateWC = async () => {
@@ -235,7 +320,7 @@ export default function AdminPanel() {
         name: wcForm.name,
         description: wcForm.description || null,
         machine_type: wcForm.machine_type || null,
-        capacity_units_per_hour: wcForm.capacity_units_per_hour || null,
+        capacity_units_per_hour: wcForm.capacity_units_per_hour ? Number(wcForm.capacity_units_per_hour) : null,
         production_line_id: wcForm.production_line_id,
       });
       setSuccess(t("admin.wcCreated"));
@@ -254,7 +339,7 @@ export default function AdminPanel() {
         name: wcForm.name,
         description: wcForm.description || null,
         machine_type: wcForm.machine_type || null,
-        capacity_units_per_hour: wcForm.capacity_units_per_hour || null,
+        capacity_units_per_hour: wcForm.capacity_units_per_hour ? Number(wcForm.capacity_units_per_hour) : null,
       });
       setSuccess(t("admin.wcUpdated"));
       setEditingWC(null);
@@ -384,6 +469,7 @@ export default function AdminPanel() {
       setTimeout(() => setExportState("idle"), 3000);
     } catch {
       setExportState("error");
+      toast.error(t("admin.exportDataError") || "Export failed");
       setTimeout(() => setExportState("idle"), 4000);
     }
   };
@@ -468,202 +554,23 @@ export default function AdminPanel() {
 
       {/* ---- USERS TAB ---- */}
       {activeTab === "users" && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-th-text flex items-center gap-2">
-                <Users className="w-5 h-5 text-th-text-2" />
-                {t("admin.usersTitle")}
-              </h2>
-              <p className="text-sm text-th-text-2">{t("admin.usersSubtitle")}</p>
-            </div>
-            <button
-              onClick={() => { setShowUserForm(true); setEditingUser(null); setFormData({ email: "", full_name: "", role: "operator", language: "en", password: "" }); clearMessages(); }}
-              className="bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              {t("admin.addUser")}
-            </button>
-          </div>
-
-          {/* User Form Modal */}
-          {(showUserForm || editingUser) && (
-            <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6 space-y-4">
-              <h3 className="font-bold text-th-text flex items-center gap-2">
-                {editingUser ? <Edit3 className="w-4 h-4 text-th-text-2" /> : <UserPlus className="w-4 h-4 text-th-text-2" />}
-                {editingUser ? t("admin.editUser") : t("admin.addUser")}
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {!editingUser && (
-                  <div>
-                    <label htmlFor="admin-email" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldEmail")}</label>
-                    <input
-                      id="admin-email"
-                      type="email" value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text"
-                      placeholder="user@company.com"
-                    />
-                  </div>
-                )}
-                <div>
-                  <label htmlFor="admin-fullname" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldName")}</label>
-                  <input
-                    id="admin-fullname"
-                    type="text" value={formData.full_name}
-                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                    className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="admin-role" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldRole")}</label>
-                  <select
-                    id="admin-role"
-                    value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text"
-                  >
-                    {ROLES.map((r) => (
-                      <option key={r} value={r}>{t(ROLE_LABEL_KEYS[r])}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="admin-language" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldLanguage")}</label>
-                  <select
-                    id="admin-language"
-                    value={formData.language}
-                    onChange={(e) => setFormData({ ...formData, language: e.target.value })}
-                    className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text"
-                  >
-                    <option value="en">English</option>
-                    <option value="it">Italiano</option>
-                  </select>
-                </div>
-                {!editingUser && (
-                  <div className="md:col-span-2">
-                    <label htmlFor="admin-password" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldPassword")}</label>
-                    <input
-                      id="admin-password"
-                      type="text" value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text font-mono"
-                      placeholder={t("admin.fieldPasswordHint")}
-                    />
-                    <p className="text-xs text-th-text-3 mt-1">{t("admin.fieldPasswordHint")}</p>
-                  </div>
-                )}
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={editingUser ? handleUpdateUser : handleCreateUser}
-                  disabled={loading}
-                  className="bg-brand-600 hover:bg-brand-500 text-white px-6 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50"
-                >
-                  {loading ? "..." : (editingUser ? t("common.save") : t("admin.addUser"))}
-                </button>
-                <button
-                  onClick={() => { setShowUserForm(false); setEditingUser(null); }}
-                  className="text-th-text-2 hover:text-th-text px-4 py-2 text-sm transition"
-                >
-                  {t("common.cancel")}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Users Table */}
-          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-th-border bg-th-bg-3">
-                    <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.fieldName")}</th>
-                    <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.fieldEmail")}</th>
-                    <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.fieldRole")}</th>
-                    <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.fieldStatus")}</th>
-                    <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.fieldLastLogin")}</th>
-                    <th className="text-right px-4 py-3 font-medium text-th-text-2">{t("admin.fieldActions")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((u, idx) => (
-                    <tr key={u.id} className={`border-b border-th-border last:border-0 hover:bg-th-bg-3/50 transition ${idx % 2 === 1 ? "bg-th-bg-3/20" : ""}`}>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-xs font-bold text-white">
-                            {u.full_name?.charAt(0) || "?"}
-                          </div>
-                          <span className="font-medium text-th-text">{u.full_name}</span>
-                          {u.id === user?.id && (
-                            <span className="text-[10px] bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400 px-1.5 py-0.5 rounded-full">YOU</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-th-text-2">{u.email}</td>
-                      <td className="px-4 py-3">
-                        <span className="text-xs font-medium bg-th-bg-3 text-brand-700 dark:text-brand-400 px-2 py-1 rounded-full">
-                          {t(ROLE_LABEL_KEYS[u.role] || "admin.roleViewer")}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 w-fit ${
-                          u.is_active
-                            ? "bg-th-bg-3 text-emerald-600 dark:text-emerald-400"
-                            : "bg-th-bg-3 text-red-600 dark:text-red-400"
-                        }`}>
-                          {u.is_active ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                          {u.is_active ? t("admin.statusActive") : t("admin.statusInactive")}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-th-text-2 text-xs">
-                        {u.last_login_at
-                          ? new Date(u.last_login_at).toLocaleDateString()
-                          : t("admin.statusNever")}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => openEditUser(u)}
-                            className="p-1.5 rounded-lg hover:bg-th-bg-3 text-th-text-2 hover:text-th-text transition"
-                            title={t("admin.editUser")}
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleResetPassword(u)}
-                            className="p-1.5 rounded-lg hover:bg-th-bg-3 text-th-text-2 hover:text-th-text transition"
-                            title={t("admin.resetPassword")}
-                          >
-                            <RotateCcw className="w-4 h-4" />
-                          </button>
-                          {u.id !== user?.id && (
-                            <button
-                              onClick={() => handleToggleActive(u)}
-                              className={`p-1.5 rounded-lg hover:bg-th-bg-3 transition ${
-                                u.is_active ? "text-red-400 hover:text-red-600" : "text-emerald-400 hover:text-emerald-600"
-                              }`}
-                              title={u.is_active ? t("admin.deactivate") : t("admin.activate")}
-                            >
-                              {u.is_active ? <Ban className="w-4 h-4" /> : <Check className="w-4 h-4" />}
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {users.length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center text-th-text-2">
-                        {t("admin.noUsers")}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <UsersTabContent
+          users={users}
+          currentUserId={user?.id}
+          showUserForm={showUserForm}
+          editingUser={editingUser}
+          formData={formData}
+          loading={loading}
+          t={t}
+          onFormDataChange={setFormData}
+          onShowUserForm={(show) => { setShowUserForm(show); if (!show) setEditingUser(null); }}
+          onEditUser={openEditUser}
+          onCreateUser={handleCreateUser}
+          onUpdateUser={handleUpdateUser}
+          onToggleActive={handleToggleActive}
+          onResetPassword={handleResetPassword}
+          onClearMessages={clearMessages}
+        />
       )}
 
       {/* ---- GROUPS TAB ---- */}
@@ -671,104 +578,17 @@ export default function AdminPanel() {
 
       {/* ---- PERMISSIONS TAB ---- */}
       {activeTab === "permissions" && (
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-lg font-bold text-th-text flex items-center gap-2">
-              <Key className="w-5 h-5 text-th-text-2" />
-              {t("admin.permTitle")}
-            </h2>
-            <p className="text-sm text-th-text-2">{t("admin.permSubtitle")}</p>
-          </div>
-
-          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-th-border bg-th-bg-3">
-                    <th className="text-left px-3 py-2.5 font-medium text-th-text-2 sticky left-0 bg-th-bg-3 z-10">{t("admin.permTab")}</th>
-                    {ROLES.map((r) => (
-                      <th key={r} className="text-center px-3 py-2.5 font-medium text-th-text-2 whitespace-nowrap">
-                        {t(ROLE_LABEL_KEYS[r])}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {ALL_TABS.map((tabId, idx) => (
-                    <tr key={tabId} className={`border-b border-th-border last:border-0 ${idx % 2 === 1 ? "bg-th-bg-3/20" : ""}`}>
-                      <td className="px-3 py-2 font-medium text-th-text sticky left-0 bg-th-bg-2 z-10 capitalize">
-                        {tabId.replace("-", " ")}
-                      </td>
-                      {ROLES.map((role) => {
-                        const perm = permissions[role]?.[tabId] || "hidden";
-                        return (
-                          <td key={role} className="px-3 py-2 text-center">
-                            <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${PERM_COLORS[perm]}`}>
-                              {t(PERM_LABEL_KEYS[perm])}
-                            </span>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <PermissionsTabContent
+          permissions={permissions}
+          setPermissions={setPermissions}
+          t={t}
+          toast={toast}
+        />
       )}
 
       {/* ---- AUDIT TAB ---- */}
       {activeTab === "audit" && (
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-lg font-bold text-th-text flex items-center gap-2">
-              <Activity className="w-5 h-5 text-th-text-2" />
-              {t("admin.auditTitle")}
-            </h2>
-            <p className="text-sm text-th-text-2">{t("admin.auditSubtitle")}</p>
-          </div>
-
-          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-th-border bg-th-bg-3">
-                    <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.auditTime")}</th>
-                    <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.auditAction")}</th>
-                    <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.auditUser")}</th>
-                    <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.auditDetail")}</th>
-                    <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.auditIp")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {auditLogs.map((log, idx) => (
-                    <tr key={log.id} className={`border-b border-th-border last:border-0 hover:bg-th-bg-3/50 ${idx % 2 === 1 ? "bg-th-bg-3/20" : ""}`}>
-                      <td className="px-4 py-3 text-xs text-th-text-2 whitespace-nowrap">
-                        {new Date(log.timestamp).toLocaleString()}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="text-xs font-mono bg-th-bg-3 px-2 py-0.5 rounded text-th-text">
-                          {log.action}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-th-text-2">{log.user_email || "—"}</td>
-                      <td className="px-4 py-3 text-xs text-th-text-2 max-w-xs truncate">{log.detail || "—"}</td>
-                      <td className="px-4 py-3 text-xs text-th-text-3 font-mono">{log.ip_address || "—"}</td>
-                    </tr>
-                  ))}
-                  {auditLogs.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-th-text-2">
-                        {t("admin.auditNoEntries")}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <AuditTabContent auditLogs={auditLogs} t={t} />
       )}
 
       {/* ---- SETUP TAB ---- */}
@@ -839,7 +659,7 @@ export default function AdminPanel() {
               {prodLines.length === 0 && (
                 <p className="px-6 py-8 text-center text-th-text-2 text-sm">{t("admin.noLines")}</p>
               )}
-              {prodLines.map((line: any) => (
+              {prodLines.map((line) => (
                 <div key={line.id}>
                   {/* Line Row */}
                   <div className="flex items-center gap-4 px-6 py-3 hover:bg-th-bg-3/50 transition cursor-pointer" onClick={() => setExpandedLine(expandedLine === line.id ? null : line.id)}>
@@ -916,7 +736,7 @@ export default function AdminPanel() {
                       {(!line.shifts || line.shifts.length === 0) && !showShiftForm && (
                         <p className="text-xs text-th-text-3 py-2">{t("admin.noShifts")}</p>
                       )}
-                      {line.shifts?.map((s: any) => (
+                      {line.shifts?.map((s) => (
                         <div key={s.id} className="flex items-center gap-3 bg-th-bg border border-th-border rounded-lg px-3 py-2 mb-1">
                           <span className="text-sm font-medium text-th-text flex-1">{s.name}</span>
                           <span className="text-xs text-th-text-2">{String(s.start_hour).padStart(2, "0")}:00 – {String(s.end_hour).padStart(2, "0")}:00</span>
@@ -971,7 +791,7 @@ export default function AdminPanel() {
                     <label className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.wcLine")}</label>
                     <select value={wcForm.production_line_id} onChange={(e) => setWCForm({ ...wcForm, production_line_id: Number(e.target.value) })}
                       className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text">
-                      {prodLines.map((l: any) => <option key={l.id} value={l.id}>{l.name}</option>)}
+                      {prodLines.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
                     </select>
                   </div>
                   <div>
@@ -995,7 +815,7 @@ export default function AdminPanel() {
               {workCenters.length === 0 && (
                 <p className="px-6 py-8 text-center text-th-text-2 text-sm">{t("admin.noWorkCenters")}</p>
               )}
-              {workCenters.map((wc: any) => (
+              {workCenters.map((wc) => (
                 <div key={wc.id} className="flex items-center gap-4 px-6 py-3 hover:bg-th-bg-3/50 transition">
                   <span className={`text-xs font-mono px-1.5 py-0.5 rounded ${wc.is_active !== false ? "bg-th-bg-3 text-emerald-600 dark:text-emerald-400" : "bg-th-bg-3 text-th-text-3"}`}>
                     {wc.is_active !== false ? t("admin.lineActive") : t("admin.lineInactive")}
@@ -1005,7 +825,7 @@ export default function AdminPanel() {
                     {wc.machine_type && <span className="ml-2 text-xs bg-th-bg-3 px-1.5 py-0.5 rounded text-th-text-2">{wc.machine_type}</span>}
                   </div>
                   {wc.capacity_units_per_hour && <span className="text-xs text-th-text-2">{wc.capacity_units_per_hour} units/hr</span>}
-                  <span className="text-xs text-th-text-3">{prodLines.find((l: any) => l.id === wc.production_line_id)?.name || "—"}</span>
+                  <span className="text-xs text-th-text-3">{prodLines.find((l) => l.id === wc.production_line_id)?.name || "—"}</span>
                   <button onClick={() => { setEditingWC(wc); setWCForm({ name: wc.name, description: wc.description || "", machine_type: wc.machine_type || "", capacity_units_per_hour: wc.capacity_units_per_hour || "", production_line_id: wc.production_line_id }); clearMessages(); }}
                     className="p-1.5 rounded-lg hover:bg-th-bg-3 text-th-text-2 hover:text-th-text transition" title={t("admin.editWorkCenter")}>
                     <Edit3 className="w-4 h-4" />
@@ -1073,7 +893,7 @@ export default function AdminPanel() {
               {products.length === 0 && (
                 <p className="px-6 py-8 text-center text-th-text-2 text-sm">{t("admin.noProducts")}</p>
               )}
-              {products.map((p: any) => (
+              {products.map((p) => (
                 <div key={p.id} className="flex items-center gap-4 px-6 py-3 hover:bg-th-bg-3/50 transition">
                   <span className="font-mono text-xs bg-th-bg-3 px-2 py-0.5 rounded text-th-text-2">{p.code}</span>
                   <span className="font-semibold text-th-text flex-1">{p.name}</span>
@@ -1088,58 +908,475 @@ export default function AdminPanel() {
 
       {/* ---- FACTORY TAB ---- */}
       {activeTab === "factory" && factory && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-th-text flex items-center gap-2">
-            <Building className="w-5 h-5 text-th-text-2" />
-            {t("admin.factoryTitle")}
-          </h2>
-          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <p className="text-xs font-medium text-th-text-2 mb-1">{t("admin.factoryName")}</p>
-                <p className="text-lg font-bold text-th-text">{factory.name}</p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-th-text-2 mb-1">{t("admin.factoryUsers")}</p>
-                <p className="text-lg font-bold text-th-text">{factory.user_count}</p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-th-text-2 mb-1">{t("admin.factoryController")}</p>
-                <p className="text-lg font-bold text-th-text">{factory.data_controller}</p>
-              </div>
-            </div>
-          </div>
+        <FactoryTabContent
+          factory={factory}
+          exportState={exportState}
+          onExportData={handleExportData}
+          t={t}
+        />
+      )}
 
-          {/* Data Export */}
-          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6 space-y-3">
-            <div className="flex items-start justify-between gap-4">
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog((prev) => ({ ...prev, open: false }))}
+      />
+    </div>
+  );
+}
+
+/* ================================================================== */
+/*  AuditTabContent                                                    */
+/* ================================================================== */
+
+function AuditTabContent({
+  auditLogs,
+  t,
+}: {
+  auditLogs: AuditEntry[];
+  t: (key: string) => string;
+}) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-lg font-bold text-th-text flex items-center gap-2">
+          <Activity className="w-5 h-5 text-th-text-2" />
+          {t("admin.auditTitle")}
+        </h2>
+        <p className="text-sm text-th-text-2">{t("admin.auditSubtitle")}</p>
+      </div>
+
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-th-border bg-th-bg-3">
+                <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.auditTime")}</th>
+                <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.auditAction")}</th>
+                <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.auditUser")}</th>
+                <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.auditDetail")}</th>
+                <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.auditIp")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {auditLogs.map((log, idx) => (
+                <tr key={log.id} className={`border-b border-th-border last:border-0 hover:bg-th-bg-3/50 ${idx % 2 === 1 ? "bg-th-bg-3/20" : ""}`}>
+                  <td className="px-4 py-3 text-xs text-th-text-2 whitespace-nowrap">
+                    {new Date(log.timestamp).toLocaleString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-xs font-mono bg-th-bg-3 px-2 py-0.5 rounded text-th-text">
+                      {log.action}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-th-text-2">{log.user_email || "\u2014"}</td>
+                  <td className="px-4 py-3 text-xs text-th-text-2 max-w-xs truncate">{log.detail || "\u2014"}</td>
+                  <td className="px-4 py-3 text-xs text-th-text-3 font-mono">{log.ip_address || "\u2014"}</td>
+                </tr>
+              ))}
+              {auditLogs.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-th-text-2">
+                    {t("admin.auditNoEntries")}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================== */
+/*  FactoryTabContent                                                  */
+/* ================================================================== */
+
+function FactoryTabContent({
+  factory,
+  exportState,
+  onExportData,
+  t,
+}: {
+  factory: FactoryData;
+  exportState: ExportState;
+  onExportData: () => void;
+  t: (key: string) => string;
+}) {
+  return (
+    <div className="space-y-4">
+      <h2 className="text-lg font-bold text-th-text flex items-center gap-2">
+        <Building className="w-5 h-5 text-th-text-2" />
+        {t("admin.factoryTitle")}
+      </h2>
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6 space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <p className="text-xs font-medium text-th-text-2 mb-1">{t("admin.factoryName")}</p>
+            <p className="text-lg font-bold text-th-text">{factory.name}</p>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-th-text-2 mb-1">{t("admin.factoryUsers")}</p>
+            <p className="text-lg font-bold text-th-text">{factory.user_count}</p>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-th-text-2 mb-1">{t("admin.factoryController")}</p>
+            <p className="text-lg font-bold text-th-text">{factory.data_controller}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Data Export */}
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6 space-y-3">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-base font-bold text-th-text flex items-center gap-2">
+              <Download className="w-5 h-5 text-brand-500" />
+              {t("admin.exportData")}
+            </h3>
+            <p className="text-sm text-th-text-2 mt-1">{t("admin.exportDataDesc")}</p>
+          </div>
+          <button
+            onClick={onExportData}
+            disabled={exportState === "loading"}
+            className={`shrink-0 px-5 py-2.5 rounded-lg text-sm font-semibold transition shadow flex items-center gap-2 ${
+              exportState === "success"
+                ? "bg-emerald-600 text-white"
+                : exportState === "error"
+                ? "bg-red-600 text-white"
+                : "bg-brand-600 hover:bg-brand-500 text-white disabled:opacity-50"
+            }`}
+          >
+            {exportState === "loading" ? t("admin.exportDataLoading")
+              : exportState === "success" ? (<><Check className="w-4 h-4" /> {t("admin.exportDataSuccess")}</>)
+              : exportState === "error" ? t("admin.exportDataError")
+              : t("admin.exportDataButton")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================== */
+/*  PermissionsTabContent                                              */
+/* ================================================================== */
+
+function PermissionsTabContent({
+  permissions,
+  setPermissions,
+  t,
+  toast,
+}: {
+  permissions: Record<string, Record<string, string>>;
+  setPermissions: React.Dispatch<React.SetStateAction<Record<string, Record<string, string>>>>;
+  t: (key: string) => string;
+  toast: { error: (msg: string) => void };
+}) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-lg font-bold text-th-text flex items-center gap-2">
+          <Key className="w-5 h-5 text-th-text-2" />
+          {t("admin.permTitle")}
+        </h2>
+        <p className="text-sm text-th-text-2">{t("admin.permSubtitle")}</p>
+      </div>
+
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-th-border bg-th-bg-3">
+                <th className="text-left px-3 py-2.5 font-medium text-th-text-2 sticky left-0 bg-th-bg-3 z-10">{t("admin.permTab")}</th>
+                {ROLES.map((r) => (
+                  <th key={r} className="text-center px-3 py-2.5 font-medium text-th-text-2 whitespace-nowrap">
+                    {t(ROLE_LABEL_KEYS[r])}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {ALL_TABS.map((tabId, idx) => (
+                <tr key={tabId} className={`border-b border-th-border last:border-0 ${idx % 2 === 1 ? "bg-th-bg-3/20" : ""}`}>
+                  <td className="px-3 py-2 font-medium text-th-text sticky left-0 bg-th-bg-2 z-10 capitalize">
+                    {tabId.replace("-", " ")}
+                  </td>
+                  {ROLES.map((role) => {
+                    const perm = permissions[role]?.[tabId] || "hidden";
+                    return (
+                      <td key={role} className="px-3 py-2 text-center">
+                        <select
+                          value={perm}
+                          onChange={async (e) => {
+                            const newLevel = e.target.value;
+                            const updated = { ...permissions };
+                            if (!updated[role]) updated[role] = {};
+                            updated[role] = { ...updated[role], [tabId]: newLevel };
+                            setPermissions(updated);
+                            try {
+                              await adminApi.updatePermissions(updated);
+                            } catch {
+                              toast.error(t("admin.permissionUpdateFailed") || "Failed to save permission");
+                            }
+                          }}
+                          className={`text-[10px] font-semibold rounded-full px-2 py-0.5 border-0 cursor-pointer ${PERM_COLORS[perm]} bg-transparent focus:ring-1 focus:ring-brand-500`}
+                        >
+                          <option value="full">{t(PERM_LABEL_KEYS["full"])}</option>
+                          <option value="modify">{t(PERM_LABEL_KEYS["modify"])}</option>
+                          <option value="view">{t(PERM_LABEL_KEYS["view"])}</option>
+                          <option value="hidden">{t(PERM_LABEL_KEYS["hidden"])}</option>
+                        </select>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================== */
+/*  UsersTabContent                                                    */
+/* ================================================================== */
+
+function UsersTabContent({
+  users,
+  currentUserId,
+  showUserForm,
+  editingUser,
+  formData,
+  loading,
+  t,
+  onFormDataChange,
+  onShowUserForm,
+  onEditUser,
+  onCreateUser,
+  onUpdateUser,
+  onToggleActive,
+  onResetPassword,
+  onClearMessages,
+}: {
+  users: AdminUser[];
+  currentUserId?: number;
+  showUserForm: boolean;
+  editingUser: AdminUser | null;
+  formData: { email: string; full_name: string; role: string; language: string; password: string };
+  loading: boolean;
+  t: (key: string) => string;
+  onFormDataChange: (data: { email: string; full_name: string; role: string; language: string; password: string }) => void;
+  onShowUserForm: (show: boolean) => void;
+  onEditUser: (u: AdminUser) => void;
+  onCreateUser: () => void;
+  onUpdateUser: () => void;
+  onToggleActive: (u: AdminUser) => void;
+  onResetPassword: (u: AdminUser) => void;
+  onClearMessages: () => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold text-th-text flex items-center gap-2">
+            <Users className="w-5 h-5 text-th-text-2" />
+            {t("admin.usersTitle")}
+          </h2>
+          <p className="text-sm text-th-text-2">{t("admin.usersSubtitle")}</p>
+        </div>
+        <button
+          onClick={() => { onShowUserForm(true); onFormDataChange({ email: "", full_name: "", role: "operator", language: "en", password: "" }); onClearMessages(); }}
+          className="bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          {t("admin.addUser")}
+        </button>
+      </div>
+
+      {/* User Form Modal */}
+      {(showUserForm || editingUser) && (
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6 space-y-4">
+          <h3 className="font-bold text-th-text flex items-center gap-2">
+            {editingUser ? <Edit3 className="w-4 h-4 text-th-text-2" /> : <UserPlus className="w-4 h-4 text-th-text-2" />}
+            {editingUser ? t("admin.editUser") : t("admin.addUser")}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {!editingUser && (
               <div>
-                <h3 className="text-base font-bold text-th-text flex items-center gap-2">
-                  <Download className="w-5 h-5 text-brand-500" />
-                  {t("admin.exportData")}
-                </h3>
-                <p className="text-sm text-th-text-2 mt-1">{t("admin.exportDataDesc")}</p>
+                <label htmlFor="admin-email" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldEmail")}</label>
+                <input
+                  id="admin-email"
+                  type="email" value={formData.email}
+                  onChange={(e) => onFormDataChange({ ...formData, email: e.target.value })}
+                  className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text"
+                  placeholder="user@company.com"
+                />
               </div>
-              <button
-                onClick={handleExportData}
-                disabled={exportState === "loading"}
-                className={`shrink-0 px-5 py-2.5 rounded-lg text-sm font-semibold transition shadow flex items-center gap-2 ${
-                  exportState === "success"
-                    ? "bg-emerald-600 text-white"
-                    : exportState === "error"
-                    ? "bg-red-600 text-white"
-                    : "bg-brand-600 hover:bg-brand-500 text-white disabled:opacity-50"
-                }`}
-              >
-                {exportState === "loading" ? t("admin.exportDataLoading")
-                  : exportState === "success" ? (<><Check className="w-4 h-4" /> {t("admin.exportDataSuccess")}</>)
-                  : exportState === "error" ? t("admin.exportDataError")
-                  : t("admin.exportDataButton")}
-              </button>
+            )}
+            <div>
+              <label htmlFor="admin-fullname" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldName")}</label>
+              <input
+                id="admin-fullname"
+                type="text" value={formData.full_name}
+                onChange={(e) => onFormDataChange({ ...formData, full_name: e.target.value })}
+                className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text"
+              />
             </div>
+            <div>
+              <label htmlFor="admin-role" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldRole")}</label>
+              <select
+                id="admin-role"
+                value={formData.role}
+                onChange={(e) => onFormDataChange({ ...formData, role: e.target.value })}
+                className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text"
+              >
+                {ROLES.map((r) => (
+                  <option key={r} value={r}>{t(ROLE_LABEL_KEYS[r])}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="admin-language" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldLanguage")}</label>
+              <select
+                id="admin-language"
+                value={formData.language}
+                onChange={(e) => onFormDataChange({ ...formData, language: e.target.value })}
+                className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text"
+              >
+                <option value="en">English</option>
+                <option value="it">Italiano</option>
+              </select>
+            </div>
+            {!editingUser && (
+              <div className="md:col-span-2">
+                <label htmlFor="admin-password" className="block text-xs font-medium text-th-text-2 mb-1">{t("admin.fieldPassword")}</label>
+                <input
+                  id="admin-password"
+                  type="text" value={formData.password}
+                  onChange={(e) => onFormDataChange({ ...formData, password: e.target.value })}
+                  className="w-full bg-th-bg border border-th-border rounded-lg px-3 py-2 text-sm text-th-text font-mono"
+                  placeholder={t("admin.fieldPasswordHint")}
+                />
+                <p className="text-xs text-th-text-3 mt-1">{t("admin.fieldPasswordHint")}</p>
+              </div>
+            )}
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={editingUser ? onUpdateUser : onCreateUser}
+              disabled={loading}
+              className="bg-brand-600 hover:bg-brand-500 text-white px-6 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50"
+            >
+              {loading ? "..." : (editingUser ? t("common.save") : t("admin.addUser"))}
+            </button>
+            <button
+              onClick={() => onShowUserForm(false)}
+              className="text-th-text-2 hover:text-th-text px-4 py-2 text-sm transition"
+            >
+              {t("common.cancel")}
+            </button>
           </div>
         </div>
       )}
+
+      {/* Users Table */}
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-th-border bg-th-bg-3">
+                <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.fieldName")}</th>
+                <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.fieldEmail")}</th>
+                <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.fieldRole")}</th>
+                <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.fieldStatus")}</th>
+                <th className="text-left px-4 py-3 font-medium text-th-text-2">{t("admin.fieldLastLogin")}</th>
+                <th className="text-right px-4 py-3 font-medium text-th-text-2">{t("admin.fieldActions")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u, idx) => (
+                <tr key={u.id} className={`border-b border-th-border last:border-0 hover:bg-th-bg-3/50 transition ${idx % 2 === 1 ? "bg-th-bg-3/20" : ""}`}>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-xs font-bold text-white">
+                        {u.full_name?.charAt(0) || "?"}
+                      </div>
+                      <span className="font-medium text-th-text">{u.full_name}</span>
+                      {u.id === currentUserId && (
+                        <span className="text-[10px] bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400 px-1.5 py-0.5 rounded-full">YOU</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-th-text-2">{u.email}</td>
+                  <td className="px-4 py-3">
+                    <span className="text-xs font-medium bg-th-bg-3 text-brand-700 dark:text-brand-400 px-2 py-1 rounded-full">
+                      {t(ROLE_LABEL_KEYS[u.role] || "admin.roleViewer")}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 w-fit ${
+                      u.is_active
+                        ? "bg-th-bg-3 text-emerald-600 dark:text-emerald-400"
+                        : "bg-th-bg-3 text-red-600 dark:text-red-400"
+                    }`}>
+                      {u.is_active ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                      {u.is_active ? t("admin.statusActive") : t("admin.statusInactive")}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-th-text-2 text-xs">
+                    {u.last_login_at
+                      ? new Date(u.last_login_at).toLocaleDateString()
+                      : t("admin.statusNever")}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => onEditUser(u)}
+                        className="p-1.5 rounded-lg hover:bg-th-bg-3 text-th-text-2 hover:text-th-text transition"
+                        title={t("admin.editUser")}
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => onResetPassword(u)}
+                        className="p-1.5 rounded-lg hover:bg-th-bg-3 text-th-text-2 hover:text-th-text transition"
+                        title={t("admin.resetPassword")}
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                      </button>
+                      {u.id !== currentUserId && (
+                        <button
+                          onClick={() => onToggleActive(u)}
+                          className={`p-1.5 rounded-lg hover:bg-th-bg-3 transition ${
+                            u.is_active ? "text-red-400 hover:text-red-600" : "text-emerald-400 hover:text-emerald-600"
+                          }`}
+                          title={u.is_active ? t("admin.deactivate") : t("admin.activate")}
+                        >
+                          {u.is_active ? <Ban className="w-4 h-4" /> : <Check className="w-4 h-4" />}
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {users.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-4 py-8 text-center text-th-text-2">
+                    {t("admin.noUsers")}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,2 @@
-"use client";
-import SQCDPBoard from "@/components/lean/SQCDPBoard";
-
-export default function SQCDPRoute() {
-  return <SQCDPBoard />;
-}
+import { redirect } from "next/navigation";
+export default function LegacySqcdp() { redirect("/operations/sqcdp"); }

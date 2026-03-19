@@ -16,7 +16,6 @@
   "gapToWorldClass": "Razmak do svetske klase",
   "oeeTrend": "OEE trend",
   "chartPlaceholder": "Grafikon se prikazuje ovde sa recharts kada je povezan sa stvarnim podacima",
-
   "prodTitle": "Unos proizvodnih podataka",
   "productionLine": "Proizvodna linija",
   "date": "Datum",
@@ -29,7 +28,6 @@
   "optionalNotes": "Opcione napomene...",
   "saveProductionRecord": "Sačuvaj proizvodni zapis",
   "liveOeePreview": "OEE pregled uživo",
-
   "hourlyTitle": "Satna proizvodnja",
   "hourlyTarget": "Cilj",
   "hourlyActual": "Ostvareno",
@@ -40,7 +38,6 @@
   "result": "Rezultat",
   "cumDelta": "Kum. delta",
   "notesPlaceholder": "Napomene...",
-
   "andonTitle": "Andon tabla",
   "andonSubtitle": "Status proizvodnje u realnom vremenu",
   "factoryFloorLive": "Proizvodni pogon — Uživo",
@@ -54,7 +51,6 @@
   "changeoverDesc": "Podešavanje / promena materijala",
   "activeStoppages": "Aktivni zastoji",
   "since": "Od",
-
   "demoLine1": "Montažna linija 1",
   "demoLine2": "Montažna linija 2",
   "demoWeldA": "Ćelija za zavarivanje A",
@@ -63,15 +59,12 @@
   "demoPackaging": "Linija za pakovanje",
   "demoCNC": "CNC obrada",
   "demoQualityLab": "Laboratorija kvaliteta",
-
   "demoIssueJig": "Slomljen pozicioni šablon — čeka se zamena",
   "demoIssueWire": "Senzor za dovod žice povremeno otkazuje — održavanje pozvano",
   "demoIssueChangeover": "Promena formata A → B u toku",
   "demoIssueInspection": "Inspekcija ulaznog materijala na čekanju",
-
   "demoNoteMaterialDelay": "Kašnjenje materijala iz magacina",
   "demoNoteToolChange": "Planirana zamena alata",
-
   "reasonCode": "Razlog",
   "selectReason": "— Izaberite —",
   "reason_breakdown": "Kvar",
@@ -82,21 +75,17 @@
   "reason_minor_stop": "Kratki zastoj",
   "reason_planned": "Planirani zastoj",
   "reason_other": "Ostalo",
-
   "analyzeInPareto": "Analiziraj gubitke u Pareto dijagramu",
-
   "saving": "Čuvanje...",
   "resetForm": "Resetuj",
   "saveSuccess": "Proizvodni zapis uspešno sačuvan",
   "saveError": "Neuspešno čuvanje proizvodnog zapisa",
   "recentRecords": "Nedavni zapisi",
   "noRecordsYet": "Još nema proizvodnih zapisa",
-
   "validationRequired": "Ovo polje je obavezno",
   "validationPositive": "Mora biti veće od 0",
   "validationRunExceedsPlanned": "Vreme rada ne može premašiti planirano vreme",
   "validationGoodExceedsTotal": "Broj dobrih komada ne može premašiti ukupan broj",
-
   "downtimeEvents": "Događaji zastoja",
   "addDowntime": "Dodaj zastoj",
   "noDowntimeYet": "Nema dodatih događaja zastoja",
@@ -105,7 +94,6 @@
   "unplanned": "Neplanirano",
   "durationMin": "Trajanje (min)",
   "remove": "Ukloni",
-
   "scrapEntries": "Škart / Defekti",
   "addScrap": "Dodaj škart",
   "noScrapYet": "Nema dodatih stavki škarta",
@@ -118,7 +106,6 @@
   "defect_material": "Defekt materijala",
   "defect_contamination": "Kontaminacija",
   "defect_other": "Ostalo",
-
   "andonTriggerAlert": "Pokreni upozorenje",
   "andonResolve": "Reši",
   "andonSelectLine": "Izaberite liniju",
@@ -152,7 +139,6 @@
   "andonNoActiveAlerts": "Nema aktivnih upozorenja — sve linije rade",
   "andonResolving": "Rešavanje...",
   "andonResolved": "Rešeno",
-
   "shift": "Smena",
   "shiftMorning": "Jutarnja",
   "shiftAfternoon": "Popodnevna",
@@ -160,7 +146,6 @@
   "selectLine": "-- Izaberite liniju --",
   "loadingLines": "Učitavanje linija...",
   "noLinesAvailable": "Nema dostupnih proizvodnih linija",
-
   "today": "Danas",
   "saveAll": "Sačuvaj sve",
   "saveAllSuccess": "Svi redovi uspešno sačuvani",
@@ -185,7 +170,6 @@
   "errorLoadingData": "Neuspešno učitavanje podataka",
   "retry": "Pokušaj ponovo",
   "noDataForDate": "Nema podataka za ovaj datum",
-
   "allLines": "Sve linije",
   "last14": "Poslednjih 14 dana",
   "usingDemoData": "prikazani su demo podaci",
@@ -212,9 +196,13 @@
   "setupAdjustments": "Podešavanje i prilagođavanje",
   "minorStops": "Kratki zastoji",
   "reducedSpeed": "Smanjena brzina",
+  "equipmentFailure": "Kvar Opreme",
+  "setupAdjustment": "Podešavanje i Prilagođavanje",
+  "idlingMinorStops": "Kratki Zastoji",
+  "processDefects": "Procesni Defekti",
+  "reducedYield": "Smanjen Prinos",
   "startupLosses": "Gubici pri pokretanju",
   "liveAutoRefresh": "Uživo — automatsko osvežavanje 60s",
-
   "andonHistory": "Istorija upozorenja",
   "andonByCategory": "Upozorenja po kategoriji",
   "andonLineStatus": "Status linije",
@@ -253,14 +241,35 @@
   "cancel": "Otkaži",
   "creating": "Kreiranje...",
   "create": "Kreiraj",
-
   "units": "jedinica",
   "totalTime": "Ukupno Vreme",
   "availabilityLoss": "Gubitak Dostupnosti",
   "performanceLoss": "Gubitak Performansi",
   "qualityLoss": "Gubitak Kvaliteta",
   "oeeWaterfallDesc": "Kako se ukupno raspoloživo vreme raspoređuje u OEE",
-
   "weeklyHeatmap": "Nedeljni Toplotni Prikaz Proizvodnje",
-  "noData": "Nema podataka"
+  "noData": "Nema podataka",
+  "overview": "Pregled",
+  "lossAnalysis": "Analiza gubitaka",
+  "noAndonEvents": "Još nema podataka. Andon događaji će se pojaviti ovde kada proizvodne linije prijave status.",
+  "totalAvailable": "Raspoloživo vreme",
+  "productiveTime": "Produktivno vreme",
+  "totalLosses": "Ukupni gubici",
+  "lossRatio": "Odnos gubitaka",
+  "sixBigLossesWaterfall": "Vodopad šest velikih gubitaka",
+  "sixBigLossesDesc": "Izgubljeni minuti po kategoriji gubitka sa kumulativnom linijom produktivnog vremena",
+  "lossBreakdown": "Raspodela gubitaka",
+  "andonLegend": "Legenda",
+  "andonGreen": "Radi",
+  "andonYellow": "Oprez",
+  "andonRed": "Zaustavljeno",
+  "andonGray": "Neaktivno",
+  "cumulativeLineChart": "Kumulativni grafikon",
+  "noRecords": "Nema nedavnih zapisa.",
+  "recentRecords": "Nedavni Zapisi",
+  "good": "Dobri",
+  "runMin": "Vreme (min)",
+  "modeHourly": "Po Satu",
+  "modeShift": "Po Smeni",
+  "modeDaily": "Dnevno"
 }

@@ -7,7 +7,6 @@
   "auditResults": "{area} — Rezultati 6S audita",
   "maturityLevel": "Nivo zrelosti {level}",
   "scorePoor": "1=Loše 5=Odlično",
-
   "catSort": "Sortiranje (Seiri)",
   "catSortShort": "Sortiranje",
   "catSortDesc": "Uklonite nepotrebne predmete",
@@ -26,7 +25,6 @@
   "catSafety": "Bezbednost",
   "catSafetyShort": "Bezbednost",
   "catSafetyDesc": "Identifikacija opasnosti",
-
   "sort_q1": "Da li su svi nepotrebni predmeti uklonjeni iz prostora?",
   "sort_q2": "Da li su predmeti sa crvenom oznakom pravilno identifikovani?",
   "sort_q3": "Da li postoji jasna razlika između potrebnog i nepotrebnog?",
@@ -57,18 +55,15 @@
   "safety_q3": "Da li su bezbednosne opasnosti identifikovane i rešene?",
   "safety_q4": "Da li su SDS/MSDS listovi dostupni?",
   "safety_q5": "Da li je protivpožarna oprema pregledana i dostupna?",
-
   "scoreBelowAvg": "Ispod proseka",
   "scoreAverage": "Prosečno",
   "scoreGood": "Dobro",
   "scoreExcellent": "Odlično",
-
   "matWorldClass": "Svetska klasa",
   "matSustainable": "Održivo",
   "matStandardized": "Standardizovano",
   "matDeveloping": "U razvoju",
   "matInitial": "Početno",
-
   "saveError": "Nije moguće sačuvati audit",
   "currentAudit": "Trenutni audit",
   "previousAudit": "Prethodni audit",
@@ -98,7 +93,6 @@
   "nextCategory": "Sledeće →",
   "saving": "Čuvanje...",
   "submitAudit": "Pošalji audit",
-
   "tpmTitle": "TPM Kontrolna tabla",
   "tpmSubtitle": "Total Productive Maintenance — Nula kvarova, nula defekata",
   "tpmRunning": "U radu",
@@ -113,7 +107,6 @@
   "statusMaintenance": "ODRŽAVANJE",
   "statusBreakdown": "KVAR",
   "nextPm": "Sledeći PM",
-
   "demoMode": "Demo",
   "tpmAddEquipment": "Dodaj opremu",
   "tpmEqName": "Naziv opreme",
@@ -170,7 +163,6 @@
   "dayFri": "Pet",
   "daySat": "Sub",
   "daySun": "Ned",
-
   "pillarAutonomous": "Autonomno održ.",
   "pillarPlanned": "Planirano održ.",
   "pillarQuality": "Kvalitetno održ.",
@@ -179,7 +171,6 @@
   "pillarTraining": "Obuka i obrazovanje",
   "pillarSafety": "Bezbednost i životna sredina",
   "pillarOffice": "Kancelarijski TPM",
-
   "eqCncLathe": "CNC Strug #1",
   "eqHydraulicPress": "Hidraulična presa",
   "eqWeldingRobot": "Robot za zavarivanje #3",
@@ -190,7 +181,6 @@
   "areaAssembly": "Montaža",
   "areaPackaging": "Pakovanje",
   "areaFinishing": "Završna obrada",
-
   "ciltTitle": "CILT Kontrolna lista",
   "ciltSubtitle": "Autonomno održavanje",
   "ciltProgress": "Napredak",
@@ -206,7 +196,6 @@
   "ciltSkipBtn": "Preskoči",
   "ciltDescribeIssue": "Opišite problem...",
   "ciltStandard": "Standard",
-
   "ciltCatC": "Čišćenje",
   "ciltCatI": "Inspekcija",
   "ciltCatL": "Podmazivanje",
@@ -214,10 +203,8 @@
   "ciltFreqDaily": "Dnevno",
   "ciltFreqWeekly": "Nedeljno",
   "ciltFreqMonthly": "Mesečno",
-
   "ciltViewExecute": "Izvrši kontrolnu listu",
   "ciltViewStandards": "Upravljanje standardima",
-
   "ciltLoadError": "Nije moguće učitati CILT standarde",
   "ciltStdCreated": "Standard uspešno kreiran",
   "ciltStdError": "Nije moguće kreirati standard",
@@ -271,12 +258,10 @@
   "ciltTime": "Vreme",
   "ciltStatus": "Status",
   "ciltNotes": "Napomene",
-
   "catCleaning": "Čišćenje",
   "catInspection": "Inspekcija",
   "catLubrication": "Podmazivanje",
   "catTightening": "Pritezanje",
-
   "cilt_clean1": "Očistiti spoljašnost mašine i korpu za strugotinu",
   "cilt_clean1_std": "Bez strugotine, ulja ili otpadaka",
   "cilt_clean2": "Obrisati kontrolnu tablu i senzore",
@@ -295,8 +280,12 @@
   "cilt_tight1_std": "Moment: 45 Nm",
   "cilt_tight2": "Proveriti temeljne vijke",
   "cilt_tight2_std": "Moment: 120 Nm, bez vidljivog pomeranja",
-
   "freqDaily": "dnevno",
   "freqWeekly": "nedeljno",
-  "freqMonthly": "mesečno"
+  "freqMonthly": "mesečno",
+  "tpmFleetHealth": "Zdravlje flote",
+  "tpmOverdueAlerts": "Zakasnela upozorenja",
+  "tpmEquipmentOverdue": "{count} oprema zakasnela",
+  "tpmEquipmentOverduePlural": "{count} opreme zakasnelo",
+  "tpmDueSince": "Zakasnelo od"
 }

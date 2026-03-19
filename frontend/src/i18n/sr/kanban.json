@@ -1,0 +1,64 @@
+{
+  "title": "Kanban Tabla",
+  "subtitle": "Upravljanje proizvodnjom pull-sistemom sa WIP limitima",
+  "boardView": "Tabla",
+  "newBoard": "Nova Tabla",
+  "createBoard": "Kreiraj Tablu",
+  "boardName": "Naziv Table",
+  "boardNamePlaceholder": "npr. Glavna Proizvodna Tabla",
+  "noBoards": "Nema tabli. Kreirajte jednu za pocetak.",
+
+  "col_backlog": "Zaostatak",
+  "col_in_queue": "U redu",
+  "col_in_progress": "U toku",
+  "col_done": "Zavrseno",
+  "col_shipped": "Isporuceno",
+  "column": "Kolona",
+  "emptyColumn": "Nema kartica u ovoj koloni",
+
+  "addCard": "Dodaj Karticu",
+  "newCard": "Nova Kartica",
+  "editCard": "Izmeni Karticu",
+  "createCard": "Kreiraj Karticu",
+  "updateCard": "Azuriraj Karticu",
+  "confirmDeleteCard": "Obrisati ovu karticu?",
+
+  "orderNumber": "Nalog #",
+  "productName": "Naziv Proizvoda",
+  "quantity": "Kolicina",
+  "priority": "Prioritet",
+  "priority_low": "Nizak",
+  "priority_medium": "Srednji",
+  "priority_high": "Visok",
+  "priority_urgent": "Hitan",
+  "dueDate": "Rok",
+  "assignedLine": "Dodeljena Linija",
+  "description": "Opis",
+  "descriptionPlaceholder": "Opis kartice...",
+  "titlePlaceholder": "Unesite naslov kartice...",
+  "unassigned": "Nedodeljeno",
+
+  "pull": "PULL",
+  "leadTime": "Vreme Isporuke",
+  "cycleTime": "Vreme Ciklusa",
+
+  "filters": "Filteri",
+  "allPriorities": "Svi Prioriteti",
+  "allLines": "Sve Linije",
+
+  "totalWIP": "Ukupan WIP",
+  "avgLeadTime": "Prosecno Vreme Isporuke",
+  "throughput": "Propusnost",
+  "onTimeDelivery": "Pravovremena Isporuka",
+
+  "saving": "Cuvanje...",
+  "cancel": "Otkazi",
+
+  "blocked": "Blokirano",
+  "markBlocked": "Oznaci kao blokirano",
+  "blockedReasonPlaceholder": "Razlog blokiranja...",
+  "cardAge": "Starost",
+  "days": "dana",
+
+  "exportTitle": "Izvoz Kanban Table"
+}

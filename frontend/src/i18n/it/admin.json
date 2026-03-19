@@ -167,5 +167,11 @@
   "savingDots": "Salvataggio...",
   "saved": "Salvato",
   "remove": "Rimuovi",
-  "confirmRemove": "Sei sicuro?"
+  "confirmRemove": "Sei sicuro?",
+
+  "downloadTemplates": "Scarica Modelli",
+  "downloadTemplatesDesc": "Scarica modelli CSV precompilati con intestazioni e dati di esempio.",
+  "uploadImport": "Carica e Importa",
+  "uploadImportDesc": "Seleziona un tipo di dati, carica il tuo CSV, valida e importa.",
+  "importResults": "Risultati Importazione"
 }

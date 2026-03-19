@@ -1,6 +1,2 @@
-"use client";
-import QCPolicyRepository from "@/components/manufacturing/QCPolicyRepository";
-
-export default function QCPoliciesRoute() {
-  return <QCPolicyRepository />;
-}
+import { redirect } from "next/navigation";
+export default function LegacyQCPolicies() { redirect("/quality"); }

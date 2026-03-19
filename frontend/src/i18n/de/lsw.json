@@ -15,5 +15,11 @@
   "todayTasks": "Heutige Aufgaben",
   "completionHistory": "Abschlussverlauf",
   "completion": "Abschluss",
-  "noTemplates": "Noch keine Vorlagen erstellt"
+  "noTemplates": "Noch keine Vorlagen erstellt",
+  "newTemplate": "Neue Vorlage",
+  "startChecklist": "Checkliste starten",
+  "saveCompletion": "Abschluss speichern",
+  "today": "Heute",
+  "templates": "Vorlagen",
+  "history": "Verlauf"
 }

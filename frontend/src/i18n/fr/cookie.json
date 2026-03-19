@@ -1,0 +1,14 @@
+{
+  "title": "Nous respectons votre vie privée",
+  "text": "Nous utilisons des cookies pour améliorer votre expérience et analyser le trafic.",
+  "accept": "Tout accepter",
+  "reject": "Tout refuser",
+  "settings": "Paramètres des cookies",
+  "save": "Enregistrer",
+  "back": "Retour",
+  "essentialTitle": "Cookies essentiels",
+  "essentialDesc": "Nécessaires au fonctionnement du site.",
+  "analyticsTitle": "Cookies analytiques",
+  "analyticsDesc": "Nous aident à comprendre comment les visiteurs interagissent avec le site.",
+  "alwaysOn": "Toujours actifs"
+}

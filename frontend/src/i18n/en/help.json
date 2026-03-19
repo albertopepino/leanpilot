@@ -1,0 +1,199 @@
+{
+  "ariaLabel": "Contextual Help Panel",
+  "openHelp": "What's this?",
+  "whatIsThis": "What is this?",
+  "whenToUse": "When to use it",
+  "dmaicPhase": "DMAIC Phase",
+  "connectedTools": "Connected Tools",
+  "proTip": "Pro Tip",
+
+  "phaseDefine": "Define",
+  "phaseMeasure": "Measure",
+  "phaseAnalyze": "Analyze",
+  "phaseImprove": "Improve",
+  "phaseControl": "Control",
+
+  "defineReason": "This tool helps you scope the problem and understand the current state before taking action.",
+  "measureReason": "This tool collects and visualizes data so you can quantify the gap between current and target performance.",
+  "analyzeReason": "This tool helps you identify and validate root causes using structured analysis methods.",
+  "improveReason": "This tool supports developing, testing, and implementing countermeasures to eliminate root causes.",
+  "controlReason": "This tool sustains the gains by standardizing new processes and monitoring performance over time.",
+
+  "oee_whatIsThis": "OEE (Overall Equipment Effectiveness) is the gold standard metric for measuring manufacturing productivity. It combines Availability, Performance, and Quality into a single percentage that tells you how effectively your equipment is being used. World-class OEE is 85% or above.",
+  "oee_whenToUse": "Review the OEE Dashboard daily during Tier 1 meetings and weekly for trend analysis. Use it when you need to identify which of the six big losses (breakdowns, setup, minor stops, reduced speed, startup rejects, production rejects) is your biggest opportunity. It is the starting point for any capacity or efficiency improvement project.",
+  "oee_proTip": "Don't chase 100% OEE — focus on the biggest loss category first. A 5% OEE improvement from eliminating your top downtime reason is worth more than spreading effort across all losses.",
+
+  "andon_whatIsThis": "The Andon Board is a real-time visual management system that signals the status of production lines. Originating from Toyota's production system, it enables operators to immediately flag problems — machine stops, quality issues, material shortages, or safety concerns — so that support teams can respond within minutes, not hours.",
+  "andon_whenToUse": "Use the Andon Board continuously during production shifts. Operators should trigger an Andon alert the moment an abnormality is detected. Supervisors should monitor the board to ensure response times stay under target. Review escalated events in daily SQCDP meetings to identify patterns.",
+  "andon_proTip": "The value of Andon is in the response speed, not the alert itself. Set escalation rules: if no response in 5 minutes, it goes to the supervisor; 15 minutes, to the production manager. Track mean time to respond (MTTR) as your key Andon KPI.",
+
+  "sqcdp_whatIsThis": "SQCDP (Safety, Quality, Cost, Delivery, People) is a structured daily management board used in Tier 1 and Tier 2 meetings. Each category gets a simple Red/Green/Yellow status for the day. It forces leadership to address all five dimensions of performance, not just output. This is the heartbeat of your daily management system.",
+  "sqcdp_whenToUse": "Hold a SQCDP review at the start of every shift or at minimum once daily. Tier 1 (line level) should take 10 minutes, Tier 2 (area/department) should take 15 minutes. Capture action items immediately and assign owners with due dates. Use it to escalate unresolved issues to higher tiers.",
+  "sqcdp_proTip": "Keep the SQCDP meeting standing-up, time-boxed, and action-oriented. The board is not a reporting tool — it's a problem-surfacing tool. If everything is green for a week straight, your standards are too loose.",
+
+  "kaizen_whatIsThis": "The Kaizen Board is your continuous improvement management system. It captures improvement ideas from anyone in the factory, tracks them through a structured workflow (submitted, approved, in-progress, completed, verified), and quantifies the financial and operational impact. Kaizen means 'change for better' — small, incremental improvements that compound over time.",
+  "kaizen_whenToUse": "Use the Kaizen Board to capture ideas from Gemba Walks, root cause analyses, SQCDP meetings, and operator suggestions. Review the board weekly to prioritize and assign resources. Track savings monthly and report them to management as part of your continuous improvement scorecard.",
+  "kaizen_proTip": "Set a target of 1 Kaizen per person per month. Quick wins (under 1 week, no budget) build the improvement culture. Not every Kaizen needs to save money — improvements in safety, ergonomics, and quality are equally valuable.",
+
+  "vsm_whatIsThis": "Value Stream Mapping is a Lean method for visualizing the entire flow of materials and information from raw material to customer delivery. It identifies every step in the process, measures lead time and cycle time at each stage, and highlights the ratio of value-adding to non-value-adding time. Typically, only 1-5% of total lead time is value-adding.",
+  "vsm_whenToUse": "Create a VSM at the start of any major improvement initiative or when you need to understand why lead times are longer than expected. Map the current state first, then design the future state with waste removed. Use it during Define phase to scope your improvement project and build the business case.",
+  "vsm_proTip": "Always walk the actual process (Gemba) while mapping — never create a VSM from a conference room. Focus on one product family at a time. The future state map should be achievable within 6-12 months, not a theoretical ideal.",
+
+  "sixs_whatIsThis": "6S Audit is a systematic workplace organization method. The six S's are Sort, Set in Order, Shine, Standardize, Sustain, and Safety. It creates a visual workplace where abnormalities are immediately obvious, waste is minimized, and everyone knows where everything belongs. 6S is the foundation of all other Lean tools — without it, improvements won't stick.",
+  "sixs_whenToUse": "Conduct 6S audits at least weekly for each area, ideally as part of the Leader Standard Work routine. Score each S category on a 1-5 scale and track trends over time. Use the results to identify areas that need coaching and to celebrate teams that sustain high standards.",
+  "sixs_proTip": "6S is not a cleaning program — it's a discipline system. The audit score matters less than the trend. A team going from 2.5 to 3.5 consistently is more impressive than a team fluctuating between 3 and 5.",
+
+  "smed_whatIsThis": "SMED (Single-Minute Exchange of Die) is a systematic method for reducing changeover time — the time between the last good piece of the previous run and the first good piece of the next run. By converting internal setup tasks (done while machine is stopped) to external tasks (done while machine is running), changeover time can typically be reduced by 50-90%.",
+  "smed_whenToUse": "Apply SMED when changeover time is a significant portion of your downtime (check your OEE loss waterfall). It is especially valuable when you need to reduce batch sizes to improve flexibility, when changeover frequency is increasing due to product mix, or when OEE availability is below target.",
+  "smed_proTip": "Video-record every changeover before analyzing it. You'll discover that 30-50% of internal time is actually external work that can be done in advance. The biggest quick wins are always in preparation and organization, not in faster wrench-turning.",
+
+  "tpm_whatIsThis": "TPM (Total Productive Maintenance) is a holistic approach to equipment maintenance that strives for zero breakdowns, zero defects, and zero accidents. It shifts maintenance from reactive (fix when broken) to proactive (prevent before it breaks). TPM involves operators in daily maintenance through autonomous maintenance routines, while maintenance teams focus on planned and predictive maintenance.",
+  "tpm_whenToUse": "Use the TPM Dashboard to track equipment health, schedule preventive maintenance, and monitor overdue tasks. Operators should complete daily CILT checks. Maintenance teams should review the dashboard weekly to plan PM activities. When a breakdown occurs, always do a 5-Why analysis and update the PM schedule to prevent recurrence.",
+  "tpm_proTip": "Start TPM on your bottleneck equipment first — that's where breakdowns hurt the most. Track MTBF (Mean Time Between Failures) and MTTR (Mean Time To Repair) for each critical machine. When MTBF starts trending up, your TPM program is working.",
+
+  "gemba_whatIsThis": "Gemba Walk is the practice of going to the actual workplace (Gemba means 'the real place' in Japanese) to observe processes, engage with operators, and identify waste and improvement opportunities firsthand. It is not an audit or inspection — it's a learning exercise where leaders ask questions and listen, building respect for people while understanding the reality of the shop floor.",
+  "gemba_whenToUse": "Leaders should do a structured Gemba Walk at least once per week, following a standard route and checklist. Use it to verify that standards are being followed, that 6S conditions are maintained, that visual management boards are updated, and to hear directly from operators about obstacles and improvement ideas.",
+  "gemba_proTip": "Follow the 3 rules of Gemba: go see, ask why, show respect. Never give orders during a Gemba Walk. Instead, ask 'What obstacles are you facing?' and 'What would make your job easier?' Then follow up on what you learn — broken promises destroy the Gemba culture.",
+
+  "a3_whatIsThis": "The A3 Report is a structured problem-solving methodology that fits on a single A3-size paper (11x17 inches). Named after Toyota's practice of communicating on one sheet, it follows the PDCA cycle: define the problem, analyze root causes, develop countermeasures, create an implementation plan, and verify results. It forces concise, visual thinking and is the language of problem solving in Lean organizations.",
+  "a3_whenToUse": "Use an A3 for medium-to-large problems that require cross-functional collaboration and management approval. It is the ideal format when a simple 5-Why isn't enough, when the problem affects multiple departments, or when you need to communicate a problem and solution to leadership. Every A3 should have a clear problem statement with measurable gap.",
+  "a3_proTip": "The A3 is a coaching tool, not a form to fill out. The mentor-mentee dialogue while building the A3 is more valuable than the document itself. Never jump to countermeasures before thoroughly understanding the current condition and root causes.",
+
+  "hourly_whatIsThis": "The Hourly Production Board tracks planned vs. actual output for every hour of the shift. It is the most granular shop floor management tool — making problems visible within 60 minutes instead of discovering them at the end of the shift. When actual falls behind planned, the team must immediately identify the reason and take action.",
+  "hourly_whenToUse": "Use the Hourly Board during every production shift. Operators should update it every hour. Team leaders should review it every 2 hours and escalate via Andon if the cumulative gap exceeds the recovery threshold. At shift end, summarize the top 3 loss reasons and carry them into the shift handover.",
+  "hourly_proTip": "The power of hourly tracking is the reaction, not the recording. If nobody responds when actual falls behind planned, the board becomes wallpaper. Set a clear rule: a gap of more than X units triggers a team leader response within 15 minutes.",
+
+  "lsw_whatIsThis": "Leader Standard Work (LSW) defines the recurring tasks, checks, and behaviors expected of each leadership level — from team leaders to plant managers. It ensures that leaders spend their time on the highest-value activities: confirming process stability, coaching team members, and removing obstacles. Without LSW, leaders default to firefighting instead of prevention.",
+  "lsw_whenToUse": "Create LSW for every leadership role in your organization. Team leaders might have hourly tasks (check Hourly Board, respond to Andon), daily tasks (attend SQCDP, do Gemba Walk), and weekly tasks (review 6S scores, update Kaizen Board). Track completion rates to identify coaching opportunities.",
+  "lsw_proTip": "LSW is not about controlling leaders — it's about protecting their time for the work that matters most. If a leader can't complete their LSW tasks, that's a signal that they're being pulled into firefighting, which is itself a problem to solve.",
+
+  "handover_whatIsThis": "Shift Handover is a structured communication process between outgoing and incoming shifts. It ensures that critical information — open issues, quality concerns, equipment status, safety alerts, production progress, and pending actions — is transferred completely and accurately. Poor handovers are one of the most common causes of recurring problems in 24/7 operations.",
+  "handover_whenToUse": "Complete a shift handover at every shift change without exception. The outgoing shift leader should prepare the handover 15-30 minutes before shift end. The incoming shift leader should review, ask questions, and acknowledge receipt. Auto-generate handovers from Andon events, production data, and quality records to save time and ensure completeness.",
+  "handover_proTip": "The best handovers follow a standard format: Safety first, then Quality, then Production, then Equipment, then People issues. The incoming shift should physically walk the line with the outgoing shift at least once per day, not just read a report.",
+
+  "safety_whatIsThis": "The Safety Tracker records and monitors all safety incidents, near-misses, observations, and hazard reports. It follows Heinrich's Triangle: for every serious injury, there are approximately 300 near-misses. By aggressively tracking and resolving near-misses, you prevent the serious incidents. Safety is always the first S in SQCDP for a reason.",
+  "safety_whenToUse": "Log every safety event immediately when it occurs — incidents, near-misses, and unsafe conditions. Review all events in the daily SQCDP meeting. Investigate serious incidents with a 5-Why analysis within 24 hours. Track leading indicators (near-miss reports, safety observations) not just lagging indicators (injury rates).",
+  "safety_proTip": "Celebrate near-miss reporting — it means your team trusts the system. A factory with zero near-miss reports doesn't have zero hazards; it has a reporting culture problem. Target at least 10 near-miss reports per 100 employees per month.",
+
+  "kanban_whatIsThis": "Kanban is a visual scheduling system that controls the flow of work and materials through the production process using signal cards or digital signals. It implements a pull system: downstream processes signal upstream when they need replenishment, preventing overproduction — the worst of the seven wastes. Kanban makes WIP (Work in Progress) visible and limited.",
+  "kanban_whenToUse": "Implement Kanban when you need to control inventory levels between process steps, when overproduction is causing storage, handling, or obsolescence waste, or when you want to transition from a push to a pull production system. Start with a simple two-bin system for high-volume, stable-demand items.",
+  "kanban_proTip": "Start with more Kanban cards than you think you need, then systematically reduce them. Each time you remove a card, the system will expose the next constraint or problem — that's the improvement opportunity. Kanban is not just a scheduling tool; it's a continuous improvement engine.",
+
+  "pokayoke_whatIsThis": "Poka-Yoke (mistake-proofing) is the practice of designing processes, fixtures, and systems so that errors are either impossible to make or immediately detected before they become defects. Invented by Shigeo Shingo at Toyota, it shifts quality control from inspection (finding defects) to prevention (making defects impossible).",
+  "pokayoke_whenToUse": "Apply Poka-Yoke whenever a 5-Why analysis reveals human error as a root cause — but never blame the operator. Instead, ask 'How can we make it impossible to make this mistake?' Prioritize Poka-Yoke for safety-critical processes, high-cost defects, and frequently occurring errors. Every NCR should trigger a Poka-Yoke evaluation.",
+  "pokayoke_proTip": "The best Poka-Yokes are simple and low-cost: asymmetric connectors, color coding, limit switches, checklists with forced sequencing. If your Poka-Yoke requires training to understand, it's not a Poka-Yoke — it's just another procedure.",
+
+  "fivewhy_whatIsThis": "5 Why Analysis is a root cause analysis technique that drills down from a symptom to its fundamental cause by repeatedly asking 'Why?' Typically, the true root cause is reached within 5 iterations. It was developed by Sakichi Toyoda and is the simplest yet most powerful tool in the Lean problem-solving toolkit.",
+  "fivewhy_whenToUse": "Use 5 Why for every significant quality defect, equipment breakdown, safety incident, or customer complaint. It should be the first analysis tool you reach for. If the 5 Why reveals multiple branches or systemic issues, escalate to an Ishikawa diagram or A3 report for deeper analysis.",
+  "fivewhy_proTip": "Every 'Why' answer must be a fact, not an opinion. Verify each answer at the Gemba before going to the next Why. If your 5 Why ends at 'operator error' or 'lack of training,' you haven't gone deep enough — ask why the system allowed that error.",
+
+  "ishikawa_whatIsThis": "The Ishikawa Diagram (also called Fishbone or Cause-and-Effect diagram) is a structured brainstorming tool that organizes potential causes of a problem into categories: Man, Machine, Method, Material, Measurement, and Mother Nature (Environment). Created by Kaoru Ishikawa, it prevents teams from jumping to conclusions and ensures all possible cause categories are explored.",
+  "ishikawa_whenToUse": "Use an Ishikawa diagram when the problem has multiple potential causes across different categories, when a 5-Why analysis is branching in too many directions, or when you need to facilitate a cross-functional brainstorming session. It pairs perfectly with a Pareto chart to prioritize which causes to investigate first.",
+  "ishikawa_proTip": "Don't brainstorm causes from a conference room — bring the team to the Gemba and build the diagram while looking at the actual process. For each cause listed, immediately ask 'Do we have data to confirm or deny this?' If not, that's your next action item.",
+
+  "pareto_whatIsThis": "The Pareto Chart applies the 80/20 principle to manufacturing data: typically, 80% of problems come from 20% of causes. It displays defect types, downtime reasons, or waste categories in descending order with a cumulative percentage line. It transforms overwhelming data into clear priorities, telling you exactly where to focus your limited improvement resources.",
+  "pareto_whenToUse": "Use a Pareto Chart whenever you have categorical data and need to prioritize improvement actions. Common applications: top defect types from QC data, top downtime reasons from OEE, top waste categories from TIMWOODS tracking, top complaint types from customer feedback. Update it monthly to confirm your improvements are moving the needle.",
+  "pareto_proTip": "After fixing the top Pareto category, always re-run the analysis. The new #1 issue was previously hidden behind the bigger problem. This 'peeling the onion' approach drives sustained improvement. If your Pareto doesn't change after an improvement cycle, the countermeasure didn't work.",
+
+  "waste_whatIsThis": "The Waste Tracker uses the TIMWOODS framework to identify, categorize, and quantify the eight types of manufacturing waste: Transport, Inventory, Motion, Waiting, Over-production, Over-processing, Defects, and Skills (underutilized talent). In Lean, anything the customer wouldn't pay for is waste. Most factories have 60-95% waste in their processes.",
+  "waste_whenToUse": "Use the Waste Tracker during Gemba Walks to log waste observations in real-time. Run a focused waste walk monthly for each production area. Use the data to feed your VSM analysis, prioritize Kaizen projects, and quantify improvement opportunities. Track waste reduction trends to demonstrate continuous improvement to management.",
+  "waste_proTip": "Don't try to eliminate all waste at once — use Pareto thinking to attack the biggest waste category first. Also remember: some waste is necessary waste (e.g., inspection until you implement Poka-Yoke). The goal is to see waste clearly and systematically reduce it.",
+
+  "cilt_whatIsThis": "CILT (Cleaning, Inspection, Lubrication, Tightening) is the operator-level autonomous maintenance checklist that forms the foundation of TPM. It empowers operators to maintain their own equipment through daily standardized checks, catching deterioration early before it becomes a breakdown. CILT is where operators become equipment owners.",
+  "cilt_whenToUse": "Execute CILT checks at the start of every shift or during planned breaks. Each machine should have a visual CILT standard posted showing what to check, how to check it, and what good looks like. Track compliance rates daily and review non-conformances in the SQCDP meeting. Update CILT standards whenever a new failure mode is discovered.",
+  "cilt_proTip": "The best CILT standards are visual — photos of 'good' vs 'bad' condition, color-coded lubrication points, tactile inspection guides. If an operator needs to read a paragraph to complete a check, the standard is too complex. Aim for a complete CILT round in under 10 minutes.",
+
+  "qc_whatIsThis": "The Quality Control Dashboard provides a centralized view of all quality activities: inspection results, defect trends, NCR status, CAPA progress, and process capability. It connects the dots between quality data collection (inspections), problem identification (NCRs), root cause analysis (5-Why, Ishikawa), and corrective action (CAPA, Kaizen).",
+  "qc_whenToUse": "Review the QC Dashboard daily for incoming inspection results and active NCRs. Weekly, analyze defect trends and process capability metrics. Monthly, review CAPA effectiveness and quality cost reports. Use it as the single source of truth for quality performance in management reviews and customer audits.",
+  "qc_proTip": "Quality is free — it's the lack of quality that costs money. Track Cost of Poor Quality (COPQ) including scrap, rework, warranty, and inspection costs. When you can show COPQ as a percentage of revenue, you'll never struggle to get resources for quality improvement.",
+
+  "spc_whatIsThis": "SPC (Statistical Process Control) Charts monitor process variation over time using control limits calculated from your own data. They distinguish between common cause variation (inherent to the process) and special cause variation (assignable, abnormal events). An in-control process produces predictable output; an out-of-control process is a ticking time bomb.",
+  "spc_whenToUse": "Apply SPC to critical-to-quality (CTQ) characteristics identified by your customers or specifications. Monitor SPC charts in real-time during production. React immediately to out-of-control signals (points outside control limits, runs, trends). Use process capability indices (Cp, Cpk) to verify your process can consistently meet specifications.",
+  "spc_proTip": "Never confuse specification limits with control limits — they are fundamentally different. A process can be in statistical control but still not capable of meeting specs (Cpk < 1.33). Conversely, tightening specs doesn't improve your process. Focus on reducing variation, and capability will follow.",
+
+  "assessment_whatIsThis": "The Lean Assessment is a structured maturity evaluation that scores your factory across all dimensions of Lean manufacturing. It identifies your current state on a 1-5 maturity scale for each Lean pillar and generates a prioritized roadmap of recommended tools and improvements. It is the strategic starting point of your Lean transformation journey.",
+  "assessment_whenToUse": "Complete the Lean Assessment when first onboarding to LeanPilot, then repeat it every 6 months to measure progress. Use the results to set improvement priorities, allocate resources, and build the business case for Lean initiatives. Share the spider chart with leadership to create alignment on where to focus.",
+  "assessment_proTip": "Be honest in your assessment — inflated scores lead to wrong priorities. Have multiple people from different levels complete it independently, then discuss the gaps. The disagreements are the most valuable part of the exercise.",
+
+  "auditScheduler_whatIsThis": "The Audit Scheduler manages all recurring audit and review cycles: 6S audits, process audits, safety walks, Gemba routes, and layered process audits. It ensures nothing falls through the cracks by automatically scheduling, assigning, and tracking completion of all audit activities across the factory.",
+  "auditScheduler_whenToUse": "Configure your audit schedule during initial setup and review it quarterly. Use it to ensure audit frequency matches risk level — critical processes need more frequent audits. Track overdue audits as a leading indicator of management system health. Escalate chronically overdue audits in management reviews.",
+  "auditScheduler_proTip": "Layered process audits (LPA) are the most effective: have operators audit their own area daily, supervisors audit weekly, managers audit monthly. Each layer checks different things. The audit itself is less important than the conversation it creates.",
+
+  "spcTitle": "SPC Charts",
+
+  "learnMore": "Learn more",
+  "gotIt": "Got it!",
+  "dismissTip": "Dismiss tip",
+  "metric_explain_aria": "Explain this metric",
+  "metric_benchmark_label": "Good looks like:",
+  "metric_action_label": "If it's low:",
+  "metric_status_good": "On target",
+  "metric_status_warning": "Needs attention",
+  "metric_status_critical": "Critical — action needed",
+
+  "metric_oee_title": "OEE",
+  "metric_oee_desc": "Overall Equipment Effectiveness combines Availability x Performance x Quality into one percentage. It tells you how much of your planned production time is truly productive.",
+  "metric_oee_bench": "World-class OEE is 85%+. Most factories start at 40-60%. An improvement of 1% OEE on a bottleneck line directly increases capacity.",
+  "metric_oee_action": "Check the OEE loss waterfall to find your biggest loss. Focus on the #1 loss category — usually breakdowns or changeovers. Open a Kaizen or 5-Why analysis.",
+
+  "metric_availability_title": "Availability",
+  "metric_availability_desc": "The percentage of planned production time that the line was actually running. Losses include breakdowns, changeovers, material shortages, and any unplanned stoppages.",
+  "metric_availability_bench": "World-class availability is 90%+. Track your top 3 downtime reasons and attack the biggest one first.",
+  "metric_availability_action": "Review downtime Pareto chart. If breakdowns dominate, strengthen TPM/CILT. If changeovers dominate, apply SMED. If material shortages, improve Kanban signals.",
+
+  "metric_performance_title": "Performance",
+  "metric_performance_desc": "The percentage of theoretical maximum speed achieved while the line was running. Losses include minor stops (under 5 min), reduced speed, and operator pace variation.",
+  "metric_performance_bench": "World-class performance is 95%+. Minor stops are often the hidden factory — they seem small but add up fast.",
+  "metric_performance_action": "Check for minor stops and speed losses. Use the Hourly Board to spot patterns. Investigate with 5-Why if the line consistently runs below rated speed.",
+
+  "metric_quality_title": "Quality",
+  "metric_quality_desc": "The percentage of parts produced that are right first time — no scrap, no rework. Also called First Time Yield (FTY) at the line level.",
+  "metric_quality_bench": "World-class quality rate is 99.9%+. Every 0.1% improvement reduces scrap cost and customer complaints.",
+  "metric_quality_action": "Review defect Pareto from QC Dashboard. Apply Poka-Yoke for top defect types. Use SPC charts to detect process drift before it creates defects.",
+
+  "metric_mtbf_title": "MTBF",
+  "metric_mtbf_desc": "Mean Time Between Failures — the average time a machine runs before a breakdown occurs. Higher is better. It measures equipment reliability.",
+  "metric_mtbf_bench": "Target varies by machine type. Track the trend: MTBF should increase over time as your TPM program matures.",
+  "metric_mtbf_action": "Strengthen preventive maintenance schedules. Review CILT compliance. Do 5-Why for every breakdown and update the PM plan to prevent recurrence.",
+
+  "metric_mttr_title": "MTTR",
+  "metric_mttr_desc": "Mean Time To Repair — the average time to restore a machine after a breakdown. Lower is better. It measures maintenance response effectiveness.",
+  "metric_mttr_bench": "Target under 30 minutes for most equipment. Ensure spare parts are stocked for critical failure modes.",
+  "metric_mttr_action": "Pre-position spare parts and tools. Create standard repair procedures. Train operators on basic troubleshooting to reduce waiting time for maintenance.",
+
+  "metric_fty_title": "FTY",
+  "metric_fty_desc": "First Time Yield — the percentage of units that pass quality inspection on the first attempt without rework or scrap. It is the truest measure of process quality.",
+  "metric_fty_bench": "Target 95%+ for most processes. World-class is 99%+. Each rework loop adds cost and lead time.",
+  "metric_fty_action": "Identify top defect types with Pareto analysis. Apply Poka-Yoke for human errors. Use SPC to monitor process stability and catch drift early.",
+
+  "metric_cp_title": "Cp",
+  "metric_cp_desc": "Process Capability index — measures whether the process spread (6 sigma) fits within the specification tolerance. It assumes the process is centered.",
+  "metric_cp_bench": "Cp >= 1.33 means the process is capable. Cp >= 2.0 is six-sigma level. Cp < 1.0 means specifications are tighter than the process can deliver.",
+  "metric_cp_action": "Reduce process variation through SPC monitoring, maintenance improvements, and standardized procedures. A low Cp requires fundamental process changes.",
+
+  "metric_cpk_title": "Cpk",
+  "metric_cpk_desc": "Process Capability index (centered) — like Cp but accounts for how well the process is centered between specification limits. The practical capability metric.",
+  "metric_cpk_bench": "Cpk >= 1.33 is the industry standard minimum. If Cpk < Cp, the process is off-center — adjust the mean first, then reduce variation.",
+  "metric_cpk_action": "If Cpk < Cp, recenter the process (adjust settings). If both are low, reduce variation through root cause analysis on the biggest sources of variability.",
+
+  "metric_ppm_title": "PPM",
+  "metric_ppm_desc": "Parts Per Million defective — the number of defective units per million produced. A universal quality metric that allows comparison across products and processes.",
+  "metric_ppm_bench": "Under 100 PPM is excellent. Automotive industry targets often require under 50 PPM. World-class is under 10 PPM.",
+  "metric_ppm_action": "Focus on the top defect type first. Apply mistake-proofing (Poka-Yoke). Use SPC to maintain statistical control. Every PPM reduction directly impacts customer satisfaction.",
+
+  "metric_sigma_title": "Sigma Level",
+  "metric_sigma_desc": "The process sigma level indicates how many standard deviations fit between the process mean and the nearest specification limit. Higher sigma means fewer defects.",
+  "metric_sigma_bench": "3 sigma = 66,807 PPM (93.3%). 4 sigma = 6,210 PPM (99.38%). 6 sigma = 3.4 PPM (99.9997%). Most factories operate between 3 and 4 sigma.",
+  "metric_sigma_action": "Identify and eliminate the largest sources of variation using SPC, 5-Why, and designed experiments. Focus on CTQ characteristics that matter most to customers.",
+
+  "metric_takt_title": "Takt Time",
+  "metric_takt_desc": "The pace of production needed to match customer demand. Calculated as Available Production Time / Customer Demand. It is the heartbeat of a Lean production line.",
+  "metric_takt_bench": "Cycle time should be at or slightly below takt time. If cycle time > takt, you cannot meet demand. If much less, you may be overproducing.",
+  "metric_takt_action": "If behind takt, identify the bottleneck with time studies. Apply line balancing to redistribute work. If consistently ahead of takt, reduce staffing or batch sizes.",
+
+  "firstVisitTip_oee": "OEE measures how effectively your equipment runs. It combines Availability x Performance x Quality. World-class OEE is 85%+. Start by identifying your biggest loss category in the waterfall chart.",
+  "firstVisitTip_kanban": "Kanban boards visualize work flow and limit Work-In-Progress (WIP). Drag cards between columns as work progresses. When a column hits its WIP limit, stop starting and start finishing.",
+  "firstVisitTip_fiveWhy": "5 Why analysis finds root causes by asking 'Why?' repeatedly until you reach the systemic cause. Each answer must be a verified fact. If you end at 'human error,' keep asking why the system allowed it.",
+  "firstVisitTip_kaizen": "Kaizen means continuous improvement. Submit ideas from anyone, track them through approval to verification, and measure the impact. Aim for 1 improvement per person per month — small wins compound.",
+  "firstVisitTip_sixS": "6S creates organized, visual workplaces: Sort, Set in Order, Shine, Standardize, Sustain, Safety. It is the foundation of all Lean tools. Score each S on a 1-5 scale and track the trend over time."
+}

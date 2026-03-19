@@ -4,7 +4,7 @@ import { useFocusTrap } from "@/hooks/useFocusTrap";
 interface Props {
   t: (key: string) => string;
   onClose: () => void;
-  lang: "en" | "it";
+  lang: "en" | "it" | "sr";
 }
 
 /**
@@ -17,7 +17,7 @@ interface Props {
  * This is a structural template. Replace [COMPANY] placeholders with real data.
  */
 export default function PrivacyModal({ t, onClose, lang }: Props) {
-  const content = lang === "en" ? privacyEN : privacyIT;
+  const content = lang === "sr" ? privacySR : lang === "it" ? privacyIT : privacyEN;
   const trapRef = useFocusTrap<HTMLDivElement>();
 
   return (
@@ -35,7 +35,7 @@ export default function PrivacyModal({ t, onClose, lang }: Props) {
             className="text-gray-400 hover:text-white transition text-2xl leading-none"
             aria-label="Close"
           >
-            ×
+            &times;
           </button>
         </div>
 
@@ -67,7 +67,7 @@ export default function PrivacyModal({ t, onClose, lang }: Props) {
 
 const privacyEN = `
 <h3>1. Data Controller</h3>
-<p>Centro Studi Grassi S.r.l., Via Example 1, Milan, Italy<br/>
+<p>Centro Studi Grassi S.r.l., Via Roma 15, 20121 Milano, Italy<br/>
 Email: privacy@autopilot.rs<br/>
 Data Protection Officer: dpo@autopilot.rs</p>
 
@@ -146,7 +146,7 @@ Data Protection Officer: dpo@autopilot.rs</p>
 
 const privacyIT = `
 <h3>1. Titolare del Trattamento</h3>
-<p>Centro Studi Grassi S.r.l., Via Example 1, Milano, Italia<br/>
+<p>Centro Studi Grassi S.r.l., Via Roma 15, 20121 Milano, Italia<br/>
 Email: privacy@autopilot.rs<br/>
 Responsabile Protezione Dati: dpo@autopilot.rs</p>
 
@@ -221,4 +221,84 @@ Responsabile Protezione Dati: dpo@autopilot.rs</p>
 <p>Hai il diritto di presentare reclamo alla tua autorità locale di protezione dati. In Italia: Garante per la protezione dei dati personali. In Serbia: Poverenik za informacije od javnog značaja i zaštitu podataka o ličnosti.</p>
 
 <p><em>Ultimo aggiornamento: Marzo 2026</em></p>
+`;
+
+const privacySR = `
+<h3>1. Ko smo mi</h3>
+<p>Centro Studi Grassi S.r.l., Via Roma 15, 20121 Milano, Italija<br/>
+Email: privacy@autopilot.rs<br/>
+Lice za zaštitu podataka o ličnosti (DPO): dpo@autopilot.rs</p>
+
+<h3>2. DPO kontakt</h3>
+<p>Za sva pitanja u vezi sa obradom vaših podataka o ličnosti, možete kontaktirati našeg DPO na: dpo@autopilot.rs</p>
+
+<h3>3. Koje podatke obrađujemo i zašto</h3>
+<p>Obrađujemo sledeće kategorije podataka o ličnosti:</p>
+<ul>
+  <li><strong>Podaci o nalogu:</strong> Email adresa, ime, naziv fabrike, uloga — za kreiranje i upravljanje vašim nalogom (Pravni osnov: GDPR čl. 6(1)(b) — izvršenje ugovora; ZZLP čl. 12 st. 1 tač. 2)</li>
+  <li><strong>Podaci o korišćenju:</strong> Korišćene funkcije, trajanje sesije, posećene stranice — za unapređenje platforme (Pravni osnov: GDPR čl. 6(1)(f) — legitimni interes, ili čl. 6(1)(a) — pristanak za analitičke kolačiće; ZZLP čl. 12 st. 1 tač. 6 ili tač. 1)</li>
+  <li><strong>Operativni podaci fabrike:</strong> OEE metrike, evidencija proizvodnje, logovi zastoja, podaci o kvalitetu — to su podaci koje VI unosite za korišćenje lean alata (Pravni osnov: GDPR čl. 6(1)(b) — izvršenje ugovora; ZZLP čl. 12 st. 1 tač. 2)</li>
+  <li><strong>Podaci o AI interakciji:</strong> Chat poruke sa Factory Copilot-om — za pružanje AI analize (Pravni osnov: GDPR čl. 6(1)(b) — izvršenje ugovora; ZZLP čl. 12 st. 1 tač. 2)</li>
+</ul>
+
+<h3>4. Koliko čuvamo vaše podatke</h3>
+<ul>
+  <li>Podaci o nalogu: čuvaju se dok je nalog aktivan + 30 dana nakon zahteva za brisanje</li>
+  <li>Operativni podaci fabrike: čuvaju se dok je vaša pretplata aktivna. Izvoz/brisanje na zahtev.</li>
+  <li>Podaci o AI konverzacijama: čuvaju se 90 dana, zatim se automatski brišu</li>
+  <li>Analitički podaci: anonimizuju se nakon 26 meseci (ako je dat pristanak)</li>
+</ul>
+
+<h3>5. Vaša prava</h3>
+<p>U skladu sa GDPR (čl. 15-22) i ZZLP (čl. 26-37), imate pravo da:</p>
+<ul>
+  <li><strong>Pristupite</strong> vašim podacima o ličnosti (GDPR čl. 15; ZZLP čl. 26)</li>
+  <li><strong>Ispravite</strong> netačne podatke (GDPR čl. 16; ZZLP čl. 29)</li>
+  <li><strong>Obrišete</strong> vaše podatke ("pravo na zaborav") (GDPR čl. 17; ZZLP čl. 30)</li>
+  <li><strong>Ograničite</strong> obradu (GDPR čl. 18; ZZLP čl. 31)</li>
+  <li><strong>Prenosivost podataka</strong> — izvoz u mašinski čitljivom formatu (GDPR čl. 20; ZZLP čl. 36)</li>
+  <li><strong>Prigovorite</strong> obradi zasnovanoj na legitimnom interesu (GDPR čl. 21; ZZLP čl. 37)</li>
+  <li><strong>Povučete pristanak</strong> u bilo kom trenutku (GDPR čl. 7(3); ZZLP čl. 15 st. 3)</li>
+</ul>
+<p>Za ostvarivanje bilo kog prava, pišite na: privacy@autopilot.rs. Odgovaramo u roku od 30 dana.</p>
+
+<h3>6. Međunarodni transferi</h3>
+<p>Vaši podaci se obrađuju u okviru EU/EEA. Ako prenosimo podatke van EEA (npr. AI obrada putem OpenAI), koristimo Standardne ugovorne klauzule (SCCs) u skladu sa GDPR čl. 46(2)(c).</p>
+<p>Za korisnike u Srbiji: postupamo u skladu sa ZZLP (Zakon o zaštiti podataka o ličnosti, "Sl. glasnik RS", br. 87/2018) i obezbeđujemo ekvivalentan nivo zaštite podataka. Transfer podataka u treće zemlje vrši se u skladu sa čl. 65 ZZLP.</p>
+
+<h3>7. Bezbednost</h3>
+<p>Primenjujemo odgovarajuće tehničke i organizacione mere uključujući: enkripciju u prenosu (TLS 1.2+), kontrole pristupa zasnovane na ulogama, heširanje lozinki (bcrypt), upravljanje JWT tokenima, redovne procene bezbednosti i procedure reagovanja na incidente. Bezbednost baze podataka se upravlja na nivou infrastrukture od strane hosting provajdera.</p>
+
+<h3>8. Pod-obrađivači</h3>
+<p>Koristimo sledeće pod-obrađivače:</p>
+<ul>
+  <li>Cloud hosting: Hetzner Cloud — data centar u EU (Nemačka/Finska)</li>
+  <li>Dostava emailova: SMTP servis — za slanje pristupnih podataka za nalog</li>
+  <li>Obrada plaćanja: Stripe — usklađen sa PCI DSS (nezavisni rukovalac za podatke o plaćanju)</li>
+  <li>AI obrada: OpenAI — sa DPA i SCC ugovorima (samo Pro plan)</li>
+</ul>
+
+<h3>9. Kolačići</h3>
+<ul>
+  <li><strong>Neophodni kolačići:</strong> Upravljanje sesijom, jezička preferencija, bezbednosni tokeni — nije potreban pristanak (izuzeće prema ePrivacy čl. 5(3))</li>
+  <li><strong>Analitički kolačići:</strong> Samo uz vaš izričiti pristanak — možete promeniti podešavanja u bilo kom trenutku putem podešavanja kolačića</li>
+</ul>
+
+<h3>10. Deca</h3>
+<p>LeanPilot je B2B servis namenjen profesionalcima u proizvodnji. Ne prikupljamo svesno podatke od lica mlađih od 16 godina (ZZLP čl. 16).</p>
+
+<h3>11. Promene politike</h3>
+<p>Obavestićemo vas o značajnim promenama putem emaila najmanje 30 dana pre njihovog stupanja na snagu.</p>
+
+<h3>12. Nadzorni organi</h3>
+<p>Imate pravo da podnesete pritužbu nadležnom organu za zaštitu podataka. U Srbiji: Poverenik za informacije od javnog značaja i zaštitu podataka o ličnosti (https://www.poverenik.rs). U Italiji: Garante per la protezione dei dati personali.</p>
+
+<h3>13. Kontakt</h3>
+<p>Za sva pitanja u vezi sa ovom politikom privatnosti ili obradom vaših podataka o ličnosti:<br/>
+Centro Studi Grassi S.r.l.<br/>
+Via Roma 15, 20121 Milano, Italija<br/>
+Email: privacy@autopilot.rs<br/>
+DPO: dpo@autopilot.rs</p>
+
+<p><em>Poslednje ažuriranje: mart 2026.</em></p>
 `;

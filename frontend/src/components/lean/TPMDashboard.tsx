@@ -21,6 +21,13 @@ import {
   BarChart3,
   MapPin,
   Activity,
+  Columns3,
+  GraduationCap,
+  ShieldCheck,
+  Briefcase,
+  Target,
+  BookOpen,
+  HeartPulse,
 } from "lucide-react";
 
 /* ───────── Types ───────── */
@@ -100,7 +107,7 @@ const maintTypeStyle: Record<string, string> = {
 
 /* ───────── Helpers ───────── */
 
-type TabId = "equipment" | "calendar" | "history";
+type TabId = "equipment" | "pillars" | "calendar" | "history";
 
 function getHealthColor(nextPm: string | undefined | null): "green" | "yellow" | "red" {
   if (!nextPm) return "red";
@@ -196,9 +203,11 @@ export default function TPMDashboard() {
         advancedLeanApi.listEquipment(),
         advancedLeanApi.getOverdueEquipment().catch(() => ({ data: [] })),
       ]);
-      const items: Equipment[] = eqRes.data?.data ?? eqRes.data ?? [];
+      const rawItems = eqRes.data?.data ?? eqRes.data ?? [];
+      const items: Equipment[] = Array.isArray(rawItems) ? rawItems : [];
       setEquipment(items);
-      setOverdueList(overdueRes.data?.data ?? overdueRes.data ?? []);
+      const rawOverdue = overdueRes.data?.data ?? overdueRes.data ?? [];
+      setOverdueList(Array.isArray(rawOverdue) ? rawOverdue : []);
     } catch {
       setEquipment([]);
       setMaintenanceLogs([]);
@@ -391,6 +400,7 @@ export default function TPMDashboard() {
   /* -- tab definitions -- */
   const tabs: { id: TabId; labelKey: string; fallback: string; icon: React.ReactNode }[] = [
     { id: "equipment", labelKey: "tpmEquipmentTab", fallback: "Equipment", icon: <Settings className="w-4 h-4" /> },
+    { id: "pillars", labelKey: "tpmPillarsTab", fallback: "8 Pillars", icon: <Columns3 className="w-4 h-4" /> },
     { id: "calendar", labelKey: "tpmCalendarTab", fallback: "PM Calendar", icon: <Calendar className="w-4 h-4" /> },
     { id: "history", labelKey: "tpmHistoryTab", fallback: "History", icon: <ClipboardList className="w-4 h-4" /> },
   ];
@@ -979,6 +989,52 @@ export default function TPMDashboard() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════ TAB: 8 Pillars Overview ═══════════ */}
+      {!loading && selectedTab === "pillars" && (
+        <div className="space-y-4">
+          <h3 className="font-semibold text-th-text text-lg uppercase tracking-wider flex items-center gap-2">
+            <Columns3 className="w-5 h-5 text-th-text-3" />
+            {t("maintenance.tpmPillarsTitle") || "The 8 Pillars of TPM"}
+          </h3>
+          <p className="text-sm text-th-text-3">{t("maintenance.tpmPillarsDesc") || "Total Productive Maintenance is built on 8 foundational pillars. Each pillar addresses a specific area of manufacturing excellence."}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {([
+              { key: "autonomous", icon: <Wrench className="w-6 h-6" />, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-200 dark:border-blue-800", descKey: "tpmPillarAutonomousDesc", linkTab: "equipment" as TabId },
+              { key: "planned", icon: <Calendar className="w-6 h-6" />, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-200 dark:border-emerald-800", descKey: "tpmPillarPlannedDesc", linkTab: "calendar" as TabId },
+              { key: "quality", icon: <ShieldCheck className="w-6 h-6" />, color: "text-purple-500", bg: "bg-purple-500/10", border: "border-purple-200 dark:border-purple-800", descKey: "tpmPillarQualityDesc", linkTab: null },
+              { key: "focused", icon: <Target className="w-6 h-6" />, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-200 dark:border-amber-800", descKey: "tpmPillarFocusedDesc", linkTab: null },
+              { key: "early", icon: <Activity className="w-6 h-6" />, color: "text-cyan-500", bg: "bg-cyan-500/10", border: "border-cyan-200 dark:border-cyan-800", descKey: "tpmPillarEarlyDesc", linkTab: null },
+              { key: "training", icon: <GraduationCap className="w-6 h-6" />, color: "text-indigo-500", bg: "bg-indigo-500/10", border: "border-indigo-200 dark:border-indigo-800", descKey: "tpmPillarTrainingDesc", linkTab: null },
+              { key: "safety", icon: <HeartPulse className="w-6 h-6" />, color: "text-red-500", bg: "bg-red-500/10", border: "border-red-200 dark:border-red-800", descKey: "tpmPillarSafetyDesc", linkTab: null },
+              { key: "office", icon: <Briefcase className="w-6 h-6" />, color: "text-slate-500", bg: "bg-slate-500/10", border: "border-slate-200 dark:border-slate-800", descKey: "tpmPillarOfficeDesc", linkTab: null },
+            ]).map((pillar) => (
+              <div
+                key={pillar.key}
+                className={`rounded-xl border ${pillar.border} bg-th-bg-2 shadow-sm p-5 flex flex-col gap-3 hover:shadow-md transition-shadow`}
+              >
+                <div className={`w-12 h-12 rounded-xl ${pillar.bg} flex items-center justify-center ${pillar.color}`}>
+                  {pillar.icon}
+                </div>
+                <h4 className="text-sm font-bold text-th-text">
+                  {t(`maintenance.pillar${pillar.key.charAt(0).toUpperCase() + pillar.key.slice(1)}`) || pillar.key}
+                </h4>
+                <p className="text-xs text-th-text-3 flex-1 leading-relaxed">
+                  {t(`maintenance.${pillar.descKey}`) || ""}
+                </p>
+                {pillar.linkTab && (
+                  <button
+                    onClick={() => setSelectedTab(pillar.linkTab!)}
+                    className="text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline self-start mt-1"
+                  >
+                    {t("common.openTool") || "Open Tool"} &rarr;
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       )}

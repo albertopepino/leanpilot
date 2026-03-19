@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 import pyotp
 import qrcode
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,8 +18,9 @@ from app.db.session import get_db
 from app.core.security import (
     get_current_user, log_audit, get_client_ip, verify_password,
     decode_token, create_access_token, create_refresh_token,
-    check_rate_limit,
+    check_rate_limit, set_auth_cookies,
 )
+from app.core.encryption import encrypt_field, decrypt_field
 from app.models.user import User
 
 logger = structlog.get_logger(__name__)
@@ -56,7 +58,7 @@ async def setup_totp(
         raise HTTPException(status_code=400, detail="2FA is already enabled. Disable it first to reconfigure.")
 
     secret = pyotp.random_base32()
-    current_user.totp_secret = secret
+    current_user.totp_secret = encrypt_field(secret)
 
     # Generate provisioning URI
     totp = pyotp.TOTP(secret)
@@ -96,7 +98,7 @@ async def verify_totp(
     if current_user.totp_enabled:
         raise HTTPException(status_code=400, detail="2FA is already enabled")
 
-    totp = pyotp.TOTP(current_user.totp_secret)
+    totp = pyotp.TOTP(decrypt_field(current_user.totp_secret))
     if not totp.verify(data.code, valid_window=1):
         raise HTTPException(status_code=400, detail="Invalid TOTP code")
 
@@ -128,7 +130,7 @@ async def disable_totp(
     if not verify_password(data.password, current_user.hashed_password):
         raise HTTPException(status_code=400, detail="Invalid password")
 
-    totp = pyotp.TOTP(current_user.totp_secret)
+    totp = pyotp.TOTP(decrypt_field(current_user.totp_secret))
     if not totp.verify(data.code, valid_window=1):
         raise HTTPException(status_code=400, detail="Invalid TOTP code")
 
@@ -178,7 +180,7 @@ async def validate_totp_code(
     if not user.totp_enabled or not user.totp_secret:
         raise HTTPException(status_code=400, detail="2FA is not enabled for this account")
 
-    totp = pyotp.TOTP(user.totp_secret)
+    totp = pyotp.TOTP(decrypt_field(user.totp_secret))
     if not totp.verify(data.code, valid_window=1):
         raise HTTPException(status_code=401, detail="Invalid TOTP code")
 
@@ -201,8 +203,11 @@ async def validate_totp_code(
     )
     await db.commit()
 
-    return {
+    body = {
         "access_token": access,
         "refresh_token": refresh,
         "token_type": "bearer",
     }
+    response = JSONResponse(content=body)
+    set_auth_cookies(response, access, refresh)
+    return response

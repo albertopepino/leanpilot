@@ -7,7 +7,6 @@
   "auditResults": "{area} — 6S Audit Results",
   "maturityLevel": "Maturity Level {level}",
   "scorePoor": "1=Poor 5=Excellent",
-
   "catSort": "Sort (Seiri)",
   "catSortShort": "Sort",
   "catSortDesc": "Remove unnecessary items",
@@ -26,7 +25,6 @@
   "catSafety": "Safety",
   "catSafetyShort": "Safety",
   "catSafetyDesc": "Hazard identification",
-
   "sort_q1": "Are all unnecessary items removed from the area?",
   "sort_q2": "Are red-tagged items properly identified?",
   "sort_q3": "Is there a clear distinction between needed and unneeded?",
@@ -57,18 +55,15 @@
   "safety_q3": "Are safety hazards identified and addressed?",
   "safety_q4": "Are SDS/MSDS sheets accessible?",
   "safety_q5": "Is fire safety equipment inspected and accessible?",
-
   "scoreBelowAvg": "Below Avg",
   "scoreAverage": "Average",
   "scoreGood": "Good",
   "scoreExcellent": "Excellent",
-
   "matWorldClass": "World Class",
   "matSustainable": "Sustainable",
   "matStandardized": "Standardized",
   "matDeveloping": "Developing",
   "matInitial": "Initial",
-
   "saveError": "Could not save audit",
   "currentAudit": "Current Audit",
   "previousAudit": "Previous Audit",
@@ -98,7 +93,6 @@
   "nextCategory": "Next →",
   "saving": "Saving...",
   "submitAudit": "Submit Audit",
-
   "tpmTitle": "TPM Dashboard",
   "tpmSubtitle": "Total Productive Maintenance — Zero breakdowns, zero defects",
   "tpmRunning": "Running",
@@ -113,7 +107,6 @@
   "statusMaintenance": "MAINTENANCE",
   "statusBreakdown": "BREAKDOWN",
   "nextPm": "Next PM",
-
   "demoMode": "Demo",
   "tpmAddEquipment": "Add Equipment",
   "tpmEqName": "Equipment Name",
@@ -170,7 +163,6 @@
   "dayFri": "Fri",
   "daySat": "Sat",
   "daySun": "Sun",
-
   "pillarAutonomous": "Autonomous Maint.",
   "pillarPlanned": "Planned Maint.",
   "pillarQuality": "Quality Maint.",
@@ -179,7 +171,6 @@
   "pillarTraining": "Training & Education",
   "pillarSafety": "Safety & Environment",
   "pillarOffice": "Office TPM",
-
   "eqCncLathe": "CNC Lathe #1",
   "eqHydraulicPress": "Hydraulic Press",
   "eqWeldingRobot": "Welding Robot #3",
@@ -190,7 +181,6 @@
   "areaAssembly": "Assembly",
   "areaPackaging": "Packaging",
   "areaFinishing": "Finishing",
-
   "ciltTitle": "CILT Checklist",
   "ciltSubtitle": "Autonomous Maintenance",
   "ciltProgress": "Progress",
@@ -206,7 +196,6 @@
   "ciltSkipBtn": "Skip",
   "ciltDescribeIssue": "Describe the issue...",
   "ciltStandard": "Standard",
-
   "ciltCatC": "Cleaning",
   "ciltCatI": "Inspection",
   "ciltCatL": "Lubrication",
@@ -214,10 +203,8 @@
   "ciltFreqDaily": "Daily",
   "ciltFreqWeekly": "Weekly",
   "ciltFreqMonthly": "Monthly",
-
   "ciltViewExecute": "Execute Checklist",
   "ciltViewStandards": "Manage Standards",
-
   "ciltLoadError": "Could not load CILT standards",
   "ciltStdCreated": "Standard created successfully",
   "ciltStdError": "Could not create standard",
@@ -271,12 +258,10 @@
   "ciltTime": "Time",
   "ciltStatus": "Status",
   "ciltNotes": "Notes",
-
   "catCleaning": "Cleaning",
   "catInspection": "Inspection",
   "catLubrication": "Lubrication",
   "catTightening": "Tightening",
-
   "cilt_clean1": "Clean machine exterior and chip tray",
   "cilt_clean1_std": "No chips, oil, or debris visible",
   "cilt_clean2": "Wipe control panel and sensors",
@@ -295,8 +280,22 @@
   "cilt_tight1_std": "Torque: 45 Nm",
   "cilt_tight2": "Verify foundation bolts",
   "cilt_tight2_std": "Torque: 120 Nm, no visible movement",
-
   "freqDaily": "daily",
   "freqWeekly": "weekly",
-  "freqMonthly": "monthly"
+  "freqMonthly": "monthly",
+  "tpmPillarsTitle": "The 8 Pillars of TPM",
+  "tpmPillarsDesc": "Total Productive Maintenance is built on 8 foundational pillars. Each pillar addresses a specific area of manufacturing excellence.",
+  "tpmPillarAutonomousDesc": "Operators take ownership of basic equipment care: cleaning, lubricating, inspecting, and tightening. Builds operator skill and catches issues early.",
+  "tpmPillarPlannedDesc": "Scheduled maintenance based on equipment data and failure history. Reduces unplanned downtime and extends asset life.",
+  "tpmPillarQualityDesc": "Eliminate defects at the source by maintaining equipment to zero-defect capability. Integrates quality checks into maintenance routines.",
+  "tpmPillarFocusedDesc": "Cross-functional teams tackle chronic losses using structured problem-solving (Kaizen, 5 Why, PDCA). Targets the 6 Big Losses.",
+  "tpmPillarEarlyDesc": "Apply lessons learned from maintenance to new equipment design and commissioning. Reduce startup losses and lifecycle cost.",
+  "tpmPillarTrainingDesc": "Develop multi-skilled operators and maintenance technicians through structured OJT, skill matrices, and one-point lessons.",
+  "tpmPillarSafetyDesc": "Zero accidents, zero health hazards. Integrate safety into every maintenance task and workplace standard.",
+  "tpmPillarOfficeDesc": "Apply TPM principles to administrative and support processes. Reduce information losses, streamline workflows.",
+  "tpmFleetHealth": "Fleet Health",
+  "tpmOverdueAlerts": "Overdue Alerts",
+  "tpmEquipmentOverdue": "{count} equipment overdue",
+  "tpmEquipmentOverduePlural": "{count} equipment overdue",
+  "tpmDueSince": "Due since"
 }

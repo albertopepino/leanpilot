@@ -16,7 +16,6 @@
   "gapToWorldClass": "Écart à la classe mondiale",
   "oeeTrend": "Tendance OEE",
   "chartPlaceholder": "Le graphique s'affiche ici avec recharts lorsque connecté aux données réelles",
-
   "prodTitle": "Saisie des données de production",
   "productionLine": "Ligne de production",
   "date": "Date",
@@ -29,7 +28,6 @@
   "optionalNotes": "Notes optionnelles...",
   "saveProductionRecord": "Enregistrer la production",
   "liveOeePreview": "Aperçu OEE en direct",
-
   "hourlyTitle": "Production horaire",
   "hourlyTarget": "Objectif",
   "hourlyActual": "Réel",
@@ -40,7 +38,6 @@
   "result": "Résultat",
   "cumDelta": "Écart cum.",
   "notesPlaceholder": "Notes...",
-
   "andonTitle": "Tableau Andon",
   "andonSubtitle": "Statut de production en temps réel",
   "factoryFloorLive": "Atelier — En direct",
@@ -54,7 +51,6 @@
   "changeoverDesc": "Réglage / changement de matière",
   "activeStoppages": "Arrêts actifs",
   "since": "Depuis",
-
   "demoLine1": "Ligne d'assemblage 1",
   "demoLine2": "Ligne d'assemblage 2",
   "demoWeldA": "Cellule de soudure A",
@@ -63,15 +59,12 @@
   "demoPackaging": "Ligne de conditionnement",
   "demoCNC": "Usinage CNC",
   "demoQualityLab": "Laboratoire qualité",
-
   "demoIssueJig": "Gabarit de positionnement cassé — en attente de remplacement",
   "demoIssueWire": "Capteur de fil intermittent — maintenance appelée",
   "demoIssueChangeover": "Changement de format A → B en cours",
   "demoIssueInspection": "Inspection de matière entrante en attente",
-
   "demoNoteMaterialDelay": "Retard de matière depuis l'entrepôt",
   "demoNoteToolChange": "Changement d'outil planifié",
-
   "reasonCode": "Motif",
   "selectReason": "— Sélectionner —",
   "reason_breakdown": "Panne",
@@ -82,21 +75,17 @@
   "reason_minor_stop": "Micro-arrêt",
   "reason_planned": "Arrêt planifié",
   "reason_other": "Autre",
-
   "analyzeInPareto": "Analyser les pertes dans Pareto",
-
   "saving": "Enregistrement...",
   "resetForm": "Réinitialiser",
   "saveSuccess": "Enregistrement de production sauvegardé avec succès",
   "saveError": "Échec de l'enregistrement de production",
   "recentRecords": "Enregistrements récents",
   "noRecordsYet": "Aucun enregistrement de production pour l'instant",
-
   "validationRequired": "Ce champ est obligatoire",
   "validationPositive": "Doit être supérieur à 0",
   "validationRunExceedsPlanned": "Le temps de marche ne peut pas dépasser le temps planifié",
   "validationGoodExceedsTotal": "Les pièces conformes ne peuvent pas dépasser le total",
-
   "downtimeEvents": "Événements d'arrêt",
   "addDowntime": "Ajouter un arrêt",
   "noDowntimeYet": "Aucun événement d'arrêt ajouté",
@@ -105,7 +94,6 @@
   "unplanned": "Non planifié",
   "durationMin": "Durée (min)",
   "remove": "Supprimer",
-
   "scrapEntries": "Rebuts / Défauts",
   "addScrap": "Ajouter un rebut",
   "noScrapYet": "Aucun rebut ajouté",
@@ -118,7 +106,6 @@
   "defect_material": "Défaut matière",
   "defect_contamination": "Contamination",
   "defect_other": "Autre",
-
   "andonTriggerAlert": "Déclencher une alerte",
   "andonResolve": "Résoudre",
   "andonSelectLine": "Sélectionner une ligne",
@@ -152,7 +139,6 @@
   "andonNoActiveAlerts": "Aucune alerte active — toutes les lignes en marche",
   "andonResolving": "Résolution...",
   "andonResolved": "Résolu",
-
   "shift": "Équipe",
   "shiftMorning": "Matin",
   "shiftAfternoon": "Après-midi",
@@ -160,7 +146,6 @@
   "selectLine": "-- Sélectionner une ligne --",
   "loadingLines": "Chargement des lignes...",
   "noLinesAvailable": "Aucune ligne de production disponible",
-
   "today": "Aujourd'hui",
   "saveAll": "Tout enregistrer",
   "saveAllSuccess": "Toutes les lignes enregistrées avec succès",
@@ -185,7 +170,6 @@
   "errorLoadingData": "Échec du chargement des données",
   "retry": "Réessayer",
   "noDataForDate": "Aucune donnée pour cette date",
-
   "allLines": "Toutes les lignes",
   "last14": "14 derniers jours",
   "usingDemoData": "données de démo affichées",
@@ -212,9 +196,13 @@
   "setupAdjustments": "Réglages et ajustements",
   "minorStops": "Micro-arrêts",
   "reducedSpeed": "Vitesse réduite",
+  "equipmentFailure": "Panne Équipement",
+  "setupAdjustment": "Réglage et Ajustement",
+  "idlingMinorStops": "Micro-arrêts",
+  "processDefects": "Défauts de Processus",
+  "reducedYield": "Rendement Réduit",
   "startupLosses": "Pertes au démarrage",
   "liveAutoRefresh": "En direct — actualisation auto. 60s",
-
   "andonHistory": "Historique des alertes",
   "andonByCategory": "Alertes par catégorie",
   "andonLineStatus": "Statut des lignes",
@@ -253,14 +241,35 @@
   "cancel": "Annuler",
   "creating": "Création...",
   "create": "Créer",
-
   "units": "unités",
   "totalTime": "Temps Total",
   "availabilityLoss": "Perte de Disponibilité",
   "performanceLoss": "Perte de Performance",
   "qualityLoss": "Perte de Qualité",
   "oeeWaterfallDesc": "Comment votre temps total disponible se décompose en OEE",
-
   "weeklyHeatmap": "Carte Thermique de Production Hebdomadaire",
-  "noData": "Aucune donnée"
+  "noData": "Aucune donnée",
+  "overview": "Vue d'ensemble",
+  "lossAnalysis": "Analyse des pertes",
+  "noAndonEvents": "Aucune donnée pour l'instant. Les événements Andon apparaîtront ici lorsque les lignes de production signaleront leur statut.",
+  "totalAvailable": "Temps disponible",
+  "productiveTime": "Temps productif",
+  "totalLosses": "Pertes totales",
+  "lossRatio": "Ratio de pertes",
+  "sixBigLossesWaterfall": "Cascade des six grandes pertes",
+  "sixBigLossesDesc": "Minutes perdues par catégorie avec ligne cumulative du temps productif",
+  "lossBreakdown": "Répartition des pertes",
+  "andonLegend": "Légende",
+  "andonGreen": "En marche",
+  "andonYellow": "Attention",
+  "andonRed": "Arrêté",
+  "andonGray": "Hors ligne",
+  "cumulativeLineChart": "Graphique Cumulatif",
+  "noRecords": "Aucun enregistrement recent trouve.",
+  "recentRecords": "Enregistrements Recents",
+  "good": "Bons",
+  "runMin": "Temps (min)",
+  "modeHourly": "Horaire",
+  "modeShift": "Par Equipe",
+  "modeDaily": "Journalier"
 }

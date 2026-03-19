@@ -87,8 +87,10 @@ const MISS_REASON_TO_DOWNTIME_CATEGORY: Record<string, string> = {
 };
 
 const DEFAULT_SHIFT_HOURS = [
+  "00:00", "01:00", "02:00", "03:00", "04:00", "05:00",
   "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
   "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
+  "18:00", "19:00", "20:00", "21:00", "22:00", "23:00",
 ];
 
 const DEFAULT_TARGET = 50;
@@ -702,6 +704,113 @@ export default function HourlyProductionBoard() {
           </div>
 
           {/* ================================================================ */}
+          {/* Andon Legend                                                     */}
+          {/* ================================================================ */}
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-4">
+            <h3 className="flex items-center gap-2 text-xs font-bold text-th-text-2 uppercase tracking-wider mb-3">
+              {t("dashboard.andonLegend") || "Andon Status Legend"}
+            </h3>
+            <div className="flex flex-wrap items-center gap-4 text-xs text-th-text-2 font-medium">
+              <span className="flex items-center gap-1.5">
+                <span className="w-4 h-4 rounded-sm bg-emerald-500 inline-block" />
+                {t("dashboard.andonGreen") || "Green: Actual >= Target (100%+)"}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-4 h-4 rounded-sm bg-amber-400 inline-block" />
+                {t("dashboard.andonYellow") || "Yellow: Actual >= 80% Target"}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-4 h-4 rounded-sm bg-red-500 inline-block" />
+                {t("dashboard.andonRed") || "Red: Actual < 80% Target"}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-4 h-4 rounded-sm bg-gray-300 dark:bg-gray-600 inline-block" />
+                {t("dashboard.andonGray") || "Gray: Future / No Data"}
+              </span>
+            </div>
+          </div>
+
+          {/* ================================================================ */}
+          {/* Cumulative Line Chart                                            */}
+          {/* ================================================================ */}
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5">
+            <h3 className="flex items-center gap-2 text-xs font-bold text-th-text-2 uppercase tracking-wider mb-4">
+              <TrendingUp className="w-4 h-4" />
+              {t("dashboard.cumulativeLineChart") || "Cumulative Production Line Chart"}
+            </h3>
+            <div className="relative w-full h-52">
+              <svg viewBox="0 0 600 200" className="w-full h-full" preserveAspectRatio="none">
+                {/* Grid lines */}
+                {[0, 0.25, 0.5, 0.75, 1].map((frac) => (
+                  <line
+                    key={frac}
+                    x1={40} y1={10 + (1 - frac) * 180}
+                    x2={590} y2={10 + (1 - frac) * 180}
+                    stroke="currentColor" className="text-th-border"
+                    strokeWidth={0.5} strokeDasharray={frac === 0 ? "none" : "4,4"}
+                  />
+                ))}
+
+                {/* Target line */}
+                <polyline
+                  fill="none" stroke="#6b7280" strokeWidth={2} strokeDasharray="6,4"
+                  points={chartData.map((d, i) => {
+                    const x = 40 + (i / Math.max(chartData.length - 1, 1)) * 550;
+                    const y = 190 - (d.cumTarget / (chartMax || 1)) * 180;
+                    return `${x},${y}`;
+                  }).join(" ")}
+                />
+
+                {/* Actual line */}
+                {(() => {
+                  const actualPoints = chartData
+                    .map((d, i) => d.cumActual !== null ? { x: 40 + (i / Math.max(chartData.length - 1, 1)) * 550, y: 190 - (d.cumActual / (chartMax || 1)) * 180, val: d.cumActual, target: d.cumTarget } : null)
+                    .filter(Boolean) as { x: number; y: number; val: number; target: number }[];
+
+                  if (actualPoints.length === 0) return null;
+                  return (
+                    <>
+                      <polyline
+                        fill="none" strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round"
+                        stroke={actualPoints[actualPoints.length - 1].val >= actualPoints[actualPoints.length - 1].target ? "#10b981" : "#ef4444"}
+                        points={actualPoints.map((p) => `${p.x},${p.y}`).join(" ")}
+                      />
+                      {actualPoints.map((p, i) => (
+                        <circle
+                          key={i} cx={p.x} cy={p.y} r={4}
+                          fill={p.val >= p.target ? "#10b981" : "#ef4444"}
+                          stroke="white" strokeWidth={1.5}
+                        />
+                      ))}
+                    </>
+                  );
+                })()}
+
+                {/* X-axis labels */}
+                {chartData.map((d, i) => {
+                  const x = 40 + (i / Math.max(chartData.length - 1, 1)) * 550;
+                  return (
+                    <text key={d.hour} x={x} y={198} textAnchor="middle" fontSize={9}
+                      fill="currentColor" className="text-th-text-3">
+                      {d.hour.slice(0, 2)}
+                    </text>
+                  );
+                })}
+              </svg>
+            </div>
+            <div className="flex items-center gap-6 mt-2 text-[10px] text-th-text-2 uppercase tracking-wider font-medium">
+              <span className="flex items-center gap-1.5">
+                <span className="w-6 border-t-2 border-dashed border-gray-500 inline-block" />
+                {t("dashboard.cumTarget")}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-6 border-t-2 border-emerald-500 inline-block" />
+                {t("dashboard.cumActual")}
+              </span>
+            </div>
+          </div>
+
+          {/* ================================================================ */}
           {/* Weekly Production Heatmap                                        */}
           {/* ================================================================ */}
           {(() => {
@@ -823,20 +932,21 @@ export default function HourlyProductionBoard() {
                   const isFuture = slot.actual === null;
                   const isCurrentHour = isToday && slot.hour === currentHour;
 
+                  // Andon-style coloring
+                  const andonClass = (() => {
+                    if (isCurrentHour) return "bg-brand-500/10 ring-1 ring-inset ring-brand-500/30";
+                    if (isFuture) return "bg-gray-500/[0.04] opacity-60"; // gray = future
+                    if (slot.actual === null) return "";
+                    const pct = slot.target > 0 ? (slot.actual / slot.target) * 100 : 0;
+                    if (pct >= 100) return "bg-emerald-500/[0.08] border-l-4 border-l-emerald-500"; // green
+                    if (pct >= 80) return "bg-amber-500/[0.08] border-l-4 border-l-amber-400"; // yellow
+                    return "bg-red-500/[0.08] border-l-4 border-l-red-500"; // red
+                  })();
+
                   return (
                     <tr
                       key={slot.hour}
-                      className={`border-b border-th-border/50 transition-all duration-200 hover:bg-th-bg-3 ${
-                        isCurrentHour
-                          ? "bg-brand-500/10 ring-1 ring-inset ring-brand-500/30"
-                          : !isFuture && isWin
-                            ? "bg-emerald-500/[0.04]"
-                            : !isFuture && isMiss
-                              ? "bg-red-500/[0.04]"
-                              : isFuture
-                                ? "opacity-60"
-                                : ""
-                      }`}
+                      className={`border-b border-th-border/50 transition-all duration-200 hover:bg-th-bg-3 ${andonClass}`}
                     >
                       {/* Hour */}
                       <td className="p-4 font-mono font-bold text-th-text whitespace-nowrap text-sm">

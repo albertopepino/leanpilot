@@ -260,13 +260,13 @@ export default function CILTChecklist() {
     setError(null);
     try {
       const res = await advancedLeanApi.listCILTStandards();
-      const data = (res as any)?.data;
+      const data = res.data;
       if (Array.isArray(data)) {
         setStandards(data);
       } else if (data && typeof data === "object" && Array.isArray(data.standards)) {
         setStandards(data.standards);
       }
-    } catch (e: any) {
+    } catch {
       setError(t("maintenance.ciltLoadError"));
     } finally {
       setLoading(false);
@@ -276,7 +276,7 @@ export default function CILTChecklist() {
   const loadCompliance = useCallback(async () => {
     try {
       const res = await advancedLeanApi.getCILTCompliance();
-      const data = (res as any)?.data;
+      const data = res.data;
       if (data) {
         setCompliance({
           overall_rate: data.overall_rate ?? data.compliance_rate ?? 0,

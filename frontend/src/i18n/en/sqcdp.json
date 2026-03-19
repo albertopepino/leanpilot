@@ -9,5 +9,25 @@
   "attendees": "Attendees",
   "tier1": "Tier 1 — Team",
   "tier2": "Tier 2 — Department",
-  "tier3": "Tier 3 — Plant"
+  "tier3": "Tier 3 — Plant",
+  "dailyView": "Daily",
+  "monthlyView": "Monthly",
+  "summary": "Summary",
+  "good": "Good",
+  "warning": "Warning",
+  "critical": "Critical",
+  "noData": "No data",
+  "noEntryForDate": "No entry for this date",
+
+  "catSafety": "Safety",
+  "catQuality": "Quality",
+  "catCost": "Cost",
+  "catDelivery": "Delivery",
+  "catPeople": "People",
+
+  "suggestEscalateT2": "Consider T2 escalation",
+  "autoEscalatedT2": "Auto-escalated to T2",
+  "loadFailed": "Failed to load SQCDP entries",
+  "saveFailed": "Failed to save SQCDP entry",
+  "meetingSaveFailed": "Failed to log meeting"
 }

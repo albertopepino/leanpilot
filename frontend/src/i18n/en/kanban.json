@@ -1,0 +1,64 @@
+{
+  "title": "Kanban Board",
+  "subtitle": "Pull-system production management with WIP limits",
+  "boardView": "Board",
+  "newBoard": "New Board",
+  "createBoard": "Create Board",
+  "boardName": "Board Name",
+  "boardNamePlaceholder": "e.g. Main Production Board",
+  "noBoards": "No boards yet. Create one to get started.",
+
+  "col_backlog": "Backlog",
+  "col_in_queue": "In Queue",
+  "col_in_progress": "In Progress",
+  "col_done": "Done",
+  "col_shipped": "Shipped",
+  "column": "Column",
+  "emptyColumn": "No cards in this column",
+
+  "addCard": "Add Card",
+  "newCard": "New Card",
+  "editCard": "Edit Card",
+  "createCard": "Create Card",
+  "updateCard": "Update Card",
+  "confirmDeleteCard": "Delete this card?",
+
+  "orderNumber": "Order #",
+  "productName": "Product Name",
+  "quantity": "Quantity",
+  "priority": "Priority",
+  "priority_low": "Low",
+  "priority_medium": "Medium",
+  "priority_high": "High",
+  "priority_urgent": "Urgent",
+  "dueDate": "Due Date",
+  "assignedLine": "Assigned Line",
+  "description": "Description",
+  "descriptionPlaceholder": "Card description...",
+  "titlePlaceholder": "Enter card title...",
+  "unassigned": "Unassigned",
+
+  "pull": "PULL",
+  "leadTime": "Lead Time",
+  "cycleTime": "Cycle Time",
+
+  "filters": "Filters",
+  "allPriorities": "All Priorities",
+  "allLines": "All Lines",
+
+  "totalWIP": "Total WIP",
+  "avgLeadTime": "Avg Lead Time",
+  "throughput": "Throughput",
+  "onTimeDelivery": "On-Time Delivery",
+
+  "saving": "Saving...",
+  "cancel": "Cancel",
+
+  "blocked": "Blocked",
+  "markBlocked": "Mark as Blocked",
+  "blockedReasonPlaceholder": "Reason for block...",
+  "cardAge": "Age",
+  "days": "days",
+
+  "exportTitle": "Kanban Board Export"
+}

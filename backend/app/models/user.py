@@ -62,3 +62,6 @@ class User(TimestampMixin, Base):
     reset_token_expires_at = Column(DateTime(timezone=True), nullable=True)
 
     factory = relationship("Factory", back_populates="users")
+
+    # Multi-site role assignments (new RBAC system)
+    site_roles = relationship("UserSiteRole", back_populates="user", lazy="selectin")

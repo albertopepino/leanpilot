@@ -240,5 +240,15 @@
   "maturityLevel": "Nivo zrelosti",
   "category": "Kategorija",
   "score": "Rezultat",
-  "level": "Nivo"
+  "level": "Nivo",
+
+  "catLeadership": "Liderstvo",
+  "catStrategy": "Strategija",
+  "catPeople": "Ljudi",
+  "catPartnerships": "Partnerstva i Resursi",
+  "catProcesses": "Procesi",
+  "catCustomer_results": "Rezultati Kupaca",
+  "catPeople_results": "Rezultati Zaposlenih",
+  "catSociety_results": "Rezultati Društva",
+  "catKey_results": "Ključni Rezultati"
 }

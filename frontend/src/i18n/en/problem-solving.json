@@ -32,7 +32,6 @@
   "remove": "Remove",
   "saveAnalysis": "Save Analysis",
   "exportPdf": "Export PDF",
-
   "savedAnalyses": "Saved Analyses",
   "newAnalysis": "New Analysis",
   "loadError": "Could not load analyses",
@@ -60,7 +59,6 @@
   "close": "Close",
   "loading": "Loading...",
   "retry": "Retry",
-
   "ishikawaTitle": "Ishikawa (Fishbone) Diagram",
   "effectProblem": "Effect / Problem",
   "effectPlaceholder": "What is the problem or undesired effect?",
@@ -89,7 +87,6 @@
   "showAll": "Show All",
   "category": "Category",
   "cause": "Cause",
-
   "paretoTitle": "Pareto Analysis",
   "paretoSubtitle": "Focus on the vital few — 80/20 rule",
   "categories": "Categories",
@@ -109,7 +106,6 @@
   "itSystemDown": "IT System Down",
   "other": "Other",
   "topContributor": "Top Contributor",
-
   "a3Title": "A3 Problem Solving Report",
   "a3Subtitle": "Structured thinking on a single sheet",
   "a3TitlePlaceholder": "A3 Report Title...",
@@ -137,7 +133,6 @@
   "results": "8. Results",
   "resultsHint": "Document actual outcomes, data, and lessons learned.",
   "workflow": "Status Workflow",
-
   "owner": "Owner",
   "ownerPlaceholder": "Name of the A3 owner...",
   "date": "Date",
@@ -146,7 +141,6 @@
   "statusInReview": "In Review",
   "statusApproved": "Approved",
   "statusClosed": "Closed",
-
   "newReport": "New",
   "loadReport": "Load",
   "saveReport": "Save",
@@ -159,9 +153,7 @@
   "loadedDemo": "Showing demo data (API not available).",
   "statusUpdated": "Status updated.",
   "statusFailed": "Could not update status on server.",
-
   "investigateWith5Why": "Investigate with 5 Why",
-
   "dsDowntime": "Downtime Causes",
   "dsDefects": "Defect Types",
   "dsScrap": "Scrap Reasons",
@@ -215,8 +207,35 @@
   "andonMaintenance": "Maintenance Call",
   "andonQuality": "Quality Stop",
   "andonSafety": "Safety Stop",
-
   "validationMinWhys": "At least 2 WHYs are required",
   "statusImplementing": "Implementing",
-  "statusCompleted": "Completed"
+  "statusCompleted": "Completed",
+  "fishboneView": "Fishbone",
+  "listView": "List View",
+  "listViewDesc": "Structured list of all causes by category",
+  "voteUp": "Add vote",
+  "voteDown": "Remove vote",
+  "topCauses": "Top Voted Causes",
+  "trackWithKaizen": "Track with Kaizen",
+  "pdcaCycle": "PDCA Cycle",
+  "pdcaPlan": "Plan",
+  "pdcaDo": "Do",
+  "pdcaCheck": "Check",
+  "pdcaAct": "Act",
+  "mentorReview": "Mentor Review",
+  "mentorReviewHint": "Have a mentor or coach review this A3 for quality and completeness",
+  "reviewerName": "Reviewer Name",
+  "reviewerNamePlaceholder": "Mentor / coach name...",
+  "reviewDate": "Review Date",
+  "approvalStatus": "Approval Status",
+  "mentorDraft": "Draft",
+  "mentorReviewed": "Reviewed",
+  "mentorApproved": "Approved",
+  "reviewComments": "Review Comments",
+  "reviewCommentsPlaceholder": "Mentor feedback and suggestions...",
+  "suggestedNextSteps": "Suggested Next Steps",
+  "nextStepsDesc": "Based on the root cause analysis, consider these follow-up actions",
+  "createKaizen": "Create Kaizen",
+  "openIshikawa": "Open Ishikawa",
+  "noParetoData": "No data available for Pareto analysis"
 }

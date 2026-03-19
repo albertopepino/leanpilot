@@ -1,6 +1,2 @@
-"use client";
-import HorizontalDeployTracker from "@/components/lean/HorizontalDeployTracker";
-
-export default function HorizontalDeployPage() {
-  return <HorizontalDeployTracker />;
-}
+import { redirect } from "next/navigation";
+export default function LegacyHorizontalDeploy() { redirect("/improvement/kaizen"); }

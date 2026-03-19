@@ -1,0 +1,65 @@
+{
+  "title": "SPC grafici",
+  "subtitle": "Statistička kontrola procesa — Pratite stabilnost i sposobnost procesa",
+
+  "xbarR": "X-bar R",
+  "xbarS": "X-bar S",
+  "pChart": "p-karta",
+  "npChart": "np-karta",
+  "cChart": "c-karta",
+  "uChart": "u-karta",
+
+  "chartType": "Tip grafika",
+  "subgroupSize": "Veličina podgrupe",
+  "usl": "GGL",
+  "lsl": "DGL",
+  "dataSource": "Izvor podataka",
+  "manualEntry": "Ručni unos",
+  "fromInspections": "Iz inspekcija",
+  "productionLine": "Proizvodna linija",
+  "allLines": "Sve linije",
+  "dateFrom": "Datum od",
+  "dateTo": "Datum do",
+  "calculate": "Izračunaj",
+
+  "manualHintVariable": "Unesite jednu podgrupu po redu, vrednosti razdvojene zarezima",
+  "manualHintAttribute": "Unesite jednu vrednost po redu (neispravni ili broj defekata)",
+
+  "needMoreData": "Potrebne su najmanje 2 podgrupe za SPC analizu",
+  "calculationError": "Proračun nije uspeo. Proverite podatke.",
+
+  "cp": "Cp",
+  "cpk": "Cpk",
+  "pctInControl": "% Pod kontrolom",
+  "totalSubgroups": "Podgrupe",
+  "sigmaLevel": "Sigma nivo",
+
+  "chartLabel": "Kontrolna karta",
+  "subgroup": "Podgrupa",
+  "value": "Vrednost",
+  "dataPoints": "Tačke podataka",
+  "centerLine": "Centralna linija",
+
+  "rule1": "Pravilo 1: Izvan 3σ",
+  "rule2": "Pravilo 2: 9 ista strana",
+  "rule3": "Pravilo 3: 6 u trendu",
+  "rule4": "Pravilo 4: 14 naizmenično",
+
+  "rule1Desc": "Jedna tačka izvan 3 standardne devijacije od centralne linije",
+  "rule2Desc": "Devet uzastopnih tačaka na istoj strani centralne linije",
+  "rule3Desc": "Šest uzastopnih tačaka u stalnom rastu ili padu",
+  "rule4Desc": "Četrnaest uzastopnih tačaka naizmenično gore i dole",
+
+  "processCapability": "Sposobnost procesa",
+  "mean": "Srednja vrednost",
+  "stdDev": "Std. dev.",
+  "specLimits": "DGL / GGL",
+  "excellent": "Odlično",
+  "capable": "Sposoban",
+  "marginal": "Granično",
+  "incapable": "Nesposoban",
+
+  "outOfControl": "Tačke van kontrole",
+  "rule": "Pravilo",
+  "ruleDescription": "Opis"
+}

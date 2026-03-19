@@ -7,7 +7,6 @@
   "auditResults": "{area} — Wyniki audytu 6S",
   "maturityLevel": "Poziom dojrzałości {level}",
   "scorePoor": "1=Słaby 5=Doskonały",
-
   "catSort": "Sortuj (Seiri)",
   "catSortShort": "Sortowanie",
   "catSortDesc": "Usuń zbędne przedmioty",
@@ -26,7 +25,6 @@
   "catSafety": "Bezpieczeństwo",
   "catSafetyShort": "BHP",
   "catSafetyDesc": "Identyfikacja zagrożeń",
-
   "sort_q1": "Czy wszystkie zbędne przedmioty zostały usunięte z obszaru?",
   "sort_q2": "Czy przedmioty oznaczone czerwonymi etykietami są właściwie zidentyfikowane?",
   "sort_q3": "Czy istnieje wyraźne rozróżnienie między potrzebnymi i niepotrzebnymi przedmiotami?",
@@ -57,18 +55,15 @@
   "safety_q3": "Czy zagrożenia BHP są identyfikowane i usuwane?",
   "safety_q4": "Czy karty charakterystyki SDS/MSDS są dostępne?",
   "safety_q5": "Czy sprzęt przeciwpożarowy jest sprawdzany i dostępny?",
-
   "scoreBelowAvg": "Poniżej średniej",
   "scoreAverage": "Średni",
   "scoreGood": "Dobry",
   "scoreExcellent": "Doskonały",
-
   "matWorldClass": "Klasa światowa",
   "matSustainable": "Trwały",
   "matStandardized": "Standaryzowany",
   "matDeveloping": "W rozwoju",
   "matInitial": "Wstępny",
-
   "saveError": "Nie udało się zapisać audytu",
   "currentAudit": "Bieżący audyt",
   "previousAudit": "Poprzedni audyt",
@@ -98,7 +93,6 @@
   "nextCategory": "Następna →",
   "saving": "Zapisywanie...",
   "submitAudit": "Zatwierdź audyt",
-
   "tpmTitle": "Panel TPM",
   "tpmSubtitle": "Total Productive Maintenance — Zero awarii, zero wad",
   "tpmRunning": "Pracuje",
@@ -113,7 +107,6 @@
   "statusMaintenance": "KONSERWACJA",
   "statusBreakdown": "AWARIA",
   "nextPm": "Następny PM",
-
   "demoMode": "Demo",
   "tpmAddEquipment": "Dodaj wyposażenie",
   "tpmEqName": "Nazwa wyposażenia",
@@ -170,7 +163,6 @@
   "dayFri": "Pt",
   "daySat": "Sob",
   "daySun": "Niedz",
-
   "pillarAutonomous": "Utrzymanie autonomiczne",
   "pillarPlanned": "Utrzymanie planowane",
   "pillarQuality": "Utrzymanie jakości",
@@ -179,7 +171,6 @@
   "pillarTraining": "Szkolenie i edukacja",
   "pillarSafety": "BHP i środowisko",
   "pillarOffice": "TPM biurowy",
-
   "eqCncLathe": "Tokarka CNC #1",
   "eqHydraulicPress": "Prasa hydrauliczna",
   "eqWeldingRobot": "Robot spawalniczy #3",
@@ -190,7 +181,6 @@
   "areaAssembly": "Montaż",
   "areaPackaging": "Pakowanie",
   "areaFinishing": "Wykańczanie",
-
   "ciltTitle": "Lista kontrolna CILT",
   "ciltSubtitle": "Autonomiczne utrzymanie ruchu",
   "ciltProgress": "Postęp",
@@ -206,7 +196,6 @@
   "ciltSkipBtn": "Pomiń",
   "ciltDescribeIssue": "Opisz problem...",
   "ciltStandard": "Standard",
-
   "ciltCatC": "Czyszczenie",
   "ciltCatI": "Kontrola",
   "ciltCatL": "Smarowanie",
@@ -214,10 +203,8 @@
   "ciltFreqDaily": "Codziennie",
   "ciltFreqWeekly": "Co tydzień",
   "ciltFreqMonthly": "Co miesiąc",
-
   "ciltViewExecute": "Wykonaj listę kontrolną",
   "ciltViewStandards": "Zarządzaj standardami",
-
   "ciltLoadError": "Nie udało się wczytać standardów CILT",
   "ciltStdCreated": "Standard utworzony pomyślnie",
   "ciltStdError": "Nie udało się utworzyć standardu",
@@ -271,12 +258,10 @@
   "ciltTime": "Czas",
   "ciltStatus": "Status",
   "ciltNotes": "Uwagi",
-
   "catCleaning": "Czyszczenie",
   "catInspection": "Kontrola",
   "catLubrication": "Smarowanie",
   "catTightening": "Dokręcanie",
-
   "cilt_clean1": "Wyczyść zewnętrzną obudowę maszyny i tacę na wióry",
   "cilt_clean1_std": "Brak widocznych wiórów, oleju ani zanieczyszczeń",
   "cilt_clean2": "Przetrzyj panel sterowania i czujniki",
@@ -295,8 +280,12 @@
   "cilt_tight1_std": "Moment dokręcania: 45 Nm",
   "cilt_tight2": "Sprawdź śruby fundamentowe",
   "cilt_tight2_std": "Moment dokręcania: 120 Nm, brak widocznych ruchów",
-
   "freqDaily": "codziennie",
   "freqWeekly": "co tydzień",
-  "freqMonthly": "co miesiąc"
+  "freqMonthly": "co miesiąc",
+  "tpmFleetHealth": "Stan floty",
+  "tpmOverdueAlerts": "Zaległe alerty",
+  "tpmEquipmentOverdue": "{count} sprzęt zaległy",
+  "tpmEquipmentOverduePlural": "{count} sprzętów zaległych",
+  "tpmDueSince": "Zaległe od"
 }

@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, func
 
 from app.db.session import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_factory
 from app.models.shift_handover import ShiftHandover
 from app.models.production import ProductionRecord, ScrapRecord, DowntimeEvent
 from app.models.lean import OEERecord
@@ -23,7 +23,7 @@ async def create_handover(
     current_user=Depends(get_current_user),
 ):
     handover = ShiftHandover(
-        factory_id=current_user.factory_id,
+        factory_id=require_factory(current_user),
         created_by_id=current_user.id,
         **data.model_dump(),
     )
@@ -41,7 +41,19 @@ async def auto_generate_handover(
     current_user=Depends(get_current_user),
 ):
     """Auto-generate shift handover from production data."""
+    from app.models.factory import ProductionLine
+    fid = require_factory(current_user)
     d = target_date or date.today()
+
+    # Verify line belongs to user's factory (tenant isolation)
+    line_result = await db.execute(
+        select(ProductionLine).where(
+            ProductionLine.id == line_id,
+            ProductionLine.factory_id == fid,
+        )
+    )
+    if not line_result.scalar_one_or_none():
+        raise HTTPException(403, "Production line not in your factory")
 
     # Get production summary for the line/date
     prod_q = select(
@@ -67,7 +79,7 @@ async def auto_generate_handover(
     scrap_total = scrap_result.scalar() or 0
 
     # Get downtime
-    dt_q = select(func.sum(DowntimeEvent.duration_min)).where(
+    dt_q = select(func.sum(DowntimeEvent.duration_minutes)).where(
         and_(
             DowntimeEvent.production_line_id == line_id,
             func.date(DowntimeEvent.start_time) == d,
@@ -87,7 +99,7 @@ async def auto_generate_handover(
     oee_val = oee_result.scalar()
 
     handover = ShiftHandover(
-        factory_id=current_user.factory_id,
+        factory_id=require_factory(current_user),
         production_line_id=line_id,
         created_by_id=current_user.id,
         date=d,
@@ -112,7 +124,7 @@ async def list_handovers(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    q = select(ShiftHandover).where(ShiftHandover.factory_id == current_user.factory_id)
+    q = select(ShiftHandover).where(ShiftHandover.factory_id == require_factory(current_user))
     if line_id:
         q = q.where(ShiftHandover.production_line_id == line_id)
     if target_date:
@@ -132,7 +144,7 @@ async def update_handover(
     result = await db.execute(
         select(ShiftHandover).where(
             ShiftHandover.id == handover_id,
-            ShiftHandover.factory_id == current_user.factory_id,
+            ShiftHandover.factory_id == require_factory(current_user),
         )
     )
     handover = result.scalar_one_or_none()
@@ -154,7 +166,7 @@ async def acknowledge_handover(
     result = await db.execute(
         select(ShiftHandover).where(
             ShiftHandover.id == handover_id,
-            ShiftHandover.factory_id == current_user.factory_id,
+            ShiftHandover.factory_id == require_factory(current_user),
         )
     )
     handover = result.scalar_one_or_none()

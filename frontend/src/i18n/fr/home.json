@@ -34,5 +34,39 @@
   "capaActions": "Actions CAPA",
   "kaizenItems": "Kaizen en cours",
   "ncrOpen": "NCR ouvertes",
-  "gembaFindings": "Observations Gemba"
+  "gembaFindings": "Observations Gemba",
+
+  "liveData": "En direct",
+  "availability": "Disponibilite",
+  "performanceLabel": "Performance",
+  "qualityLabel": "Qualite",
+  "weekTrend": "Tendance 7 jours",
+
+  "sqcdpBoard": "Tableau SQCDP",
+  "sqcdpSafety": "Securite",
+  "sqcdpQuality": "Qualite",
+  "sqcdpCost": "Cout",
+  "sqcdpDelivery": "Livraison",
+  "sqcdpPeople": "Personnel",
+  "daysNoIncident": "Jours sans incident",
+  "defectRate": "Taux de defauts",
+  "scrapCost": "Cout des rebuts aujourd'hui",
+  "onTimeDelivery": "Livraison a temps",
+  "attendance": "Presence",
+  "days": "jours",
+
+  "hourlyOutput": "Production horaire",
+  "outputVsTarget": "Reel vs Objectif",
+  "actual": "Reel",
+  "totalOutput": "Production totale",
+
+  "leanJourney": "Parcours Lean",
+  "leanJourneyDesc": "Votre progression DMAIC sur tous les modules",
+  "viewAssessment": "Voir l'evaluation",
+  "phaseDefine": "Definir",
+  "phaseMeasure": "Mesurer",
+  "phaseAnalyze": "Analyser",
+  "phaseImprove": "Ameliorer",
+  "phaseControl": "Controler",
+  "modules": "modules"
 }

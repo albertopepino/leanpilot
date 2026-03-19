@@ -94,7 +94,8 @@ export default function BOMManager() {
       ]);
       setBOMs(bomRes.data ?? bomRes);
       setProducts((prodRes.data ?? prodRes).map((p: any) => ({ id: p.id, code: p.code, name: p.name })));
-      setLines((factRes.data as any)?.production_lines || (factRes as any).production_lines || []);
+      const factory = factRes.data ?? factRes;
+      setLines(factory?.production_lines || []);
       setWorkCenters((wcRes.data ?? wcRes).map((wc: any) => ({
         id: wc.id, name: wc.name, machine_type: wc.machine_type, production_line_id: wc.production_line_id,
       })));
@@ -166,9 +167,9 @@ export default function BOMManager() {
     });
   };
 
-  const updateComponent = (index: number, field: string, value: any) => {
+  const updateComponent = (index: number, field: keyof (typeof form.components)[number], value: string | boolean) => {
     const components = [...form.components];
-    (components[index] as any)[field] = value;
+    components[index] = { ...components[index], [field]: value };
     setForm({ ...form, components });
   };
 
@@ -183,9 +184,9 @@ export default function BOMManager() {
     });
   };
 
-  const updateOperation = (index: number, field: string, value: any) => {
+  const updateOperation = (index: number, field: keyof (typeof form.operations)[number], value: string) => {
     const operations = [...form.operations];
-    (operations[index] as any)[field] = value;
+    operations[index] = { ...operations[index], [field]: value };
     setForm({ ...form, operations });
   };
 
@@ -633,13 +634,40 @@ export default function BOMManager() {
                         <span className="text-xs text-th-text-3 font-mono mt-2">#{i + 1}</span>
                         <div className="flex-1 space-y-2">
                           <div className="grid grid-cols-2 gap-2">
-                            <input
-                              type="text"
+                            <select
                               value={op.operation_name}
                               onChange={(e) => updateOperation(i, "operation_name", e.target.value)}
-                              placeholder="Operation name *"
                               className="border border-th-border rounded px-2 py-1 text-sm bg-th-bg text-th-text"
-                            />
+                            >
+                              <option value="">Operation *</option>
+                              <option value="Cutting">Cutting</option>
+                              <option value="Stamping">Stamping</option>
+                              <option value="Bending">Bending</option>
+                              <option value="Welding">Welding</option>
+                              <option value="Machining">Machining</option>
+                              <option value="Turning">Turning</option>
+                              <option value="Milling">Milling</option>
+                              <option value="Drilling">Drilling</option>
+                              <option value="Grinding">Grinding</option>
+                              <option value="Heat Treatment">Heat Treatment</option>
+                              <option value="Surface Treatment">Surface Treatment</option>
+                              <option value="Painting">Painting</option>
+                              <option value="Assembly">Assembly</option>
+                              <option value="Sub-Assembly">Sub-Assembly</option>
+                              <option value="Soldering">Soldering</option>
+                              <option value="Gluing">Gluing</option>
+                              <option value="Injection Molding">Injection Molding</option>
+                              <option value="Extrusion">Extrusion</option>
+                              <option value="Casting">Casting</option>
+                              <option value="Forging">Forging</option>
+                              <option value="Testing">Testing</option>
+                              <option value="QC Inspection">QC Inspection</option>
+                              <option value="Packaging">Packaging</option>
+                              <option value="Labeling">Labeling</option>
+                              <option value="Cleaning">Cleaning</option>
+                              <option value="Deburring">Deburring</option>
+                              <option value="Polishing">Polishing</option>
+                            </select>
                             <select
                               value={op.work_center_id}
                               onChange={(e) => updateOperation(i, "work_center_id", e.target.value)}

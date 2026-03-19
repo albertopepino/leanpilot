@@ -14,5 +14,8 @@
   "goodPieces": "Sztuk dobrych",
   "scrapPieces": "Sztuk braków",
   "oee": "OEE",
-  "downtime": "Przestój (min)"
+  "downtime": "Przestój (min)",
+  "manual": "Ręczne wprowadzenie",
+  "scrap": "Brak",
+  "recent": "Ostatnie przekazania"
 }

@@ -1,6 +1,2 @@
-"use client";
-import ConsolidatedOEE from "@/components/dashboard/ConsolidatedOEE";
-
-export default function ConsolidatedRoute() {
-  return <ConsolidatedOEE />;
-}
+import { redirect } from "next/navigation";
+export default function LegacyConsolidated() { redirect("/operations/oee"); }

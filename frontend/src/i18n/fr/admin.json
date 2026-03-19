@@ -98,5 +98,11 @@
   "groupNoMembers": "Aucun membre dans ce groupe",
   "groupPoliciesSaved": "Politiques enregistrées",
   "groupPoliciesNote": "Lorsqu'un utilisateur appartient à plusieurs groupes, le niveau le plus permissif s'applique par outil.",
-  "groupFallbackNote": "Les utilisateurs sans groupe utilisent les permissions par défaut du rôle."
+  "groupFallbackNote": "Les utilisateurs sans groupe utilisent les permissions par défaut du rôle.",
+
+  "downloadTemplates": "Telecharger les Modeles",
+  "downloadTemplatesDesc": "Telechargez des modeles CSV avec en-tetes et donnees d'exemple.",
+  "uploadImport": "Importer un Fichier",
+  "uploadImportDesc": "Selectionnez un type de donnees, importez votre CSV, validez et importez.",
+  "importResults": "Resultats d'Importation"
 }

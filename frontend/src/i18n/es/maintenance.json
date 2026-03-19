@@ -7,7 +7,6 @@
   "auditResults": "{area} — Resultados de Auditoría 6S",
   "maturityLevel": "Nivel de Madurez {level}",
   "scorePoor": "1=Deficiente 5=Excelente",
-
   "catSort": "Clasificar (Seiri)",
   "catSortShort": "Clasificar",
   "catSortDesc": "Retirar elementos innecesarios",
@@ -26,7 +25,6 @@
   "catSafety": "Seguridad",
   "catSafetyShort": "Seguridad",
   "catSafetyDesc": "Identificación de riesgos",
-
   "sort_q1": "¿Se han retirado todos los elementos innecesarios del área?",
   "sort_q2": "¿Los elementos con etiqueta roja están correctamente identificados?",
   "sort_q3": "¿Existe una distinción clara entre lo necesario y lo innecesario?",
@@ -57,18 +55,15 @@
   "safety_q3": "¿Los riesgos de seguridad están identificados y atendidos?",
   "safety_q4": "¿Las hojas SDS/MSDS están accesibles?",
   "safety_q5": "¿El equipo contra incendios está inspeccionado y accesible?",
-
   "scoreBelowAvg": "Por Debajo del Prom.",
   "scoreAverage": "Promedio",
   "scoreGood": "Bueno",
   "scoreExcellent": "Excelente",
-
   "matWorldClass": "Clase Mundial",
   "matSustainable": "Sostenible",
   "matStandardized": "Estandarizado",
   "matDeveloping": "En Desarrollo",
   "matInitial": "Inicial",
-
   "saveError": "No se pudo guardar la auditoría",
   "currentAudit": "Auditoría Actual",
   "previousAudit": "Auditoría Anterior",
@@ -98,7 +93,6 @@
   "nextCategory": "Siguiente →",
   "saving": "Guardando...",
   "submitAudit": "Enviar Auditoría",
-
   "tpmTitle": "Dashboard TPM",
   "tpmSubtitle": "Mantenimiento Productivo Total — Cero averías, cero defectos",
   "tpmRunning": "En Operación",
@@ -113,7 +107,6 @@
   "statusMaintenance": "MANTENIMIENTO",
   "statusBreakdown": "AVERÍA",
   "nextPm": "Próximo PM",
-
   "demoMode": "Demo",
   "tpmAddEquipment": "Agregar Equipo",
   "tpmEqName": "Nombre del Equipo",
@@ -170,7 +163,6 @@
   "dayFri": "Vie",
   "daySat": "Sáb",
   "daySun": "Dom",
-
   "pillarAutonomous": "Mant. Autónomo",
   "pillarPlanned": "Mant. Planificado",
   "pillarQuality": "Mant. de Calidad",
@@ -179,7 +171,6 @@
   "pillarTraining": "Capacitación y Educación",
   "pillarSafety": "Seguridad y Medio Ambiente",
   "pillarOffice": "TPM de Oficina",
-
   "eqCncLathe": "Torno CNC #1",
   "eqHydraulicPress": "Prensa Hidráulica",
   "eqWeldingRobot": "Robot de Soldadura #3",
@@ -190,7 +181,6 @@
   "areaAssembly": "Ensamble",
   "areaPackaging": "Empaque",
   "areaFinishing": "Acabado",
-
   "ciltTitle": "Lista de Verificación CILT",
   "ciltSubtitle": "Mantenimiento Autónomo",
   "ciltProgress": "Progreso",
@@ -206,7 +196,6 @@
   "ciltSkipBtn": "Omitir",
   "ciltDescribeIssue": "Describa el problema...",
   "ciltStandard": "Estándar",
-
   "ciltCatC": "Limpieza",
   "ciltCatI": "Inspección",
   "ciltCatL": "Lubricación",
@@ -214,10 +203,8 @@
   "ciltFreqDaily": "Diario",
   "ciltFreqWeekly": "Semanal",
   "ciltFreqMonthly": "Mensual",
-
   "ciltViewExecute": "Ejecutar Lista de Verificación",
   "ciltViewStandards": "Administrar Estándares",
-
   "ciltLoadError": "No se pudieron cargar los estándares CILT",
   "ciltStdCreated": "Estándar creado exitosamente",
   "ciltStdError": "No se pudo crear el estándar",
@@ -271,12 +258,10 @@
   "ciltTime": "Tiempo",
   "ciltStatus": "Estado",
   "ciltNotes": "Notas",
-
   "catCleaning": "Limpieza",
   "catInspection": "Inspección",
   "catLubrication": "Lubricación",
   "catTightening": "Apriete",
-
   "cilt_clean1": "Limpiar exterior de la máquina y bandeja de virutas",
   "cilt_clean1_std": "Sin virutas, aceite ni residuos visibles",
   "cilt_clean2": "Limpiar panel de control y sensores",
@@ -295,8 +280,12 @@
   "cilt_tight1_std": "Torque: 45 Nm",
   "cilt_tight2": "Verificar pernos de anclaje",
   "cilt_tight2_std": "Torque: 120 Nm, sin movimiento visible",
-
   "freqDaily": "diario",
   "freqWeekly": "semanal",
-  "freqMonthly": "mensual"
+  "freqMonthly": "mensual",
+  "tpmFleetHealth": "Salud de la Flota",
+  "tpmOverdueAlerts": "Alertas Vencidas",
+  "tpmEquipmentOverdue": "{count} equipo vencido",
+  "tpmEquipmentOverduePlural": "{count} equipos vencidos",
+  "tpmDueSince": "Vencido desde"
 }

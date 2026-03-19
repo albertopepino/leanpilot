@@ -1,0 +1,97 @@
+name: Deploy to Production
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check secrets are configured
+        run: |
+          if [ -z "${{ secrets.SSH_HOST }}" ]; then
+            echo "::warning::SSH_HOST secret not configured — skipping deploy."
+            echo "Set SSH_HOST, SSH_USER, SSH_KEY in repo secrets to enable auto-deploy."
+            echo "SKIP_DEPLOY=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build deploy archive
+        if: env.SKIP_DEPLOY != 'true'
+        run: |
+          tar czf deploy.tar.gz \
+            --exclude='node_modules' \
+            --exclude='.next' \
+            --exclude='__pycache__' \
+            --exclude='.git' \
+            --exclude='*.pyc' \
+            --exclude='.env' \
+            --exclude='.env.local' \
+            --exclude='frontend/.env.local' \
+            --exclude='backend/.env' \
+            --exclude='deploy.tar.gz' \
+            --exclude='*.sqlite3' \
+            --exclude='test.db' \
+            backend/ \
+            frontend/ \
+            docker-compose.prod.yml \
+            deploy.sh \
+            nginx/ \
+            .env.example
+
+      - name: Setup SSH key
+        if: env.SKIP_DEPLOY != 'true'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Upload archive to server
+        if: env.SKIP_DEPLOY != 'true'
+        run: |
+          scp -i ~/.ssh/deploy_key \
+            deploy.tar.gz \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/lean-os/deploy.tar.gz
+
+      - name: Deploy on server
+        if: env.SKIP_DEPLOY != 'true'
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} '
+            set -e
+            cd /home/'"${{ secrets.SSH_USER }}"'/lean-os
+
+            echo ">>> Extracting archive..."
+            tar xzf deploy.tar.gz
+            rm deploy.tar.gz
+
+            echo ">>> Running deploy script..."
+            chmod +x deploy.sh
+            bash deploy.sh
+
+            echo ">>> Deploy complete!"
+            docker compose -f docker-compose.prod.yml ps
+          '
+
+      - name: Verify deployment
+        if: env.SKIP_DEPLOY != 'true'
+        run: |
+          echo "Waiting for server to be ready..."
+          sleep 10
+          STATUS=$(ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            'curl -sf http://localhost/api/health | python3 -c "import sys,json; print(json.load(sys.stdin)[\"status\"])"' \
+            || echo "unreachable")
+          echo "Health check status: $STATUS"
+          if [ "$STATUS" != "ok" ] && [ "$STATUS" != "degraded" ]; then
+            echo "::warning::Health check returned unexpected status: $STATUS"
+          fi
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

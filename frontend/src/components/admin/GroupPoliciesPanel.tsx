@@ -3,87 +3,88 @@ import { useState, useEffect, useCallback, Fragment } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { groupsApi, adminApi } from "@/lib/api";
 import type { GroupResponse, GroupPolicyItem, GroupCreate, GroupUpdate } from "@/lib/types";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 // ─── Tool tabs grouped by DMAIC phase ────────────────────────────────────────
 
 interface TabDef {
   id: string;
-  label: string;
+  labelKey: string;
 }
 
 interface PhaseGroup {
-  phase: string;
+  phaseKey: string;
   tabs: TabDef[];
 }
 
 const TOOL_TABS: PhaseGroup[] = [
   {
-    phase: "Home",
-    tabs: [{ id: "home", label: "Home" }],
+    phaseKey: "common.navHome",
+    tabs: [{ id: "home", labelKey: "common.navHome" }],
   },
   {
-    phase: "Getting Started",
+    phaseKey: "common.navGettingStarted",
     tabs: [
-      { id: "assessment", label: "Assessment" },
-      { id: "copilot", label: "Copilot" },
-      { id: "resources", label: "Resources" },
+      { id: "assessment", labelKey: "common.navAssessment" },
+      { id: "copilot", labelKey: "common.navCopilot" },
+      { id: "resources", labelKey: "common.navResources" },
     ],
   },
   {
-    phase: "Define",
+    phaseKey: "common.navDefine",
     tabs: [
-      { id: "production-orders", label: "Production Orders" },
-      { id: "products", label: "Products" },
-      { id: "production", label: "Production" },
-      { id: "andon", label: "Andon" },
+      { id: "production-orders", labelKey: "common.navProductionOrders" },
+      { id: "products", labelKey: "common.navProducts" },
+      { id: "production", labelKey: "common.navProduction" },
+      { id: "andon", labelKey: "common.navAndon" },
     ],
   },
   {
-    phase: "Measure",
+    phaseKey: "common.navMeasure",
     tabs: [
-      { id: "dashboard", label: "Dashboard" },
-      { id: "consolidated-oee", label: "Consolidated OEE" },
-      { id: "hourly", label: "Hourly" },
-      { id: "pareto", label: "Pareto" },
-      { id: "defect-catalog", label: "Defect Catalog" },
-      { id: "qc-checks", label: "QC Checks" },
+      { id: "dashboard", labelKey: "common.navDashboard" },
+      { id: "consolidated-oee", labelKey: "common.navConsolidated" },
+      { id: "hourly", labelKey: "common.navHourly" },
+      { id: "pareto", labelKey: "common.menuPareto" },
+      { id: "defect-catalog", labelKey: "common.navDefects" },
+      { id: "qc-checks", labelKey: "common.navQCChecks" },
     ],
   },
   {
-    phase: "Analyze",
+    phaseKey: "common.navAnalyze",
     tabs: [
-      { id: "five-why", label: "5 Why" },
-      { id: "ishikawa", label: "Ishikawa" },
-      { id: "vsm", label: "VSM" },
-      { id: "gemba", label: "Gemba" },
-      { id: "safety", label: "Safety" },
-      { id: "a3", label: "A3" },
-      { id: "mind-map", label: "Mind Map" },
+      { id: "five-why", labelKey: "common.navFiveWhy" },
+      { id: "ishikawa", labelKey: "common.navIshikawa" },
+      { id: "vsm", labelKey: "common.navVsm" },
+      { id: "gemba", labelKey: "common.navGemba" },
+      { id: "safety", labelKey: "common.navSafety" },
+      { id: "a3", labelKey: "common.navA3" },
+      { id: "mind-map", labelKey: "common.navMindMap" },
     ],
   },
   {
-    phase: "Improve",
+    phaseKey: "common.navImprove",
     tabs: [
-      { id: "kaizen", label: "Kaizen" },
-      { id: "smed", label: "SMED" },
-      { id: "capa", label: "CAPA" },
+      { id: "kaizen", labelKey: "common.navKaizen" },
+      { id: "smed", labelKey: "common.navSmed" },
+      { id: "capa", labelKey: "common.navCAPA" },
     ],
   },
   {
-    phase: "Control",
+    phaseKey: "common.navControl",
     tabs: [
-      { id: "tpm", label: "TPM" },
-      { id: "cilt", label: "CILT" },
-      { id: "six-s", label: "6S" },
-      { id: "qc-policies", label: "QC Policies" },
-      { id: "ncr", label: "NCR" },
+      { id: "tpm", labelKey: "common.navTpm" },
+      { id: "cilt", labelKey: "common.navCilt" },
+      { id: "six-s", labelKey: "common.navSixS" },
+      { id: "qc-policies", labelKey: "common.navQCPolicies" },
+      { id: "ncr", labelKey: "common.navNCR" },
     ],
   },
   {
-    phase: "System",
+    phaseKey: "common.navSystem",
     tabs: [
-      { id: "settings", label: "Settings" },
-      { id: "admin", label: "Admin" },
+      { id: "settings", labelKey: "common.navSettings" },
+      { id: "admin", labelKey: "common.navAdmin" },
     ],
   },
 ];
@@ -144,6 +145,9 @@ export default function GroupPoliciesPanel() {
   // Messages
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // Confirm dialog
+  const [confirmDeleteGroupId, setConfirmDeleteGroupId] = useState<number | null>(null);
 
   const selectedGroup = groups.find((g) => g.id === selectedGroupId) || null;
 
@@ -221,7 +225,6 @@ export default function GroupPoliciesPanel() {
   };
 
   const deleteGroup = async (id: number) => {
-    if (!confirm(t("admin.confirmDeleteGroup"))) return;
     clearMessages();
     try {
       await groupsApi.remove(id);
@@ -399,7 +402,7 @@ export default function GroupPoliciesPanel() {
                     </svg>
                   </button>
                   <button
-                    onClick={(e) => { e.stopPropagation(); deleteGroup(group.id); }}
+                    onClick={(e) => { e.stopPropagation(); setConfirmDeleteGroupId(group.id); }}
                     className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/20 text-th-text-2 hover:text-red-600 transition"
                     title={t("admin.deleteGroup")}
                   >
@@ -448,14 +451,14 @@ export default function GroupPoliciesPanel() {
                     </thead>
                     <tbody>
                       {TOOL_TABS.map((phase) => (
-                        <Fragment key={phase.phase}>
+                        <Fragment key={phase.phaseKey}>
                           {/* Phase header row */}
                           <tr>
                             <td
                               colSpan={5}
                               className="px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-th-text-2 bg-th-bg-3/50"
                             >
-                              {phase.phase}
+                              {t(phase.phaseKey)}
                             </td>
                           </tr>
                           {phase.tabs.map((tab) => {
@@ -465,7 +468,7 @@ export default function GroupPoliciesPanel() {
                                 key={tab.id}
                                 className="border-t border-th-border/50 hover:bg-th-bg-3/30 transition"
                               >
-                                <td className="px-4 py-2 text-th-text font-medium">{tab.label}</td>
+                                <td className="px-4 py-2 text-th-text font-medium">{t(tab.labelKey)}</td>
                                 {PERM_LEVELS.map((perm) => (
                                   <td key={perm} className="px-2 py-2 text-center">
                                     <button
@@ -577,6 +580,18 @@ export default function GroupPoliciesPanel() {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmDeleteGroupId !== null}
+        title={t("common.confirmDelete")}
+        message={t("admin.confirmDeleteGroup")}
+        variant="danger"
+        onConfirm={() => {
+          if (confirmDeleteGroupId !== null) deleteGroup(confirmDeleteGroupId);
+          setConfirmDeleteGroupId(null);
+        }}
+        onCancel={() => setConfirmDeleteGroupId(null)}
+      />
 
       {/* ─── Group Create/Edit Modal ─────────────────────────────────────── */}
       {showGroupForm && (

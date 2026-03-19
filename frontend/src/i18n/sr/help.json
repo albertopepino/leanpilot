@@ -1,0 +1,199 @@
+{
+  "ariaLabel": "Panel Kontekstualne Pomoci",
+  "openHelp": "Sta je ovo?",
+  "whatIsThis": "Sta je ovo?",
+  "whenToUse": "Kada koristiti",
+  "dmaicPhase": "DMAIC Faza",
+  "connectedTools": "Povezani Alati",
+  "proTip": "Savet Black Belt-a",
+
+  "phaseDefine": "Definisati",
+  "phaseMeasure": "Meriti",
+  "phaseAnalyze": "Analizirati",
+  "phaseImprove": "Poboljsati",
+  "phaseControl": "Kontrolisati",
+
+  "defineReason": "Ovaj alat vam pomaze da definisete problem i razumete trenutno stanje pre nego sto preduzmete akciju.",
+  "measureReason": "Ovaj alat prikuplja i vizualizuje podatke za kvantifikaciju jaza izmedju trenutnih i ciljanih performansi.",
+  "analyzeReason": "Ovaj alat vam pomaze da identifikujete i validirate korene uzroke koristeci strukturirane metode analize.",
+  "improveReason": "Ovaj alat podrzava razvoj, testiranje i implementaciju kontramera za eliminaciju korenih uzroka.",
+  "controlReason": "Ovaj alat odrzava postignute rezultate standardizacijom novih procesa i pracenjem performansi tokom vremena.",
+
+  "oee_whatIsThis": "OEE (Ukupna Efektivnost Opreme) je referentna metrika za merenje proizvodne produktivnosti. Kombinuje Raspolozivost, Performanse i Kvalitet u jedan procenat. OEE svetske klase je 85% ili vise.",
+  "oee_whenToUse": "Proveravajte OEE Dashboard dnevno na Tier 1 sastancima i nedeljno za analizu trendova.",
+  "oee_proTip": "Ne jurite 100% OEE — fokusirajte se prvo na najvecu kategoriju gubitaka.",
+
+  "andon_whatIsThis": "Andon Tabla je sistem vizuelnog upravljanja u realnom vremenu koji signalizira status proizvodnih linija, omogucavajuci operaterima da odmah prijave probleme.",
+  "andon_whenToUse": "Koristite Andon Tablu neprekidno tokom proizvodnih smena.",
+  "andon_proTip": "Vrednost Andona je u brzini reakcije, ne u samom alarmu. Postavite pravila eskalacije sa definisanim vremenima.",
+
+  "sqcdp_whatIsThis": "SQCDP (Bezbednost, Kvalitet, Trosak, Isporuka, Ljudi) je strukturirana dnevna upravljacka tabla. Svaka kategorija dobija jednostavan status Crveno/Zeleno/Zuto.",
+  "sqcdp_whenToUse": "Sprovodite SQCDP pregled na pocetku svake smene. Tier 1 treba da traje 10 minuta, Tier 2 — 15 minuta.",
+  "sqcdp_proTip": "Drzite SQCDP sastanak stojecim, vremenski ogranicenim i orijentisanim ka akciji.",
+
+  "kaizen_whatIsThis": "Kaizen Tabla je vas sistem upravljanja kontinuiranim unapredjenjem. Prikuplja ideje za poboljsanje od svih u fabrici i kvantifikuje uticaj.",
+  "kaizen_whenToUse": "Koristite Kaizen Tablu za prikupljanje ideja iz Gemba Walk-ova, analiza korenih uzroka i SQCDP sastanaka.",
+  "kaizen_proTip": "Postavite cilj od 1 Kaizen po osobi mesecno. Brze pobede grade kulturu unapredjenja.",
+
+  "vsm_whatIsThis": "Mapiranje Toka Vrednosti vizualizuje celokupan tok materijala i informacija, identifikujuci svaki korak procesa.",
+  "vsm_whenToUse": "Kreirajte VSM na pocetku svake vece inicijative za unapredjenje. Najpre mapirajte trenutno stanje.",
+  "vsm_proTip": "Uvek prodjite kroz stvarni proces (Gemba) tokom mapiranja — nikada ne kreirajte VSM iz konferencijske sale.",
+
+  "sixs_whatIsThis": "6S Revizija je sistematski metod organizacije radnog mesta. Sest S su Sortiraj, Sistemizuj, Sisti, Standardizuj, Samodisciplina i Sigurnost.",
+  "sixs_whenToUse": "Sprovodite 6S revizije najmanje nedeljno za svaku oblast.",
+  "sixs_proTip": "6S nije program ciscenja — to je sistem discipline. Trend rezultata revizije je vazniji od trenutne vrednosti.",
+
+  "smed_whatIsThis": "SMED je sistematski metod za smanjenje vremena promene alata konverzijom internih zadataka u eksterne. Tipicno smanjenje je 50-90%.",
+  "smed_whenToUse": "Primenite SMED kada vreme promene alata cini znacajan deo zastoja.",
+  "smed_proTip": "Snimite svaku promenu alata na video pre analize. Otkricete da je 30-50% internog vremena zapravo eksterni rad.",
+
+  "tpm_whatIsThis": "TPM (Totalno Produktivno Odrzavanje) je holisticki pristup odrzavanju opreme sa ciljem nula kvarova, nula defekata i nula nesreca.",
+  "tpm_whenToUse": "Koristite TPM Dashboard za pracenje zdravlja opreme i planiranje preventivnog odrzavanja.",
+  "tpm_proTip": "Pocnite TPM na vasem uskom grlu — tu kvarovi najvise bole.",
+
+  "gemba_whatIsThis": "Gemba Walk je praksa odlaska na stvarno radno mesto radi posmatranja procesa i identifikacije rasipanja. To nije revizija — to je vezba ucenja.",
+  "gemba_whenToUse": "Lideri bi trebalo da sprovode strukturirani Gemba Walk najmanje jednom nedeljno.",
+  "gemba_proTip": "Pridrzavajte se 3 pravila Gembe: idjite i vidite, pitajte zasto, pokazite postovanje.",
+
+  "a3_whatIsThis": "A3 Izvestaj je strukturirana metodologija resavanja problema na jednom A3 listu, prateci PDCA ciklus.",
+  "a3_whenToUse": "Koristite A3 za srednje i velike probleme koji zahtevaju medjufunkcionalnu saradnju.",
+  "a3_proTip": "A3 je alat za coaching, ne formular za popunjavanje. Dijalog mentor-ucenik je vredniji od samog dokumenta.",
+
+  "hourly_whatIsThis": "Tabla Casovne Proizvodnje prati planiranu u odnosu na ostvarenu proizvodnju za svaki sat smene.",
+  "hourly_whenToUse": "Koristite Casovnu Tablu tokom svake smene. Operateri bi trebalo da je azuriraju svakog sata.",
+  "hourly_proTip": "Snaga casovnog pracenja lezi u reakciji, ne u belezeenju.",
+
+  "lsw_whatIsThis": "Standardni Rad Lidera definise ponavljajuce zadatke i ponasanja ocekivana za svaki nivo vodjstva.",
+  "lsw_whenToUse": "Kreirajte LSW za svaku lidersku ulogu. Pratite stope realizacije za identifikaciju prilika za coaching.",
+  "lsw_proTip": "LSW ne sluzi za kontrolu lidera — stiti njihovo vreme za najvazniji rad.",
+
+  "handover_whatIsThis": "Primopredaja Smene je strukturirani proces komunikacije izmedju odlazece i dolazece smene.",
+  "handover_whenToUse": "Sprovodite primopredaju smene pri svakoj promeni smene bez izuzetka.",
+  "handover_proTip": "Najbolje primopredaje prate standardni format: Bezbednost, Kvalitet, Proizvodnja, Oprema, Ljudi.",
+
+  "safety_whatIsThis": "Pracenje Bezbednosti belezi sve incidente bezbednosti, skoro-nesrece i prijave opasnosti.",
+  "safety_whenToUse": "Beleziite svaki bezbednosni dogadjaj odmah. Pregledajte sve dogadjaje na dnevnom SQCDP sastanku.",
+  "safety_proTip": "Slavite prijavljivanje skoro-nesreca — to znaci da vas tim veruje sistemu.",
+
+  "kanban_whatIsThis": "Kanban je vizuelni sistem planiranja koji kontrolise tok rada signalima, implementirajuci sistem povlacenja za sprecavanje hiperprodukcije.",
+  "kanban_whenToUse": "Implementirajte Kanban kada morate kontrolisati nivoe zaliha izmedju koraka procesa.",
+  "kanban_proTip": "Pocnite sa vise Kanban kartica nego sto mislite da vam treba, zatim ih sistematski smanjujte.",
+
+  "pokayoke_whatIsThis": "Poka-Yoke (zastitia od greske) je praksa projektovanja procesa tako da greske budu nemoguce ili odmah otkrivene.",
+  "pokayoke_whenToUse": "Primenite Poka-Yoke kada 5 Why analiza otkrije ljudsku gresku kao koren uzroka.",
+  "pokayoke_proTip": "Najbolji Poka-Yoke su jednostavni i jeftini: asimetricni konektori, kodiranje bojama, kontrolne liste sa prinudnim redosledom.",
+
+  "fivewhy_whatIsThis": "5 Why Analiza je tehnika analize korena uzroka koja prodire od simptoma do fundamentalnog uzroka ponovljenim pitanjem 'Zasto?'",
+  "fivewhy_whenToUse": "Koristite 5 Why za svaki znacajan defekt kvaliteta, kvar opreme ili incident bezbednosti.",
+  "fivewhy_proTip": "Svaki odgovor 'Zasto' mora biti cinjenica, ne misljenje. Verifikujte svaki odgovor na Gembi.",
+
+  "ishikawa_whatIsThis": "Isikava Dijagram (Riblja Kost) organizuje potencijalne uzroke u kategorije: Covek, Masina, Metod, Materijal, Merenje i Okruzenje.",
+  "ishikawa_whenToUse": "Koristite Isikava dijagram kada problem ima visestruke potencijalne uzroke u razlicitim kategorijama.",
+  "ishikawa_proTip": "Ne radite brainstorming iz konferencijske sale — idite na Gemba i gradite dijagram posmatrajuci stvarni proces.",
+
+  "pareto_whatIsThis": "Pareto Dijagram primenjuje princip 80/20 na proizvodne podatke, transformisuci podatke u jasne prioritete.",
+  "pareto_whenToUse": "Koristite Pareto Dijagram kada imate kategoricke podatke i morate priorizovati akcije poboljsanja.",
+  "pareto_proTip": "Nakon popravke glavne Pareto kategorije, uvek ponovo pokrenite analizu.",
+
+  "waste_whatIsThis": "Tracker Rasipanja koristi TIMWOODS okvir za identifikaciju i kvantifikaciju osam tipova proizvodnog rasipanja.",
+  "waste_whenToUse": "Koristite Tracker tokom Gemba Walk-ova za belezeenje opazanja rasipanja u realnom vremenu.",
+  "waste_proTip": "Ne pokusavajte da eliminisete sve rasipanje odjednom — koristite Pareto razmisljanje za napad na najvecu kategoriju prvo.",
+
+  "cilt_whatIsThis": "CILT (Ciscenje, Inspekcija, Podmazivanje, Pritezanje) je kontrolna lista autonomnog odrzavanja operatera koja cini osnovu TPM-a.",
+  "cilt_whenToUse": "Sprovodite CILT provere na pocetku svake smene. Svaka masina treba da ima vizuelni CILT standard.",
+  "cilt_proTip": "Najbolji CILT standardi su vizuelni — fotografije 'dobrog' i 'loseg' stanja. Cilj: CILT obilazak za manje od 10 minuta.",
+
+  "qc_whatIsThis": "Dashboard Kontrole Kvaliteta pruza centralizovani pregled svih aktivnosti kvaliteta.",
+  "qc_whenToUse": "Proveravajte QC Dashboard dnevno. Analizirajte trendove nedeljno. Pregledajte efektivnost CAPA mesecno.",
+  "qc_proTip": "Kvalitet je besplatan — nedostatak kvaliteta kosta. Pratite Troskove Loseg Kvaliteta (COPQ).",
+
+  "spc_whatIsThis": "SPC karte prate varijaciju procesa sa kontrolnim granicama izracunatim iz vasih podataka, razlikujuci normalnu varijaciju od specijalnih signala.",
+  "spc_whenToUse": "Primenite SPC na karakteristike kriticne za kvalitet (CTQ). Pratite SPC karte u realnom vremenu.",
+  "spc_proTip": "Nikada ne mesajte granice specifikacije sa granicama kontrole. Fokusirajte se na smanjenje varijacije.",
+
+  "assessment_whatIsThis": "Lean Procena je strukturirana procena zrelosti koja ocenjuje vasu fabriku u svim dimenzijama Lean proizvodnje.",
+  "assessment_whenToUse": "Zavrsite Lean Procenu pri uvodjenju LeanPilot-a, zatim je ponovite svakih 6 meseci.",
+  "assessment_proTip": "Budite iskreni u proceni — naduvani rezultati vode pogresnim prioritetima.",
+
+  "auditScheduler_whatIsThis": "Raspored Revizija upravlja svim ciklusima revizija: 6S revizije, revizije procesa, bezbednosni obilasci i Gemba rute.",
+  "auditScheduler_whenToUse": "Konfigurisiite raspored revizija tokom pocetnog podesavanja i pregledajte ga kvartalno.",
+  "auditScheduler_proTip": "Slojevite revizije procesa (LPA) su najefikasnije: operateri revidiraju dnevno, supervizori nedeljno, menadzeri mesecno.",
+
+  "spcTitle": "SPC Karte",
+
+  "learnMore": "Saznaj vise",
+  "gotIt": "Razumem!",
+  "dismissTip": "Zatvori savet",
+  "metric_explain_aria": "Objasni ovu metriku",
+  "metric_benchmark_label": "Dobar rezultat:",
+  "metric_action_label": "Ako je nizak:",
+  "metric_status_good": "U cilju",
+  "metric_status_warning": "Zahteva paznju",
+  "metric_status_critical": "Kriticno — potrebna akcija",
+
+  "metric_oee_title": "OEE",
+  "metric_oee_desc": "Ukupna Efektivnost Opreme kombinuje Raspolozivost x Performanse x Kvalitet u jedan procenat.",
+  "metric_oee_bench": "OEE svetske klase je 85%+. Vecina fabrika pocinje od 40-60%.",
+  "metric_oee_action": "Proverite kaskadni dijagram gubitaka OEE. Fokusirajte se na kategoriju gubitaka #1.",
+
+  "metric_availability_title": "Raspolozivost",
+  "metric_availability_desc": "Procenat planiranog proizvodnog vremena u kojem je linija zaista radila.",
+  "metric_availability_bench": "Raspolozivost svetske klase je 90%+.",
+  "metric_availability_action": "Proverite Pareto zastoja. Ako dominiraju kvarovi, ojacajte TPM/CILT.",
+
+  "metric_performance_title": "Performanse",
+  "metric_performance_desc": "Procenat teoretske maksimalne brzine postignut dok je linija radila.",
+  "metric_performance_bench": "Performanse svetske klase su 95%+.",
+  "metric_performance_action": "Proverite mikrozastoje i gubitke brzine.",
+
+  "metric_quality_title": "Kvalitet",
+  "metric_quality_desc": "Procenat delova proizvedenih ispravno iz prvog pokusaja.",
+  "metric_quality_bench": "Stopa kvaliteta svetske klase je 99,9%+.",
+  "metric_quality_action": "Proverite Pareto defekata. Primenite Poka-Yoke. Koristite SPC karte.",
+
+  "metric_mtbf_title": "MTBF",
+  "metric_mtbf_desc": "Srednje Vreme Izmedju Kvarova — prosecno vreme rada masine pre kvara.",
+  "metric_mtbf_bench": "Cilj varira po tipu masine. MTBF bi trebalo da raste tokom vremena.",
+  "metric_mtbf_action": "Ojacajte planove preventivnog odrzavanja.",
+
+  "metric_mttr_title": "MTTR",
+  "metric_mttr_desc": "Srednje Vreme Popravke — prosecno vreme za vracanije masine posle kvara.",
+  "metric_mttr_bench": "Cilj ispod 30 minuta za vecinu opreme.",
+  "metric_mttr_action": "Unapred pozicionirajte rezervne delove i alat.",
+
+  "metric_fty_title": "FTY",
+  "metric_fty_desc": "Prinos Prvog Prolaza — procenat jedinica koje proladju inspekciju iz prvog pokusaja.",
+  "metric_fty_bench": "Cilj 95%+ za vecinu procesa.",
+  "metric_fty_action": "Identifikujte glavne tipove defekata Pareto analizom.",
+
+  "metric_cp_title": "Cp",
+  "metric_cp_desc": "Indeks Sposobnosti Procesa — meri da li rasipanje procesa staje u toleranciju specifikacije.",
+  "metric_cp_bench": "Cp >= 1,33 znaci da je proces sposoban.",
+  "metric_cp_action": "Smanjite varijaciju procesa kroz SPC monitoring.",
+
+  "metric_cpk_title": "Cpk",
+  "metric_cpk_desc": "Indeks Sposobnosti Procesa (centriran) — kao Cp ali uzima u obzir centriranost procesa.",
+  "metric_cpk_bench": "Cpk >= 1,33 je minimalni industrijski standard.",
+  "metric_cpk_action": "Ako je Cpk < Cp, centrirajte proces. Ako su oba niska, smanjite varijaciju.",
+
+  "metric_ppm_title": "PPM",
+  "metric_ppm_desc": "Delovi Na Milion neispravnih — univerzalna metrika kvaliteta.",
+  "metric_ppm_bench": "Ispod 100 PPM je odlicno.",
+  "metric_ppm_action": "Fokusirajte se na glavni tip defekta. Primenite Poka-Yoke.",
+
+  "metric_sigma_title": "Sigma Nivo",
+  "metric_sigma_desc": "Sigma nivo pokazuje koliko standardnih devijacija staje izmedju srednje vrednosti procesa i najblizeg limita specifikacije.",
+  "metric_sigma_bench": "3 sigma = 66.807 PPM. 4 sigma = 6.210 PPM. 6 sigma = 3,4 PPM.",
+  "metric_sigma_action": "Identifikujte i eliminisete najvece izvore varijacije.",
+
+  "metric_takt_title": "Takt Vreme",
+  "metric_takt_desc": "Tempo proizvodnje potreban da zadovolji potraznju kupaca.",
+  "metric_takt_bench": "Vreme ciklusa bi trebalo da bude jednako ili nesto manje od takt vremena.",
+  "metric_takt_action": "Identifikujte usko grlo. Primenite balansiranje linije.",
+
+  "firstVisitTip_oee": "OEE meri koliko efektivno rade vasi uredjaji. Kombinuje Raspolozivost x Performanse x Kvalitet. OEE svetske klase je 85%+.",
+  "firstVisitTip_kanban": "Kanban table vizualizuju tok rada i ogranicavaju Work-In-Progress (WIP). Prevlacite kartice izmedju kolona.",
+  "firstVisitTip_fiveWhy": "Analiza 5 Zasto pronalazi korenski uzrok ponavljajuci pitanje 'Zasto?'",
+  "firstVisitTip_kaizen": "Kaizen znaci kontinuirano poboljsanje. Predlazite ideje, pratite ih od odobrenja do verifikacije.",
+  "firstVisitTip_sixS": "6S stvara organizovana radna mesta: Sortiranje, Sistematizacija, Sjaj, Standardizacija, Samoodrzavanje, Sigurnost."
+}

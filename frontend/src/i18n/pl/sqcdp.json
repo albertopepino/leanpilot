@@ -9,5 +9,25 @@
   "attendees": "Uczestnicy",
   "tier1": "Poziom 1 — Zespół",
   "tier2": "Poziom 2 — Dział",
-  "tier3": "Poziom 3 — Zakład"
+  "tier3": "Poziom 3 — Zakład",
+  "dailyView": "Dzienny",
+  "monthlyView": "Miesięczny",
+  "summary": "Podsumowanie",
+  "good": "Dobry",
+  "warning": "Ostrzeżenie",
+  "critical": "Krytyczny",
+  "noData": "Brak danych",
+  "noEntryForDate": "Brak wpisu dla tej daty",
+
+  "catSafety": "Bezpieczenstwo",
+  "catQuality": "Jakosc",
+  "catCost": "Koszty",
+  "catDelivery": "Dostawy",
+  "catPeople": "Ludzie",
+
+  "suggestEscalateT2": "Rozważ eskalację do T2",
+  "autoEscalatedT2": "Auto-eskalacja do T2",
+  "loadFailed": "Nie udalo sie zaladowac danych SQCDP",
+  "saveFailed": "Nie udalo sie zapisac wpisu SQCDP",
+  "meetingSaveFailed": "Nie udalo sie zapisac spotkania"
 }

@@ -83,6 +83,18 @@ export interface ShiftUpdate {
   is_active?: boolean;
 }
 
+// ─── Factory ─────────────────────────────────────────────────────────────────
+
+export interface FactoryResponse {
+  id: number;
+  name: string;
+  timezone?: string | null;
+  production_lines?: { id: number; name: string; description?: string; is_active?: boolean }[];
+  user_count?: number;
+  data_controller?: string;
+  [key: string]: unknown;
+}
+
 // ─── Production ──────────────────────────────────────────────────────────────
 
 export interface ProductionRecordCreate {
@@ -537,6 +549,7 @@ export interface ProductionOrderCreate {
   planned_start?: string | null;
   planned_end?: string | null;
   customer_ref?: string | null;
+  batch_lot_number?: string | null;
   notes?: string | null;
   order_lines?: ProductionOrderLineCreate[];
 }
@@ -629,6 +642,7 @@ export interface NCRCreate {
   description: string;
   severity: string;
   quantity_affected?: number | null;
+  batch_lot_number?: string | null;
 }
 
 export interface NCRUpdate {
@@ -928,6 +942,8 @@ export interface HorizontalDeployCreate {
   target_lines: number[];
 }
 
+export type StandardizationStatus = "draft" | "verified" | "deployed";
+
 export interface HorizontalDeployResponse {
   id: number;
   factory_id: number;
@@ -940,6 +956,10 @@ export interface HorizontalDeployResponse {
   status: string;
   created_at: string;
   updated_at: string;
+  verification_date?: string | null;
+  verified_by?: string | null;
+  standardization_status?: StandardizationStatus | null;
+  deployment_locations?: string[] | null;
 }
 
 // ─── Reports ────────────────────────────────────────────────────────────────

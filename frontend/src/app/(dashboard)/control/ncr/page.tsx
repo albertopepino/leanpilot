@@ -1,6 +1,2 @@
-"use client";
-import NCRBoard from "@/components/manufacturing/NCRBoard";
-
-export default function NCRRoute() {
-  return <NCRBoard />;
-}
+import { redirect } from "next/navigation";
+export default function LegacyControlNCR() { redirect("/quality"); }

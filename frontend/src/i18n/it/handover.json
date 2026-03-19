@@ -14,5 +14,8 @@
   "goodPieces": "Pezzi conformi",
   "scrapPieces": "Pezzi di scarto",
   "oee": "OEE",
-  "downtime": "Fermo macchina (min)"
+  "downtime": "Fermo macchina (min)",
+  "manual": "Inserimento manuale",
+  "scrap": "Scarto",
+  "recent": "Ultimi passaggi di consegne"
 }

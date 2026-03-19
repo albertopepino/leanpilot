@@ -9,5 +9,25 @@
   "attendees": "Učesnici",
   "tier1": "Nivo 1 — Tim",
   "tier2": "Nivo 2 — Odeljenje",
-  "tier3": "Nivo 3 — Pogon"
+  "tier3": "Nivo 3 — Pogon",
+  "dailyView": "Dnevni",
+  "monthlyView": "Mesečni",
+  "summary": "Rezime",
+  "good": "Dobro",
+  "warning": "Upozorenje",
+  "critical": "Kritično",
+  "noData": "Nema podataka",
+  "noEntryForDate": "Nema unosa za ovaj datum",
+
+  "catSafety": "Bezbednost",
+  "catQuality": "Kvalitet",
+  "catCost": "Troskovi",
+  "catDelivery": "Isporuka",
+  "catPeople": "Ljudi",
+
+  "suggestEscalateT2": "Razmotri eskalaciju na T2",
+  "autoEscalatedT2": "Auto-eskalacija na T2",
+  "loadFailed": "Ucitavanje SQCDP podataka neuspesno",
+  "saveFailed": "Cuvanje SQCDP unosa neuspesno",
+  "meetingSaveFailed": "Evidencija sastanka neuspesna"
 }

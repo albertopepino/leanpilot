@@ -9,5 +9,25 @@
   "attendees": "Teilnehmer",
   "tier1": "Stufe 1 — Team",
   "tier2": "Stufe 2 — Abteilung",
-  "tier3": "Stufe 3 — Werk"
+  "tier3": "Stufe 3 — Werk",
+  "dailyView": "Tagesansicht",
+  "monthlyView": "Monatsansicht",
+  "summary": "Zusammenfassung",
+  "good": "Gut",
+  "warning": "Warnung",
+  "critical": "Kritisch",
+  "noData": "Keine Daten",
+  "noEntryForDate": "Kein Eintrag für dieses Datum",
+
+  "catSafety": "Sicherheit",
+  "catQuality": "Qualitaet",
+  "catCost": "Kosten",
+  "catDelivery": "Lieferung",
+  "catPeople": "Personal",
+
+  "suggestEscalateT2": "T2-Eskalation empfohlen",
+  "autoEscalatedT2": "Automatisch auf T2 eskaliert",
+  "loadFailed": "SQCDP-Eintraege konnten nicht geladen werden",
+  "saveFailed": "SQCDP-Eintrag konnte nicht gespeichert werden",
+  "meetingSaveFailed": "Besprechung konnte nicht protokolliert werden"
 }

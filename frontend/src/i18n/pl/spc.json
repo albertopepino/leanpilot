@@ -1,0 +1,65 @@
+{
+  "title": "Wykresy SPC",
+  "subtitle": "Statystyczna Kontrola Procesu — Monitoruj stabilność i zdolność procesu",
+
+  "xbarR": "X-bar R",
+  "xbarS": "X-bar S",
+  "pChart": "Karta p",
+  "npChart": "Karta np",
+  "cChart": "Karta c",
+  "uChart": "Karta u",
+
+  "chartType": "Typ Wykresu",
+  "subgroupSize": "Rozmiar Podgrupy",
+  "usl": "GGS",
+  "lsl": "DGS",
+  "dataSource": "Źródło Danych",
+  "manualEntry": "Ręczne Wprowadzanie",
+  "fromInspections": "Z Inspekcji",
+  "productionLine": "Linia Produkcyjna",
+  "allLines": "Wszystkie Linie",
+  "dateFrom": "Data Od",
+  "dateTo": "Data Do",
+  "calculate": "Oblicz",
+
+  "manualHintVariable": "Wprowadź jedną podgrupę na linię, wartości oddzielone przecinkami",
+  "manualHintAttribute": "Wprowadź jedną wartość na linię (wadliwe lub liczba wad)",
+
+  "needMoreData": "Wymagane co najmniej 2 podgrupy do analizy SPC",
+  "calculationError": "Obliczenie nie powiodło się. Sprawdź dane.",
+
+  "cp": "Cp",
+  "cpk": "Cpk",
+  "pctInControl": "% Pod Kontrolą",
+  "totalSubgroups": "Podgrupy",
+  "sigmaLevel": "Poziom Sigma",
+
+  "chartLabel": "Karta Kontrolna",
+  "subgroup": "Podgrupa",
+  "value": "Wartość",
+  "dataPoints": "Punkty Danych",
+  "centerLine": "Linia Centralna",
+
+  "rule1": "Reguła 1: Poza 3σ",
+  "rule2": "Reguła 2: 9 ta sama strona",
+  "rule3": "Reguła 3: 6 w trendzie",
+  "rule4": "Reguła 4: 14 naprzemiennych",
+
+  "rule1Desc": "Jeden punkt poza 3 odchyleniami standardowymi od linii centralnej",
+  "rule2Desc": "Dziewięć kolejnych punktów po tej samej stronie linii centralnej",
+  "rule3Desc": "Sześć kolejnych punktów stale rosnących lub malejących",
+  "rule4Desc": "Czternaście kolejnych punktów naprzemiennie w górę i w dół",
+
+  "processCapability": "Zdolność Procesu",
+  "mean": "Średnia",
+  "stdDev": "Odch. Std.",
+  "specLimits": "DGS / GGS",
+  "excellent": "Doskonały",
+  "capable": "Zdolny",
+  "marginal": "Marginalny",
+  "incapable": "Niezdolny",
+
+  "outOfControl": "Punkty Poza Kontrolą",
+  "rule": "Reguła",
+  "ruleDescription": "Opis"
+}

@@ -9,5 +9,25 @@
   "attendees": "Partecipanti",
   "tier1": "Livello 1 — Team",
   "tier2": "Livello 2 — Reparto",
-  "tier3": "Livello 3 — Stabilimento"
+  "tier3": "Livello 3 — Stabilimento",
+  "dailyView": "Giornaliero",
+  "monthlyView": "Mensile",
+  "summary": "Riepilogo",
+  "good": "Buono",
+  "warning": "Attenzione",
+  "critical": "Critico",
+  "noData": "Nessun dato",
+  "noEntryForDate": "Nessuna voce per questa data",
+
+  "catSafety": "Sicurezza",
+  "catQuality": "Qualita'",
+  "catCost": "Costo",
+  "catDelivery": "Consegna",
+  "catPeople": "Persone",
+
+  "suggestEscalateT2": "Considera escalation a T2",
+  "autoEscalatedT2": "Auto-escalation a T2",
+  "loadFailed": "Caricamento dati SQCDP fallito",
+  "saveFailed": "Salvataggio voce SQCDP fallito",
+  "meetingSaveFailed": "Registrazione riunione fallita"
 }

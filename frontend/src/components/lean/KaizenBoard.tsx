@@ -9,7 +9,7 @@ import LinkedItemBadge from "@/components/ui/LinkedItemBadge";
 import CreateLinkedAction from "@/components/ui/CreateLinkedAction";
 import { useLinkedItems } from "@/hooks/useLinkedItems";
 import { viewToRoute } from "@/lib/routes";
-import { Lightbulb, ClipboardList, Wrench, CheckCircle, Trophy, Sparkles, Zap, ShieldCheck, Coins, XCircle, type LucideIcon } from "lucide-react";
+import { Lightbulb, ClipboardList, Wrench, CheckCircle, Trophy, Sparkles, Zap, ShieldCheck, Coins, XCircle, BookCheck, type LucideIcon } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -21,6 +21,7 @@ type KaizenStatus =
   | "in_progress"
   | "completed"
   | "verified"
+  | "standardized"
   | "rejected";
 
 type Priority = "critical" | "high" | "medium" | "low";
@@ -119,6 +120,15 @@ const COLUMNS: ColumnDef[] = [
     glowBorder: "border-l-green-600",
   },
   {
+    key: "standardized",
+    labelKey: "statusStandardized",
+    color: "bg-violet-50/50 dark:bg-violet-950/20",
+    borderColor: "border-violet-300 dark:border-violet-700",
+    emptyKey: "emptyStandardized",
+    dotColor: "bg-violet-600",
+    glowBorder: "border-l-violet-600",
+  },
+  {
     key: "rejected",
     labelKey: "statusRejected",
     color: "bg-red-50/50 dark:bg-red-950/20",
@@ -134,7 +144,8 @@ const STATUS_FLOW: Record<KaizenStatus, KaizenStatus[]> = {
   planned: ["in_progress", "rejected"],
   in_progress: ["completed", "rejected"],
   completed: ["verified", "rejected"],
-  verified: [],
+  verified: ["standardized"],
+  standardized: [],
   rejected: ["idea"],
 };
 
@@ -143,6 +154,7 @@ const NEXT_STATUS_LABEL: Record<string, string> = {
   in_progress: "moveToInProgress",
   completed: "moveToCompleted",
   verified: "moveToVerified",
+  standardized: "moveToStandardized",
   rejected: "moveToRejected",
   idea: "statusIdeas",
 };
@@ -186,6 +198,7 @@ const COLUMN_ICONS: Record<KaizenStatus, LucideIcon> = {
   in_progress: Wrench,
   completed: CheckCircle,
   verified: Trophy,
+  standardized: BookCheck,
   rejected: XCircle,
 };
 
@@ -235,6 +248,23 @@ function PriorityBadge({
 /*  Category badge                                                     */
 /* ------------------------------------------------------------------ */
 
+// Map backend category values to i18n keys
+const CATEGORY_I18N_MAP: Record<string, string> = {
+  quality: "catQuality",
+  productivity: "catProductivity",
+  safety: "catSafety",
+  cost: "catCost",
+  maintenance: "catMaintenance",
+  inventory: "catInventory",
+  logistics: "catLogistics",
+  visual_management: "catVisualManagement",
+  visual: "catVisual",
+  workplace: "catWorkplace",
+  flow: "catFlow",
+  smed: "catSMED",
+  setup: "catSetup",
+};
+
 function CategoryBadge({
   category,
   t,
@@ -244,14 +274,14 @@ function CategoryBadge({
 }) {
   const style = CATEGORY_STYLES[category as Category] ?? { icon: Sparkles, color: "bg-th-bg-3 text-th-text-2 border border-th-border" };
   const CatIcon = style.icon;
+  const i18nKey = CATEGORY_I18N_MAP[category] || `cat${category.charAt(0).toUpperCase() + category.slice(1)}`;
+  const label = t(`improvement.${i18nKey}`);
+  // If t() returns the raw key, show a cleaned-up fallback
+  const displayLabel = label.startsWith("improvement.") ? category.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : label;
   return (
     <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full whitespace-nowrap ${style.color}`}>
       {typeof CatIcon !== "string" && <CatIcon size={10} />}
-      {t(
-        `improvement.cat${
-          category.charAt(0).toUpperCase() + category.slice(1)
-        }`
-      )}
+      {displayLabel}
     </span>
   );
 }
@@ -266,13 +296,13 @@ function BoardSkeleton() {
       {/* Savings bar skeleton */}
       <div className="bg-th-bg-2 rounded-xl border border-th-border p-4 space-y-3">
         <div className="flex justify-between">
-          <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded" />
+          <div className="h-4 w-32 bg-th-bg-3 rounded" />
           <div className="flex gap-4">
-            <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded" />
-            <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded" />
+            <div className="h-4 w-24 bg-th-bg-3 rounded" />
+            <div className="h-4 w-24 bg-th-bg-3 rounded" />
           </div>
         </div>
-        <div className="h-3 w-full bg-slate-200 dark:bg-slate-700 rounded-full" />
+        <div className="h-3 w-full bg-th-bg-3 rounded-full" />
       </div>
 
       {/* Column skeletons */}
@@ -282,17 +312,17 @@ function BoardSkeleton() {
             key={i}
             className="rounded-xl p-3 min-h-[280px] bg-th-bg-3 space-y-3 border border-th-border"
           >
-            <div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded" />
+            <div className="h-4 w-20 bg-th-bg-3 rounded" />
             {Array.from({ length: 2 - (i % 2) }).map((_, j) => (
               <div
                 key={j}
                 className="bg-th-bg-2 rounded-lg p-3 space-y-2 border border-th-border"
               >
-                <div className="h-3 w-full bg-slate-200 dark:bg-slate-700 rounded" />
-                <div className="h-3 w-2/3 bg-slate-200 dark:bg-slate-700 rounded" />
+                <div className="h-3 w-full bg-th-bg-3 rounded" />
+                <div className="h-3 w-2/3 bg-th-bg-3 rounded" />
                 <div className="flex gap-2">
-                  <div className="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded" />
-                  <div className="h-4 w-16 bg-slate-200 dark:bg-slate-700 rounded" />
+                  <div className="h-4 w-12 bg-th-bg-3 rounded" />
+                  <div className="h-4 w-16 bg-th-bg-3 rounded" />
                 </div>
               </div>
             ))}
@@ -374,11 +404,7 @@ function SavingsBar({
                 className="bg-th-bg-3 rounded-xl p-3 text-center border border-th-border hover:shadow-md transition-shadow"
               >
                 <p className="text-xs text-th-text-3 truncate font-medium uppercase tracking-wider">
-                  {t(
-                    `improvement.cat${
-                      cat.charAt(0).toUpperCase() + cat.slice(1)
-                    }`
-                  )}
+                  {(() => { const k = CATEGORY_I18N_MAP[cat] || `cat${cat.charAt(0).toUpperCase() + cat.slice(1)}`; const v = t(`improvement.${k}`); return v.startsWith("improvement.") ? cat.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : v; })()}
                 </p>
                 <p className="text-lg font-bold text-th-text mt-1">
                   {sym}{v.actual.toLocaleString()}
@@ -1576,7 +1602,14 @@ export default function KaizenBoard() {
       />
 
       {/* ---- Impact/Effort Matrix View ---- */}
-      {viewMode === "matrix" && (
+      {viewMode === "matrix" && (() => {
+        // Derive impact/effort with priority-based fallbacks for unsorted items
+        const getImpact = (i: KaizenItem) =>
+          i.impact_level || i.expected_impact || (i.priority === "critical" || i.priority === "high" ? "high" : "low");
+        const getEffort = (i: KaizenItem) =>
+          i.effort_level || (i.expected_savings_eur && i.expected_savings_eur > 5000 ? "high" : "low");
+
+        return (
         <div className="grid grid-cols-2 gap-3 pb-4">
           {/* Matrix header labels */}
           <div className="col-span-2 grid grid-cols-[80px_1fr_1fr] gap-3">
@@ -1604,8 +1637,8 @@ export default function KaizenBoard() {
               <div className="space-y-2">
                 {filteredItems
                   .filter((i) => {
-                    const impact = i.impact_level || i.expected_impact || "";
-                    const effort = i.effort_level || "";
+                    const impact = getImpact(i);
+                    const effort = getEffort(i);
                     return (impact === "high" || impact === "medium") && (effort === "low" || effort === "");
                   })
                   .map((item) => (
@@ -1631,8 +1664,8 @@ export default function KaizenBoard() {
               <div className="space-y-2">
                 {filteredItems
                   .filter((i) => {
-                    const impact = i.impact_level || i.expected_impact || "";
-                    const effort = i.effort_level || "";
+                    const impact = getImpact(i);
+                    const effort = getEffort(i);
                     return (impact === "high" || impact === "medium") && (effort === "high" || effort === "medium");
                   })
                   .map((item) => (
@@ -1667,8 +1700,8 @@ export default function KaizenBoard() {
               <div className="space-y-2">
                 {filteredItems
                   .filter((i) => {
-                    const impact = i.impact_level || i.expected_impact || "";
-                    const effort = i.effort_level || "";
+                    const impact = getImpact(i);
+                    const effort = getEffort(i);
                     return (impact === "low" || impact === "") && (effort === "low" || effort === "");
                   })
                   .map((item) => (
@@ -1694,8 +1727,8 @@ export default function KaizenBoard() {
               <div className="space-y-2">
                 {filteredItems
                   .filter((i) => {
-                    const impact = i.impact_level || i.expected_impact || "";
-                    const effort = i.effort_level || "";
+                    const impact = getImpact(i);
+                    const effort = getEffort(i);
                     return (impact === "low" || impact === "") && (effort === "high" || effort === "medium");
                   })
                   .map((item) => (
@@ -1715,7 +1748,8 @@ export default function KaizenBoard() {
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* ---- Kanban board ---- */}
       {viewMode === "kanban" && <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 pb-4">

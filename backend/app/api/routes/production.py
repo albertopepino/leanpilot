@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -56,6 +56,7 @@ async def create_production_record(
 
     # Auto-calculate OEE
     await OEECalculator.calculate_and_store(db, record)
+    await db.commit()
 
     return record
 
@@ -63,7 +64,7 @@ async def create_production_record(
 @router.get("/records")
 async def list_production_records(
     line_id: int | None = None,
-    limit: int = 50,
+    limit: int = Query(50, le=200),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
@@ -80,7 +81,24 @@ async def list_production_records(
         await _verify_line_belongs_to_factory(db, line_id, fid)
         query = query.where(ProductionRecord.production_line_id == line_id)
     result = await db.execute(query)
-    return result.scalars().all()
+    records = result.scalars().all()
+    # Manually serialize ORM objects to dicts to avoid JSON serialization errors
+    return [
+        {
+            "id": r.id,
+            "production_line_id": r.production_line_id,
+            "shift_id": r.shift_id,
+            "date": r.date.isoformat() if r.date else None,
+            "planned_production_time_min": r.planned_production_time_min,
+            "actual_run_time_min": r.actual_run_time_min,
+            "total_pieces": r.total_pieces,
+            "good_pieces": r.good_pieces,
+            "ideal_cycle_time_sec": r.ideal_cycle_time_sec,
+            "notes": r.notes,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+        }
+        for r in records
+    ]
 
 
 @router.post("/downtime")
@@ -106,6 +124,7 @@ async def create_downtime_event(
     )
     db.add(event)
     await db.flush()
+    await db.commit()
     return {"id": event.id, "status": "created"}
 
 
@@ -131,4 +150,5 @@ async def create_scrap_record(
     )
     db.add(record)
     await db.flush()
+    await db.commit()
     return {"id": record.id, "status": "created"}

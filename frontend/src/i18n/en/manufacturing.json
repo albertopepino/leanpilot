@@ -48,7 +48,6 @@
   "materialsAdded": "{count} materials added",
   "errorsCount": "{count} errors",
   "noNewData": "No new data to import",
-
   "ordersTotal": "{count} orders total",
   "newOrder": "+ New Order",
   "newProductionOrder": "New Production Order",
@@ -82,7 +81,6 @@
   "orderLines": "Order Lines",
   "failedUpdateOrder": "Failed to update order",
   "viewOnlyNotice": "You have view-only access to production orders",
-
   "titleQCPolicies": "QC Policy Repository",
   "documentsStored": "{count} documents stored",
   "documentsStoredSingular": "{count} document stored",
@@ -111,7 +109,6 @@
   "removeConfirm": "Remove \"{title}\" from the repository?",
   "uploadedSuccess": "\"{title}\" uploaded successfully",
   "fileFormatHint": "PDF, Word (.docx), JPEG, PNG — Max 20 MB",
-
   "titleQCChecks": "Quality Checks",
   "checksRecorded": "{count} checks recorded",
   "checksRecordedSingular": "{count} check recorded",
@@ -172,7 +169,6 @@
   "measuredValue": "Measured value",
   "enterObservation": "Enter observation...",
   "templates": "Templates",
-
   "titleNCR": "Non-Conformance Reports",
   "ncrTotal": "{count} NCRs total",
   "ncrTotalSingular": "{count} NCR total",
@@ -209,7 +205,6 @@
   "failedCreateNCR": "Failed to create NCR",
   "failedUpdateNCR": "Failed to update NCR",
   "saving": "Saving...",
-
   "titleCAPA": "Corrective & Preventive Actions",
   "capaTotal": "{count} CAPAs",
   "capaCorrective": "corrective",
@@ -238,7 +233,6 @@
   "effectivenessResult": "Effectiveness Result",
   "effectivenessHint": "Was the action effective? Describe outcome...",
   "timeline": "Timeline",
-  "created": "Created",
   "due": "Due",
   "implemented": "Implemented",
   "verified": "Verified",
@@ -253,7 +247,6 @@
   "capaCreated": "CAPA created successfully",
   "capaUpdated": "CAPA updated",
   "view": "View",
-
   "titleDefectCatalog": "Defect Catalog",
   "defectTypesConfigured": "{count} defect types configured",
   "addDefectType": "+ Add Defect Type",
@@ -276,5 +269,17 @@
   "catContamination": "contamination",
   "catPackaging": "packaging",
   "catOther": "other",
-  "noneOption": "— None —"
+  "noneOption": "— None —",
+  "productCode": "Product Code",
+  "productName": "Product Name",
+  "productNamePlaceholder": "e.g. Crankshaft",
+  "batchLotNumber": "Batch / Lot Number",
+  "productionOrder": "Production Order",
+  "activeProducts": "active products",
+  "addProduct": "Add Product",
+  "editProduct": "Edit Product",
+  "newProduct": "New Product",
+  "noProducts": "No products yet. Add manually or upload an Excel file.",
+  "productFamily": "Family",
+  "laborMin": "Labor (min)"
 }

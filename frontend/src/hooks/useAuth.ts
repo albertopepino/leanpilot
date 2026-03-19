@@ -14,13 +14,14 @@ interface User {
   consent_version?: string | null;
   ai_consent?: boolean;
   marketing_consent?: boolean;
+  totp_enabled?: boolean;
 }
 
 interface AuthStore {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   loadUser: () => Promise<void>;
   acceptConsent: (data: {
     privacy_policy_accepted: boolean;
@@ -41,7 +42,11 @@ export const useAuth = create<AuthStore>((set) => ({
   loading: true,
   login: async (email, password) => {
     const res = await authApi.login(email, password);
-    localStorage.setItem("leanpilot_token", res.data.access_token);
+    // Cookies are set automatically by the server via Set-Cookie headers.
+    // Also store in localStorage for backwards-compatible API client support.
+    if (res.data.access_token) {
+      localStorage.setItem("leanpilot_token", res.data.access_token);
+    }
     if (res.data.refresh_token) {
       localStorage.setItem("leanpilot_refresh", res.data.refresh_token);
     }
@@ -49,7 +54,12 @@ export const useAuth = create<AuthStore>((set) => ({
     set({ user: userRes.data });
     syncLocale(userRes.data.language);
   },
-  logout: () => {
+  logout: async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      // Server may be unreachable — clear local state anyway
+    }
     localStorage.removeItem("leanpilot_token");
     localStorage.removeItem("leanpilot_refresh");
     set({ user: null });
@@ -59,20 +69,27 @@ export const useAuth = create<AuthStore>((set) => ({
     set({ user: res.data });
   },
   loadUser: async () => {
+    // Check if we have any indication of being logged in (cookie flag or legacy token)
+    const hasLoginCookie = document.cookie.includes("logged_in=");
+    const hasLegacyToken = !!localStorage.getItem("leanpilot_token");
+
+    if (!hasLoginCookie && !hasLegacyToken) {
+      set({ user: null, loading: false });
+      return;
+    }
+
     try {
       const res = await authApi.me();
       set({ user: res.data, loading: false });
       syncLocale(res.data.language);
     } catch {
-      // Try refresh token before giving up
-      const refreshToken = localStorage.getItem("leanpilot_refresh");
-      if (refreshToken) {
+      // Try refresh — the interceptor handles cookie-based refresh automatically,
+      // but we also try explicitly here for the initial load case.
+      const hasRefresh = hasLoginCookie || !!localStorage.getItem("leanpilot_refresh");
+      if (hasRefresh) {
         try {
-          const refreshRes = await authApi.refresh(refreshToken);
-          localStorage.setItem("leanpilot_token", refreshRes.data.access_token);
-          if (refreshRes.data.refresh_token) {
-            localStorage.setItem("leanpilot_refresh", refreshRes.data.refresh_token);
-          }
+          const legacyRefresh = localStorage.getItem("leanpilot_refresh");
+          await authApi.refresh(legacyRefresh || undefined);
           const userRes = await authApi.me();
           set({ user: userRes.data, loading: false });
           syncLocale(userRes.data.language);

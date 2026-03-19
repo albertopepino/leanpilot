@@ -183,6 +183,7 @@ class QCRecordResponse(BaseModel):
     template_id: int
     production_order_id: int | None
     production_line_id: int
+    production_record_id: int | None = None
     performed_by_id: int
     check_type: str
     status: str
@@ -219,6 +220,7 @@ class NCRCreate(BaseModel):
     description: str
     severity: str  # minor, major, critical
     quantity_affected: int | None = None
+    batch_lot_number: str | None = None
 
 
 class NCRUpdate(BaseModel):
@@ -241,7 +243,10 @@ class NCRResponse(BaseModel):
     production_order_id: int | None
     qc_record_id: int | None
     product_id: int | None
+    defect_catalog_id: int | None = None
+    assigned_to_id: int | None = None
     quantity_affected: int | None
+    batch_lot_number: str | None = None
     disposition: str | None
     disposition_notes: str | None
     root_cause: str | None

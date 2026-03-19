@@ -6,11 +6,13 @@ import { useRouter, usePathname } from "next/navigation";
 import Sidebar from "@/components/ui/Sidebar";
 import MobileNav from "@/components/ui/MobileNav";
 import ConsentGate from "@/components/gdpr/ConsentGate";
-import ErrorBoundary from "@/components/ui/ErrorBoundary";
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import Logo from "@/components/ui/Logo";
 import CommandPalette from "@/components/ui/CommandPalette";
 import NotificationPanel from "@/components/ui/NotificationPanel";
 import OfflineBanner from "@/components/ui/OfflineBanner";
+import ToastContainer from "@/components/shared/Toast";
+import QuickActionsFAB from "@/components/ui/QuickActionsFAB";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, loadUser } = useAuth();
@@ -57,6 +59,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <ConsentGate>
       <CommandPalette />
+      <a
+        href="#main-content"
+        className="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-4 focus-visible:left-4 focus-visible:z-[100] focus-visible:px-4 focus-visible:py-2 focus-visible:rounded-lg focus-visible:bg-brand-600 focus-visible:text-white focus-visible:text-sm focus-visible:font-medium focus-visible:shadow-lg focus-visible:outline-none"
+      >
+        {t("common.skipToContent") || "Skip to content"}
+      </a>
       <div className="flex min-h-screen bg-th-bg safe-area-all">
         {/* Desktop Sidebar */}
         <div className="hidden md:block">
@@ -88,8 +96,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <MobileNav isOperatorMode={isMobileOperator} />
         </div>
 
+        {/* Quick Actions FAB */}
+        <QuickActionsFAB />
+
         {/* Offline status banner */}
         <OfflineBanner />
+
+        {/* Toast notifications */}
+        <ToastContainer />
       </div>
     </ConsentGate>
   );

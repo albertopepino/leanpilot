@@ -1,0 +1,64 @@
+{
+  "title": "Tableau Kanban",
+  "subtitle": "Gestion de production en flux tire avec limites WIP",
+  "boardView": "Tableau",
+  "newBoard": "Nouveau Tableau",
+  "createBoard": "Creer un Tableau",
+  "boardName": "Nom du Tableau",
+  "boardNamePlaceholder": "ex. Tableau de Production Principal",
+  "noBoards": "Aucun tableau. Creez-en un pour commencer.",
+
+  "col_backlog": "En attente",
+  "col_in_queue": "En file",
+  "col_in_progress": "En cours",
+  "col_done": "Termine",
+  "col_shipped": "Expedie",
+  "column": "Colonne",
+  "emptyColumn": "Aucune carte dans cette colonne",
+
+  "addCard": "Ajouter une Carte",
+  "newCard": "Nouvelle Carte",
+  "editCard": "Modifier la Carte",
+  "createCard": "Creer la Carte",
+  "updateCard": "Mettre a jour la Carte",
+  "confirmDeleteCard": "Supprimer cette carte ?",
+
+  "orderNumber": "Commande #",
+  "productName": "Nom du Produit",
+  "quantity": "Quantite",
+  "priority": "Priorite",
+  "priority_low": "Basse",
+  "priority_medium": "Moyenne",
+  "priority_high": "Haute",
+  "priority_urgent": "Urgente",
+  "dueDate": "Date Limite",
+  "assignedLine": "Ligne Assignee",
+  "description": "Description",
+  "descriptionPlaceholder": "Description de la carte...",
+  "titlePlaceholder": "Saisir le titre de la carte...",
+  "unassigned": "Non assigne",
+
+  "pull": "PULL",
+  "leadTime": "Delai de Production",
+  "cycleTime": "Temps de Cycle",
+
+  "filters": "Filtres",
+  "allPriorities": "Toutes les Priorites",
+  "allLines": "Toutes les Lignes",
+
+  "totalWIP": "WIP Total",
+  "avgLeadTime": "Delai Moyen",
+  "throughput": "Debit",
+  "onTimeDelivery": "Livraison a Temps",
+
+  "saving": "Enregistrement...",
+  "cancel": "Annuler",
+
+  "blocked": "Bloque",
+  "markBlocked": "Marquer comme bloque",
+  "blockedReasonPlaceholder": "Raison du blocage...",
+  "cardAge": "Age",
+  "days": "jours",
+
+  "exportTitle": "Export Tableau Kanban"
+}

@@ -1,0 +1,64 @@
+{
+  "title": "Tablica Kanban",
+  "subtitle": "Zarzadzanie produkcja pull-system z limitami WIP",
+  "boardView": "Tablica",
+  "newBoard": "Nowa Tablica",
+  "createBoard": "Utworz Tablice",
+  "boardName": "Nazwa Tablicy",
+  "boardNamePlaceholder": "np. Glowna Tablica Produkcji",
+  "noBoards": "Brak tablic. Utworz jedna aby rozpoczac.",
+
+  "col_backlog": "Zaleglosci",
+  "col_in_queue": "W kolejce",
+  "col_in_progress": "W toku",
+  "col_done": "Gotowe",
+  "col_shipped": "Wyslane",
+  "column": "Kolumna",
+  "emptyColumn": "Brak kart w tej kolumnie",
+
+  "addCard": "Dodaj Karte",
+  "newCard": "Nowa Karta",
+  "editCard": "Edytuj Karte",
+  "createCard": "Utworz Karte",
+  "updateCard": "Aktualizuj Karte",
+  "confirmDeleteCard": "Usunac te karte?",
+
+  "orderNumber": "Zamowienie #",
+  "productName": "Nazwa Produktu",
+  "quantity": "Ilosc",
+  "priority": "Priorytet",
+  "priority_low": "Niski",
+  "priority_medium": "Sredni",
+  "priority_high": "Wysoki",
+  "priority_urgent": "Pilny",
+  "dueDate": "Termin",
+  "assignedLine": "Przypisana Linia",
+  "description": "Opis",
+  "descriptionPlaceholder": "Opis karty...",
+  "titlePlaceholder": "Wprowadz tytul karty...",
+  "unassigned": "Nieprzypisane",
+
+  "pull": "PULL",
+  "leadTime": "Czas Realizacji",
+  "cycleTime": "Czas Cyklu",
+
+  "filters": "Filtry",
+  "allPriorities": "Wszystkie Priorytety",
+  "allLines": "Wszystkie Linie",
+
+  "totalWIP": "Calkowity WIP",
+  "avgLeadTime": "Sredni Czas Realizacji",
+  "throughput": "Przepustowosc",
+  "onTimeDelivery": "Terminowa Dostawa",
+
+  "saving": "Zapisywanie...",
+  "cancel": "Anuluj",
+
+  "blocked": "Zablokowane",
+  "markBlocked": "Oznacz jako zablokowane",
+  "blockedReasonPlaceholder": "Powod blokady...",
+  "cardAge": "Wiek",
+  "days": "dni",
+
+  "exportTitle": "Eksport Tablicy Kanban"
+}

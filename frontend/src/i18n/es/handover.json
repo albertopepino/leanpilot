@@ -14,5 +14,8 @@
   "goodPieces": "Piezas conformes",
   "scrapPieces": "Piezas de desecho",
   "oee": "OEE",
-  "downtime": "Tiempo de inactividad (min)"
+  "downtime": "Tiempo de inactividad (min)",
+  "manual": "Entrada manual",
+  "scrap": "Desecho",
+  "recent": "Relevos recientes"
 }

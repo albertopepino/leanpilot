@@ -9,5 +9,25 @@
   "attendees": "Asistentes",
   "tier1": "Nivel 1 — Equipo",
   "tier2": "Nivel 2 — Departamento",
-  "tier3": "Nivel 3 — Planta"
+  "tier3": "Nivel 3 — Planta",
+  "dailyView": "Diario",
+  "monthlyView": "Mensual",
+  "summary": "Resumen",
+  "good": "Bueno",
+  "warning": "Advertencia",
+  "critical": "Critico",
+  "noData": "Sin datos",
+  "noEntryForDate": "Sin entrada para esta fecha",
+
+  "catSafety": "Seguridad",
+  "catQuality": "Calidad",
+  "catCost": "Costo",
+  "catDelivery": "Entrega",
+  "catPeople": "Personal",
+
+  "suggestEscalateT2": "Considerar escalacion a T2",
+  "autoEscalatedT2": "Auto-escalado a T2",
+  "loadFailed": "Error al cargar datos SQCDP",
+  "saveFailed": "Error al guardar entrada SQCDP",
+  "meetingSaveFailed": "Error al registrar reunion"
 }

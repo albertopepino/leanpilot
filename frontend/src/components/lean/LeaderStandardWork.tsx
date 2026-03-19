@@ -5,13 +5,32 @@ import { useI18n } from '@/stores/useI18n';
 import { ClipboardList, Plus, Check, Filter, ChevronDown, ChevronUp, Trash2, ArrowUp, ArrowDown, BarChart3 } from 'lucide-react';
 import PageHeader from '@/components/ui/PageHeader';
 
+type LSWFrequency = "daily" | "weekly" | "monthly";
+
 interface LSWTemplate {
   id: number;
   title: string;
   role: string;
+  frequency?: LSWFrequency;
   tasks: { order: number; description: string; duration_min: number }[];
   created_at: string;
 }
+
+// Recommended frequency per role level (lean best practice)
+const ROLE_FREQUENCY_MAP: Record<string, LSWFrequency> = {
+  operator: "daily",
+  team_leader: "daily",
+  supervisor: "weekly",
+  manager: "monthly",
+};
+
+const FREQUENCY_OPTIONS: LSWFrequency[] = ["daily", "weekly", "monthly"];
+
+const FREQUENCY_COLORS: Record<LSWFrequency, string> = {
+  daily: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400",
+  weekly: "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400",
+  monthly: "bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400",
+};
 
 interface LSWCompletion {
   id: number;
@@ -23,7 +42,7 @@ interface LSWCompletion {
   notes: string | null;
 }
 
-const ROLES = ['operator', 'supervisor', 'manager'];
+const ROLES = ['operator', 'team_leader', 'supervisor', 'manager'];
 
 export default function LeaderStandardWork() {
   const { t } = useI18n();
@@ -37,6 +56,7 @@ export default function LeaderStandardWork() {
   const [checkedTasks, setCheckedTasks] = useState<number[]>([]);
   const [formTitle, setFormTitle] = useState('');
   const [formRole, setFormRole] = useState('operator');
+  const [formFrequency, setFormFrequency] = useState<LSWFrequency>('daily');
   const [formTasks, setFormTasks] = useState<{ description: string; duration_min: number }[]>([{ description: '', duration_min: 5 }]);
 
   useEffect(() => { fetchData(); }, []);
@@ -61,10 +81,12 @@ export default function LeaderStandardWork() {
       await api.post('/lsw/templates', {
         title: formTitle,
         role: formRole,
+        frequency: formFrequency,
         tasks: formTasks.filter(t => t.description).map((t, i) => ({ order: i + 1, description: t.description, duration_min: t.duration_min })),
       });
       setCreateMode(false);
       setFormTitle('');
+      setFormFrequency('daily');
       setFormTasks([{ description: '', duration_min: 5 }]);
       fetchData();
     } catch {}
@@ -133,9 +155,9 @@ export default function LeaderStandardWork() {
       <div className="flex items-center gap-2">
         <Filter size={14} className="text-th-text-3" />
         <div className="flex gap-1">
-          <button onClick={() => setRoleFilter('all')} className={`px-3 py-1 rounded-full text-xs transition ${roleFilter === 'all' ? 'bg-brand-600 text-white' : 'bg-th-bg-hover text-th-text-3'}`}>All</button>
+          <button onClick={() => setRoleFilter('all')} className={`px-3 py-1 rounded-full text-xs transition ${roleFilter === 'all' ? 'bg-brand-600 text-white' : 'bg-th-bg-hover text-th-text-3'}`}>{t('lsw.allRoles') || 'All'}</button>
           {ROLES.map(r => (
-            <button key={r} onClick={() => setRoleFilter(r)} className={`px-3 py-1 rounded-full text-xs capitalize transition ${roleFilter === r ? 'bg-brand-600 text-white' : 'bg-th-bg-hover text-th-text-3'}`}>{r}</button>
+            <button key={r} onClick={() => setRoleFilter(r)} className={`px-3 py-1 rounded-full text-xs capitalize transition ${roleFilter === r ? 'bg-brand-600 text-white' : 'bg-th-bg-hover text-th-text-3'}`}>{t(`lsw.${r}`) || r}</button>
           ))}
         </div>
       </div>
@@ -152,7 +174,14 @@ export default function LeaderStandardWork() {
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <h3 className="text-sm font-semibold text-th-text">{tmpl.title}</h3>
-                    <span className="text-xs text-th-text-3 capitalize">{tmpl.role}</span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-th-text-3 capitalize">{t(`lsw.${tmpl.role}`) || tmpl.role}</span>
+                      {tmpl.frequency && (
+                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${FREQUENCY_COLORS[tmpl.frequency] || FREQUENCY_COLORS.daily}`}>
+                          {t(`lsw.${tmpl.frequency}`) || tmpl.frequency}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
@@ -196,7 +225,14 @@ export default function LeaderStandardWork() {
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <h3 className="text-sm font-semibold text-th-text">{tmpl.title}</h3>
-                  <span className="text-xs text-th-text-3 capitalize">{tmpl.role} - {tmpl.tasks.length} tasks</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-th-text-3 capitalize">{t(`lsw.${tmpl.role}`) || tmpl.role} - {tmpl.tasks.length} tasks</span>
+                    {tmpl.frequency && (
+                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${FREQUENCY_COLORS[tmpl.frequency] || FREQUENCY_COLORS.daily}`}>
+                        {t(`lsw.${tmpl.frequency}`) || tmpl.frequency}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <button onClick={() => deleteTemplate(tmpl.id)} className="p-1.5 text-th-text-3 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded transition">
                   <Trash2 size={14} />
@@ -244,16 +280,31 @@ export default function LeaderStandardWork() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setCreateMode(false)}>
           <div className="bg-th-card rounded-xl p-6 w-full max-w-lg space-y-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-th-text">{t('lsw.newTemplate') || 'New LSW Template'}</h3>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="text-xs text-th-text-3 block mb-1">{t('common.title') || 'Title'}</label>
                 <input value={formTitle} onChange={e => setFormTitle(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm" />
               </div>
               <div>
                 <label className="text-xs text-th-text-3 block mb-1">{t('common.role') || 'Role'}</label>
-                <select value={formRole} onChange={e => setFormRole(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm">
-                  {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                <select value={formRole} onChange={e => {
+                  const newRole = e.target.value;
+                  setFormRole(newRole);
+                  // Auto-set recommended frequency for the role
+                  const recommended = ROLE_FREQUENCY_MAP[newRole];
+                  if (recommended) setFormFrequency(recommended);
+                }} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm">
+                  {ROLES.map(r => <option key={r} value={r}>{t(`lsw.${r}`) || r}</option>)}
                 </select>
+              </div>
+              <div>
+                <label className="text-xs text-th-text-3 block mb-1">{t('lsw.frequency') || 'Frequency'}</label>
+                <select value={formFrequency} onChange={e => setFormFrequency(e.target.value as LSWFrequency)} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm">
+                  {FREQUENCY_OPTIONS.map(f => <option key={f} value={f}>{t(`lsw.${f}`) || f}</option>)}
+                </select>
+                <p className="text-[10px] text-th-text-3 mt-1">
+                  {t('lsw.recommendedFrequency') || 'Recommended'}: {t(`lsw.${ROLE_FREQUENCY_MAP[formRole] || 'daily'}`) || ROLE_FREQUENCY_MAP[formRole] || 'daily'}
+                </p>
               </div>
             </div>
             <div>

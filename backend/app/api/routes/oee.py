@@ -320,6 +320,172 @@ async def get_loss_waterfall(
     }
 
 
+@router.get("/losses/{line_id}")
+async def get_six_big_losses(
+    line_id: int,
+    days: int = 30,
+    start_date: Optional[str] = Query(None, description="ISO date yyyy-mm-dd"),
+    end_date: Optional[str] = Query(None, description="ISO date yyyy-mm-dd"),
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Six Big Losses breakdown for a production line.
+
+    Returns data suitable for a waterfall chart:
+      1. Equipment Failure (breakdown downtime)
+      2. Setup & Adjustment (changeover downtime)
+      3. Idling & Minor Stops (minor_stop, material, quality, other downtime)
+      4. Reduced Speed (performance gap vs ideal cycle time)
+      5. Process Defects (scrap/QC rejects)
+      6. Reduced Yield (startup rejects — first-hour scrap)
+    """
+    from sqlalchemy import and_
+    from app.models.production import DowntimeEvent, ScrapRecord
+
+    fid = require_factory(user)
+    await _verify_line_ownership(db, line_id, fid)
+
+    since, until = _parse_date_range(start_date, end_date, days)
+
+    # --- OEE aggregates ---
+    oee_q = select(
+        func.sum(OEERecord.planned_time_min).label("total_planned"),
+        func.sum(OEERecord.run_time_min).label("total_run"),
+        func.sum(OEERecord.downtime_min).label("total_downtime"),
+        func.sum(OEERecord.total_pieces).label("total_pieces"),
+        func.sum(OEERecord.good_pieces).label("total_good"),
+        func.avg(OEERecord.performance).label("avg_performance"),
+    ).where(
+        and_(
+            OEERecord.production_line_id == line_id,
+            OEERecord.date >= since,
+            OEERecord.date < until,
+        )
+    )
+    oee_result = await db.execute(oee_q)
+    oee_row = oee_result.one_or_none()
+
+    if not oee_row or not oee_row.total_planned:
+        return {"losses": [], "total_available_min": 0, "summary": {}}
+
+    total_planned = float(oee_row.total_planned or 0)
+    total_run = float(oee_row.total_run or 0)
+    total_pieces = int(oee_row.total_pieces or 0)
+    good_pieces = int(oee_row.total_good or 0)
+    avg_performance = float(oee_row.avg_performance or 100)
+
+    # --- Downtime by category ---
+    dt_q = select(
+        DowntimeEvent.category,
+        func.sum(DowntimeEvent.duration_minutes).label("total_min"),
+    ).where(
+        and_(
+            DowntimeEvent.production_line_id == line_id,
+            DowntimeEvent.start_time >= since,
+            DowntimeEvent.start_time < until,
+        )
+    ).group_by(DowntimeEvent.category)
+    dt_result = await db.execute(dt_q)
+    dt_by_cat = {r.category: float(r.total_min or 0) for r in dt_result.all() if r.category}
+
+    # --- Scrap totals ---
+    scrap_q = select(
+        func.sum(ScrapRecord.quantity).label("total_scrap"),
+    ).where(
+        and_(
+            ScrapRecord.production_line_id == line_id,
+            ScrapRecord.date >= since,
+            ScrapRecord.date < until,
+        )
+    )
+    scrap_result = await db.execute(scrap_q)
+    scrap_row = scrap_result.one_or_none()
+    total_scrap = int(scrap_row.total_scrap or 0) if scrap_row else 0
+
+    # --- Calculate Six Big Losses ---
+    # 1. Equipment Failure: unplanned + maintenance breakdowns
+    equipment_failure_min = dt_by_cat.get("unplanned", 0) + dt_by_cat.get("maintenance", 0)
+
+    # 2. Setup & Adjustment: changeover time
+    setup_adjustment_min = dt_by_cat.get("changeover", 0)
+
+    # 3. Idling & Minor Stops: everything else (material, quality, other, planned)
+    categorized = equipment_failure_min + setup_adjustment_min
+    total_downtime_from_events = sum(dt_by_cat.values())
+    idling_minor_stops_min = max(0, total_downtime_from_events - categorized)
+
+    # 4. Reduced Speed: gap between ideal and actual throughput during run time
+    perf_pct = avg_performance / 100
+    reduced_speed_min = total_run * (1 - perf_pct) if perf_pct < 1 else 0
+
+    # 5. Process Defects: scrap pieces (convert to time equivalent using run rate)
+    pieces_per_min = total_pieces / total_run if total_run > 0 else 1
+    process_defects_min = total_scrap / pieces_per_min if pieces_per_min > 0 else 0
+
+    # 6. Reduced Yield: startup rejects (estimate as difference between total defects and scrap)
+    total_reject_pieces = total_pieces - good_pieces
+    startup_rejects = max(0, total_reject_pieces - total_scrap)
+    reduced_yield_min = startup_rejects / pieces_per_min if pieces_per_min > 0 else 0
+
+    losses = [
+        {
+            "category": "Equipment Failure",
+            "loss_type": "availability",
+            "minutes_lost": round(equipment_failure_min, 1),
+            "pct_of_total": round(equipment_failure_min / total_planned * 100, 2) if total_planned else 0,
+        },
+        {
+            "category": "Setup & Adjustment",
+            "loss_type": "availability",
+            "minutes_lost": round(setup_adjustment_min, 1),
+            "pct_of_total": round(setup_adjustment_min / total_planned * 100, 2) if total_planned else 0,
+        },
+        {
+            "category": "Idling & Minor Stops",
+            "loss_type": "performance",
+            "minutes_lost": round(idling_minor_stops_min, 1),
+            "pct_of_total": round(idling_minor_stops_min / total_planned * 100, 2) if total_planned else 0,
+        },
+        {
+            "category": "Reduced Speed",
+            "loss_type": "performance",
+            "minutes_lost": round(reduced_speed_min, 1),
+            "pct_of_total": round(reduced_speed_min / total_planned * 100, 2) if total_planned else 0,
+        },
+        {
+            "category": "Process Defects",
+            "loss_type": "quality",
+            "minutes_lost": round(process_defects_min, 1),
+            "pct_of_total": round(process_defects_min / total_planned * 100, 2) if total_planned else 0,
+        },
+        {
+            "category": "Reduced Yield",
+            "loss_type": "quality",
+            "minutes_lost": round(reduced_yield_min, 1),
+            "pct_of_total": round(reduced_yield_min / total_planned * 100, 2) if total_planned else 0,
+        },
+    ]
+
+    total_losses = sum(l["minutes_lost"] for l in losses)
+    effective_output_min = max(0, total_planned - total_losses)
+
+    return {
+        "losses": losses,
+        "total_available_min": round(total_planned, 1),
+        "total_losses_min": round(total_losses, 1),
+        "effective_output_min": round(effective_output_min, 1),
+        "summary": {
+            "availability_losses_min": round(equipment_failure_min + setup_adjustment_min, 1),
+            "performance_losses_min": round(idling_minor_stops_min + reduced_speed_min, 1),
+            "quality_losses_min": round(process_defects_min + reduced_yield_min, 1),
+            "total_pieces": total_pieces,
+            "good_pieces": good_pieces,
+            "scrap_pieces": total_scrap,
+        },
+        "downtime_by_category": dt_by_cat,
+    }
+
+
 @router.get("/alerts/{line_id}")
 async def get_oee_alerts(
     line_id: int,

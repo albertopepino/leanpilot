@@ -41,7 +41,8 @@ export default function ProductCatalog() {
   const fetchData = useCallback(async () => {
     try {
       const res = await manufacturingApi.listProducts(false);
-      setProducts(res.data ?? res);
+      const raw = res.data ?? res;
+      setProducts(Array.isArray(raw) ? raw : []);
     } catch { setError("Failed to load products"); }
     finally { setLoading(false); }
   }, []);
@@ -149,7 +150,7 @@ export default function ProductCatalog() {
   return (
     <div className="max-w-[1400px] mx-auto space-y-6" id="products-view">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-th-text-3">{products.filter(p => p.is_active).length} active products</p>
+        <p className="text-sm text-th-text-3">{products.filter(p => p.is_active).length} {t("manufacturing.activeProducts") || "active products"}</p>
         <div className="flex items-center gap-2">
           {/* Download Template */}
           <button
@@ -158,7 +159,7 @@ export default function ProductCatalog() {
             title="Download Excel template"
           >
             <Download className="w-4 h-4" />
-            Template
+            {t("manufacturing.downloadTemplate")}
           </button>
 
           {/* Upload Excel */}
@@ -180,7 +181,7 @@ export default function ProductCatalog() {
             ) : (
               <Upload className="w-4 h-4" />
             )}
-            {importing ? "Importing..." : "Upload Excel"}
+            {importing ? t("manufacturing.importing") : t("manufacturing.uploadExcel")}
           </button>
 
           {/* Add Product */}
@@ -189,7 +190,7 @@ export default function ProductCatalog() {
             className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-semibold flex items-center gap-1.5"
           >
             <Plus className="w-4 h-4" />
-            Add Product
+            {t("manufacturing.addProduct") || "Add Product"}
           </button>
         </div>
       </div>
@@ -212,13 +213,13 @@ export default function ProductCatalog() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-th-border text-left text-th-text-3 text-xs uppercase">
-              <th className="px-4 py-3">Code</th>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Family</th>
-              <th className="px-4 py-3">UOM</th>
-              <th className="px-4 py-3">Labor (min)</th>
-              <th className="px-4 py-3">Active</th>
-              <th className="px-4 py-3 text-right">Actions</th>
+              <th className="px-4 py-3">{t("manufacturing.code")}</th>
+              <th className="px-4 py-3">{t("manufacturing.name")}</th>
+              <th className="px-4 py-3">{t("manufacturing.productFamily") || "Family"}</th>
+              <th className="px-4 py-3">{t("manufacturing.uom")}</th>
+              <th className="px-4 py-3">{t("manufacturing.laborMin") || "Labor (min)"}</th>
+              <th className="px-4 py-3">{t("common.active") || "Active"}</th>
+              <th className="px-4 py-3 text-right">{t("common.actions") || "Actions"}</th>
             </tr>
           </thead>
           <tbody>
@@ -239,14 +240,14 @@ export default function ProductCatalog() {
                 </td>
                 <td className="px-4 py-3 text-right">
                   <button onClick={() => handleEdit(p)} className="text-brand-600 hover:text-brand-700 text-xs font-semibold flex items-center gap-1 ml-auto">
-                    <Pencil className="w-3.5 h-3.5" /> Edit
+                    <Pencil className="w-3.5 h-3.5" /> {t("common.edit")}
                   </button>
                 </td>
               </tr>
             ))}
             {products.length === 0 && (
               <tr><td colSpan={7} className="px-4 py-12 text-center text-th-text-3">
-                No products yet. Add manually or upload an Excel file.
+                {t("manufacturing.noProducts") || "No products yet. Add manually or upload an Excel file."}
               </td></tr>
             )}
           </tbody>
@@ -259,7 +260,7 @@ export default function ProductCatalog() {
           <div className="rounded-t-xl md:rounded-xl border border-th-border bg-th-bg-2 shadow-sm w-full md:max-w-md max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="w-10 h-1 bg-th-border rounded-full mx-auto mt-3 md:hidden" />
             <div className="p-5 border-b border-th-border">
-              <h3 className="font-bold text-th-text text-lg">{editId ? "Edit Product" : "New Product"}</h3>
+              <h3 className="font-bold text-th-text text-lg">{editId ? t("manufacturing.editProduct") || "Edit Product" : t("manufacturing.newProduct") || "New Product"}</h3>
             </div>
             <div className="p-5 space-y-4">
               <div className="grid grid-cols-2 gap-3">

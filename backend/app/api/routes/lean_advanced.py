@@ -16,6 +16,7 @@ from app.schemas.lean_advanced import (
 from app.services.lean_advanced import (
     SixSService, VSMService, A3Service, GembaService,
     TPMService, CILTService, AndonService, HourlyProductionService,
+    AuditScheduleService,
 )
 
 router = APIRouter(prefix="/lean-advanced", tags=["lean-advanced"])
@@ -36,11 +37,13 @@ async def create_six_s_audit(
 
 @router.get("/six-s", response_model=list[SixSAuditResponse])
 async def list_six_s_audits(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
     fid = require_factory(user)
-    return await SixSService.list_audits(db, fid)
+    return await SixSService.list_audits(db, fid, skip=skip, limit=limit)
 
 
 @router.get("/six-s/trend")
@@ -68,11 +71,13 @@ async def create_vsm(
 
 @router.get("/vsm", response_model=list[VSMResponse])
 async def list_vsm(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
     fid = require_factory(user)
-    return await VSMService.list_maps(db, fid)
+    return await VSMService.list_maps(db, fid, skip=skip, limit=limit)
 
 
 # ---- A3 REPORT ----
@@ -90,11 +95,13 @@ async def create_a3(
 
 @router.get("/a3", response_model=list[A3ReportResponse])
 async def list_a3(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
     fid = require_factory(user)
-    return await A3Service.list_reports(db, fid)
+    return await A3Service.list_reports(db, fid, skip=skip, limit=limit)
 
 
 @router.patch("/a3/{report_id}/status", response_model=A3ReportResponse)
@@ -118,17 +125,59 @@ async def create_gemba_walk(
     user: User = Depends(get_current_user),
 ):
     fid = require_factory(user)
-    walk = await GembaService.create_walk(db, fid, user.id, data.model_dump())
-    return {"id": walk.id}
+    try:
+        walk = await GembaService.create_walk(db, fid, user.id, data.model_dump())
+        await db.commit()
+        return {"id": walk.id}
+    except Exception as e:
+        await db.rollback()
+        import structlog
+        structlog.get_logger().error("gemba_walk_create_failed", error=str(e), factory_id=fid)
+        raise HTTPException(status_code=500, detail=f"Failed to save Gemba Walk: {str(e)}")
 
 
-@router.get("/gemba", response_model=list[GembaWalkResponse])
+@router.get("/gemba")
 async def list_gemba_walks(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
+    import structlog
     fid = require_factory(user)
-    return await GembaService.list_walks(db, fid)
+    try:
+        walks = await GembaService.list_walks(db, fid, skip=skip, limit=limit)
+        # Manually serialize to avoid response_model validation errors
+        result = []
+        for w in walks:
+            obs_list = []
+            for obs in (w.observations or []):
+                obs_list.append({
+                    "id": obs.id,
+                    "observation_type": obs.observation_type,
+                    "description": obs.description,
+                    "location": obs.location,
+                    "action_required": obs.action_required or False,
+                    "assigned_to": obs.assigned_to,
+                    "due_date": obs.due_date.isoformat() if obs.due_date else None,
+                    "priority": obs.priority or "medium",
+                })
+            result.append({
+                "id": w.id,
+                "area": w.area,
+                "walk_date": w.walk_date.isoformat() if w.walk_date else None,
+                "duration_min": w.duration_min,
+                "theme": w.theme,
+                "summary": w.summary,
+                "observations": obs_list,
+                "created_at": w.created_at.isoformat() if w.created_at else None,
+            })
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        structlog.get_logger().error("gemba_list_failed", error=str(e), factory_id=fid)
+        raise HTTPException(status_code=500, detail=f"Failed to list Gemba walks: {str(e)}")
 
 
 # ---- TPM ----
@@ -150,7 +199,25 @@ async def list_tpm_equipment(
     user: User = Depends(get_current_user),
 ):
     fid = require_factory(user)
-    return await TPMService.list_equipment(db, fid)
+    items = await TPMService.list_equipment(db, fid)
+    # Manually serialize ORM objects to dicts for JSON response
+    return [
+        {
+            "id": eq.id,
+            "factory_id": eq.factory_id,
+            "name": eq.name,
+            "location": eq.location,
+            "equipment_type": eq.equipment_code,
+            "criticality": eq.criticality,
+            "maintenance_interval_days": eq.maintenance_interval_days,
+            "last_maintenance_date": eq.last_maintenance_date.isoformat() if eq.last_maintenance_date else None,
+            "next_planned_maintenance": eq.next_planned_maintenance.isoformat() if eq.next_planned_maintenance else None,
+            "mtbf_hours": eq.mtbf_hours,
+            "mttr_hours": eq.mttr_hours,
+            "created_at": eq.created_at.isoformat() if eq.created_at else None,
+        }
+        for eq in items
+    ]
 
 
 @router.post("/tpm/maintenance")
@@ -198,13 +265,16 @@ async def get_equipment_metrics(
 
     fid = require_factory(user)
 
-    # Get equipment
-    eq_q = select(TPMEquipment).where(
-        TPMEquipment.id == equipment_id,
-        TPMEquipment.factory_id == fid,
-    )
-    eq_r = await db.execute(eq_q)
-    equipment = eq_r.scalar_one_or_none()
+    try:
+        # Get equipment
+        eq_q = select(TPMEquipment).where(
+            TPMEquipment.id == equipment_id,
+            TPMEquipment.factory_id == fid,
+        )
+        eq_r = await db.execute(eq_q)
+        equipment = eq_r.scalar_one_or_none()
+    except Exception as e:
+        raise HTTPException(500, f"Failed to load equipment: {str(e)}")
     if not equipment:
         raise HTTPException(404, "Equipment not found")
 
@@ -269,7 +339,20 @@ async def list_cilt_standards(
     user: User = Depends(get_current_user),
 ):
     fid = require_factory(user)
-    return await CILTService.list_standards(db, fid)
+    standards = await CILTService.list_standards(db, fid)
+    # Manually serialize ORM objects to dicts for JSON response
+    return [
+        {
+            "id": s.id,
+            "factory_id": s.factory_id,
+            "name": s.name,
+            "equipment_id": getattr(s, "equipment_id", None),
+            "frequency": str(s.frequency).lower() if s.frequency else None,
+            "checks": s.checks if hasattr(s, "checks") else [],
+            "created_at": s.created_at.isoformat() if s.created_at else None,
+        }
+        for s in standards
+    ]
 
 
 @router.post("/cilt/execute")
@@ -323,8 +406,77 @@ async def andon_current_status(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
+    import structlog
     fid = require_factory(user)
-    return await AndonService.get_current_status(db, fid)
+    try:
+        events = await AndonService.get_current_status(db, fid)
+        # Manually serialize ORM objects to dicts for JSON response
+        result = []
+        for e in events:
+            result.append({
+                "id": e.id,
+                "factory_id": e.factory_id,
+                "production_line_id": e.production_line_id,
+                "triggered_by_id": e.triggered_by_id,
+                "status": str(e.status).lower() if e.status else e.status,
+                "reason": e.reason,
+                "description": e.description,
+                "triggered_at": e.triggered_at.isoformat() if e.triggered_at else None,
+                "resolved_at": e.resolved_at.isoformat() if e.resolved_at else None,
+                "resolution_time_min": e.resolution_time_min,
+                "escalated": e.escalated or False,
+                "escalated_at": e.escalated_at.isoformat() if e.escalated_at else None,
+                "escalation_count": e.escalation_count or 0,
+                "source": e.source,
+                "trigger_type": e.trigger_type,
+            })
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        structlog.get_logger().error("andon_status_failed", error=str(e), factory_id=fid)
+        raise HTTPException(status_code=500, detail=f"Failed to fetch Andon status: {str(e)}")
+
+
+@router.get("/andon/check-escalation")
+async def check_andon_escalation(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Trigger andon escalation check. Can be called by cron/scheduler.
+
+    Finds unresolved andon events exceeding time thresholds and auto-escalates them.
+    """
+    fid = require_factory(user)
+    escalated = await AndonService.check_escalation(db, fid)
+    return {"escalated_count": len(escalated), "escalated_events": escalated}
+
+
+# ---- AUDIT SCHEDULE AUTO-RECURRENCE ----
+
+@router.post("/audit-schedule/{schedule_id}/complete-and-recur")
+async def complete_audit_and_create_next(
+    schedule_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Mark audit schedule as completed and auto-create the next recurrence."""
+    fid = require_factory(user)
+    completed, next_sched = await AuditScheduleService.complete_and_create_next(db, schedule_id, fid)
+    return {
+        "completed": {
+            "id": completed.id,
+            "title": completed.title,
+            "last_completed_date": str(completed.last_completed_date),
+            "next_due_date": str(completed.next_due_date),
+        },
+        "next_schedule": {
+            "id": next_sched.id,
+            "title": next_sched.title,
+            "next_due_date": str(next_sched.next_due_date),
+            "frequency": next_sched.frequency,
+        },
+    }
 
 
 # ---- HOURLY PRODUCTION ----
@@ -348,7 +500,10 @@ async def get_hourly_view(
     user: User = Depends(get_current_user),
 ):
     fid = require_factory(user)
-    dt = datetime.fromisoformat(date)
+    try:
+        dt = datetime.fromisoformat(date)
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=422, detail="Invalid date format. Use YYYY-MM-DD or ISO format.")
     return await HourlyProductionService.get_day_view(db, line_id, dt, factory_id=fid)
 
 
@@ -380,18 +535,22 @@ async def create_mind_map(
     from sqlalchemy import select
     from app.models.lean import MindMap
     fid = require_factory(user)
-    mind_map = MindMap(
-        factory_id=fid,
-        created_by_id=user.id,
-        title=data.title,
-        description=data.description,
-        nodes=data.nodes,
-        connectors=data.connectors,
-    )
-    db.add(mind_map)
-    await db.flush()
-    await db.commit()
-    return {"id": mind_map.id, "title": mind_map.title}
+    try:
+        mind_map = MindMap(
+            factory_id=fid,
+            created_by_id=user.id,
+            title=data.title,
+            description=data.description,
+            nodes=data.nodes,
+            connectors=data.connectors,
+        )
+        db.add(mind_map)
+        await db.flush()
+        await db.commit()
+        return {"id": mind_map.id, "title": mind_map.title}
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create mind map: {str(e)}")
 
 
 @router.get("/mindmap")

@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { useAuth } from "@/hooks/useAuth";
 import { oeeApi, adminApi, leanApi, advancedLeanApi, manufacturingApi, qcApi } from "@/lib/api";
+import GettingStartedChecklist from "@/components/onboarding/GettingStartedChecklist";
+import WelcomeModal, { useWelcomeModal } from "@/components/onboarding/WelcomeModal";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -41,6 +43,9 @@ import {
   FileWarning,
   Footprints,
   Bot,
+  Settings2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -95,11 +100,11 @@ const STATUS_COLORS = {
 
 // SQCDP colors
 const SQCDP = {
-  S: { label: "Safety", color: "#22c55e", bg: "bg-green-500", lightBg: "bg-green-50 dark:bg-green-500/10", text: "text-green-700 dark:text-green-400", border: "border-green-200 dark:border-green-500/20" },
-  Q: { label: "Quality", color: "#3b82f6", bg: "bg-blue-500", lightBg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-700 dark:text-blue-400", border: "border-blue-200 dark:border-blue-500/20" },
-  C: { label: "Cost", color: "#f59e0b", bg: "bg-amber-500", lightBg: "bg-amber-50 dark:bg-amber-500/10", text: "text-amber-700 dark:text-amber-400", border: "border-amber-200 dark:border-amber-500/20" },
-  D: { label: "Delivery", color: "#8b5cf6", bg: "bg-violet-500", lightBg: "bg-violet-50 dark:bg-violet-500/10", text: "text-violet-700 dark:text-violet-400", border: "border-violet-200 dark:border-violet-500/20" },
-  P: { label: "People", color: "#ec4899", bg: "bg-pink-500", lightBg: "bg-pink-50 dark:bg-pink-500/10", text: "text-pink-700 dark:text-pink-400", border: "border-pink-200 dark:border-pink-500/20" },
+  S: { labelKey: "home.sqcdpSafety", color: "#22c55e", bg: "bg-green-500", lightBg: "bg-green-50 dark:bg-green-500/10", text: "text-green-700 dark:text-green-400", border: "border-green-200 dark:border-green-500/20" },
+  Q: { labelKey: "home.sqcdpQuality", color: "#3b82f6", bg: "bg-blue-500", lightBg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-700 dark:text-blue-400", border: "border-blue-200 dark:border-blue-500/20" },
+  C: { labelKey: "home.sqcdpCost", color: "#f59e0b", bg: "bg-amber-500", lightBg: "bg-amber-50 dark:bg-amber-500/10", text: "text-amber-700 dark:text-amber-400", border: "border-amber-200 dark:border-amber-500/20" },
+  D: { labelKey: "home.sqcdpDelivery", color: "#8b5cf6", bg: "bg-violet-500", lightBg: "bg-violet-50 dark:bg-violet-500/10", text: "text-violet-700 dark:text-violet-400", border: "border-violet-200 dark:border-violet-500/20" },
+  P: { labelKey: "home.sqcdpPeople", color: "#ec4899", bg: "bg-pink-500", lightBg: "bg-pink-50 dark:bg-pink-500/10", text: "text-pink-700 dark:text-pink-400", border: "border-pink-200 dark:border-pink-500/20" },
 } as const;
 
 /* ------------------------------------------------------------------ */
@@ -236,14 +241,26 @@ function OEEGauge({ value, size = 180 }: { value: number | null; size?: number }
           );
         })()}
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-end pb-1">
-        <span className={`text-4xl font-bold tracking-tight ${status.text}`}>
+      <div className="absolute inset-0 flex flex-col items-center justify-end pb-2">
+        <span className={`text-3xl font-bold tracking-tight ${status.text}`}>
           {value !== null ? value.toFixed(1) : "—"}
         </span>
-        <span className="text-[10px] font-medium text-th-text-3 uppercase tracking-widest mt-0.5">OEE %</span>
+        <span className="text-[9px] font-medium text-th-text-3 uppercase tracking-widest mt-0.5">OEE %</span>
+      </div>
+      {/* Target and status labels */}
+      <div className="flex flex-col items-center mt-2 gap-0.5">
+        <OEEStatusLabel value={v} />
+        <span className="text-[8px] text-th-text-3">Target: 85%</span>
       </div>
     </div>
   );
+}
+
+function OEEStatusLabel({ value }: { value: number }) {
+  if (value >= 85) return <span className="text-[10px] font-semibold text-emerald-500">World Class</span>;
+  if (value >= 70) return <span className="text-[10px] font-semibold text-blue-500">Good</span>;
+  if (value >= 50) return <span className="text-[10px] font-semibold text-amber-500">Needs Improvement</span>;
+  return <span className="text-[10px] font-semibold text-rose-500">Critical</span>;
 }
 
 /* ------------------------------------------------------------------ */
@@ -309,20 +326,19 @@ function SQCDPCard({
   return (
     <button
       onClick={onClick}
-      className={`relative overflow-hidden rounded-xl border ${cfg.border} ${cfg.lightBg} p-4 text-left transition-all duration-200 hover:shadow-md hover:scale-[1.01] group`}
+      className={`relative overflow-hidden rounded-xl border ${cfg.border} ${cfg.lightBg} p-3 text-left transition-all duration-200 hover:shadow-md hover:scale-[1.01] group min-w-0`}
     >
       {/* Letter badge */}
-      <div className={`absolute top-3 right-3 w-7 h-7 rounded-lg ${cfg.bg} flex items-center justify-center`}>
-        <span className="text-xs font-bold text-white">{letter}</span>
+      <div className={`absolute top-2 right-2 w-6 h-6 rounded-md ${cfg.bg} flex items-center justify-center`}>
+        <span className="text-[10px] font-bold text-white">{letter}</span>
       </div>
-      <p className={`text-[10px] font-semibold uppercase tracking-wider ${cfg.text} mb-1`}>{label}</p>
-      <p className="text-xs text-th-text-2 mb-2">{metric}</p>
-      <div className="flex items-baseline gap-1">
-        <span className={`text-2xl font-bold ${statusCfg.text}`}>{value}</span>
-        {unit && <span className="text-xs text-th-text-3 font-medium">{unit}</span>}
+      <p className={`text-[11px] font-semibold ${cfg.text} mb-1 leading-tight`}>{label}</p>
+      <div className="flex items-baseline gap-0.5">
+        <span className={`text-xl font-bold ${statusCfg.text}`}>{value}</span>
+        {unit && <span className="text-[9px] text-th-text-3 font-medium">{unit}</span>}
       </div>
       {/* Status dot */}
-      <div className={`absolute bottom-3 right-3 w-2.5 h-2.5 rounded-full ${
+      <div className={`absolute bottom-2 right-2 w-2 h-2 rounded-full ${
         status === "good" ? "bg-emerald-500" : status === "warning" ? "bg-amber-500" : "bg-rose-500"
       }`} />
     </button>
@@ -375,6 +391,28 @@ function MetricRow({
 /*  Main Component                                                     */
 /* ------------------------------------------------------------------ */
 
+type WidgetKey = "oee" | "sqcdp" | "hourlyOutput" | "quickActions" | "openActions" | "activityFeed";
+
+const WIDGET_LABELS: Record<WidgetKey, string> = {
+  oee: "OEE Command Center",
+  sqcdp: "SQCDP Board",
+  hourlyOutput: "Hourly Output",
+  quickActions: "Quick Actions",
+  openActions: "Open Actions",
+  activityFeed: "Activity Feed",
+};
+
+const ALL_WIDGETS: WidgetKey[] = ["oee", "sqcdp", "hourlyOutput", "quickActions", "openActions", "activityFeed"];
+
+function loadWidgetConfig(): Record<WidgetKey, boolean> {
+  if (typeof window === "undefined") return Object.fromEntries(ALL_WIDGETS.map(w => [w, true])) as Record<WidgetKey, boolean>;
+  try {
+    const raw = localStorage.getItem("leanpilot_dashboard_widgets");
+    if (raw) return JSON.parse(raw);
+  } catch { /* ignore */ }
+  return Object.fromEntries(ALL_WIDGETS.map(w => [w, true])) as Record<WidgetKey, boolean>;
+}
+
 export default function HomePage({ onNavigate }: HomePageProps) {
   const { t, locale } = useI18n();
   const { user } = useAuth();
@@ -383,6 +421,25 @@ export default function HomePage({ onNavigate }: HomePageProps) {
   const [openActions, setOpenActions] = useState<OpenActions>(EMPTY_OPEN_ACTIONS);
   const [loading, setLoading] = useState(true);
   const [usingDemo, setUsingDemo] = useState(false);
+  const { show: showWelcome, dismiss: dismissWelcome } = useWelcomeModal();
+  const [widgets, setWidgets] = useState<Record<WidgetKey, boolean>>(loadWidgetConfig);
+  const [showWidgetConfig, setShowWidgetConfig] = useState(false);
+
+  const toggleWidget = (key: WidgetKey) => {
+    setWidgets(prev => {
+      const next = { ...prev, [key]: !prev[key] };
+      localStorage.setItem("leanpilot_dashboard_widgets", JSON.stringify(next));
+      return next;
+    });
+  };
+
+  // Close widget config dropdown on outside click
+  useEffect(() => {
+    if (!showWidgetConfig) return;
+    const handler = () => setShowWidgetConfig(false);
+    const timer = setTimeout(() => document.addEventListener("click", handler), 0);
+    return () => { clearTimeout(timer); document.removeEventListener("click", handler); };
+  }, [showWidgetConfig]);
 
   /* ---- Fetch data ---- */
   const fetchData = useCallback(async () => {
@@ -403,7 +460,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         const trend = trendRes.data;
 
         const sparkline = (trend || []).map((p: any) => ({
-          date: p.date?.slice(5) || "",
+          date: p.date ? p.date.slice(0, 10).slice(5) : "",
           value: p.oee ?? 0,
         }));
 
@@ -425,7 +482,9 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         }));
         usedDemo = false;
       }
-    } catch { /* API unavailable */ }
+    } catch (err) {
+      console.error("[HomePage] OEE data unavailable:", err);
+    }
 
     // Production orders
     try {
@@ -445,7 +504,9 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         }));
         usedDemo = false;
       }
-    } catch { /* API unavailable */ }
+    } catch (err) {
+      console.error("[HomePage] Production orders unavailable:", err);
+    }
 
     // Active andon alerts
     try {
@@ -456,7 +517,9 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         setKpi((prev) => ({ ...prev, activeAndon: activeCount }));
         usedDemo = false;
       }
-    } catch { /* API unavailable */ }
+    } catch (err) {
+      console.error("[HomePage] Andon data unavailable:", err);
+    }
 
     // Recent activities
     try {
@@ -466,21 +529,21 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         const kaizenItems = kaizenRes.data?.items || kaizenRes.data || [];
         const sorted = [...kaizenItems].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 3);
         for (const k of sorted) {
-          recentActivities.push({ id: `kaizen-${k.id}`, type: "kaizen", title: k.title || k.description || "Kaizen item", timestamp: formatRelativeTime(k.created_at), icon: "kaizen" });
+          recentActivities.push({ id: `kaizen-${k.id}`, type: "kaizen", title: k.title || k.description || "Kaizen item", timestamp: formatRelativeTime(k.created_at, locale), icon: "kaizen" });
         }
       } catch { /* skip */ }
       try {
         const gembaRes = await advancedLeanApi.listGembaWalks();
         const sorted = [...(gembaRes.data || [])].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 2);
         for (const g of sorted) {
-          recentActivities.push({ id: `gemba-${g.id}`, type: "gemba", title: `Gemba Walk — ${g.area || g.title || ""}`, timestamp: formatRelativeTime(g.created_at), icon: "gemba" });
+          recentActivities.push({ id: `gemba-${g.id}`, type: "gemba", title: `Gemba Walk — ${g.area || g.title || ""}`, timestamp: formatRelativeTime(g.created_at, locale), icon: "gemba" });
         }
       } catch { /* skip */ }
       try {
         const fwRes = await leanApi.listFiveWhy();
         const sorted = [...(fwRes.data || [])].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 2);
         for (const f of sorted) {
-          recentActivities.push({ id: `fw-${f.id}`, type: "five-why", title: f.problem_statement || "5 Why Analysis", timestamp: formatRelativeTime(f.created_at), icon: "five-why" });
+          recentActivities.push({ id: `fw-${f.id}`, type: "five-why", title: f.problem_statement || "5 Why Analysis", timestamp: formatRelativeTime(f.created_at, locale), icon: "five-why" });
         }
       } catch { /* skip */ }
       if (recentActivities.length > 0) {
@@ -498,7 +561,9 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         setActivities(recentActivities.slice(0, 8));
         usedDemo = false;
       }
-    } catch { /* API unavailable */ }
+    } catch (err) {
+      console.error("[HomePage] Activity feed unavailable:", err);
+    }
 
     // Open action counts
     try {
@@ -529,11 +594,13 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         setOpenActions({ capaOverdue, kaizenInProgress, ncrOpen, gembaFindings });
         usedDemo = false;
       }
-    } catch { /* API unavailable */ }
+    } catch (err) {
+      console.error("[HomePage] Open actions unavailable:", err);
+    }
 
     setUsingDemo(usedDemo);
     setLoading(false);
-  }, []);
+  }, [locale]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -544,6 +611,15 @@ export default function HomePage({ onNavigate }: HomePageProps) {
 
   return (
     <div className="space-y-5 max-w-[1400px] mx-auto">
+      {/* Welcome modal for first-time users */}
+      {showWelcome && (
+        <WelcomeModal
+          onClose={dismissWelcome}
+          onTour={dismissWelcome}
+          onSetup={() => { dismissWelcome(); onNavigate("setup-wizard"); }}
+        />
+      )}
+
       {/* ============================================================ */}
       {/*  TOP BAR: Greeting + Status                                   */}
       {/* ============================================================ */}
@@ -573,14 +649,50 @@ export default function HomePage({ onNavigate }: HomePageProps) {
               <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">{t("home.liveData") || "Live"}</span>
             </div>
           )}
+          {/* Widget configurator */}
+          <div className="relative">
+            <button
+              onClick={() => setShowWidgetConfig(!showWidgetConfig)}
+              className="p-2 rounded-lg border border-th-border bg-th-bg-2 hover:bg-th-bg-3 text-th-text-2 transition-colors"
+              title={t("home.configureWidgets") || "Configure widgets"}
+            >
+              <Settings2 size={14} />
+            </button>
+            {showWidgetConfig && (
+              <div className="absolute right-0 top-full mt-2 w-56 bg-th-bg border border-th-border rounded-xl shadow-xl z-50 p-3 space-y-1">
+                <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wider px-2 mb-2">
+                  {t("home.showHideWidgets") || "Show / Hide Widgets"}
+                </p>
+                {ALL_WIDGETS.map((key) => (
+                  <button
+                    key={key}
+                    onClick={() => toggleWidget(key)}
+                    className="flex items-center gap-2 w-full px-2 py-1.5 rounded-lg hover:bg-th-bg-2 text-left transition-colors"
+                  >
+                    {widgets[key] ? <Eye size={12} className="text-brand-500" /> : <EyeOff size={12} className="text-th-text-3" />}
+                    <span className={`text-xs font-medium ${widgets[key] ? "text-th-text" : "text-th-text-3"}`}>
+                      {WIDGET_LABELS[key]}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* ============================================================ */}
+      {/*  Getting Started Checklist (shows only when setup incomplete) */}
+      {/* ============================================================ */}
+      <GettingStartedChecklist onNavigate={onNavigate} />
+
+      {/* ============================================================ */}
       {/*  ROW 1: OEE Command Center + SQCDP                           */}
       {/* ============================================================ */}
+      {(widgets.oee || widgets.sqcdp || widgets.hourlyOutput) && (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* OEE Panel — 5 cols */}
+        {widgets.oee && (
         <div className="lg:col-span-5 rounded-xl border border-th-border bg-th-bg-2 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -638,50 +750,54 @@ export default function HomePage({ onNavigate }: HomePageProps) {
             </div>
           )}
         </div>
+        )}
 
         {/* Right column: SQCDP + Production */}
-        <div className="lg:col-span-7 space-y-4">
+        <div className={`${widgets.oee ? "lg:col-span-7" : "lg:col-span-12"} space-y-4`}>
           {/* SQCDP Board */}
+          {widgets.sqcdp && (
           <div>
             <div className="flex items-center gap-2 mb-3">
               <h2 className="text-xs font-semibold text-th-text-3 uppercase tracking-wider">{t("home.sqcdpBoard") || "SQCDP Board"}</h2>
               <div className="flex-1 h-px bg-th-border" />
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-5 gap-2">
               <SQCDPCard
-                letter="S" label={t("home.sqcdpSafety") || "Safety"}
-                metric={t("home.daysNoIncident") || "Days without incident"}
-                value="47" unit={t("home.days") || "days"} status="good"
+                letter="S" label={t("home.sqcdpSafety")}
+                metric={t("home.daysNoIncident") || "Days w/o incident"}
+                value={kpi.activeAndon !== null ? "0" : "—"} unit="days" status="good"
                 onClick={() => onNavigate("safety")}
               />
               <SQCDPCard
-                letter="Q" label={t("home.sqcdpQuality") || "Quality"}
+                letter="Q" label={t("home.sqcdpQuality")}
                 metric={t("home.defectRate") || "Defect rate"}
                 value={kpi.qualityRate !== null ? (100 - kpi.qualityRate).toFixed(1) : "—"} unit="%" status={kpi.qualityRate && kpi.qualityRate >= 95 ? "good" : "warning"}
                 onClick={() => onNavigate("dashboard")}
               />
               <SQCDPCard
-                letter="C" label={t("home.sqcdpCost") || "Cost"}
-                metric={t("home.scrapCost") || "Scrap cost today"}
-                value="€240" status="warning"
+                letter="C" label={t("home.sqcdpCost")}
+                metric={t("home.scrapCost") || "Scrap cost"}
+                value="—" status="good"
                 onClick={() => onNavigate("waste")}
               />
               <SQCDPCard
-                letter="D" label={t("home.sqcdpDelivery") || "Delivery"}
+                letter="D" label={t("home.sqcdpDelivery")}
                 metric={t("home.onTimeDelivery") || "On-time delivery"}
                 value={`${outputPct}`} unit="%" status={outputPct >= 90 ? "good" : outputPct >= 75 ? "warning" : "critical"}
                 onClick={() => onNavigate("production")}
               />
               <SQCDPCard
-                letter="P" label={t("home.sqcdpPeople") || "People"}
+                letter="P" label={t("home.sqcdpPeople")}
                 metric={t("home.attendance") || "Attendance"}
-                value="94" unit="%" status="good"
+                value="—" status="good"
                 onClick={() => onNavigate("admin")}
               />
             </div>
           </div>
+          )}
 
           {/* Production Output vs Target */}
+          {widgets.hourlyOutput && (
           <div className="rounded-xl border border-th-border bg-th-bg-2 p-5 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -750,31 +866,37 @@ export default function HomePage({ onNavigate }: HomePageProps) {
               </div>
             </div>
           </div>
+          )}
         </div>
       </div>
+      )}
 
       {/* ============================================================ */}
       {/*  ROW 2: Quick Actions + Open Actions + Activity               */}
       {/* ============================================================ */}
+      {(widgets.quickActions || widgets.openActions || widgets.activityFeed) && (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Quick Actions — compact grid */}
+        {widgets.quickActions && (
         <div className="lg:col-span-3">
           <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
             <div className="px-4 py-3 border-b border-th-border">
               <h3 className="text-xs font-semibold text-th-text uppercase tracking-wider">{t("home.quickActions")}</h3>
             </div>
             <div className="p-1">
-              <MetricRow icon={ClipboardList} label={t("home.actionProduction")} value={t("home.actionProductionDesc")} onClick={() => onNavigate("production")} />
-              <MetricRow icon={Gauge} label={t("home.actionOEE")} value={t("home.actionOEEDesc")} onClick={() => onNavigate("dashboard")} />
-              <MetricRow icon={Lightbulb} label={t("home.actionKaizen")} value={t("home.actionKaizenDesc")} onClick={() => onNavigate("kaizen")} />
-              <MetricRow icon={Footprints} label={t("home.actionGemba")} value={t("home.actionGembaDesc")} onClick={() => onNavigate("gemba")} />
-              <MetricRow icon={Zap} label={t("home.actionAndon")} value={t("home.actionAndonDesc")} onClick={() => onNavigate("andon")} />
-              <MetricRow icon={Bot} label={t("home.actionCopilot")} value={t("home.actionCopilotDesc")} onClick={() => onNavigate("copilot")} />
+              <MetricRow icon={ClipboardList} label={t("home.actionProduction") || "Production"} value="→" onClick={() => onNavigate("production")} />
+              <MetricRow icon={Gauge} label={t("home.actionOEE") || "OEE"} value="→" onClick={() => onNavigate("dashboard")} />
+              <MetricRow icon={Lightbulb} label={t("home.actionKaizen") || "Kaizen"} value="→" onClick={() => onNavigate("kaizen")} />
+              <MetricRow icon={Footprints} label={t("home.actionGemba") || "Gemba"} value="→" onClick={() => onNavigate("gemba")} />
+              <MetricRow icon={Zap} label={t("home.actionAndon") || "Andon"} value="→" onClick={() => onNavigate("andon")} />
+              <MetricRow icon={Bot} label={t("home.actionCopilot") || "AI Copilot"} value="→" onClick={() => onNavigate("copilot")} />
             </div>
           </div>
         </div>
+        )}
 
         {/* Open Actions — 3 cols */}
+        {widgets.openActions && (
         <div className="lg:col-span-3">
           <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden">
             <div className="px-4 py-3 border-b border-th-border">
@@ -811,8 +933,10 @@ export default function HomePage({ onNavigate }: HomePageProps) {
             </div>
           </div>
         </div>
+        )}
 
         {/* Activity Feed — 6 cols */}
+        {widgets.activityFeed && (
         <div className="lg:col-span-6">
           <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-hidden h-full">
             <div className="px-4 py-3 border-b border-th-border flex items-center justify-between">
@@ -847,7 +971,9 @@ export default function HomePage({ onNavigate }: HomePageProps) {
             </div>
           </div>
         </div>
+        )}
       </div>
+      )}
 
       {/* ============================================================ */}
       {/*  ROW 3: Lean Journey (DMAIC Progress)                         */}
@@ -899,18 +1025,30 @@ export default function HomePage({ onNavigate }: HomePageProps) {
 /*  Utility                                                            */
 /* ------------------------------------------------------------------ */
 
-function formatRelativeTime(dateStr: string): string {
+function formatRelativeTime(dateStr: string, appLocale?: string): string {
   try {
     const date = new Date(dateStr);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
-    const diffMin = Math.floor(diffMs / 60000);
-    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
     const diffH = Math.floor(diffMin / 60);
-    if (diffH < 24) return `${diffH}h ago`;
     const diffD = Math.floor(diffH / 24);
-    if (diffD === 1) return "1d ago";
-    return `${diffD}d ago`;
+
+    const locale = appLocale
+      ? (LOCALE_MAP[appLocale] || appLocale)
+      : undefined;
+
+    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto", style: "narrow" });
+
+    if (diffMin < 1) return rtf.format(-diffSec, "second");
+    if (diffMin < 60) return rtf.format(-diffMin, "minute");
+    if (diffH < 24) return rtf.format(-diffH, "hour");
+    if (diffD < 30) return rtf.format(-diffD, "day");
+    const diffW = Math.floor(diffD / 7);
+    if (diffD < 90) return rtf.format(-diffW, "week");
+    const diffM = Math.floor(diffD / 30);
+    return rtf.format(-diffM, "month");
   } catch {
     return dateStr;
   }

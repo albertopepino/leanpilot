@@ -2,7 +2,7 @@ import os
 import time
 from contextlib import asynccontextmanager
 import structlog
-from fastapi import Depends, FastAPI, Request, Response
+from fastapi import APIRouter, Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -37,7 +37,7 @@ from app.services.data_retention import (
 from app.api.routes import auth, production, oee, lean, ai, lean_advanced
 from app.api.routes import privacy, admin, manufacturing, qc, totp, groups, calendar, waste
 from app.api.routes import sqcdp, shift_handover, notifications, lsw, audit_schedule, reports
-from app.api.routes import ws, horizontal_deploy, safety
+from app.api.routes import ws, horizontal_deploy, safety, kanban, pokayoke, spc
 from app.api.routes.company_settings import (
     admin_router as company_admin_router,
     public_router as company_public_router,
@@ -92,6 +92,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(SecurityHeadersMiddleware)
 
+# Rate limiting middleware — GDPR Art. 32 (security of processing)
+try:
+    from app.middleware.rate_limit import RateLimitMiddleware
+    app.add_middleware(RateLimitMiddleware)
+except ImportError:
+    pass  # middleware not available — skip
+
 
 # ---------------------------------------------------------------------------
 # Request logging middleware — structured observability
@@ -103,8 +110,9 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         duration_ms = round((time.perf_counter() - start) * 1000, 1)
         if not request.url.path.startswith("/api/health"):
-            logger.info(
-                "request",
+            log_fn = logger.warning if duration_ms > 500 else logger.info
+            log_fn(
+                "request.slow" if duration_ms > 500 else "request",
                 method=request.method,
                 path=request.url.path,
                 status=response.status_code,
@@ -125,32 +133,44 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# All routes
-app.include_router(auth.router, prefix="/api/v1")
-app.include_router(production.router, prefix="/api/v1")
-app.include_router(oee.router, prefix="/api/v1")
-app.include_router(lean.router, prefix="/api/v1")
-app.include_router(lean_advanced.router, prefix="/api/v1")
-app.include_router(ai.router, prefix="/api/v1")
-app.include_router(privacy.router, prefix="/api/v1")
-app.include_router(admin.router, prefix="/api/v1")
-app.include_router(manufacturing.router, prefix="/api/v1")
-app.include_router(qc.router, prefix="/api/v1")
-app.include_router(totp.router, prefix="/api/v1")
-app.include_router(groups.router, prefix="/api/v1")
-app.include_router(calendar.router, prefix="/api/v1")
-app.include_router(waste.router, prefix="/api/v1")
-app.include_router(company_admin_router, prefix="/api/v1")
-app.include_router(company_public_router, prefix="/api/v1")
-app.include_router(sqcdp.router, prefix="/api/v1")
-app.include_router(shift_handover.router, prefix="/api/v1")
-app.include_router(notifications.router, prefix="/api/v1")
-app.include_router(lsw.router, prefix="/api/v1")
-app.include_router(audit_schedule.router, prefix="/api/v1")
-app.include_router(reports.router, prefix="/api/v1")
+# ---------------------------------------------------------------------------
+# API versioning — v1 router with /api/ backwards-compatibility alias
+# ---------------------------------------------------------------------------
+v1_router = APIRouter()
+v1_router.include_router(auth.router)
+v1_router.include_router(production.router)
+v1_router.include_router(oee.router)
+v1_router.include_router(lean.router)
+v1_router.include_router(lean_advanced.router)
+v1_router.include_router(ai.router)
+v1_router.include_router(privacy.router)
+v1_router.include_router(admin.router)
+v1_router.include_router(manufacturing.router)
+v1_router.include_router(qc.router)
+v1_router.include_router(totp.router)
+v1_router.include_router(groups.router)
+v1_router.include_router(calendar.router)
+v1_router.include_router(waste.router)
+v1_router.include_router(company_admin_router)
+v1_router.include_router(company_public_router)
+v1_router.include_router(sqcdp.router)
+v1_router.include_router(shift_handover.router)
+v1_router.include_router(notifications.router)
+v1_router.include_router(lsw.router)
+v1_router.include_router(audit_schedule.router)
+v1_router.include_router(reports.router)
+v1_router.include_router(horizontal_deploy.router)
+v1_router.include_router(safety.router)
+v1_router.include_router(kanban.router)
+v1_router.include_router(pokayoke.router)
+v1_router.include_router(spc.router)
+
+# Mount under /api/v1 (canonical) and /api (backwards-compatible alias)
+app.include_router(v1_router, prefix="/api/v1")
+app.include_router(v1_router, prefix="/api")
+
+# WebSocket routes (no versioned prefix)
 app.include_router(ws.router)
-app.include_router(horizontal_deploy.router, prefix="/api/v1")
-app.include_router(safety.router, prefix="/api/v1")
 
 
 @app.get("/api/health")
@@ -301,5 +321,13 @@ async def features():
         "phase4": {
             "websocket_realtime": True,
             "horizontal_deployment": True,
+        },
+        "phase5": {
+            "kanban_board": True,
+            "poka_yoke": True,
+            "qc_dashboard": True,
+            "spc_charts": True,
+            "setup_wizard": True,
+            "contextual_help": True,
         },
     }

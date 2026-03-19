@@ -455,6 +455,36 @@ export default function SMEDTracker() {
           </div>
         </div>
 
+        {/* ── SMED Stage 0-3 Guide ── */}
+        <div className="mb-6 p-4 rounded-xl border border-th-border bg-th-bg-3/50">
+          <h4 className="text-xs font-bold text-th-text-2 mb-3 uppercase tracking-wider flex items-center gap-1.5">
+            <Lightbulb className="w-3.5 h-3.5" />
+            {t("improvement.smedStagesGuide")}
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {([
+              { num: 0, color: "bg-slate-500", border: "border-slate-500/20", text: "text-slate-600 dark:text-slate-400" },
+              { num: 1, color: "bg-blue-500", border: "border-blue-500/20", text: "text-blue-600 dark:text-blue-400" },
+              { num: 2, color: "bg-amber-500", border: "border-amber-500/20", text: "text-amber-600 dark:text-amber-400" },
+              { num: 3, color: "bg-emerald-500", border: "border-emerald-500/20", text: "text-emerald-600 dark:text-emerald-400" },
+            ] as const).map((stage) => (
+              <div key={stage.num} className={`flex items-start gap-3 p-3 rounded-lg border ${stage.border} bg-th-bg-2`}>
+                <div className={`w-7 h-7 rounded-full ${stage.color} text-white flex items-center justify-center text-xs font-black shrink-0`}>
+                  {stage.num}
+                </div>
+                <div className="min-w-0">
+                  <p className={`text-xs font-bold ${stage.text}`}>
+                    {t(`improvement.smedStage${stage.num}Title`)}
+                  </p>
+                  <p className="text-[10px] text-th-text-3 mt-0.5 leading-tight">
+                    {t(`improvement.smedStage${stage.num}Desc`)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* ── Summary Cards ── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           <SummaryCard icon={<Clock className="w-4 h-4" />} label={t("improvement.baselineTime")} value={fmtSeconds(baselineSeconds)} sub={fmtMinutes(baselineSeconds)} color="gray" />
@@ -551,8 +581,8 @@ export default function SMEDTracker() {
                 <XAxis type="number" tick={{ fill: "#64748b", fontSize: 10 }} tickFormatter={(v) => fmtSeconds(v)} />
                 <YAxis type="category" dataKey="name" tick={{ fill: "#94a3b8", fontSize: 10 }} width={120} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #334155", borderRadius: "8px", fontSize: 12 }}
-                  labelStyle={{ color: "#94a3b8" }}
+                  contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-primary)', borderRadius: '8px', fontSize: 12, color: 'var(--text-primary)' }}
+                  labelStyle={{ color: "var(--text-secondary)" }}
                   formatter={(value: number, _name: string, entry: any) => [
                     fmtSeconds(value),
                     entry.payload.phase === "internal" ? t("improvement.internal") : t("improvement.external"),
@@ -606,7 +636,7 @@ export default function SMEDTracker() {
               <XAxis type="number" tick={{ fill: "#64748b", fontSize: 10 }} tickFormatter={(v) => fmtSeconds(v)} />
               <YAxis type="category" dataKey="name" tick={{ fill: "#94a3b8", fontSize: 11, fontWeight: 600 }} width={60} />
               <Tooltip
-                contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #334155", borderRadius: "8px", fontSize: 12 }}
+                contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-primary)', borderRadius: '8px', fontSize: 12, color: 'var(--text-primary)' }}
                 formatter={(value: number) => [fmtSeconds(value)]}
               />
               <Bar dataKey="internal" stackId="a" fill="#3b82f6" fillOpacity={0.8} radius={[0, 0, 0, 0]} name={t("improvement.internal")} />

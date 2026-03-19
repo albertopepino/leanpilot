@@ -19,7 +19,10 @@ import {
   ReferenceLine,
   PieChart,
   Pie,
+  Line,
+  ComposedChart,
 } from "recharts";
+import MetricExplainer from "@/components/shared/MetricExplainer";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -234,7 +237,7 @@ function useOEEData(lineId: number, days: number) {
           oeeApi.getTrend(lineId, days),
         ]);
 
-        setSummary(summaryRes.data);
+        setSummary(summaryRes.data ?? EMPTY_SUMMARY);
         setTrend(Array.isArray(trendRes.data) ? trendRes.data : []);
         setUsingFallback(false);
       } catch (err: any) {
@@ -354,19 +357,55 @@ function RadialGauge({
 
 function DarkTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
+
+  // Extract A, P, Q values for OEE calculation display
+  const avail = payload.find((p: any) => p.dataKey === "availability");
+  const perf = payload.find((p: any) => p.dataKey === "performance");
+  const qual = payload.find((p: any) => p.dataKey === "quality");
+  const oee = payload.find((p: any) => p.dataKey === "oee");
+  const oeeValue = oee?.value ?? 0;
+
+  // Color-code the OEE value in tooltip
+  const oeeColor = oeeValue >= 85 ? "#10b981" : oeeValue >= 60 ? "#f59e0b" : "#ef4444";
+
   return (
-    <div className="bg-th-bg-3 backdrop-blur-sm border border-th-border rounded-lg px-4 py-3 shadow-xl">
+    <div className="bg-th-bg-3 backdrop-blur-sm border border-th-border rounded-lg px-4 py-3 shadow-xl min-w-[200px]">
       <p className="text-xs text-th-text-2 mb-2 font-medium">{label}</p>
-      {payload.map((entry: any, i: number) => (
-        <div key={i} className="flex items-center gap-2 text-sm">
-          <span
-            className="w-2.5 h-2.5 rounded-full shrink-0"
-            style={{ backgroundColor: entry.color }}
-          />
-          <span className="text-th-text">{entry.name}:</span>
-          <span className="font-semibold text-th-text tabular-nums">{entry.value?.toFixed(1)}%</span>
+      {payload.map((entry: any, i: number) => {
+        const val = entry.value ?? 0;
+        const entryColor = entry.dataKey === "oee"
+          ? oeeColor
+          : entry.color;
+        return (
+          <div key={i} className="flex items-center justify-between gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <span
+                className="w-2.5 h-2.5 rounded-full shrink-0"
+                style={{ backgroundColor: entryColor }}
+              />
+              <span className="text-th-text">{entry.name}</span>
+            </div>
+            <span className="font-semibold text-th-text tabular-nums">{val.toFixed(1)}%</span>
+          </div>
+        );
+      })}
+      {/* Show OEE = A x P x Q formula */}
+      {avail && perf && qual && (
+        <div className="mt-2 pt-2 border-t border-th-border">
+          <p className="text-[10px] text-th-text-3 font-mono tabular-nums">
+            OEE = {avail.value?.toFixed(1)}% x {perf.value?.toFixed(1)}% x {qual.value?.toFixed(1)}%
+          </p>
+          <div className="flex items-center gap-1.5 mt-1">
+            <span className="text-[10px] text-th-text-3">Target: {WORLD_CLASS.oee}%</span>
+            <span
+              className="text-[10px] font-bold"
+              style={{ color: oeeColor }}
+            >
+              {oeeValue >= WORLD_CLASS.oee ? "On Target" : `${(WORLD_CLASS.oee - oeeValue).toFixed(1)}% gap`}
+            </span>
+          </div>
         </div>
-      ))}
+      )}
     </div>
   );
 }
@@ -505,6 +544,7 @@ export default function OEEDashboard({ onNavigate }: { onNavigate?: (view: strin
   const { lines, loading: linesLoading } = useProductionLines();
   const [selectedLine, setSelectedLine] = useState<number>(0);
   const [days, setDays] = useState(30);
+  const [activeTab, setActiveTab] = useState<"overview" | "lossAnalysis">("overview");
 
   useEffect(() => {
     if (lines.length > 0 && selectedLine === 0) {
@@ -660,6 +700,34 @@ export default function OEEDashboard({ onNavigate }: { onNavigate?: (view: strin
         />
       </div>
 
+      {/* -------- View Tabs -------- */}
+      <div className="flex rounded-lg border border-th-border overflow-hidden w-fit" role="tablist" aria-label="Dashboard views">
+        <button
+          role="tab"
+          aria-selected={activeTab === "overview"}
+          onClick={() => setActiveTab("overview")}
+          className={`px-4 py-2 text-sm font-medium transition-all ${
+            activeTab === "overview"
+              ? "bg-emerald-600 text-white shadow-inner"
+              : "bg-th-bg-2 text-th-text-2 hover:bg-th-bg-hover"
+          }`}
+        >
+          {t("dashboard.overview") || "Overview"}
+        </button>
+        <button
+          role="tab"
+          aria-selected={activeTab === "lossAnalysis"}
+          onClick={() => setActiveTab("lossAnalysis")}
+          className={`px-4 py-2 text-sm font-medium transition-all ${
+            activeTab === "lossAnalysis"
+              ? "bg-emerald-600 text-white shadow-inner"
+              : "bg-th-bg-2 text-th-text-2 hover:bg-th-bg-hover"
+          }`}
+        >
+          {t("dashboard.lossAnalysis") || "Loss Analysis"}
+        </button>
+      </div>
+
       {/* -------- Error banner -------- */}
       {error && (
         <div className="flex items-center justify-between bg-rose-950/30 border border-rose-800/50 rounded-xl px-4 py-3 backdrop-blur-sm">
@@ -701,8 +769,13 @@ export default function OEEDashboard({ onNavigate }: { onNavigate?: (view: strin
         </div>
       )}
 
-      {/* -------- Empty state -------- */}
-      {!loading && !usingFallback && summary.record_count === 0 ? (
+      {/* -------- Loss Analysis Tab -------- */}
+      {activeTab === "lossAnalysis" && (
+        <SixBigLossesWaterfall summary={summary} loading={loading} effectiveLineId={effectiveLineId} days={days} />
+      )}
+
+      {/* -------- Overview Tab -------- */}
+      {activeTab === "overview" && !loading && !usingFallback && summary.record_count === 0 && (
         <div className="flex flex-col items-center justify-center py-16 px-6 bg-th-bg-2 rounded-xl border border-th-border text-center">
           <svg className="w-16 h-16 text-th-text-2 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -721,480 +794,806 @@ export default function OEEDashboard({ onNavigate }: { onNavigate?: (view: strin
             <span aria-hidden="true">&rarr;</span>
           </button>
         </div>
-      ) : (
-        <>
-          {/* ================================================================ */}
-          {/*  ROW 1: Hero OEE Gauge + Sub-Metrics                            */}
-          {/* ================================================================ */}
-          <div className={`oee-dashboard-card oee-hero-section rounded-xl border border-th-card-border p-8 ${getGlowAnimClass(summary.avg_oee)}`}>
-            {loading ? (
-              <SkeletonGauge />
-            ) : (
-              <div className="flex flex-col items-center">
-                {/* Main OEE Gauge */}
-                <div className="mb-4">
+      )}
+      {activeTab === "overview" && !((!loading && !usingFallback && summary.record_count === 0)) && (
+        <OverviewTabContent
+          summary={summary}
+          loading={loading}
+          trendDirection={trendDirection}
+          totalProduction={totalProduction}
+          goodUnits={goodUnits}
+          defects={defects}
+          chartTrend={chartTrend}
+          downtimeBreakdown={downtimeBreakdown}
+          t={t}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ================================================================== */
+/*  OverviewTabContent                                                 */
+/* ================================================================== */
+
+function OverviewTabContent({
+  summary,
+  loading,
+  trendDirection,
+  totalProduction,
+  goodUnits,
+  defects,
+  chartTrend,
+  downtimeBreakdown,
+  t,
+}: {
+  summary: OEESummary;
+  loading: boolean;
+  trendDirection: { oee: number; availability: number; performance: number; quality: number };
+  totalProduction: number;
+  goodUnits: number;
+  defects: number;
+  chartTrend: (OEETrendPoint & { dateLabel: string })[];
+  downtimeBreakdown: { name: string; value: number; color: string }[];
+  t: (key: string) => string;
+}) {
+  return (
+    <>
+      {/* ================================================================ */}
+      {/*  ROW 1: Hero OEE Gauge + Sub-Metrics                            */}
+      {/* ================================================================ */}
+      <div className={`oee-dashboard-card oee-hero-section rounded-xl border border-th-card-border p-8 ${getGlowAnimClass(summary.avg_oee)}`}>
+        {loading ? (
+          <SkeletonGauge />
+        ) : (
+          <div className="flex flex-col items-center">
+            {/* Main OEE Gauge */}
+            <div className="mb-4">
+              <RadialGauge
+                value={summary.avg_oee}
+                size={220}
+                label={t("dashboard.overallOee")}
+                strokeWidth={14}
+              />
+            </div>
+
+            {/* OEE trend arrow */}
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <TrendArrow delta={trendDirection.oee} />
+              <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${getOeeBgClass(summary.avg_oee)}`}>
+                {t("dashboard.target") || "Target"}: {WORLD_CLASS.oee}%
+              </span>
+              <MetricExplainer metricKey="oee" value={summary.avg_oee} target={WORLD_CLASS.oee} />
+            </div>
+
+            {/* World-class target reference */}
+            <div className="flex items-center gap-2 mb-8">
+              <div className="h-px w-8 bg-emerald-500/50" />
+              <span className="text-xs text-th-text-2 font-medium uppercase tracking-wider">
+                {t("dashboard.worldClass")}: {WORLD_CLASS.oee}%
+              </span>
+              <div className="h-px w-8 bg-emerald-500/50" />
+            </div>
+
+            {/* Three sub-metric gauges */}
+            <div className="flex flex-wrap justify-center gap-8 md:gap-12">
+              {([
+                { key: "availability", value: summary.avg_availability, target: WORLD_CLASS.availability, trend: trendDirection.availability },
+                { key: "performance", value: summary.avg_performance, target: WORLD_CLASS.performance, trend: trendDirection.performance },
+                { key: "quality", value: summary.avg_quality, target: WORLD_CLASS.quality, trend: trendDirection.quality },
+              ] as const).map((metric) => (
+                <div key={metric.key} className="flex flex-col items-center">
                   <RadialGauge
-                    value={summary.avg_oee}
-                    size={220}
-                    label={t("dashboard.overallOee")}
-                    strokeWidth={14}
+                    value={metric.value}
+                    size={100}
+                    strokeWidth={8}
+                    showLabel={false}
                   />
-                </div>
-
-                {/* OEE trend arrow */}
-                <div className="flex items-center justify-center gap-3 mb-4">
-                  <TrendArrow delta={trendDirection.oee} />
-                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${getOeeBgClass(summary.avg_oee)}`}>
-                    {t("dashboard.target") || "Target"}: {WORLD_CLASS.oee}%
+                  <span className="mt-2 text-sm font-medium text-th-text inline-flex items-center gap-1">
+                    {t(`dashboard.${metric.key}`)}
+                    <MetricExplainer metricKey={metric.key} value={metric.value} target={metric.target} />
                   </span>
-                </div>
-
-                {/* World-class target reference */}
-                <div className="flex items-center gap-2 mb-8">
-                  <div className="h-px w-8 bg-emerald-500/50" />
-                  <span className="text-xs text-th-text-2 font-medium uppercase tracking-wider">
-                    {t("dashboard.worldClass")}: {WORLD_CLASS.oee}%
-                  </span>
-                  <div className="h-px w-8 bg-emerald-500/50" />
-                </div>
-
-                {/* Three sub-metric gauges */}
-                <div className="flex flex-wrap justify-center gap-8 md:gap-12">
-                  <div className="flex flex-col items-center">
-                    <RadialGauge
-                      value={summary.avg_availability}
-                      size={100}
-                      strokeWidth={8}
-                      showLabel={false}
-                    />
-                    <span className="mt-2 text-sm font-medium text-th-text">
-                      {t("dashboard.availability")}
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs text-th-text-2">
+                      {t("dashboard.target")}: {metric.target}%
                     </span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs text-th-text-2">
-                        {t("dashboard.target")}: {WORLD_CLASS.availability}%
-                      </span>
-                      <TrendArrow delta={trendDirection.availability} />
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <RadialGauge
-                      value={summary.avg_performance}
-                      size={100}
-                      strokeWidth={8}
-                      showLabel={false}
-                    />
-                    <span className="mt-2 text-sm font-medium text-th-text">
-                      {t("dashboard.performance")}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs text-th-text-2">
-                        {t("dashboard.target")}: {WORLD_CLASS.performance}%
-                      </span>
-                      <TrendArrow delta={trendDirection.performance} />
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <RadialGauge
-                      value={summary.avg_quality}
-                      size={100}
-                      strokeWidth={8}
-                      showLabel={false}
-                    />
-                    <span className="mt-2 text-sm font-medium text-th-text">
-                      {t("dashboard.quality")}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs text-th-text-2">
-                        {t("dashboard.target")}: {WORLD_CLASS.quality}%
-                      </span>
-                      <TrendArrow delta={trendDirection.quality} />
-                    </div>
+                    <TrendArrow delta={metric.trend} />
                   </div>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
+        )}
+      </div>
 
-          {/* ================================================================ */}
-          {/*  ROW 2: KPI Cards                                               */}
-          {/* ================================================================ */}
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((i) => <SkeletonKPI key={i} />)}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <KPICard
-                label={t("dashboard.records") || "Total Production"}
-                value={totalProduction.toLocaleString()}
-                unit={t("dashboard.units") || "units"}
-                accentColor="emerald"
-                trend={{ direction: "up", pct: 3.2 }}
-                icon={
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5" />
-                  </svg>
-                }
-              />
-              <KPICard
-                label={t("dashboard.quality") || "Good Units"}
-                value={goodUnits.toLocaleString()}
-                unit={t("dashboard.units") || "units"}
-                accentColor="blue"
-                trend={{ direction: "up", pct: 1.8 }}
-                icon={
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                }
-              />
-              <KPICard
-                label={t("dashboard.defects") || "Defects"}
-                value={defects.toLocaleString()}
-                unit={t("dashboard.units") || "units"}
-                accentColor="rose"
-                trend={{ direction: "down", pct: 2.1 }}
-                icon={
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                  </svg>
-                }
-              />
-              <KPICard
-                label={t("dashboard.totalDowntime") || "Downtime"}
-                value={`${Math.floor(summary.total_downtime_min / 60)}h ${(summary.total_downtime_min % 60).toFixed(0)}m`}
-                accentColor="amber"
-                trend={{ direction: "down", pct: 5.4 }}
-                icon={
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                }
-              />
-            </div>
-          )}
+      {/* ================================================================ */}
+      {/*  ROW 2: KPI Cards                                               */}
+      {/* ================================================================ */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => <SkeletonKPI key={i} />)}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <KPICard
+            label={t("dashboard.records") || "Total Production"}
+            value={totalProduction.toLocaleString()}
+            unit={t("dashboard.units") || "units"}
+            accentColor="emerald"
+            trend={{ direction: "up", pct: 3.2 }}
+            icon={
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5" />
+              </svg>
+            }
+          />
+          <KPICard
+            label={t("dashboard.quality") || "Good Units"}
+            value={goodUnits.toLocaleString()}
+            unit={t("dashboard.units") || "units"}
+            accentColor="blue"
+            trend={{ direction: "up", pct: 1.8 }}
+            icon={
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
+          <KPICard
+            label={t("dashboard.defects") || "Defects"}
+            value={defects.toLocaleString()}
+            unit={t("dashboard.units") || "units"}
+            accentColor="rose"
+            trend={{ direction: "down", pct: 2.1 }}
+            icon={
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+              </svg>
+            }
+          />
+          <KPICard
+            label={t("dashboard.totalDowntime") || "Downtime"}
+            value={`${Math.floor(summary.total_downtime_min / 60)}h ${(summary.total_downtime_min % 60).toFixed(0)}m`}
+            accentColor="amber"
+            trend={{ direction: "down", pct: 5.4 }}
+            icon={
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
+        </div>
+      )}
 
-          {/* ================================================================ */}
-          {/*  ROW 3: OEE Trend Chart + Downtime Breakdown                    */}
-          {/* ================================================================ */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* OEE Trend - Area Chart (2/3 width) */}
-            <div className="lg:col-span-2 oee-dashboard-card rounded-xl border border-th-card-border p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-th-text">
-                  {t("dashboard.oeeTrend")}
-                </h3>
-                <div className="flex items-center gap-4">
-                  {[
-                    { key: "oee", color: COLOR.emerald },
-                    { key: "availability", color: COLOR.teal },
-                    { key: "performance", color: COLOR.amber },
-                    { key: "quality", color: COLOR.blue },
-                  ].map((item) => (
-                    <span key={item.key} className="flex items-center gap-1.5 text-xs text-th-text-2">
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                      {t(`dashboard.${item.key}`)}
+      {/* ================================================================ */}
+      {/*  ROW 3: OEE Trend Chart + Downtime Breakdown                    */}
+      {/* ================================================================ */}
+      <OEETrendAndBreakdown
+        loading={loading}
+        chartTrend={chartTrend}
+        downtimeBreakdown={downtimeBreakdown}
+        t={t}
+      />
+
+      {/* ================================================================ */}
+      {/*  OEE WATERFALL — How 100% cascades to OEE                       */}
+      {/* ================================================================ */}
+      <div className="oee-dashboard-card rounded-xl border border-th-card-border p-6">
+        <h3 className="text-lg font-semibold text-th-text mb-2">
+          {t("dashboard.oeeWaterfall") || "OEE Waterfall \u2014 Loss Cascade"}
+        </h3>
+        <p className="text-xs text-th-text-3 mb-6">
+          {t("dashboard.oeeWaterfallDesc") || "How your total available time breaks down into OEE"}
+        </p>
+        {loading ? (
+          <SkeletonChart />
+        ) : (() => {
+          const a = summary.avg_availability;
+          const p = summary.avg_performance;
+          const q = summary.avg_quality;
+          const oee = summary.avg_oee;
+          const availLoss = 100 - a;
+          const perfLoss = a * (100 - p) / 100;
+          const qualLoss = a * p * (100 - q) / 10000;
+
+          const waterfallData = [
+            { name: t("dashboard.totalTime") || "Total Time", value: 100, fill: COLOR.slate600, isTotal: true },
+            { name: t("dashboard.availabilityLoss") || "Availability Loss", value: -availLoss, fill: COLOR.rose, isTotal: false },
+            { name: t("dashboard.performanceLoss") || "Performance Loss", value: -perfLoss, fill: COLOR.amber, isTotal: false },
+            { name: t("dashboard.qualityLoss") || "Quality Loss", value: -qualLoss, fill: COLOR.purple, isTotal: false },
+            { name: "OEE", value: oee, fill: COLOR.emerald, isTotal: true },
+          ];
+
+          let running = 100;
+          const bars = waterfallData.map((d) => {
+            if (d.isTotal && d.name !== "OEE") {
+              return { ...d, base: 0, height: d.value, display: d.value.toFixed(1) };
+            }
+            if (d.name === "OEE") {
+              return { ...d, base: 0, height: oee, display: oee.toFixed(1) };
+            }
+            const lossAbs = Math.abs(d.value);
+            running -= lossAbs;
+            return { ...d, base: running, height: lossAbs, display: `-${lossAbs.toFixed(1)}` };
+          });
+
+          return (
+            <div className="flex items-end justify-around gap-2 h-64 px-4">
+              {bars.map((bar) => {
+                const maxH = 240;
+                const barH = (bar.height / 100) * maxH;
+                const baseH = (bar.base / 100) * maxH;
+                return (
+                  <div key={bar.name} className="flex flex-col items-center flex-1 min-w-0">
+                    <span className="text-xs font-bold text-th-text mb-1 tabular-nums">
+                      {bar.display}%
                     </span>
-                  ))}
-                </div>
-              </div>
-              {loading ? (
-                <SkeletonChart />
-              ) : (
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={chartTrend} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="oeeGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={COLOR.emerald} stopOpacity={0.3} />
-                        <stop offset="95%" stopColor={COLOR.emerald} stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="availGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={COLOR.teal} stopOpacity={0.15} />
-                        <stop offset="95%" stopColor={COLOR.teal} stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke={COLOR.slate700} strokeOpacity={0.3} />
-                    <XAxis
-                      dataKey="dateLabel"
-                      tick={{ fill: COLOR.slate400, fontSize: 11 }}
-                      tickLine={false}
-                      axisLine={{ stroke: COLOR.slate700, strokeOpacity: 0.5 }}
-                    />
-                    <YAxis
-                      domain={[0, 100]}
-                      tick={{ fill: COLOR.slate400, fontSize: 11 }}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(v) => `${v}%`}
-                    />
-                    <Tooltip content={<DarkTooltip />} />
-                    <ReferenceLine
-                      y={WORLD_CLASS.oee}
-                      stroke={COLOR.emerald}
-                      strokeDasharray="6 4"
-                      strokeOpacity={0.5}
-                      label={{
-                        value: `WC ${WORLD_CLASS.oee}%`,
-                        position: "insideTopRight",
-                        fill: COLOR.emerald,
-                        fontSize: 10,
-                      }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="availability"
-                      stroke={COLOR.teal}
-                      strokeWidth={1.5}
-                      fill="url(#availGradient)"
-                      name={t("dashboard.availability") || "Availability"}
-                      dot={false}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="performance"
-                      stroke={COLOR.amber}
-                      strokeWidth={1.5}
-                      fill="transparent"
-                      name={t("dashboard.performance") || "Performance"}
-                      dot={false}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="quality"
-                      stroke={COLOR.blue}
-                      strokeWidth={1.5}
-                      fill="transparent"
-                      name={t("dashboard.quality") || "Quality"}
-                      dot={false}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="oee"
-                      stroke={COLOR.emerald}
-                      strokeWidth={2.5}
-                      fill="url(#oeeGradient)"
-                      name="OEE"
-                      dot={{ r: 3, fill: COLOR.emerald, strokeWidth: 0 }}
-                      activeDot={{ r: 5, fill: COLOR.emerald, stroke: "#fff", strokeWidth: 2 }}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-
-            {/* Downtime Breakdown - Donut Chart (1/3 width) */}
-            <div className="oee-dashboard-card rounded-xl border border-th-card-border p-6">
-              <h3 className="text-lg font-semibold text-th-text mb-4">
-                {t("dashboard.sixBigLosses")}
-              </h3>
-              {loading ? (
-                <div className="flex items-center justify-center h-64 animate-pulse">
-                  <div className="w-40 h-40 rounded-full bg-th-bg-3" />
-                </div>
-              ) : (
-                <>
-                  <ResponsiveContainer width="100%" height={220}>
-                    <PieChart>
-                      <Pie
-                        data={downtimeBreakdown}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={55}
-                        outerRadius={85}
-                        paddingAngle={3}
-                        dataKey="value"
-                        strokeWidth={0}
-                      >
-                        {downtimeBreakdown.map((entry, idx) => (
-                          <Cell key={idx} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (!active || !payload?.length) return null;
-                          const item = payload[0];
-                          return (
-                            <div className="bg-th-bg-3 backdrop-blur-sm border border-th-border rounded-lg px-3 py-2 shadow-xl">
-                              <p className="text-xs text-th-text">{t(`dashboard.${item.name}`)}</p>
-                              <p className="text-sm font-semibold text-white">{(item.value as number)?.toFixed(1)}%</p>
-                            </div>
-                          );
+                    <div className="w-full relative" style={{ height: `${maxH}px` }}>
+                      <div
+                        className="absolute bottom-0 left-1 right-1 rounded-t-lg transition-all duration-700"
+                        style={{
+                          height: `${barH}px`,
+                          bottom: `${baseH}px`,
+                          backgroundColor: bar.fill,
+                          opacity: bar.isTotal ? 1 : 0.85,
                         }}
                       />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  {/* Legend */}
-                  <div className="space-y-2 mt-2">
-                    {downtimeBreakdown.map((item) => (
-                      <div key={item.name} className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                          <span className="text-th-text-2">{t(`dashboard.${item.name}`)}</span>
-                        </div>
-                        <span className="font-medium text-th-text tabular-nums">{item.value.toFixed(1)}%</span>
-                      </div>
-                    ))}
+                    </div>
+                    <span className="text-[10px] text-th-text-2 mt-2 text-center leading-tight font-medium truncate w-full">
+                      {bar.name}
+                    </span>
                   </div>
-                </>
-              )}
+                );
+              })}
             </div>
+          );
+        })()}
+      </div>
+
+      {/* ================================================================ */}
+      {/*  ROW 4: A/P/Q Breakdown Bar Chart + Benchmark Table             */}
+      {/* ================================================================ */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Grouped Bar Chart: A/P/Q per day */}
+        <div className="oee-dashboard-card rounded-xl border border-th-card-border p-6">
+          <h3 className="text-lg font-semibold text-th-text mb-6">
+            {t("dashboard.availability")}/{t("dashboard.performance")}/{t("dashboard.quality")}
+          </h3>
+          {loading ? (
+            <SkeletonChart />
+          ) : (
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={chartTrend} margin={{ top: 5, right: 10, left: -10, bottom: 0 }} barGap={2}>
+                <CartesianGrid strokeDasharray="3 3" stroke={COLOR.slate700} strokeOpacity={0.3} vertical={false} />
+                <XAxis
+                  dataKey="dateLabel"
+                  tick={{ fill: COLOR.slate400, fontSize: 11 }}
+                  tickLine={false}
+                  axisLine={{ stroke: COLOR.slate700, strokeOpacity: 0.5 }}
+                />
+                <YAxis
+                  domain={[0, 100]}
+                  tick={{ fill: COLOR.slate400, fontSize: 11 }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v) => `${v}%`}
+                />
+                <Tooltip content={<DarkTooltip />} />
+                <Bar
+                  dataKey="availability"
+                  fill={COLOR.teal}
+                  radius={[3, 3, 0, 0]}
+                  name={t("dashboard.availability") || "Availability"}
+                  maxBarSize={20}
+                />
+                <Bar
+                  dataKey="performance"
+                  fill={COLOR.amber}
+                  radius={[3, 3, 0, 0]}
+                  name={t("dashboard.performance") || "Performance"}
+                  maxBarSize={20}
+                />
+                <Bar
+                  dataKey="quality"
+                  fill={COLOR.blue}
+                  radius={[3, 3, 0, 0]}
+                  name={t("dashboard.quality") || "Quality"}
+                  maxBarSize={20}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* World-Class Benchmark */}
+        <div className="oee-dashboard-card rounded-xl border border-th-card-border p-6">
+          <h3 className="text-lg font-semibold text-th-text mb-1">
+            {t("dashboard.benchmark")}
+          </h3>
+          <p className="text-sm text-th-text-2 mb-5">
+            {t("dashboard.benchmarkDesc")}
+          </p>
+          {!loading && <BenchmarkTable summary={summary} />}
+        </div>
+      </div>
+
+      {/* ================================================================ */}
+      {/*  ROW 5: OEE Waterfall                                           */}
+      {/* ================================================================ */}
+      <div className="oee-dashboard-card rounded-xl border border-th-card-border p-6">
+        <h3 className="text-lg font-semibold text-th-text mb-6">
+          {t("dashboard.oeeWaterfall")}
+        </h3>
+        {loading ? <SkeletonChart /> : <OEEWaterfall summary={summary} />}
+      </div>
+    </>
+  );
+}
+
+/* ================================================================== */
+/*  OEETrendAndBreakdown — Row 3 charts                                */
+/* ================================================================== */
+
+function OEETrendAndBreakdown({
+  loading,
+  chartTrend,
+  downtimeBreakdown,
+  t,
+}: {
+  loading: boolean;
+  chartTrend: (OEETrendPoint & { dateLabel: string })[];
+  downtimeBreakdown: { name: string; value: number; color: string }[];
+  t: (key: string) => string;
+}) {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {/* OEE Trend - Area Chart (2/3 width) */}
+      <div className="lg:col-span-2 oee-dashboard-card rounded-xl border border-th-card-border p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-th-text">
+            {t("dashboard.oeeTrend")}
+          </h3>
+          <div className="flex items-center gap-4">
+            {[
+              { key: "oee", color: COLOR.emerald },
+              { key: "availability", color: COLOR.teal },
+              { key: "performance", color: COLOR.amber },
+              { key: "quality", color: COLOR.blue },
+            ].map((item) => (
+              <span key={item.key} className="flex items-center gap-1.5 text-xs text-th-text-2">
+                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                {t(`dashboard.${item.key}`)}
+              </span>
+            ))}
           </div>
+        </div>
+        {loading ? (
+          <SkeletonChart />
+        ) : (
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={chartTrend} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="oeeGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={COLOR.emerald} stopOpacity={0.3} />
+                  <stop offset="95%" stopColor={COLOR.emerald} stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="availGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={COLOR.teal} stopOpacity={0.15} />
+                  <stop offset="95%" stopColor={COLOR.teal} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke={COLOR.slate700} strokeOpacity={0.3} />
+              <XAxis
+                dataKey="dateLabel"
+                tick={{ fill: COLOR.slate400, fontSize: 11 }}
+                tickLine={false}
+                axisLine={{ stroke: COLOR.slate700, strokeOpacity: 0.5 }}
+              />
+              <YAxis
+                domain={[0, 100]}
+                tick={{ fill: COLOR.slate400, fontSize: 11 }}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(v) => `${v}%`}
+              />
+              <Tooltip content={<DarkTooltip />} />
+              <ReferenceLine
+                y={WORLD_CLASS.oee}
+                stroke={COLOR.emerald}
+                strokeDasharray="6 4"
+                strokeOpacity={0.5}
+                label={{
+                  value: `WC ${WORLD_CLASS.oee}%`,
+                  position: "insideTopRight",
+                  fill: COLOR.emerald,
+                  fontSize: 10,
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="availability"
+                stroke={COLOR.teal}
+                strokeWidth={1.5}
+                fill="url(#availGradient)"
+                name={t("dashboard.availability") || "Availability"}
+                dot={false}
+              />
+              <Area
+                type="monotone"
+                dataKey="performance"
+                stroke={COLOR.amber}
+                strokeWidth={1.5}
+                fill="transparent"
+                name={t("dashboard.performance") || "Performance"}
+                dot={false}
+              />
+              <Area
+                type="monotone"
+                dataKey="quality"
+                stroke={COLOR.blue}
+                strokeWidth={1.5}
+                fill="transparent"
+                name={t("dashboard.quality") || "Quality"}
+                dot={false}
+              />
+              <Area
+                type="monotone"
+                dataKey="oee"
+                stroke={COLOR.emerald}
+                strokeWidth={2.5}
+                fill="url(#oeeGradient)"
+                name="OEE"
+                dot={{ r: 3, fill: COLOR.emerald, strokeWidth: 0 }}
+                activeDot={{ r: 5, fill: COLOR.emerald, stroke: "#fff", strokeWidth: 2 }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
+      </div>
 
-          {/* ================================================================ */}
-          {/*  OEE WATERFALL — How 100% cascades to OEE                       */}
-          {/* ================================================================ */}
-          <div className="oee-dashboard-card rounded-xl border border-th-card-border p-6">
-            <h3 className="text-lg font-semibold text-th-text mb-2">
-              {t("dashboard.oeeWaterfall") || "OEE Waterfall — Loss Cascade"}
-            </h3>
-            <p className="text-xs text-th-text-3 mb-6">
-              {t("dashboard.oeeWaterfallDesc") || "How your total available time breaks down into OEE"}
-            </p>
-            {loading ? (
-              <SkeletonChart />
-            ) : (() => {
-              const a = summary.avg_availability;
-              const p = summary.avg_performance;
-              const q = summary.avg_quality;
-              const oee = summary.avg_oee;
-              const availLoss = 100 - a;
-              const perfLoss = a * (100 - p) / 100;
-              const qualLoss = a * p * (100 - q) / 10000;
-
-              const waterfallData = [
-                { name: t("dashboard.totalTime") || "Total Time", value: 100, fill: COLOR.slate600, isTotal: true },
-                { name: t("dashboard.availabilityLoss") || "Availability Loss", value: -availLoss, fill: COLOR.rose, isTotal: false },
-                { name: t("dashboard.performanceLoss") || "Performance Loss", value: -perfLoss, fill: COLOR.amber, isTotal: false },
-                { name: t("dashboard.qualityLoss") || "Quality Loss", value: -qualLoss, fill: COLOR.purple, isTotal: false },
-                { name: "OEE", value: oee, fill: COLOR.emerald, isTotal: true },
-              ];
-
-              // Compute waterfall positions
-              let running = 100;
-              const bars = waterfallData.map((d) => {
-                if (d.isTotal && d.name !== "OEE") {
-                  return { ...d, base: 0, height: d.value, display: d.value.toFixed(1) };
-                }
-                if (d.name === "OEE") {
-                  return { ...d, base: 0, height: oee, display: oee.toFixed(1) };
-                }
-                const lossAbs = Math.abs(d.value);
-                running -= lossAbs;
-                return { ...d, base: running, height: lossAbs, display: `-${lossAbs.toFixed(1)}` };
-              });
-
-              return (
-                <div className="flex items-end justify-around gap-2 h-64 px-4">
-                  {bars.map((bar) => {
-                    const maxH = 240;
-                    const barH = (bar.height / 100) * maxH;
-                    const baseH = (bar.base / 100) * maxH;
+      {/* Downtime Breakdown - Donut Chart (1/3 width) */}
+      <div className="oee-dashboard-card rounded-xl border border-th-card-border p-6">
+        <h3 className="text-lg font-semibold text-th-text mb-4">
+          {t("dashboard.sixBigLosses")}
+        </h3>
+        {loading ? (
+          <div className="flex items-center justify-center h-64 animate-pulse">
+            <div className="w-40 h-40 rounded-full bg-th-bg-3" />
+          </div>
+        ) : (
+          <>
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie
+                  data={downtimeBreakdown}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={85}
+                  paddingAngle={3}
+                  dataKey="value"
+                  strokeWidth={0}
+                >
+                  {downtimeBreakdown.map((entry, idx) => (
+                    <Cell key={idx} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (!active || !payload?.length) return null;
+                    const item = payload[0];
                     return (
-                      <div key={bar.name} className="flex flex-col items-center flex-1 min-w-0">
-                        <span className="text-xs font-bold text-th-text mb-1 tabular-nums">
-                          {bar.display}%
-                        </span>
-                        <div className="w-full relative" style={{ height: `${maxH}px` }}>
-                          <div
-                            className="absolute bottom-0 left-1 right-1 rounded-t-lg transition-all duration-700"
-                            style={{
-                              height: `${barH}px`,
-                              bottom: `${baseH}px`,
-                              backgroundColor: bar.fill,
-                              opacity: bar.isTotal ? 1 : 0.85,
-                            }}
-                          />
-                        </div>
-                        <span className="text-[10px] text-th-text-2 mt-2 text-center leading-tight font-medium truncate w-full">
-                          {bar.name}
-                        </span>
+                      <div className="bg-th-bg-3 backdrop-blur-sm border border-th-border rounded-lg px-3 py-2 shadow-xl">
+                        <p className="text-xs text-th-text">{t(`dashboard.${item.name}`)}</p>
+                        <p className="text-sm font-semibold text-white">{(item.value as number)?.toFixed(1)}%</p>
                       </div>
                     );
-                  })}
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            {/* Legend */}
+            <div className="space-y-2 mt-2">
+              {downtimeBreakdown.map((item) => (
+                <div key={item.name} className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                    <span className="text-th-text-2">{t(`dashboard.${item.name}`)}</span>
+                  </div>
+                  <span className="font-medium text-th-text tabular-nums">{item.value.toFixed(1)}%</span>
                 </div>
-              );
-            })()}
-          </div>
-
-          {/* ================================================================ */}
-          {/*  ROW 4: A/P/Q Breakdown Bar Chart + Benchmark Table             */}
-          {/* ================================================================ */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Grouped Bar Chart: A/P/Q per day */}
-            <div className="oee-dashboard-card rounded-xl border border-th-card-border p-6">
-              <h3 className="text-lg font-semibold text-th-text mb-6">
-                {t("dashboard.availability")}/{t("dashboard.performance")}/{t("dashboard.quality")}
-              </h3>
-              {loading ? (
-                <SkeletonChart />
-              ) : (
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={chartTrend} margin={{ top: 5, right: 10, left: -10, bottom: 0 }} barGap={2}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={COLOR.slate700} strokeOpacity={0.3} vertical={false} />
-                    <XAxis
-                      dataKey="dateLabel"
-                      tick={{ fill: COLOR.slate400, fontSize: 11 }}
-                      tickLine={false}
-                      axisLine={{ stroke: COLOR.slate700, strokeOpacity: 0.5 }}
-                    />
-                    <YAxis
-                      domain={[0, 100]}
-                      tick={{ fill: COLOR.slate400, fontSize: 11 }}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(v) => `${v}%`}
-                    />
-                    <Tooltip content={<DarkTooltip />} />
-                    <Bar
-                      dataKey="availability"
-                      fill={COLOR.teal}
-                      radius={[3, 3, 0, 0]}
-                      name={t("dashboard.availability") || "Availability"}
-                      maxBarSize={20}
-                    />
-                    <Bar
-                      dataKey="performance"
-                      fill={COLOR.amber}
-                      radius={[3, 3, 0, 0]}
-                      name={t("dashboard.performance") || "Performance"}
-                      maxBarSize={20}
-                    />
-                    <Bar
-                      dataKey="quality"
-                      fill={COLOR.blue}
-                      radius={[3, 3, 0, 0]}
-                      name={t("dashboard.quality") || "Quality"}
-                      maxBarSize={20}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
+              ))}
             </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
-            {/* World-Class Benchmark */}
-            <div className="oee-dashboard-card rounded-xl border border-th-card-border p-6">
-              <h3 className="text-lg font-semibold text-th-text mb-1">
-                {t("dashboard.benchmark")}
-              </h3>
-              <p className="text-sm text-th-text-2 mb-5">
-                {t("dashboard.benchmarkDesc")}
-              </p>
-              {!loading && <BenchmarkTable summary={summary} />}
-            </div>
-          </div>
+/* ================================================================== */
+/*  Six Big Losses Waterfall (Loss Analysis Tab)                       */
+/* ================================================================== */
 
-          {/* ================================================================ */}
-          {/*  ROW 5: OEE Waterfall                                           */}
-          {/* ================================================================ */}
-          <div className="oee-dashboard-card rounded-xl border border-th-card-border p-6">
-            <h3 className="text-lg font-semibold text-th-text mb-6">
-              {t("dashboard.oeeWaterfall")}
-            </h3>
-            {loading ? <SkeletonChart /> : <OEEWaterfall summary={summary} />}
-          </div>
-        </>
-      )}
+const SIX_BIG_LOSSES = [
+  { key: "equipmentFailure",  labelFallback: "Equipment Failure",   color: "#ef4444", family: "availability" },
+  { key: "setupAdjustment",   labelFallback: "Setup & Adjustment",  color: "#f97316", family: "availability" },
+  { key: "idlingMinorStops",  labelFallback: "Idling & Minor Stops",color: "#eab308", family: "performance" },
+  { key: "reducedSpeed",      labelFallback: "Reduced Speed",       color: "#3b82f6", family: "performance" },
+  { key: "processDefects",    labelFallback: "Process Defects",     color: "#8b5cf6", family: "quality" },
+  { key: "reducedYield",      labelFallback: "Reduced Yield",       color: "#ec4899", family: "quality" },
+] as const;
+
+function SixBigLossesWaterfall({
+  summary,
+  loading,
+  effectiveLineId,
+  days,
+}: {
+  summary: OEESummary;
+  loading: boolean;
+  effectiveLineId: number;
+  days: number;
+}) {
+  const { t } = useI18n();
+  const [lossData, setLossData] = useState<{ key: string; minutes: number; color: string; label: string }[] | null>(null);
+
+  // Try to fetch real loss data, fall back to calculated from OEE gaps
+  useEffect(() => {
+    if (effectiveLineId === 0) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const endDate = new Date().toISOString().split("T")[0];
+        const startDate = new Date(Date.now() - days * 86400000).toISOString().split("T")[0];
+        const res = await oeeApi.getLosses?.(effectiveLineId, startDate, endDate);
+        // Backend returns { losses: [...], summary: {...} } — map to frontend format
+        const rawLosses = res?.data?.losses ?? (Array.isArray(res?.data) ? res.data : null);
+        if (!cancelled && rawLosses && Array.isArray(rawLosses) && rawLosses.length > 0) {
+          // Map backend loss categories to frontend keys
+          const categoryToKey: Record<string, string> = {
+            "Equipment Failure": "equipmentFailure",
+            "Setup & Adjustment": "setupAdjustment",
+            "Idling & Minor Stops": "idlingMinorStops",
+            "Reduced Speed": "reducedSpeed",
+            "Process Defects": "processDefects",
+            "Reduced Yield": "reducedYield",
+          };
+          const mapped = SIX_BIG_LOSSES.map((loss) => {
+            const backendLoss = rawLosses.find(
+              (bl: { category: string }) => categoryToKey[bl.category] === loss.key
+            );
+            return {
+              key: loss.key,
+              minutes: backendLoss?.minutes_lost ?? 0,
+              color: loss.color,
+              label: (() => { const v = t(`dashboard.${loss.key}`); return (v && !v.startsWith("dashboard.")) ? v : loss.labelFallback; })(),
+            };
+          });
+          setLossData(mapped);
+          return;
+        }
+      } catch {
+        // endpoint not available yet, derive from OEE
+      }
+
+      if (!cancelled) {
+        // Derive losses from OEE gaps - assume 480 min/shift * days
+        const totalAvailMin = 480 * Math.max(summary.record_count, days);
+        const a = summary.avg_availability;
+        const p = summary.avg_performance;
+        const q = summary.avg_quality;
+
+        const availLossMin = totalAvailMin * (100 - a) / 100;
+        const perfLossMin = totalAvailMin * (a / 100) * (100 - p) / 100;
+        const qualLossMin = totalAvailMin * (a / 100) * (p / 100) * (100 - q) / 100;
+
+        const derived = SIX_BIG_LOSSES.map((loss) => {
+          let minutes = 0;
+          if (loss.family === "availability") {
+            minutes = loss.key === "equipmentFailure"
+              ? Math.round(availLossMin * 0.6)
+              : Math.round(availLossMin * 0.4);
+          } else if (loss.family === "performance") {
+            minutes = loss.key === "idlingMinorStops"
+              ? Math.round(perfLossMin * 0.45)
+              : Math.round(perfLossMin * 0.55);
+          } else {
+            minutes = loss.key === "processDefects"
+              ? Math.round(qualLossMin * 0.65)
+              : Math.round(qualLossMin * 0.35);
+          }
+          return {
+            key: loss.key,
+            minutes,
+            color: loss.color,
+            label: t(`dashboard.${loss.key}`) || loss.labelFallback,
+          };
+        });
+        setLossData(derived);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [effectiveLineId, days, summary, t]);
+
+  if (loading || !lossData || !Array.isArray(lossData)) {
+    return (
+      <div className="space-y-4">
+        <SkeletonChart />
+      </div>
+    );
+  }
+
+  const totalAvailMin = 480 * Math.max(summary.record_count, days);
+  const totalLossMin = (lossData || []).reduce((s, d) => s + d.minutes, 0);
+  const productiveMin = totalAvailMin - totalLossMin;
+
+  // Build waterfall chart data: start with total available, subtract each loss, end with productive
+  const waterfallData: { name: string; loss: number; remaining: number; cumLine: number; fill: string }[] = [];
+  let remaining = totalAvailMin;
+
+  waterfallData.push({
+    name: t("dashboard.totalAvailable") || "Available Time",
+    loss: 0,
+    remaining: totalAvailMin,
+    cumLine: totalAvailMin,
+    fill: COLOR.slate600,
+  });
+
+  for (const loss of lossData) {
+    remaining -= loss.minutes;
+    waterfallData.push({
+      name: loss.label,
+      loss: loss.minutes,
+      remaining: 0,
+      cumLine: remaining,
+      fill: loss.color,
+    });
+  }
+
+  waterfallData.push({
+    name: t("dashboard.productiveTime") || "Productive Time",
+    loss: 0,
+    remaining: productiveMin,
+    cumLine: productiveMin,
+    fill: COLOR.emerald,
+  });
+
+  const maxMin = totalAvailMin;
+
+  return (
+    <div className="space-y-6">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="rounded-xl border border-th-border bg-th-bg-2 p-4 text-center">
+          <p className="text-[10px] text-th-text-3 font-bold uppercase tracking-wider mb-1">{t("dashboard.totalAvailable") || "Available Time"}</p>
+          <p className="text-2xl font-bold text-th-text tabular-nums">{totalAvailMin.toLocaleString()}</p>
+          <p className="text-xs text-th-text-3">min</p>
+        </div>
+        <div className="rounded-xl border border-th-border bg-th-bg-2 p-4 text-center">
+          <p className="text-[10px] text-th-text-3 font-bold uppercase tracking-wider mb-1">{t("dashboard.totalLosses") || "Total Losses"}</p>
+          <p className="text-2xl font-bold text-rose-500 tabular-nums">{totalLossMin.toLocaleString()}</p>
+          <p className="text-xs text-th-text-3">min</p>
+        </div>
+        <div className="rounded-xl border border-th-border bg-th-bg-2 p-4 text-center">
+          <p className="text-[10px] text-th-text-3 font-bold uppercase tracking-wider mb-1">{t("dashboard.productiveTime") || "Productive Time"}</p>
+          <p className="text-2xl font-bold text-emerald-500 tabular-nums">{productiveMin.toLocaleString()}</p>
+          <p className="text-xs text-th-text-3">min</p>
+        </div>
+        <div className="rounded-xl border border-th-border bg-th-bg-2 p-4 text-center">
+          <p className="text-[10px] text-th-text-3 font-bold uppercase tracking-wider mb-1">{t("dashboard.lossRatio") || "Loss Ratio"}</p>
+          <p className="text-2xl font-bold text-amber-500 tabular-nums">{totalAvailMin > 0 ? ((totalLossMin / totalAvailMin) * 100).toFixed(1) : "0"}%</p>
+        </div>
+      </div>
+
+      {/* Waterfall Bar Chart */}
+      <div className="oee-dashboard-card rounded-xl border border-th-card-border p-6">
+        <h3 className="text-lg font-semibold text-th-text mb-2">
+          {t("dashboard.sixBigLossesWaterfall") || "Six Big Losses Waterfall"}
+        </h3>
+        <p className="text-xs text-th-text-3 mb-6">
+          {t("dashboard.sixBigLossesDesc") || "Minutes lost per loss category with cumulative productive time line"}
+        </p>
+
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={waterfallData} margin={{ top: 20, right: 20, left: 10, bottom: 40 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={COLOR.slate700} strokeOpacity={0.3} vertical={false} />
+              <XAxis
+                dataKey="name"
+                tick={{ fill: COLOR.slate400, fontSize: 10 }}
+                tickLine={false}
+                axisLine={{ stroke: COLOR.slate700, strokeOpacity: 0.5 }}
+                angle={-25}
+                textAnchor="end"
+                height={60}
+              />
+              <YAxis
+                tick={{ fill: COLOR.slate400, fontSize: 11 }}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(v) => `${v}`}
+                label={{ value: "min", position: "insideTopLeft", fill: COLOR.slate400, fontSize: 10 }}
+              />
+              <Tooltip
+                content={({ active, payload, label }) => {
+                  if (!active || !payload?.length) return null;
+                  return (
+                    <div className="bg-th-bg-3 backdrop-blur-sm border border-th-border rounded-lg px-4 py-3 shadow-xl">
+                      <p className="text-xs text-th-text-2 mb-1 font-medium">{label}</p>
+                      {payload.map((entry: any, i: number) => (
+                        <div key={i} className="text-sm text-th-text">
+                          {entry.dataKey === "loss" && entry.value > 0 && (
+                            <span className="font-semibold text-rose-400">{entry.value.toLocaleString()} min lost</span>
+                          )}
+                          {entry.dataKey === "remaining" && entry.value > 0 && (
+                            <span className="font-semibold" style={{ color: COLOR.emerald }}>{entry.value.toLocaleString()} min</span>
+                          )}
+                          {entry.dataKey === "cumLine" && (
+                            <div className="text-xs text-th-text-3 mt-1">Cumulative: {entry.value.toLocaleString()} min</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                }}
+              />
+              {/* recharts Cell types radius as number but accepts number[] at runtime */}
+              <Bar dataKey="loss" name="Loss" stackId="a" barSize={40}>
+                {waterfallData.map((entry, idx) => (
+                  <Cell key={idx} fill={entry.fill} fillOpacity={0.85} radius={[4, 4, 0, 0] as unknown as number} />
+                ))}
+              </Bar>
+              <Bar dataKey="remaining" name="Remaining" stackId="a" barSize={40}>
+                {waterfallData.map((entry, idx) => (
+                  <Cell key={idx} fill={entry.remaining > 0 ? COLOR.emerald : "transparent"} fillOpacity={0.85} radius={[4, 4, 0, 0] as unknown as number} />
+                ))}
+              </Bar>
+              <Line
+                type="monotone"
+                dataKey="cumLine"
+                stroke={COLOR.amber}
+                strokeWidth={2}
+                strokeDasharray="6 3"
+                dot={{ r: 3, fill: COLOR.amber, strokeWidth: 0 }}
+                name="Cumulative"
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Individual Loss Bars */}
+      <div className="oee-dashboard-card rounded-xl border border-th-card-border p-6">
+        <h3 className="text-lg font-semibold text-th-text mb-4">
+          {t("dashboard.lossBreakdown") || "Loss Breakdown"}
+        </h3>
+        <div className="space-y-3">
+          {lossData.map((loss) => {
+            const pct = maxMin > 0 ? (loss.minutes / maxMin) * 100 : 0;
+            return (
+              <div key={loss.key} className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: loss.color }} />
+                <span className="text-sm text-th-text w-40 truncate">{loss.label}</span>
+                <div className="flex-1 h-6 bg-th-bg-3 rounded-lg overflow-hidden relative">
+                  <div
+                    className="h-full rounded-lg transition-all duration-700"
+                    style={{ width: `${Math.max(pct, 0.5)}%`, backgroundColor: loss.color, opacity: 0.85 }}
+                  />
+                  <span className="absolute inset-y-0 right-2 flex items-center text-xs font-semibold text-th-text tabular-nums">
+                    {loss.minutes.toLocaleString()} min
+                  </span>
+                </div>
+                <span className="text-xs text-th-text-3 w-12 text-right tabular-nums">
+                  {pct.toFixed(1)}%
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

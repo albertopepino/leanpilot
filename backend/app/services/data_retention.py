@@ -85,13 +85,14 @@ async def run_data_retention_purge(session: AsyncSession, factory_id: int | None
     ai_conversations_deleted = 0
 
     if old_convo_ids:
-        # Delete messages belonging to those conversations
+        # Explicitly delete messages BEFORE conversations (don't rely on cascade)
+        # This ensures referential integrity even if cascade is misconfigured
         msg_result = await session.execute(
             delete(AIMessage).where(AIMessage.conversation_id.in_(old_convo_ids))
         )
         ai_messages_deleted = msg_result.rowcount
 
-        # Delete the conversations themselves
+        # Now delete the conversations themselves
         conv_result = await session.execute(
             delete(AIConversation).where(AIConversation.id.in_(old_convo_ids))
         )
@@ -101,6 +102,7 @@ async def run_data_retention_purge(session: AsyncSession, factory_id: int | None
             "retention_purge.ai_conversations",
             conversations=ai_conversations_deleted,
             messages=ai_messages_deleted,
+            conversation_ids=old_convo_ids,
             cutoff=ai_cutoff.isoformat(),
         )
 

@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { qcApi, adminApi } from "@/lib/api";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import {
   FlaskConical,
   CheckCircle,
@@ -124,6 +125,9 @@ export default function QCChecksBoard() {
   const [checkResults, setCheckResults] = useState<Record<number, { result: string; measured_value?: number; text_value?: string; notes?: string }>>({});
   const [submitting, setSubmitting] = useState(false);
 
+  // Confirm dialog
+  const [confirmVoidRecord, setConfirmVoidRecord] = useState<QCRecord | null>(null);
+
   // Template management
   const [showTemplateForm, setShowTemplateForm] = useState(false);
   const [templateForm, setTemplateForm] = useState({
@@ -147,7 +151,8 @@ export default function QCChecksBoard() {
       // Load production lines separately — requires admin role, so gracefully handle failure
       try {
         const factRes = await adminApi.getFactory();
-        setLines((factRes.data as any)?.production_lines || (factRes as any).production_lines || []);
+        const factory = factRes.data ?? factRes;
+        setLines(factory?.production_lines || []);
       } catch {
         // Non-admin users won't have access to factory endpoint — lines dropdown will be empty
         // but QC records and templates still load fine
@@ -235,7 +240,6 @@ export default function QCChecksBoard() {
   };
 
   const handleVoid = async (record: QCRecord) => {
-    if (!confirm(t("manufacturing.voidConfirm"))) return;
     try {
       await qcApi.voidRecord(record.id);
       await fetchData();
@@ -282,9 +286,9 @@ export default function QCChecksBoard() {
     });
   };
 
-  const updateTemplateItem = (index: number, field: string, value: any) => {
+  const updateTemplateItem = (index: number, field: keyof (typeof templateForm.items)[number], value: string | boolean) => {
     const items = [...templateForm.items];
-    (items[index] as any)[field] = value;
+    items[index] = { ...items[index], [field]: value };
     setTemplateForm({ ...templateForm, items });
   };
 
@@ -436,7 +440,7 @@ export default function QCChecksBoard() {
                           )}
                           {rec.status === "in_progress" && (
                             <button
-                              onClick={() => handleVoid(rec)}
+                              onClick={() => setConfirmVoidRecord(rec)}
                               className="px-2 py-1 min-h-[44px] sm:min-h-0 text-red-600 dark:text-red-400 rounded-lg text-xs hover:bg-red-50 dark:hover:bg-red-900/20"
                             >
                               {t("manufacturing.checkVoid")}
@@ -829,6 +833,18 @@ export default function QCChecksBoard() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmVoidRecord !== null}
+        title={t("manufacturing.checkVoid")}
+        message={t("manufacturing.voidConfirm")}
+        variant="warning"
+        onConfirm={() => {
+          if (confirmVoidRecord) handleVoid(confirmVoidRecord);
+          setConfirmVoidRecord(null);
+        }}
+        onCancel={() => setConfirmVoidRecord(null)}
+      />
     </div>
   );
 }

@@ -240,5 +240,15 @@
   "maturityLevel": "Reifegrad",
   "category": "Kategorie",
   "score": "Bewertung",
-  "level": "Stufe"
+  "level": "Stufe",
+
+  "catLeadership": "Führung",
+  "catStrategy": "Strategie",
+  "catPeople": "Mitarbeiter",
+  "catPartnerships": "Partnerschaften & Ressourcen",
+  "catProcesses": "Prozesse",
+  "catCustomer_results": "Kundenergebnisse",
+  "catPeople_results": "Mitarbeiterergebnisse",
+  "catSociety_results": "Gesellschaftsergebnisse",
+  "catKey_results": "Schlüsselergebnisse"
 }

@@ -260,15 +260,57 @@ async def list_audit_logs(
 # Tab/Permission config — served to frontend
 # ---------------------------------------------------------------------------
 
+def _merged_permissions(custom: dict | None) -> dict:
+    """Merge factory custom permissions on top of defaults."""
+    import copy
+    merged = copy.deepcopy(TAB_PERMISSIONS)
+    if custom:
+        for role, tabs in custom.items():
+            if role in merged and isinstance(tabs, dict):
+                merged[role].update(tabs)
+    return merged
+
+
 @router.get("/permissions")
 async def get_permissions(
+    db: AsyncSession = Depends(get_db),
     admin: User = Depends(get_current_active_admin),
 ):
     """Return the full tab-permission matrix for all roles."""
+    from app.models.factory import Factory
+    factory = (await db.execute(select(Factory).where(Factory.id == admin.factory_id))).scalar_one_or_none()
+    merged = _merged_permissions(factory.custom_permissions if factory else None)
     return {
-        "roles": list(TAB_PERMISSIONS.keys()),
-        "permissions": TAB_PERMISSIONS,
+        "roles": list(merged.keys()),
+        "permissions": merged,
     }
+
+
+class PermissionUpdate(BaseModel):
+    """Typed model for custom permission overrides: { role: { tab_id: level } }."""
+    permissions: dict[str, dict[str, str]]
+
+
+@router.put("/permissions")
+async def update_permissions(
+    data: PermissionUpdate,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_active_admin),
+):
+    """Save custom permission overrides for this factory."""
+    from app.models.factory import Factory
+    factory = (await db.execute(select(Factory).where(Factory.id == admin.factory_id))).scalar_one_or_none()
+    if not factory:
+        raise HTTPException(404, "Factory not found")
+    # Validate structure: { role: { tab: level } }
+    valid_levels = {"full", "modify", "view", "hidden"}
+    custom = {}
+    for role, tabs in data.permissions.items():
+        if isinstance(tabs, dict):
+            custom[role] = {k: v for k, v in tabs.items() if v in valid_levels}
+    factory.custom_permissions = custom
+    await db.commit()
+    return {"ok": True}
 
 
 @router.get("/my-permissions")
@@ -285,7 +327,10 @@ async def get_my_permissions(
     from app.models.groups import Group, GroupPolicy, user_groups
 
     role = user.role.value if hasattr(user.role, "value") else user.role
-    role_perms = TAB_PERMISSIONS.get(role, TAB_PERMISSIONS["viewer"])
+    from app.models.factory import Factory
+    factory = (await db.execute(select(Factory).where(Factory.id == user.factory_id))).scalar_one_or_none()
+    merged = _merged_permissions(factory.custom_permissions if factory else None)
+    role_perms = merged.get(role, merged.get("viewer", {}))
 
     # Check group policies for this user
     group_result = await db.execute(
@@ -332,33 +377,41 @@ async def get_my_permissions(
 @router.get("/factory")
 async def get_factory_info(
     db: AsyncSession = Depends(get_db),
-    admin: User = Depends(get_current_active_admin),
+    user: User = Depends(get_current_user),
 ):
-    """Get factory details for admin panel header."""
-    fid = require_factory(admin)
-    from app.models.factory import Factory
-    result = await db.execute(select(Factory).where(Factory.id == fid))
-    factory = result.scalar_one_or_none()
-    if not factory:
-        raise HTTPException(status_code=404, detail="Factory not found")
+    """Get factory details — accessible to any authenticated user.
 
-    user_count = await db.execute(
-        select(func.count(User.id)).where(User.factory_id == fid, User.is_deleted == False)
-    )
+    Used by OEE Dashboard, Production Input, Production Orders, Andon Board,
+    QC Dashboard, SPC Charts, and other components that need production line data.
+    """
+    fid = require_factory(user)
+    try:
+        result = await db.execute(select(Factory).where(Factory.id == fid))
+        factory = result.scalar_one_or_none()
+        if not factory:
+            raise HTTPException(status_code=404, detail="Factory not found")
 
-    from app.models.factory import ProductionLine
-    lines_result = await db.execute(
-        select(ProductionLine).where(ProductionLine.factory_id == fid)
-    )
-    lines = lines_result.scalars().all()
+        user_count_result = await db.execute(
+            select(func.count(User.id)).where(User.factory_id == fid, User.is_deleted == False)
+        )
 
-    return {
-        "id": factory.id,
-        "name": factory.name,
-        "user_count": user_count.scalar() or 0,
-        "data_controller": "Centro Studi Grassi doo",
-        "production_lines": [{"id": l.id, "name": l.name} for l in lines],
-    }
+        lines_result = await db.execute(
+            select(ProductionLine).where(ProductionLine.factory_id == fid).order_by(ProductionLine.name)
+        )
+        lines = lines_result.scalars().all()
+
+        return {
+            "id": factory.id,
+            "name": factory.name,
+            "user_count": user_count_result.scalar() or 0,
+            "data_controller": "Centro Studi Grassi doo",
+            "production_lines": [{"id": l.id, "name": l.name} for l in lines],
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        structlog.get_logger().error("factory_info_failed", error=str(e), factory_id=fid, user_id=user.id)
+        raise HTTPException(status_code=500, detail="Failed to load factory info")
 
 
 # ---------------------------------------------------------------------------

@@ -226,6 +226,17 @@ body {
   100% { background-position: 200% 0; }
 }
 
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .oee-gauge-track {
   filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.3));
 }

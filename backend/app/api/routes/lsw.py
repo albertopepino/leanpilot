@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 
 from app.db.session import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_factory
 from app.models.leader_standard_work import LeaderStandardWork, LSWCompletion
 from app.schemas.leader_standard_work import (
     LSWCreate, LSWUpdate, LSWResponse,
@@ -22,7 +22,7 @@ async def create_lsw(
     current_user=Depends(get_current_user),
 ):
     lsw = LeaderStandardWork(
-        factory_id=current_user.factory_id,
+        factory_id=require_factory(current_user),
         created_by_id=current_user.id,
         **data.model_dump(),
     )
@@ -36,17 +36,19 @@ async def create_lsw(
 async def list_lsw(
     role: str = Query(None),
     active_only: bool = Query(True),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, le=200),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
     q = select(LeaderStandardWork).where(
-        LeaderStandardWork.factory_id == current_user.factory_id
+        LeaderStandardWork.factory_id == require_factory(current_user)
     )
     if role:
         q = q.where(LeaderStandardWork.role == role)
     if active_only:
         q = q.where(LeaderStandardWork.is_active == True)
-    q = q.order_by(LeaderStandardWork.role, LeaderStandardWork.title)
+    q = q.order_by(LeaderStandardWork.role, LeaderStandardWork.title).offset(skip).limit(limit)
     result = await db.execute(q)
     return result.scalars().all()
 
@@ -61,7 +63,7 @@ async def update_lsw(
     result = await db.execute(
         select(LeaderStandardWork).where(
             LeaderStandardWork.id == lsw_id,
-            LeaderStandardWork.factory_id == current_user.factory_id,
+            LeaderStandardWork.factory_id == require_factory(current_user),
         )
     )
     lsw = result.scalar_one_or_none()
@@ -83,7 +85,7 @@ async def delete_lsw(
     result = await db.execute(
         select(LeaderStandardWork).where(
             LeaderStandardWork.id == lsw_id,
-            LeaderStandardWork.factory_id == current_user.factory_id,
+            LeaderStandardWork.factory_id == require_factory(current_user),
         )
     )
     lsw = result.scalar_one_or_none()
@@ -102,6 +104,17 @@ async def log_completion(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    fid = require_factory(current_user)
+    # Verify LSW template belongs to the user's factory (tenant isolation)
+    lsw_result = await db.execute(
+        select(LeaderStandardWork).where(
+            LeaderStandardWork.id == data.lsw_id,
+            LeaderStandardWork.factory_id == fid,
+        )
+    )
+    if not lsw_result.scalar_one_or_none():
+        raise HTTPException(404, "LSW template not found")
+
     completion = LSWCompletion(
         completed_by_id=current_user.id,
         **data.model_dump(),
@@ -116,7 +129,8 @@ async def log_completion(
 async def list_completions(
     lsw_id: int = Query(None),
     target_date: date = Query(None),
-    limit: int = Query(30),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, le=200),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
@@ -127,6 +141,6 @@ async def list_completions(
         q = q.where(LSWCompletion.lsw_id == lsw_id)
     if target_date:
         q = q.where(LSWCompletion.date == target_date)
-    q = q.order_by(LSWCompletion.date.desc()).limit(limit)
+    q = q.order_by(LSWCompletion.date.desc()).offset(skip).limit(limit)
     result = await db.execute(q)
     return result.scalars().all()

@@ -6,7 +6,8 @@ import secrets
 import structlog
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Request, Response, status
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -17,7 +18,7 @@ from app.core.security import (
     verify_password, get_password_hash, create_access_token, create_refresh_token,
     create_2fa_pending_token, decode_token, get_current_user, get_current_active_admin,
     require_factory, check_rate_limit, revoke_token, log_audit, get_client_ip,
-    validate_password_strength,
+    validate_password_strength, _mask_email, set_auth_cookies, clear_auth_cookies,
 )
 from app.models.user import User, UserRole
 from app.models.factory import Factory
@@ -68,7 +69,7 @@ async def login(
                 user.locked_until = datetime.now(timezone.utc) + timedelta(
                     minutes=settings.account_lockout_minutes
                 )
-                logger.warning(f"Account locked: {user.email} after {user.failed_login_attempts} failed attempts")
+                logger.warning(f"Account locked: {_mask_email(user.email)} after {user.failed_login_attempts} failed attempts")
             await db.flush()
 
         await log_audit(
@@ -130,7 +131,10 @@ async def login(
     )
     await db.commit()
 
-    return TokenResponse(access_token=access, refresh_token=refresh)
+    # Return tokens in both cookies (browser) and body (API/mobile)
+    response = JSONResponse(content=TokenResponse(access_token=access, refresh_token=refresh).model_dump())
+    set_auth_cookies(response, access, refresh)
+    return response
 
 
 # ---------------------------------------------------------------------------
@@ -144,9 +148,17 @@ async def logout(
     current_user: User = Depends(get_current_user),
 ):
     """Revoke the current access token (GDPR Art. 25 — data protection by design)."""
+    # Revoke token from Authorization header if present
     auth_header = request.headers.get("Authorization", "")
     if auth_header.startswith("Bearer "):
         revoke_token(auth_header[7:])
+    # Also revoke token from cookie if present
+    cookie_access = request.cookies.get("access_token")
+    if cookie_access:
+        revoke_token(cookie_access)
+    cookie_refresh = request.cookies.get("refresh_token")
+    if cookie_refresh:
+        revoke_token(cookie_refresh)
 
     await log_audit(
         db, action="logout", resource_type="auth",
@@ -155,20 +167,37 @@ async def logout(
         ip_address=get_client_ip(request),
     )
     await db.commit()
-    return {"detail": "Logged out successfully"}
+
+    response = JSONResponse(content={"detail": "Logged out successfully"})
+    clear_auth_cookies(response)
+    return response
 
 
 # ---------------------------------------------------------------------------
 # Refresh — rotate tokens, revoke old refresh token
 # ---------------------------------------------------------------------------
 
-@router.post("/refresh", response_model=TokenResponse)
-async def refresh_token(
-    refresh_token: str = Body(..., embed=True),
+@router.post("/refresh")
+async def refresh_token_endpoint(
+    request: Request,
+    refresh_token: str | None = Body(None, embed=True),
     db: AsyncSession = Depends(get_db),
 ):
-    """Exchange a valid refresh token for a new access + refresh pair. Old refresh is revoked."""
-    payload = decode_token(refresh_token, expected_type="refresh")
+    """Exchange a valid refresh token for a new access + refresh pair. Old refresh is revoked.
+
+    Accepts the refresh token from either:
+    - The httpOnly `refresh_token` cookie (browser clients)
+    - The JSON body `{"refresh_token": "..."}` (API / mobile clients)
+    """
+    # Resolve refresh token: cookie first, then body
+    resolved_token = request.cookies.get("refresh_token") or refresh_token
+    if not resolved_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing refresh token",
+        )
+
+    payload = decode_token(resolved_token, expected_type="refresh")
     user_id = payload["sub"]
 
     result = await db.execute(select(User).where(User.id == int(user_id)))
@@ -177,7 +206,7 @@ async def refresh_token(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
 
     # Revoke old refresh token (rotation)
-    revoke_token(refresh_token)
+    revoke_token(resolved_token)
 
     token_data = {
         "sub": str(user.id),
@@ -186,7 +215,12 @@ async def refresh_token(
     }
     access = create_access_token(data=token_data)
     new_refresh = create_refresh_token(data={"sub": str(user.id)})
-    return TokenResponse(access_token=access, refresh_token=new_refresh)
+
+    # Return tokens in both cookies and body (backwards-compatible)
+    body = TokenResponse(access_token=access, refresh_token=new_refresh).model_dump()
+    response = JSONResponse(content=body)
+    set_auth_cookies(response, access, new_refresh)
+    return response
 
 
 # ---------------------------------------------------------------------------
@@ -359,7 +393,7 @@ async def landing_page_signup(
 CURRENT_CONSENT_VERSION = "1.0"
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get("/me")
 async def me(current_user: User = Depends(get_current_user)):
     # Compute needs_consent: True if user hasn't accepted current policy version
     needs = (
@@ -369,7 +403,18 @@ async def me(current_user: User = Depends(get_current_user)):
     )
     # Attach computed field (won't persist, just for response serialization)
     current_user._needs_consent = needs
-    return current_user
+
+    # Build response via the Pydantic schema
+    user_resp = UserResponse.model_validate(current_user)
+    resp = user_resp.model_dump()
+
+    # GDPR consent version enforcement — flag when re-acceptance is needed
+    resp["needs_consent_update"] = (
+        current_user.consent_version != CURRENT_CONSENT_VERSION
+    )
+    resp["current_consent_version"] = CURRENT_CONSENT_VERSION
+
+    return resp
 
 
 @router.post("/accept-consent", response_model=UserResponse)
@@ -424,6 +469,77 @@ async def accept_consent(
         user_email=current_user.email, factory_id=current_user.factory_id,
         ip_address=client_ip,
         detail=f"Accepted consent v{CURRENT_CONSENT_VERSION}",
+        legal_basis="GDPR Art. 7 — consent",
+        data_categories="consent",
+    )
+    await db.commit()
+
+    current_user._needs_consent = False
+    return current_user
+
+
+# ---------------------------------------------------------------------------
+# Re-accept consent — GDPR Art. 7 (consent version upgrade)
+# ---------------------------------------------------------------------------
+
+@router.post("/reaccept-consent", response_model=UserResponse)
+async def reaccept_consent(
+    request: Request,
+    data: ConsentAcceptRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Re-accept consent after a policy/terms version change — GDPR Art. 7.
+    Called when the user's consent_version does not match CURRENT_CONSENT_VERSION.
+    Records the new consent and updates the user's consent_version.
+    """
+    if not data.privacy_policy_accepted:
+        raise HTTPException(status_code=400, detail="Privacy policy acceptance is required")
+    if not data.terms_accepted:
+        raise HTTPException(status_code=400, detail="Terms acceptance is required")
+
+    now = datetime.now(timezone.utc)
+    client_ip = get_client_ip(request)
+    user_agent = request.headers.get("User-Agent", "unknown")
+
+    old_version = current_user.consent_version or "unknown"
+    current_user.privacy_policy_accepted_at = now
+    current_user.terms_accepted_at = now
+    current_user.consent_version = CURRENT_CONSENT_VERSION
+    current_user.ai_consent = data.ai_consent
+    current_user.marketing_consent = data.marketing_consent
+
+    # Record each consent as immutable audit trail
+    consent_types = [
+        ("privacy_policy", "granted"),
+        ("terms_of_service", "granted"),
+    ]
+    if data.ai_consent:
+        consent_types.append(("ai_processing", "granted"))
+    else:
+        consent_types.append(("ai_processing", "withdrawn"))
+    if data.marketing_consent:
+        consent_types.append(("marketing", "granted"))
+    else:
+        consent_types.append(("marketing", "withdrawn"))
+
+    for consent_type, action in consent_types:
+        db.add(ConsentRecord(
+            user_id=current_user.id,
+            consent_type=consent_type,
+            action=action,
+            version=CURRENT_CONSENT_VERSION,
+            ip_address=client_ip,
+            user_agent=user_agent,
+        ))
+
+    await log_audit(
+        db, action="consent_reaccepted", resource_type="user",
+        resource_id=str(current_user.id), user_id=current_user.id,
+        user_email=current_user.email, factory_id=current_user.factory_id,
+        ip_address=client_ip,
+        detail=f"Re-accepted consent: v{old_version} -> v{CURRENT_CONSENT_VERSION}",
         legal_basis="GDPR Art. 7 — consent",
         data_categories="consent",
     )
@@ -628,12 +744,12 @@ async def forgot_password(
 
     # In production, send email. In dev mode (no SMTP), log the token.
     if settings.smtp_host:
-        logger.info("password_reset.email_queued", email=data.email)
+        logger.info("password_reset.email_queued", email=_mask_email(data.email))
         # TODO: integrate with EmailService to send reset link
     else:
         logger.warning(
             "password_reset.dev_mode",
-            email=data.email,
+            email=_mask_email(data.email),
             token=reset_token,
             note="SMTP not configured — token logged for dev use",
         )

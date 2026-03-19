@@ -48,7 +48,6 @@
   "materialsAdded": "{count} Materialien hinzugefügt",
   "errorsCount": "{count} Fehler",
   "noNewData": "Keine neuen Daten zum Importieren",
-
   "ordersTotal": "{count} Aufträge gesamt",
   "newOrder": "+ Neuer Auftrag",
   "newProductionOrder": "Neuer Fertigungsauftrag",
@@ -82,7 +81,6 @@
   "orderLines": "Auftragszeilen",
   "failedUpdateOrder": "Auftragsaktualisierung fehlgeschlagen",
   "viewOnlyNotice": "Sie haben nur Lesezugriff auf Produktionsaufträge",
-
   "titleQCPolicies": "QC-Dokumentenarchiv",
   "documentsStored": "{count} Dokumente gespeichert",
   "documentsStoredSingular": "{count} Dokument gespeichert",
@@ -111,7 +109,6 @@
   "removeConfirm": "\"{title}\" aus dem Archiv entfernen?",
   "uploadedSuccess": "\"{title}\" erfolgreich hochgeladen",
   "fileFormatHint": "PDF, Word (.docx), JPEG, PNG — Max. 20 MB",
-
   "titleQCChecks": "Qualitätsprüfungen",
   "checksRecorded": "{count} Prüfungen erfasst",
   "checksRecordedSingular": "{count} Prüfung erfasst",
@@ -172,7 +169,6 @@
   "measuredValue": "Messwert",
   "enterObservation": "Beobachtung eingeben...",
   "templates": "Vorlagen",
-
   "titleNCR": "Abweichungsberichte",
   "ncrTotal": "{count} NCRs gesamt",
   "ncrTotalSingular": "{count} NCR gesamt",
@@ -209,7 +205,6 @@
   "failedCreateNCR": "NCR konnte nicht erstellt werden",
   "failedUpdateNCR": "NCR konnte nicht aktualisiert werden",
   "saving": "Speichern...",
-
   "titleCAPA": "Korrektur- & Vorbeugemaßnahmen",
   "capaTotal": "{count} CAPAs",
   "capaCorrective": "Korrektur",
@@ -238,7 +233,6 @@
   "effectivenessResult": "Wirksamkeitsergebnis",
   "effectivenessHint": "War die Maßnahme wirksam? Beschreiben Sie das Ergebnis...",
   "timeline": "Zeitverlauf",
-  "created": "Erstellt",
   "due": "Fällig",
   "implemented": "Umgesetzt",
   "verified": "Verifiziert",
@@ -253,7 +247,6 @@
   "capaCreated": "CAPA erfolgreich erstellt",
   "capaUpdated": "CAPA aktualisiert",
   "view": "Anzeigen",
-
   "titleDefectCatalog": "Fehlerkatalog",
   "defectTypesConfigured": "{count} Fehlerarten konfiguriert",
   "addDefectType": "+ Fehlerart hinzufügen",
@@ -276,5 +269,17 @@
   "catContamination": "Verunreinigung",
   "catPackaging": "Verpackung",
   "catOther": "Sonstiges",
-  "noneOption": "— Keine —"
+  "noneOption": "— Keine —",
+  "productCode": "Produktcode",
+  "productName": "Produktname",
+  "productNamePlaceholder": "z.B. Kurbelwelle",
+  "batchLotNumber": "Chargen- / Losnummer",
+  "productionOrder": "Fertigungsauftrag",
+  "activeProducts": "aktive Produkte",
+  "addProduct": "Produkt Hinzufugen",
+  "editProduct": "Produkt Bearbeiten",
+  "newProduct": "Neues Produkt",
+  "noProducts": "Noch keine Produkte. Manuell hinzufugen oder Excel-Datei hochladen.",
+  "productFamily": "Produktfamilie",
+  "laborMin": "Arbeit (min)"
 }

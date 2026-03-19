@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 
 from app.db.session import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_factory, require_role
 from app.models.sqcdp import SQCDPEntry, SQCDPMeeting
 from app.schemas.sqcdp import (
     SQCDPEntryCreate, SQCDPEntryUpdate, SQCDPEntryResponse,
@@ -22,7 +22,7 @@ async def create_entry(
     current_user=Depends(get_current_user),
 ):
     entry = SQCDPEntry(
-        factory_id=current_user.factory_id,
+        factory_id=require_factory(current_user),
         created_by_id=current_user.id,
         **data.model_dump(),
     )
@@ -37,17 +37,19 @@ async def list_entries(
     target_date: date = Query(None),
     line_id: int = Query(None),
     tier_level: int = Query(None),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, le=200),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    q = select(SQCDPEntry).where(SQCDPEntry.factory_id == current_user.factory_id)
+    q = select(SQCDPEntry).where(SQCDPEntry.factory_id == require_factory(current_user))
     if target_date:
         q = q.where(SQCDPEntry.date == target_date)
     if line_id:
         q = q.where(SQCDPEntry.production_line_id == line_id)
     if tier_level:
         q = q.where(SQCDPEntry.tier_level == tier_level)
-    q = q.order_by(SQCDPEntry.date.desc(), SQCDPEntry.category)
+    q = q.order_by(SQCDPEntry.date.desc(), SQCDPEntry.category).offset(skip).limit(limit)
     result = await db.execute(q)
     return result.scalars().all()
 
@@ -63,7 +65,7 @@ async def get_board(
     d = target_date or date.today()
     q = select(SQCDPEntry).where(
         and_(
-            SQCDPEntry.factory_id == current_user.factory_id,
+            SQCDPEntry.factory_id == require_factory(current_user),
             SQCDPEntry.date == d,
             SQCDPEntry.tier_level == tier_level,
         )
@@ -94,7 +96,7 @@ async def update_entry(
     result = await db.execute(
         select(SQCDPEntry).where(
             SQCDPEntry.id == entry_id,
-            SQCDPEntry.factory_id == current_user.factory_id,
+            SQCDPEntry.factory_id == require_factory(current_user),
         )
     )
     entry = result.scalar_one_or_none()
@@ -111,12 +113,12 @@ async def update_entry(
 async def delete_entry(
     entry_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_role("line_supervisor")),
 ):
     result = await db.execute(
         select(SQCDPEntry).where(
             SQCDPEntry.id == entry_id,
-            SQCDPEntry.factory_id == current_user.factory_id,
+            SQCDPEntry.factory_id == require_factory(current_user),
         )
     )
     entry = result.scalar_one_or_none()
@@ -136,7 +138,7 @@ async def create_meeting(
     current_user=Depends(get_current_user),
 ):
     meeting = SQCDPMeeting(
-        factory_id=current_user.factory_id,
+        factory_id=require_factory(current_user),
         led_by_id=current_user.id,
         **data.model_dump(),
     )
@@ -149,13 +151,14 @@ async def create_meeting(
 @router.get("/meetings", response_model=list[SQCDPMeetingResponse])
 async def list_meetings(
     tier_level: int = Query(None),
-    limit: int = Query(20),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, le=200),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    q = select(SQCDPMeeting).where(SQCDPMeeting.factory_id == current_user.factory_id)
+    q = select(SQCDPMeeting).where(SQCDPMeeting.factory_id == require_factory(current_user))
     if tier_level:
         q = q.where(SQCDPMeeting.tier_level == tier_level)
-    q = q.order_by(SQCDPMeeting.date.desc()).limit(limit)
+    q = q.order_by(SQCDPMeeting.date.desc()).offset(skip).limit(limit)
     result = await db.execute(q)
     return result.scalars().all()

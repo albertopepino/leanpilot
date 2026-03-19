@@ -14,5 +14,8 @@
   "goodPieces": "Pièces conformes",
   "scrapPieces": "Pièces rebutées",
   "oee": "TRS",
-  "downtime": "Temps d'arrêt (min)"
+  "downtime": "Temps d'arrêt (min)",
+  "manual": "Saisie manuelle",
+  "scrap": "Rebut",
+  "recent": "Dernières passations"
 }

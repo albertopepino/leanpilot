@@ -3,6 +3,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { leanApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
+import { useAutoSave, AutoSaveIndicator } from "@/hooks/useAutoSave";
 import ExportToolbar from "@/components/ui/ExportToolbar";
 import {
   Fish,
@@ -175,6 +176,7 @@ export default function IshikawaDiagram() {
   const [loadingList, setLoadingList] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [activeId, setActiveId] = useState<number | null>(null);
+  const [diagramView, setDiagramView] = useState<"fishbone" | "list">("fishbone");
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -191,12 +193,22 @@ export default function IshikawaDiagram() {
     };
   }, []);
 
+  // --- auto-save ---
+  const autoSaveData = useMemo(() => ({ title, effect, categories, notes }), [title, effect, categories, notes]);
+
+  const autoSaveFn = useCallback(async (d: typeof autoSaveData) => {
+    if (!d.title.trim() || !d.effect.trim()) return;
+    await leanApi.createIshikawa(d);
+  }, []);
+
+  const { status: autoSaveStatus } = useAutoSave(autoSaveData, autoSaveFn, { delay: 5000 });
+
   // --- load history on mount ---
   const loadHistory = useCallback(async () => {
     setLoadingList(true);
     try {
       const res = await leanApi.listIshikawa();
-      setSavedAnalyses(res.data ?? []);
+      setSavedAnalyses(Array.isArray(res.data) ? res.data : []);
     } catch {
       /* silent */
     } finally {
@@ -525,6 +537,29 @@ export default function IshikawaDiagram() {
             >
               {textTrunc}
             </text>
+            {/* Vote count badge */}
+            {(cause.votes || 0) > 0 && (
+              <g>
+                <circle
+                  cx={bx - 4}
+                  cy={by + (isRoot ? 22 : 12)}
+                  r={8}
+                  fill={cat.stroke}
+                  fillOpacity={0.9}
+                />
+                <text
+                  x={bx - 4}
+                  y={by + (isRoot ? 25 : 15)}
+                  textAnchor="middle"
+                  fontSize={8}
+                  fontFamily="system-ui, -apple-system, sans-serif"
+                  fill="white"
+                  fontWeight={700}
+                >
+                  {cause.votes}
+                </text>
+              </g>
+            )}
             {/* Root cause indicator */}
             {isRoot && (
               <g>
@@ -698,6 +733,7 @@ export default function IshikawaDiagram() {
 
           {/* Buttons */}
           <div className="flex items-center gap-2 flex-wrap">
+            <AutoSaveIndicator status={autoSaveStatus} />
             <ExportToolbar
               onPrint={() => printView({ title: t("problem-solving.ishikawaTitle") || "Ishikawa Diagram", subtitle: title || effect })}
               onExportExcel={() => {
@@ -838,7 +874,7 @@ export default function IshikawaDiagram() {
         </div>
       )}
 
-      {/* === SVG Fishbone Diagram === */}
+      {/* === View Toggle + SVG Fishbone Diagram === */}
       <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-3 transition-all">
         <div className="flex items-center justify-between mb-2">
           <div>
@@ -847,10 +883,35 @@ export default function IshikawaDiagram() {
               {t("problem-solving.ishikawaTitle") || "Ishikawa Diagram"}
             </h3>
             <p className="text-xs text-th-text-3 mt-0.5">
-              {t("problem-solving.clickBranch") || "Click a branch to highlight it"}
+              {diagramView === "fishbone"
+                ? (t("problem-solving.clickBranch") || "Click a branch to highlight it")
+                : (t("problem-solving.listViewDesc") || "Structured list of all causes by category")}
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {/* View toggle */}
+            <div className="flex rounded-lg border border-th-border overflow-hidden">
+              <button
+                onClick={() => setDiagramView("fishbone")}
+                className={`px-3 py-1 text-xs font-medium transition-all ${
+                  diagramView === "fishbone"
+                    ? "bg-brand-600 text-white"
+                    : "bg-th-bg-2 text-th-text-2 hover:bg-th-bg-hover"
+                }`}
+              >
+                {t("problem-solving.fishboneView") || "Fishbone"}
+              </button>
+              <button
+                onClick={() => setDiagramView("list")}
+                className={`px-3 py-1 text-xs font-medium transition-all ${
+                  diagramView === "list"
+                    ? "bg-brand-600 text-white"
+                    : "bg-th-bg-2 text-th-text-2 hover:bg-th-bg-hover"
+                }`}
+              >
+                {t("problem-solving.listView") || "List View"}
+              </button>
+            </div>
             {highlightedCategory && (
               <button
                 onClick={() => setHighlightedCategory(null)}
@@ -877,6 +938,64 @@ export default function IshikawaDiagram() {
           </div>
         </div>
 
+        {/* === List View === */}
+        {diagramView === "list" && (
+          <div className="space-y-3 mt-2">
+            {/* Effect banner */}
+            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+              <p className="text-[10px] text-red-600 dark:text-red-400 font-bold uppercase tracking-wider mb-1">{t("problem-solving.effect") || "Effect"}</p>
+              <p className="text-sm font-semibold text-th-text">{effect || (t("problem-solving.effectPlaceholder") || "No effect defined")}</p>
+            </div>
+
+            {CATEGORIES.map((cat) => {
+              const catKey = cat.key as CategoryKey;
+              const causesForCat = (categories[catKey] ?? []).filter((c) => c.text.trim());
+              if (causesForCat.length === 0) return null;
+              const CatIcon = CATEGORY_ICON[catKey];
+              return (
+                <div key={cat.key} className="rounded-lg border border-th-border p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.stroke }} />
+                    <span style={{ color: cat.stroke }}><CatIcon className="h-3.5 w-3.5" /></span>
+                    <span className="text-xs font-bold uppercase tracking-wider" style={{ color: cat.stroke }}>
+                      {t(`problem-solving.${cat.labelKey}`) || cat.key}
+                    </span>
+                    <span className="text-[10px] text-th-text-3 ml-auto">{causesForCat.length} {causesForCat.length === 1 ? "cause" : "causes"}</span>
+                  </div>
+                  <ul className="space-y-1.5 ml-5">
+                    {causesForCat.map((cause, ci) => (
+                      <li key={ci}>
+                        <div className="flex items-center gap-2">
+                          {cause.isRoot && <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 font-bold border border-red-500/20">ROOT</span>}
+                          <span className={`text-sm ${cause.isRoot ? "text-red-500 font-semibold" : "text-th-text"}`}>{cause.text}</span>
+                          {(cause.votes || 0) > 0 && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold text-white" style={{ backgroundColor: cat.stroke }}>
+                              {cause.votes}
+                            </span>
+                          )}
+                        </div>
+                        {cause.subCauses.filter((s) => s.text.trim()).length > 0 && (
+                          <ul className="ml-4 mt-1 space-y-0.5">
+                            {cause.subCauses.filter((s) => s.text.trim()).map((sub, si) => (
+                              <li key={si} className="flex items-center gap-2 text-xs text-th-text-2">
+                                <span className="text-th-text-3">&mdash;</span>
+                                {sub.isRoot && <span className="text-[8px] px-1 py-0.5 rounded bg-red-500/10 text-red-500 font-bold">RC</span>}
+                                <span className={sub.isRoot ? "text-red-500 font-medium" : ""}>{sub.text}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* === Fishbone SVG View === */}
+        {diagramView === "fishbone" && (
         <div className="w-full overflow-x-auto rounded-lg bg-th-bg-3 border border-th-border p-1.5">
           <svg
             viewBox={`0 0 ${SVG_W} ${SVG_H}`}
@@ -1077,6 +1196,7 @@ export default function IshikawaDiagram() {
             </g>
           </svg>
         </div>
+        )}
       </div>
 
       {/* === Cause Input Form === */}

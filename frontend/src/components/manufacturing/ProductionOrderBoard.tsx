@@ -44,6 +44,7 @@ interface ProductionOrder {
   actual_start: string | null;
   actual_end: string | null;
   customer_ref: string | null;
+  batch_lot_number: string | null;
   qc_hold: boolean;
   qc_hold_reason: string | null;
   notes: string | null;
@@ -129,6 +130,7 @@ export default function ProductionOrderBoard() {
     production_line_id: 0,
     planned_quantity: 0,
     customer_ref: "",
+    batch_lot_number: "",
     notes: "",
     additional_lines: [] as { production_line_id: number; planned_quantity: number }[],
   });
@@ -141,8 +143,9 @@ export default function ProductionOrderBoard() {
         adminApi.getFactory(),
       ]);
       const ordersData = ordersRes.data ?? ordersRes;
-      const productsData = productsRes.data ?? productsRes;
-      const factory = factoryRes.data ?? factoryRes;
+      const rawProducts = productsRes.data ?? productsRes;
+      const productsData = Array.isArray(rawProducts) ? rawProducts : [];
+      const factory = factoryRes.data ?? factoryRes ?? {};
 
       // Enrich orders with product and line names
       const productMap = new Map<number, string>(productsData.map((p: Product) => [p.id, p.name]));
@@ -173,7 +176,7 @@ export default function ProductionOrderBoard() {
   useEffect(() => {
     adminApi.getMyPermissions()
       .then((res) => {
-        const perms = res.data.permissions || {};
+        const perms = res.data?.permissions || {};
         const p = perms["production-orders"] as PermLevel | undefined;
         if (p) setPermLevel(p);
         else {
@@ -261,11 +264,12 @@ export default function ProductionOrderBoard() {
         production_line_id: newOrder.production_line_id,
         planned_quantity: newOrder.planned_quantity,
         customer_ref: newOrder.customer_ref || undefined,
+        batch_lot_number: newOrder.batch_lot_number || undefined,
         notes: newOrder.notes || undefined,
         order_lines: order_lines.length > 0 ? order_lines : undefined,
       });
       setShowCreate(false);
-      setNewOrder({ product_id: 0, production_line_id: 0, planned_quantity: 0, customer_ref: "", notes: "", additional_lines: [] });
+      setNewOrder({ product_id: 0, production_line_id: 0, planned_quantity: 0, customer_ref: "", batch_lot_number: "", notes: "", additional_lines: [] });
       await fetchData();
     } catch {
       setError(t("manufacturing.failedCreateOrder"));
@@ -605,6 +609,7 @@ export default function ProductionOrderBoard() {
                   <DetailRow label={t("manufacturing.productionLine")} value={selectedOrder.line_name || "-"} />
                   <DetailRow label={t("manufacturing.plannedQuantity")} value={String(selectedOrder.planned_quantity)} />
                   <DetailRow label={t("manufacturing.customerRef")} value={selectedOrder.customer_ref || "-"} />
+                  <DetailRow label={t("manufacturing.batchLotNumber") || "Batch / Lot #"} value={selectedOrder.batch_lot_number || "-"} />
                   <DetailRow label={t("manufacturing.plannedStart")} value={selectedOrder.planned_start ? new Date(selectedOrder.planned_start).toLocaleString() : "-"} />
                   <DetailRow label={t("manufacturing.plannedEnd")} value={selectedOrder.planned_end ? new Date(selectedOrder.planned_end).toLocaleString() : "-"} />
                   {selectedOrder.actual_start && (
@@ -747,6 +752,17 @@ export default function ProductionOrderBoard() {
                   onChange={(e) => setNewOrder({ ...newOrder, customer_ref: e.target.value })}
                   className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text"
                   placeholder={t("manufacturing.optional")}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-th-text-2 mb-1">{t("manufacturing.batchLotNumber") || "Batch / Lot Number"}</label>
+                <input
+                  type="text"
+                  value={newOrder.batch_lot_number}
+                  onChange={(e) => setNewOrder({ ...newOrder, batch_lot_number: e.target.value })}
+                  className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text"
+                  placeholder="e.g. LOT-2026-0042"
                 />
               </div>
 

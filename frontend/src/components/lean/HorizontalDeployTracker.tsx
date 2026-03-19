@@ -2,8 +2,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { horizontalDeployApi } from "@/lib/api";
 import { useI18n } from "@/stores/useI18n";
-import { GitBranch, CheckCircle2, Circle, Plus, X } from "lucide-react";
-import type { HorizontalDeployResponse } from "@/lib/types";
+import { GitBranch, CheckCircle2, Circle, Plus, X, ShieldCheck, Calendar, User } from "lucide-react";
+import type { HorizontalDeployResponse, StandardizationStatus } from "@/lib/types";
 
 export default function HorizontalDeployTracker() {
   const { t } = useI18n();
@@ -16,7 +16,18 @@ export default function HorizontalDeployTracker() {
     source_id: 0,
     description: "",
     target_lines: "" as string, // comma-separated IDs
+    verification_date: "",
+    verified_by: "",
+    standardization_status: "draft" as StandardizationStatus,
+    deployment_locations: "" as string, // comma-separated
   });
+  // Local verification overrides (keyed by deployment id)
+  const [verificationEdits, setVerificationEdits] = useState<Record<number, {
+    verification_date: string;
+    verified_by: string;
+    standardization_status: StandardizationStatus;
+    deployment_locations: string[];
+  }>>({});
 
   const load = useCallback(async () => {
     try {
@@ -44,7 +55,7 @@ export default function HorizontalDeployTracker() {
         target_lines: lineIds,
       });
       setShowCreate(false);
-      setForm({ source_type: "kaizen", source_id: 0, description: "", target_lines: "" });
+      setForm({ source_type: "kaizen", source_id: 0, description: "", target_lines: "", verification_date: "", verified_by: "", standardization_status: "draft", deployment_locations: "" });
       load();
     } catch { /* empty */ }
   };
@@ -152,6 +163,64 @@ export default function HorizontalDeployTracker() {
                   className="w-full p-2 rounded-lg bg-th-bg border border-th-border text-th-text"
                 />
               </div>
+
+              {/* Standardization Verification Fields */}
+              <div className="pt-2 border-t border-th-border">
+                <p className="text-xs font-semibold text-th-text-secondary uppercase tracking-wider mb-2">
+                  {t("improvement.standardizationVerification") || "Standardization & Verification"}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm text-th-text-secondary mb-1">
+                    {t("improvement.verificationDate") || "Verification Date"}
+                  </label>
+                  <input
+                    type="date"
+                    value={form.verification_date}
+                    onChange={e => setForm(p => ({ ...p, verification_date: e.target.value }))}
+                    className="w-full p-2 rounded-lg bg-th-bg border border-th-border text-th-text"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-th-text-secondary mb-1">
+                    {t("improvement.verifiedBy") || "Verified By"}
+                  </label>
+                  <input
+                    type="text"
+                    value={form.verified_by}
+                    onChange={e => setForm(p => ({ ...p, verified_by: e.target.value }))}
+                    placeholder="Name..."
+                    className="w-full p-2 rounded-lg bg-th-bg border border-th-border text-th-text"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm text-th-text-secondary mb-1">
+                  {t("improvement.standardizationStatus") || "Standardization Status"}
+                </label>
+                <select
+                  value={form.standardization_status}
+                  onChange={e => setForm(p => ({ ...p, standardization_status: e.target.value as StandardizationStatus }))}
+                  className="w-full p-2 rounded-lg bg-th-bg border border-th-border text-th-text"
+                >
+                  <option value="draft">{t("improvement.statusDraft") || "Draft"}</option>
+                  <option value="verified">{t("improvement.statusVerified") || "Verified"}</option>
+                  <option value="deployed">{t("improvement.statusDeployed") || "Deployed"}</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-th-text-secondary mb-1">
+                  {t("improvement.deploymentLocations") || "Deployment Locations (comma-separated)"}
+                </label>
+                <input
+                  type="text"
+                  value={form.deployment_locations}
+                  onChange={e => setForm(p => ({ ...p, deployment_locations: e.target.value }))}
+                  placeholder="Plant A, Line 2, Cell 5..."
+                  className="w-full p-2 rounded-lg bg-th-bg border border-th-border text-th-text"
+                />
+              </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <button
@@ -236,6 +305,51 @@ export default function HorizontalDeployTracker() {
                     {completedSet.size}/{d.target_lines.length} lines completed
                   </p>
                 </div>
+
+                {/* Standardization Verification Section */}
+                {(() => {
+                  const v = verificationEdits[d.id] || {
+                    verification_date: d.verification_date || "",
+                    verified_by: d.verified_by || "",
+                    standardization_status: d.standardization_status || "draft",
+                    deployment_locations: d.deployment_locations || [],
+                  };
+                  const stdStatusColors: Record<string, string> = {
+                    draft: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+                    verified: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+                    deployed: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+                  };
+                  return (
+                    <div className="mt-3 pt-3 border-t border-th-border">
+                      <div className="flex items-center gap-2 mb-2">
+                        <ShieldCheck className="w-3.5 h-3.5 text-th-text-secondary" />
+                        <span className="text-xs font-semibold text-th-text-secondary uppercase tracking-wider">
+                          {t("improvement.standardizationVerification") || "Standardization & Verification"}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                        <div>
+                          <span className="text-th-text-secondary">{t("improvement.standardizationStatus") || "Status"}:</span>
+                          <span className={`ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${stdStatusColors[v.standardization_status] || stdStatusColors.draft}`}>
+                            {t(`improvement.status${v.standardization_status.charAt(0).toUpperCase() + v.standardization_status.slice(1)}`) || v.standardization_status}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3 text-th-text-secondary" />
+                          <span className="text-th-text-secondary">{v.verification_date || "—"}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <User className="w-3 h-3 text-th-text-secondary" />
+                          <span className="text-th-text">{v.verified_by || "—"}</span>
+                        </div>
+                        <div>
+                          <span className="text-th-text-secondary">{t("improvement.locations") || "Locations"}:</span>
+                          <span className="ml-1 text-th-text">{v.deployment_locations.length > 0 ? v.deployment_locations.join(", ") : "—"}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             );
           })}

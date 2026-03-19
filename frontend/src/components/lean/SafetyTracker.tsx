@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { safetyApi, adminApi } from "@/lib/api";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import type { SafetyIncidentResponse, SafetyStats } from "@/lib/types";
 import {
   Shield,
@@ -35,17 +36,17 @@ import {
 
 type Severity = "minor" | "moderate" | "serious" | "critical";
 type IncidentType = "injury" | "near_miss" | "first_aid" | "property_damage" | "environmental";
-type ViewMode = "counter" | "log" | "history" | "stats";
+type ViewMode = "counter" | "cross" | "log" | "history" | "stats";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const AREAS = [
-  "Production Floor",
-  "Machinery Zone",
-  "Loading Area",
-  "Storage Area",
-  "Office Area",
-  "Maintenance Bay",
+const AREA_ITEMS = [
+  { value: "Production Floor", labelKey: "safety.areaFloor" },
+  { value: "Machinery Zone", labelKey: "safety.areaMachinery" },
+  { value: "Loading Area", labelKey: "safety.areaLoading" },
+  { value: "Storage Area", labelKey: "safety.areaStorage" },
+  { value: "Office Area", labelKey: "safety.areaOffice" },
+  { value: "Maintenance Bay", labelKey: "safety.areaMaintenance" },
 ];
 
 const SEVERITY_CONFIG: Record<Severity, { color: string; bg: string; border: string }> = {
@@ -58,12 +59,20 @@ const SEVERITY_CONFIG: Record<Severity, { color: string; bg: string; border: str
 const INCIDENT_TYPES: IncidentType[] = ["injury", "near_miss", "first_aid", "property_damage", "environmental"];
 
 const CHART_COLORS = ["#ef4444", "#f59e0b", "#eab308", "#22c55e"];
-const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function getLocaleMonthNames(locale: string): string[] {
+  const fmt = new Intl.DateTimeFormat(locale, { month: "short" });
+  return Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(2024, i, 1);
+    return fmt.format(d);
+  });
+}
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export default function SafetyTracker() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const MONTH_NAMES = useMemo(() => getLocaleMonthNames(locale), [locale]);
   const [incidents, setIncidents] = useState<SafetyIncidentResponse[]>([]);
   const [stats, setStats] = useState<SafetyStats | null>(null);
   const [productionLines, setProductionLines] = useState<{id: number; name: string}[]>([]);
@@ -72,6 +81,7 @@ export default function SafetyTracker() {
   const [filterTo, setFilterTo] = useState("");
   const [toast, setToast] = useState("");
   const [loading, setLoading] = useState(true);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   // Show toast
   const showToast = useCallback((msg: string) => {
@@ -89,7 +99,7 @@ export default function SafetyTracker() {
         }),
         safetyApi.getStats(),
       ]);
-      setIncidents(incRes.data ?? []);
+      setIncidents(Array.isArray(incRes.data) ? incRes.data : []);
       setStats(statsRes.data ?? null);
     } catch {
       /* ignore */
@@ -169,8 +179,14 @@ export default function SafetyTracker() {
   }, [fetchData, showToast, t]);
 
   // Delete incident
-  const handleDelete = useCallback(async (id: number) => {
-    if (!confirm(t("safety.deleteConfirm"))) return;
+  const handleDelete = useCallback((id: number) => {
+    setConfirmDeleteId(id);
+  }, []);
+
+  const executeDelete = useCallback(async () => {
+    const id = confirmDeleteId;
+    setConfirmDeleteId(null);
+    if (id == null) return;
     try {
       await safetyApi.deleteIncident(id);
       showToast(t("safety.deleted"));
@@ -178,11 +194,12 @@ export default function SafetyTracker() {
     } catch {
       showToast(t("common.saveFailed"));
     }
-  }, [fetchData, showToast, t]);
+  }, [confirmDeleteId, fetchData, showToast, t]);
 
   // View tabs
   const tabs: { key: ViewMode; label: string; icon: React.ReactNode }[] = [
     { key: "counter", label: t("safety.viewCounter"), icon: <Shield className="w-4 h-4" /> },
+    { key: "cross",   label: t("safety.viewCross"),   icon: <Calendar className="w-4 h-4" /> },
     { key: "log",     label: t("safety.viewLog"),     icon: <FileText className="w-4 h-4" /> },
     { key: "history", label: t("safety.viewHistory"), icon: <ClipboardList className="w-4 h-4" /> },
     { key: "stats",   label: t("safety.viewStats"),   icon: <BarChart3 className="w-4 h-4" /> },
@@ -268,6 +285,7 @@ export default function SafetyTracker() {
           t={t}
         />
       )}
+      {view === "cross" && <SafetyCrossView incidents={filtered} t={t} />}
       {view === "log" && (
         <LogForm
           t={t}
@@ -283,7 +301,15 @@ export default function SafetyTracker() {
           onDelete={handleDelete}
         />
       )}
-      {view === "stats" && <StatsView incidents={filtered} t={t} />}
+      {view === "stats" && <StatsView incidents={filtered} t={t} locale={locale} />}
+
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        title={t("safety.deleteConfirm") || "Delete Incident"}
+        message={t("safety.deleteConfirmMsg") || "Are you sure you want to delete this incident?"}
+        onConfirm={executeDelete}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </div>
   );
 }
@@ -459,7 +485,7 @@ function LogForm({
   const [severity, setSeverity] = useState<Severity>("minor");
   const [title, setTitle] = useState("");
   const [lineId, setLineId] = useState<number | null>(productionLines[0]?.id ?? null);
-  const [area, setArea] = useState(AREAS[0]);
+  const [area, setArea] = useState(AREA_ITEMS[0].value);
   const [description, setDescription] = useState("");
   const [correctiveAction, setCorrectiveAction] = useState("");
   const [error, setError] = useState("");
@@ -580,8 +606,8 @@ function LogForm({
             <div>
               <label className={labelCls}>{t("safety.areaZone")}</label>
               <select value={area} onChange={(e) => setArea(e.target.value)} className={inputCls}>
-                {AREAS.map((a) => (
-                  <option key={a} value={a}>{a}</option>
+                {AREA_ITEMS.map((a) => (
+                  <option key={a.value} value={a.value}>{t(a.labelKey)}</option>
                 ))}
               </select>
             </div>
@@ -747,10 +773,13 @@ function HistoryTable({
 function StatsView({
   incidents,
   t,
+  locale = "en",
 }: {
   incidents: SafetyIncidentResponse[];
   t: (key: string) => string;
+  locale?: string;
 }) {
+  const MONTH_NAMES = useMemo(() => getLocaleMonthNames(locale), [locale]);
   // Incidents by month
   const byMonth = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -809,11 +838,12 @@ function StatsView({
 
   const chartTooltipStyle = {
     contentStyle: {
-      backgroundColor: "var(--color-th-bg-2, rgba(17,17,27,0.95))",
-      border: "1px solid var(--color-th-border, rgba(255,255,255,0.1))",
+      backgroundColor: "var(--card-bg)",
+      border: "1px solid var(--border-primary)",
       borderRadius: 12,
-      color: "var(--color-th-text, #e0e0e0)",
+      color: "var(--text-primary)",
       fontSize: 12,
+      boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
     },
   };
 
@@ -827,9 +857,9 @@ function StatsView({
         </div>
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={byMonth}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-th-border, rgba(255,255,255,0.06))" />
-            <XAxis dataKey="month" tick={{ fill: "var(--color-th-text-3, rgba(255,255,255,0.5))", fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: "var(--color-th-text-3, rgba(255,255,255,0.5))", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#d1d5db" strokeOpacity={0.4} />
+            <XAxis dataKey="month" tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
             <Tooltip {...chartTooltipStyle} />
             <Bar dataKey="count" name={t("safety.count")} fill="#3b82f6" radius={[6, 6, 0, 0]} />
           </BarChart>
@@ -885,9 +915,9 @@ function StatsView({
         ) : (
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={byType} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-th-border, rgba(255,255,255,0.06))" />
-              <XAxis type="number" tick={{ fill: "var(--color-th-text-3, rgba(255,255,255,0.5))", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
-              <YAxis type="category" dataKey="name" tick={{ fill: "var(--color-th-text-3, rgba(255,255,255,0.5))", fontSize: 11 }} axisLine={false} tickLine={false} width={120} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#d1d5db" strokeOpacity={0.4} />
+              <XAxis type="number" tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+              <YAxis type="category" dataKey="name" tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} width={140} />
               <Tooltip {...chartTooltipStyle} />
               <Bar dataKey="count" name={t("safety.count")} fill="#8b5cf6" radius={[0, 6, 6, 0]} />
             </BarChart>
@@ -903,9 +933,9 @@ function StatsView({
         </div>
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={yoy}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-th-border, rgba(255,255,255,0.06))" />
-            <XAxis dataKey="month" tick={{ fill: "var(--color-th-text-3, rgba(255,255,255,0.5))", fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: "var(--color-th-text-3, rgba(255,255,255,0.5))", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#d1d5db" strokeOpacity={0.4} />
+            <XAxis dataKey="month" tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
             <Tooltip {...chartTooltipStyle} />
             <Legend
               iconType="circle"
@@ -916,6 +946,154 @@ function StatsView({
             <Bar dataKey="lastYear" name={t("safety.lastYear")} fill="#6366f1" radius={[6, 6, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+// ─── Safety Cross View ──────────────────────────────────────────────────────
+
+function SafetyCrossView({
+  incidents,
+  t,
+}: {
+  incidents: SafetyIncidentResponse[];
+  t: (key: string) => string;
+}) {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = now.getDate();
+
+  // Build a map: day number -> status
+  const dayStatus = useMemo(() => {
+    const map: Record<number, "green" | "yellow" | "red"> = {};
+    const monthStr = `${year}-${String(month + 1).padStart(2, "0")}`;
+
+    // Default all past/current days to green
+    for (let d = 1; d <= Math.min(today, daysInMonth); d++) {
+      map[d] = "green";
+    }
+
+    // Overlay incidents
+    incidents.forEach((inc) => {
+      if (!inc.date.startsWith(monthStr)) return;
+      const day = parseInt(inc.date.slice(8, 10), 10);
+      if (day > daysInMonth) return;
+      if (inc.incident_type === "near_miss") {
+        // near miss = yellow, unless already red
+        if (map[day] !== "red") map[day] = "yellow";
+      } else {
+        // actual incident = red
+        map[day] = "red";
+      }
+    });
+
+    return map;
+  }, [incidents, year, month, today, daysInMonth]);
+
+  const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+  // Get day of week for the 1st of the month (0=Sunday, convert to Monday-start)
+  const firstDow = new Date(year, month, 1).getDay();
+  const startOffset = firstDow === 0 ? 6 : firstDow - 1; // Monday=0
+
+  const colorMap = {
+    green: "bg-emerald-500",
+    yellow: "bg-amber-400",
+    red: "bg-red-500",
+    gray: "bg-th-border",
+  };
+
+  const colorLabel = {
+    green: t("safety.crossNoIncident") || "No incidents",
+    yellow: t("safety.crossNearMiss") || "Near miss",
+    red: t("safety.crossIncident") || "Incident",
+    gray: t("safety.crossFuture") || "Future / No data",
+  };
+
+  // Stats for the month
+  const greenDays = Object.values(dayStatus).filter((v) => v === "green").length;
+  const yellowDays = Object.values(dayStatus).filter((v) => v === "yellow").length;
+  const redDays = Object.values(dayStatus).filter((v) => v === "red").length;
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-lg bg-emerald-500/15 flex items-center justify-center">
+            <Calendar className="w-5 h-5 text-emerald-500" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-th-text">
+              {t("safety.safetyCrossTitle") || "Safety Cross"} &mdash; {MONTH_LABELS[month]} {year}
+            </h2>
+            <p className="text-xs text-th-text-3">{t("safety.safetyCrossSubtitle") || "Visual daily safety status for the current month"}</p>
+          </div>
+        </div>
+
+        {/* Day-of-week headers */}
+        <div className="grid grid-cols-7 gap-1.5 mb-1.5 max-w-[420px] mx-auto">
+          {DAY_LABELS.map((d) => (
+            <div key={d} className="text-center text-[10px] text-th-text-3 font-semibold uppercase tracking-wider py-1">
+              {d}
+            </div>
+          ))}
+        </div>
+
+        {/* Calendar grid */}
+        <div className="grid grid-cols-7 gap-1.5 max-w-[420px] mx-auto">
+          {/* Empty cells for offset */}
+          {Array.from({ length: startOffset }).map((_, i) => (
+            <div key={`empty-${i}`} className="aspect-square" />
+          ))}
+          {/* Day cells */}
+          {Array.from({ length: daysInMonth }).map((_, i) => {
+            const day = i + 1;
+            const rawStatus = dayStatus[day] as "green" | "yellow" | "red" | undefined;
+            const status = rawStatus ?? "gray";
+            const isToday = day === today;
+            return (
+              <div
+                key={day}
+                className={`aspect-square rounded-lg flex items-center justify-center text-xs font-bold transition-all ${colorMap[status]} ${
+                  status === "gray" ? "text-th-text-3" : "text-white"
+                } ${isToday ? "ring-2 ring-th-text ring-offset-2 ring-offset-th-bg-2" : ""}`}
+                title={`${day} ${MONTH_LABELS[month]} — ${colorLabel[status]}`}
+              >
+                {day}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Legend */}
+        <div className="flex flex-wrap items-center gap-4 mt-6 pt-4 border-t border-th-border justify-center">
+          {(["green", "yellow", "red", "gray"] as const).map((color) => (
+            <div key={color} className="flex items-center gap-2">
+              <div className={`w-4 h-4 rounded ${colorMap[color]}`} />
+              <span className="text-xs text-th-text-2">{colorLabel[color]}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Summary stats */}
+        <div className="grid grid-cols-3 gap-4 mt-6">
+          <div className="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 p-3 text-center">
+            <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{greenDays}</div>
+            <div className="text-[10px] text-emerald-700 dark:text-emerald-300 uppercase tracking-wider font-medium">{t("safety.crossSafeDays") || "Safe Days"}</div>
+          </div>
+          <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-3 text-center">
+            <div className="text-2xl font-black text-amber-600 dark:text-amber-400">{yellowDays}</div>
+            <div className="text-[10px] text-amber-700 dark:text-amber-300 uppercase tracking-wider font-medium">{t("safety.crossNearMissDays") || "Near Miss Days"}</div>
+          </div>
+          <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-3 text-center">
+            <div className="text-2xl font-black text-red-600 dark:text-red-400">{redDays}</div>
+            <div className="text-[10px] text-red-700 dark:text-red-300 uppercase tracking-wider font-medium">{t("safety.crossIncidentDays") || "Incident Days"}</div>
+          </div>
+        </div>
       </div>
     </div>
   );

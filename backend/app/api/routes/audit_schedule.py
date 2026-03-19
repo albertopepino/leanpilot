@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 
 from app.db.session import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_factory
 from app.models.audit_schedule import AuditSchedule
 from app.schemas.audit_schedule import (
     AuditScheduleCreate, AuditScheduleUpdate, AuditScheduleResponse,
@@ -20,8 +20,9 @@ async def create_schedule(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    fid = require_factory(current_user)
     schedule = AuditSchedule(
-        factory_id=current_user.factory_id,
+        factory_id=fid,
         created_by_id=current_user.id,
         **data.model_dump(),
     )
@@ -39,8 +40,9 @@ async def list_schedules(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    fid = require_factory(current_user)
     q = select(AuditSchedule).where(
-        AuditSchedule.factory_id == current_user.factory_id
+        AuditSchedule.factory_id == fid
     )
     if audit_type:
         q = q.where(AuditSchedule.audit_type == audit_type)
@@ -60,10 +62,11 @@ async def update_schedule(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    fid = require_factory(current_user)
     result = await db.execute(
         select(AuditSchedule).where(
             AuditSchedule.id == schedule_id,
-            AuditSchedule.factory_id == current_user.factory_id,
+            AuditSchedule.factory_id == fid,
         )
     )
     schedule = result.scalar_one_or_none()
@@ -79,15 +82,21 @@ async def update_schedule(
 @router.post("/{schedule_id}/complete", response_model=AuditScheduleResponse)
 async def mark_completed(
     schedule_id: int,
+    auto_recur: bool = Query(True, description="Auto-create next scheduled audit"),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    """Mark audit as completed, advance next_due_date based on frequency."""
+    """Mark audit as completed, advance next_due_date based on frequency.
+
+    When auto_recur=True (default), a new audit schedule entry is also created
+    for the next occurrence.
+    """
     from datetime import timedelta
+    fid = require_factory(current_user)
     result = await db.execute(
         select(AuditSchedule).where(
             AuditSchedule.id == schedule_id,
-            AuditSchedule.factory_id == current_user.factory_id,
+            AuditSchedule.factory_id == fid,
         )
     )
     schedule = result.scalar_one_or_none()
@@ -101,7 +110,27 @@ async def mark_completed(
         "monthly": 30, "quarterly": 90,
     }
     delta = freq_days.get(schedule.frequency, 30)
-    schedule.next_due_date = date.today() + timedelta(days=delta)
+    next_due = date.today() + timedelta(days=delta)
+    schedule.next_due_date = next_due
+
+    # Auto-create next recurrence
+    if auto_recur:
+        next_schedule = AuditSchedule(
+            factory_id=schedule.factory_id,
+            created_by_id=schedule.created_by_id,
+            audit_type=schedule.audit_type,
+            title=schedule.title,
+            area=schedule.area,
+            production_line_id=schedule.production_line_id,
+            assigned_to_id=schedule.assigned_to_id,
+            frequency=schedule.frequency,
+            next_due_date=next_due,
+            last_completed_date=None,
+            is_active=True,
+            escalation_days=schedule.escalation_days,
+            notes=schedule.notes,
+        )
+        db.add(next_schedule)
 
     await db.commit()
     await db.refresh(schedule)
@@ -114,10 +143,11 @@ async def delete_schedule(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    fid = require_factory(current_user)
     result = await db.execute(
         select(AuditSchedule).where(
             AuditSchedule.id == schedule_id,
-            AuditSchedule.factory_id == current_user.factory_id,
+            AuditSchedule.factory_id == fid,
         )
     )
     schedule = result.scalar_one_or_none()

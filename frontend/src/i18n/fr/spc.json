@@ -1,0 +1,65 @@
+{
+  "title": "Graphiques SPC",
+  "subtitle": "Maîtrise Statistique des Procédés — Surveiller la stabilité et la capabilité",
+
+  "xbarR": "X-bar R",
+  "xbarS": "X-bar S",
+  "pChart": "Carte p",
+  "npChart": "Carte np",
+  "cChart": "Carte c",
+  "uChart": "Carte u",
+
+  "chartType": "Type de Graphique",
+  "subgroupSize": "Taille Sous-groupe",
+  "usl": "LSS",
+  "lsl": "LSI",
+  "dataSource": "Source de Données",
+  "manualEntry": "Saisie Manuelle",
+  "fromInspections": "Depuis Inspections",
+  "productionLine": "Ligne de Production",
+  "allLines": "Toutes les Lignes",
+  "dateFrom": "Date Début",
+  "dateTo": "Date Fin",
+  "calculate": "Calculer",
+
+  "manualHintVariable": "Entrez un sous-groupe par ligne, valeurs séparées par des virgules",
+  "manualHintAttribute": "Entrez une valeur par ligne (défectueux ou nombre de défauts)",
+
+  "needMoreData": "Au moins 2 sous-groupes nécessaires pour l'analyse SPC",
+  "calculationError": "Échec du calcul. Vérifiez vos données.",
+
+  "cp": "Cp",
+  "cpk": "Cpk",
+  "pctInControl": "% Sous Contrôle",
+  "totalSubgroups": "Sous-groupes",
+  "sigmaLevel": "Niveau Sigma",
+
+  "chartLabel": "Carte de Contrôle",
+  "subgroup": "Sous-groupe",
+  "value": "Valeur",
+  "dataPoints": "Points de Données",
+  "centerLine": "Ligne Centrale",
+
+  "rule1": "Règle 1: Au-delà de 3σ",
+  "rule2": "Règle 2: 9 même côté",
+  "rule3": "Règle 3: 6 en tendance",
+  "rule4": "Règle 4: 14 alternés",
+
+  "rule1Desc": "Un point au-delà de 3 écarts-types de la ligne centrale",
+  "rule2Desc": "Neuf points consécutifs du même côté de la ligne centrale",
+  "rule3Desc": "Six points consécutifs en augmentation ou diminution constante",
+  "rule4Desc": "Quatorze points consécutifs alternant haut et bas",
+
+  "processCapability": "Capabilité du Procédé",
+  "mean": "Moyenne",
+  "stdDev": "Éc. Type",
+  "specLimits": "LSI / LSS",
+  "excellent": "Excellent",
+  "capable": "Capable",
+  "marginal": "Marginal",
+  "incapable": "Incapable",
+
+  "outOfControl": "Points Hors Contrôle",
+  "rule": "Règle",
+  "ruleDescription": "Description"
+}

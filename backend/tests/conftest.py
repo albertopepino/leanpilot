@@ -290,6 +290,60 @@ async def anon_client(app_no_auth):
 
 
 # ---------------------------------------------------------------------------
+# Fixtures: authenticated headers (JWT in Authorization header)
+# ---------------------------------------------------------------------------
+@pytest.fixture()
+def admin_headers() -> dict[str, str]:
+    """Return Authorization headers with a valid admin JWT."""
+    token = make_token(ADMIN_USER)
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture()
+def operator_headers() -> dict[str, str]:
+    """Return Authorization headers with a valid operator JWT."""
+    token = make_token(OPERATOR_USER)
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture()
+def viewer_headers() -> dict[str, str]:
+    """Return Authorization headers with a valid viewer JWT."""
+    token = make_token(VIEWER_USER)
+    return {"Authorization": f"Bearer {token}"}
+
+
+# ---------------------------------------------------------------------------
+# Fixtures: test factory (a plain dict matching Factory model shape)
+# ---------------------------------------------------------------------------
+class FakeFactory:
+    """Lightweight stand-in for app.models.factory.Factory."""
+
+    def __init__(self, *, id: int = 1, name: str = "Test Factory", slug: str = "test-factory"):
+        self.id = id
+        self.name = name
+        self.slug = slug
+        self.created_at = datetime.now(timezone.utc)
+        self.updated_at = datetime.now(timezone.utc)
+
+
+TEST_FACTORY = FakeFactory(id=1, name="Test Factory", slug="test-factory")
+OTHER_FACTORY = FakeFactory(id=2, name="Other Factory", slug="other-factory")
+
+
+@pytest.fixture()
+def test_factory():
+    """Return a FakeFactory for use in tests."""
+    return TEST_FACTORY
+
+
+@pytest.fixture()
+def other_factory():
+    """Return a second FakeFactory for tenant-isolation tests."""
+    return OTHER_FACTORY
+
+
+# ---------------------------------------------------------------------------
 # Cleanup: clear in-memory rate-limit / blacklist state between tests
 # ---------------------------------------------------------------------------
 @pytest.fixture(autouse=True)

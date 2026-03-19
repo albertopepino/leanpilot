@@ -7,7 +7,6 @@
   "auditResults": "{area} — Risultati Audit 6S",
   "maturityLevel": "Livello di Maturità {level}",
   "scorePoor": "1=Scarso 5=Eccellente",
-
   "catSort": "Separare (Seiri)",
   "catSortShort": "Separare",
   "catSortDesc": "Rimuovere gli elementi non necessari",
@@ -26,7 +25,6 @@
   "catSafety": "Sicurezza",
   "catSafetyShort": "Sicurezza",
   "catSafetyDesc": "Identificazione dei pericoli",
-
   "sort_q1": "Tutti gli elementi non necessari sono stati rimossi dall'area?",
   "sort_q2": "Gli elementi con cartellino rosso sono correttamente identificati?",
   "sort_q3": "C'è una chiara distinzione tra necessario e non necessario?",
@@ -57,18 +55,15 @@
   "safety_q3": "I pericoli per la sicurezza sono identificati e affrontati?",
   "safety_q4": "Le schede SDS/MSDS sono accessibili?",
   "safety_q5": "Le attrezzature antincendio sono ispezionate e accessibili?",
-
   "scoreBelowAvg": "Sotto la media",
   "scoreAverage": "Nella media",
   "scoreGood": "Buono",
   "scoreExcellent": "Eccellente",
-
   "matWorldClass": "World Class",
   "matSustainable": "Sostenibile",
   "matStandardized": "Standardizzato",
   "matDeveloping": "In Sviluppo",
   "matInitial": "Iniziale",
-
   "saveError": "Impossibile salvare l'audit",
   "currentAudit": "Audit Corrente",
   "previousAudit": "Audit Precedente",
@@ -98,7 +93,6 @@
   "nextCategory": "Successivo →",
   "saving": "Salvataggio...",
   "submitAudit": "Invia Audit",
-
   "tpmTitle": "Dashboard TPM",
   "tpmSubtitle": "Total Productive Maintenance — Zero guasti, zero difetti",
   "tpmRunning": "In Marcia",
@@ -113,7 +107,6 @@
   "statusMaintenance": "MANUTENZIONE",
   "statusBreakdown": "GUASTO",
   "nextPm": "Prossima MP",
-
   "demoMode": "Demo",
   "tpmAddEquipment": "Aggiungi Attrezzatura",
   "tpmEqName": "Nome Attrezzatura",
@@ -170,7 +163,6 @@
   "dayFri": "Ven",
   "daySat": "Sab",
   "daySun": "Dom",
-
   "pillarAutonomous": "Manut. Autonoma",
   "pillarPlanned": "Manut. Programmata",
   "pillarQuality": "Manut. Qualità",
@@ -179,7 +171,6 @@
   "pillarTraining": "Formazione e Addestramento",
   "pillarSafety": "Sicurezza e Ambiente",
   "pillarOffice": "TPM Uffici",
-
   "eqCncLathe": "Tornio CNC #1",
   "eqHydraulicPress": "Pressa Idraulica",
   "eqWeldingRobot": "Robot Saldatura #3",
@@ -190,7 +181,6 @@
   "areaAssembly": "Assemblaggio",
   "areaPackaging": "Confezionamento",
   "areaFinishing": "Finitura",
-
   "ciltTitle": "Checklist CILT",
   "ciltSubtitle": "Manutenzione Autonoma",
   "ciltProgress": "Avanzamento",
@@ -206,7 +196,6 @@
   "ciltSkipBtn": "Salta",
   "ciltDescribeIssue": "Descrivi il problema...",
   "ciltStandard": "Standard",
-
   "ciltCatC": "Pulizia",
   "ciltCatI": "Ispezione",
   "ciltCatL": "Lubrificazione",
@@ -214,10 +203,8 @@
   "ciltFreqDaily": "Giornaliero",
   "ciltFreqWeekly": "Settimanale",
   "ciltFreqMonthly": "Mensile",
-
   "ciltViewExecute": "Esegui Checklist",
   "ciltViewStandards": "Gestisci Standard",
-
   "ciltLoadError": "Impossibile caricare gli standard CILT",
   "ciltStdCreated": "Standard creato con successo",
   "ciltStdError": "Impossibile creare lo standard",
@@ -271,12 +258,10 @@
   "ciltTime": "Tempo",
   "ciltStatus": "Stato",
   "ciltNotes": "Note",
-
   "catCleaning": "Pulizia",
   "catInspection": "Ispezione",
   "catLubrication": "Lubrificazione",
   "catTightening": "Serraggio",
-
   "cilt_clean1": "Pulire esterno macchina e vasca trucioli",
   "cilt_clean1_std": "Nessun truciolo, olio o detrito visibile",
   "cilt_clean2": "Pulire pannello di controllo e sensori",
@@ -295,8 +280,12 @@
   "cilt_tight1_std": "Coppia: 45 Nm",
   "cilt_tight2": "Verificare bulloni di ancoraggio",
   "cilt_tight2_std": "Coppia: 120 Nm, nessun movimento visibile",
-
   "freqDaily": "giornaliero",
   "freqWeekly": "settimanale",
-  "freqMonthly": "mensile"
+  "freqMonthly": "mensile",
+  "tpmFleetHealth": "Salute Impianti",
+  "tpmOverdueAlerts": "Avvisi Scaduti",
+  "tpmEquipmentOverdue": "{count} attrezzatura in ritardo",
+  "tpmEquipmentOverduePlural": "{count} attrezzature in ritardo",
+  "tpmDueSince": "Scaduto dal"
 }

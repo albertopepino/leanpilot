@@ -240,5 +240,15 @@
   "maturityLevel": "Livello di Maturità",
   "category": "Categoria",
   "score": "Punteggio",
-  "level": "Livello"
+  "level": "Livello",
+
+  "catLeadership": "Leadership",
+  "catStrategy": "Strategia",
+  "catPeople": "Persone",
+  "catPartnerships": "Partnership e Risorse",
+  "catProcesses": "Processi",
+  "catCustomer_results": "Risultati Clienti",
+  "catPeople_results": "Risultati Persone",
+  "catSociety_results": "Risultati Società",
+  "catKey_results": "Risultati Chiave"
 }

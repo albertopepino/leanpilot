@@ -32,7 +32,6 @@
   "remove": "Entfernen",
   "saveAnalysis": "Analyse speichern",
   "exportPdf": "PDF exportieren",
-
   "savedAnalyses": "Gespeicherte Analysen",
   "newAnalysis": "Neue Analyse",
   "loadError": "Analysen konnten nicht geladen werden",
@@ -60,7 +59,6 @@
   "close": "Schließen",
   "loading": "Wird geladen...",
   "retry": "Erneut versuchen",
-
   "ishikawaTitle": "Ishikawa-Diagramm (Fischgräte)",
   "effectProblem": "Wirkung / Problem",
   "effectPlaceholder": "Was ist das Problem oder der unerwünschte Effekt?",
@@ -89,7 +87,6 @@
   "showAll": "Alle anzeigen",
   "category": "Kategorie",
   "cause": "Ursache",
-
   "paretoTitle": "Pareto-Analyse",
   "paretoSubtitle": "Fokus auf die wesentlichen Wenigen — 80/20-Regel",
   "categories": "Kategorien",
@@ -109,7 +106,6 @@
   "itSystemDown": "IT-System ausgefallen",
   "other": "Sonstiges",
   "topContributor": "Hauptverursacher",
-
   "a3Title": "A3-Problembericht",
   "a3Subtitle": "Strukturiertes Denken auf einem einzigen Blatt",
   "a3TitlePlaceholder": "A3-Berichtstitel...",
@@ -137,7 +133,6 @@
   "results": "8. Ergebnisse",
   "resultsHint": "Tatsächliche Ergebnisse, Daten und Lessons Learned dokumentieren.",
   "workflow": "Status-Workflow",
-
   "owner": "Verantwortlicher",
   "ownerPlaceholder": "Name des A3-Verantwortlichen...",
   "date": "Datum",
@@ -146,7 +141,6 @@
   "statusInReview": "In Überprüfung",
   "statusApproved": "Genehmigt",
   "statusClosed": "Abgeschlossen",
-
   "newReport": "Neu",
   "loadReport": "Laden",
   "saveReport": "Speichern",
@@ -159,9 +153,7 @@
   "loadedDemo": "Demodaten werden angezeigt (API nicht verfügbar).",
   "statusUpdated": "Status aktualisiert.",
   "statusFailed": "Status konnte auf dem Server nicht aktualisiert werden.",
-
   "investigateWith5Why": "Mit 5 WHY untersuchen",
-
   "dsDowntime": "Stillstandsursachen",
   "dsDefects": "Fehlerarten",
   "dsScrap": "Ausschussgründe",
@@ -214,8 +206,36 @@
   "andonMaintenance": "Wartungsruf",
   "andonQuality": "Qualitätsstopp",
   "andonSafety": "Sicherheitsstopp",
-
   "validationMinWhys": "Mindestens 2 WHYs sind erforderlich",
   "statusImplementing": "In Umsetzung",
-  "statusCompleted": "Abgeschlossen"
+  "statusCompleted": "Abgeschlossen",
+  "fishboneView": "Fischgräte",
+  "listView": "Listenansicht",
+  "listViewDesc": "Strukturierte Liste aller Ursachen nach Kategorie",
+  "voteUp": "Stimme hinzufügen",
+  "voteDown": "Stimme entfernen",
+  "topCauses": "Meistgewählte Ursachen",
+  "trackWithKaizen": "Mit Kaizen verfolgen",
+  "pdcaCycle": "PDCA-Zyklus",
+  "pdcaPlan": "Planen",
+  "pdcaDo": "Umsetzen",
+  "pdcaCheck": "Prüfen",
+  "pdcaAct": "Handeln",
+  "mentorReview": "Mentor-Review",
+  "mentorReviewHint": "Lassen Sie einen Mentor dieses A3 auf Qualität und Vollständigkeit prüfen",
+  "reviewerName": "Name des Prüfers",
+  "reviewerNamePlaceholder": "Name des Mentors / Coaches...",
+  "reviewDate": "Prüfdatum",
+  "approvalStatus": "Genehmigungsstatus",
+  "mentorDraft": "Entwurf",
+  "mentorReviewed": "Geprüft",
+  "mentorApproved": "Genehmigt",
+  "reviewComments": "Prüfkommentare",
+  "reviewCommentsPlaceholder": "Feedback und Vorschläge des Mentors...",
+  "suggestedNextSteps": "Empfohlene nächste Schritte",
+  "nextStepsDesc": "Basierend auf der Ursachenanalyse, erwägen Sie diese Folgemaßnahmen",
+  "createKaizen": "Kaizen erstellen",
+  "openIshikawa": "Ishikawa öffnen",
+  "noParetoData": "Keine Daten für die Pareto-Analyse verfügbar",
+  "confirmDelete": "Sind Sie sicher, dass Sie diese Analyse loschen mochten?"
 }

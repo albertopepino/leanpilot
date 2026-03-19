@@ -14,5 +14,8 @@
   "goodPieces": "Dobrih komada",
   "scrapPieces": "Škart komada",
   "oee": "OEE",
-  "downtime": "Zastoj (min)"
+  "downtime": "Zastoj (min)",
+  "manual": "Ručni unos",
+  "scrap": "Škart",
+  "recent": "Nedavne primopredaje"
 }

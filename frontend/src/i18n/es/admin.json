@@ -98,5 +98,11 @@
   "groupNoMembers": "Aún no hay miembros en este grupo",
   "groupPoliciesSaved": "Políticas guardadas",
   "groupPoliciesNote": "Cuando un usuario pertenece a múltiples grupos, se aplica el nivel más permisivo por herramienta.",
-  "groupFallbackNote": "Los usuarios sin grupo utilizan los permisos predeterminados por rol."
+  "groupFallbackNote": "Los usuarios sin grupo utilizan los permisos predeterminados por rol.",
+
+  "downloadTemplates": "Descargar Plantillas",
+  "downloadTemplatesDesc": "Descargue plantillas CSV con encabezados y datos de ejemplo.",
+  "uploadImport": "Subir e Importar",
+  "uploadImportDesc": "Seleccione un tipo de datos, suba su CSV, valide e importe.",
+  "importResults": "Resultados de Importacion"
 }

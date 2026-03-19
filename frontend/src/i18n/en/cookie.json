@@ -1,0 +1,14 @@
+{
+  "title": "We value your privacy",
+  "text": "We use cookies to enhance your browsing experience and analyze site traffic.",
+  "accept": "Accept All",
+  "reject": "Reject All",
+  "settings": "Cookie Settings",
+  "save": "Save Preferences",
+  "back": "Back",
+  "essentialTitle": "Essential Cookies",
+  "essentialDesc": "Required for the site to function properly. Cannot be disabled.",
+  "analyticsTitle": "Analytics Cookies",
+  "analyticsDesc": "Help us understand how visitors interact with our website.",
+  "alwaysOn": "Always on"
+}

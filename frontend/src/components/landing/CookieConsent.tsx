@@ -1,8 +1,13 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface Props {
   t: (key: string) => string;
+}
+
+interface CookieSettingsButtonProps {
+  label?: string;
+  className?: string;
 }
 
 /**
@@ -44,6 +49,16 @@ export default function CookieConsent({ t }: Props) {
 
     setShow(false);
   };
+
+  // Allow external re-open via custom event (used by CookieSettingsButton)
+  useEffect(() => {
+    const handler = () => {
+      setShow(true);
+      setShowSettings(true);
+    };
+    window.addEventListener("leanpilot:open-cookie-settings", handler);
+    return () => window.removeEventListener("leanpilot:open-cookie-settings", handler);
+  }, []);
 
   if (!show) return null;
 
@@ -137,5 +152,32 @@ export default function CookieConsent({ t }: Props) {
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * Small "Cookie Settings" link/button that re-opens the cookie consent banner.
+ * GDPR Art. 7(3) — users must be able to withdraw consent as easily as they gave it.
+ * Import and place this in any footer or settings page.
+ */
+export function CookieSettingsButton({
+  label = "Cookie Settings",
+  className,
+}: CookieSettingsButtonProps) {
+  const handleClick = useCallback(() => {
+    window.dispatchEvent(new CustomEvent("leanpilot:open-cookie-settings"));
+  }, []);
+
+  return (
+    <button
+      onClick={handleClick}
+      className={
+        className ??
+        "text-xs text-gray-500 hover:text-white transition underline cursor-pointer"
+      }
+      type="button"
+    >
+      {label}
+    </button>
   );
 }

@@ -10,8 +10,19 @@
 
   "viewCounter": "Counter",
   "viewLog": "Log Incident",
+  "viewCross": "Safety Cross",
   "viewHistory": "History",
   "viewStats": "Statistics",
+
+  "safetyCrossTitle": "Safety Cross",
+  "safetyCrossSubtitle": "Visual daily safety status for the current month",
+  "crossNoIncident": "No incidents",
+  "crossNearMiss": "Near miss",
+  "crossIncident": "Incident",
+  "crossFuture": "Future / No data",
+  "crossSafeDays": "Safe Days",
+  "crossNearMissDays": "Near Miss Days",
+  "crossIncidentDays": "Incident Days",
 
   "logIncident": "Log Incident",
   "incidentDate": "Incident Date",

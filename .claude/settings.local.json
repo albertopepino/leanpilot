@@ -57,7 +57,8 @@
       "Bash(tar czf:*)",
       "Bash(ssh -i \"C:/Users/grass/Downloads/leansuite1.pem\" ubuntu@ec2-13-63-80-166.eu-north-1.compute.amazonaws.com \"cd /home/ubuntu/lean-os && docker exec lean-os-backend-1 grep ''timezone=True'' /app/app/models/audit.py\")",
       "Bash(C:/Windows/System32/OpenSSH/ssh.exe -i \"C:/Users/grass/Downloads/leansuite1.pem\" ubuntu@ec2-13-63-80-166.eu-north-1.compute.amazonaws.com \"cd /home/ubuntu/lean-os && docker exec lean-os-backend-1 grep ''timezone'' /app/app/models/audit.py\")",
-      "Bash(cmd /c \"ssh -i C:\\\\Users\\\\grass\\\\Downloads\\\\leansuite1.pem ubuntu@ec2-13-63-80-166.eu-north-1.compute.amazonaws.com \"\"cd /home/ubuntu/lean-os && docker exec lean-os-backend-1 grep timezone /app/app/models/audit.py\"\"\")"
+      "Bash(cmd /c \"ssh -i C:\\\\Users\\\\grass\\\\Downloads\\\\leansuite1.pem ubuntu@ec2-13-63-80-166.eu-north-1.compute.amazonaws.com \"\"cd /home/ubuntu/lean-os && docker exec lean-os-backend-1 grep timezone /app/app/models/audit.py\"\"\")",
+      "Bash(git rm:*)"
     ]
   }
 }

@@ -48,7 +48,6 @@
   "materialsAdded": "{count} materiales agregados",
   "errorsCount": "{count} errores",
   "noNewData": "No hay datos nuevos para importar",
-
   "ordersTotal": "{count} órdenes en total",
   "newOrder": "+ Nueva orden",
   "newProductionOrder": "Nueva orden de producción",
@@ -78,11 +77,10 @@
   "actualStart": "Inicio real",
   "actualEnd": "Fin real",
   "notes": "Notas",
-  "created": "Creado",
+  "created": "Creada",
   "orderLines": "Líneas de orden",
   "failedUpdateOrder": "Error al actualizar la orden",
   "viewOnlyNotice": "Tiene acceso de solo lectura a las órdenes de producción",
-
   "titleQCPolicies": "Repositorio de documentos QC",
   "documentsStored": "{count} documentos almacenados",
   "documentsStoredSingular": "{count} documento almacenado",
@@ -111,7 +109,6 @@
   "removeConfirm": "¿Eliminar \"{title}\" del repositorio?",
   "uploadedSuccess": "\"{title}\" subido con éxito",
   "fileFormatHint": "PDF, Word (.docx), JPEG, PNG — Máx. 20 MB",
-
   "titleQCChecks": "Controles de calidad",
   "checksRecorded": "{count} controles registrados",
   "checksRecordedSingular": "{count} control registrado",
@@ -172,7 +169,6 @@
   "measuredValue": "Valor medido",
   "enterObservation": "Ingrese observación...",
   "templates": "Plantillas",
-
   "titleNCR": "Informes de no conformidad",
   "ncrTotal": "{count} NCRs en total",
   "ncrTotalSingular": "{count} NCR en total",
@@ -209,7 +205,6 @@
   "failedCreateNCR": "Error al crear NCR",
   "failedUpdateNCR": "Error al actualizar NCR",
   "saving": "Guardando...",
-
   "titleCAPA": "Acciones correctivas y preventivas",
   "capaTotal": "{count} CAPAs",
   "capaCorrective": "correctivas",
@@ -238,7 +233,6 @@
   "effectivenessResult": "Resultado de eficacia",
   "effectivenessHint": "¿Fue efectiva la acción? Describe el resultado...",
   "timeline": "Cronología",
-  "created": "Creada",
   "due": "Vencimiento",
   "implemented": "Implementada",
   "verified": "Verificada",
@@ -253,7 +247,6 @@
   "capaCreated": "CAPA creada con éxito",
   "capaUpdated": "CAPA actualizada",
   "view": "Ver",
-
   "titleDefectCatalog": "Catálogo de defectos",
   "defectTypesConfigured": "{count} tipos de defecto configurados",
   "addDefectType": "+ Agregar tipo de defecto",
@@ -276,5 +269,17 @@
   "catContamination": "contaminación",
   "catPackaging": "empaque",
   "catOther": "otro",
-  "noneOption": "— Ninguno —"
+  "noneOption": "— Ninguno —",
+  "productCode": "Código de Producto",
+  "productName": "Nombre del Producto",
+  "productNamePlaceholder": "ej. Cigüeñal",
+  "batchLotNumber": "Numero de Lote / Batch",
+  "productionOrder": "Orden de Produccion",
+  "activeProducts": "productos activos",
+  "addProduct": "Agregar Producto",
+  "editProduct": "Editar Producto",
+  "newProduct": "Nuevo Producto",
+  "noProducts": "Sin productos aun. Agregue manualmente o suba un archivo Excel.",
+  "productFamily": "Familia de Producto",
+  "laborMin": "Trabajo (min)"
 }

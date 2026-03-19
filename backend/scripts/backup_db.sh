@@ -2,7 +2,7 @@
 # LeanPilot Database Backup Script
 # Run via cron: 0 2 * * * /home/ubuntu/lean-os/backend/scripts/backup_db.sh
 #
-# Keeps last 14 daily backups. Stores compressed SQL dumps.
+# Keeps last 30 daily backups. Stores compressed SQL dumps.
 
 set -euo pipefail
 
@@ -11,7 +11,7 @@ DB_NAME="${POSTGRES_DB:-leanpilot}"
 DB_USER="${POSTGRES_USER:-leanpilot}"
 DB_HOST="${POSTGRES_HOST:-localhost}"
 DB_PORT="${POSTGRES_PORT:-5432}"
-RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-14}"
+RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-30}"
 
 # Fail explicitly if password not set (don't fall back to weak default)
 if [ -z "${POSTGRES_PASSWORD:-}" ]; then

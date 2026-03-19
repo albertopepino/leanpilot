@@ -1,6 +1,2 @@
-"use client";
-import ShiftHandover from "@/components/lean/ShiftHandover";
-
-export default function HandoverRoute() {
-  return <ShiftHandover />;
-}
+import { redirect } from "next/navigation";
+export default function LegacyDefineHandover() { redirect("/operations/shopfloor"); }

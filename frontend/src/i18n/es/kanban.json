@@ -1,0 +1,64 @@
+{
+  "title": "Tablero Kanban",
+  "subtitle": "Gestion de produccion pull-system con limites WIP",
+  "boardView": "Tablero",
+  "newBoard": "Nuevo Tablero",
+  "createBoard": "Crear Tablero",
+  "boardName": "Nombre del Tablero",
+  "boardNamePlaceholder": "ej. Tablero de Produccion Principal",
+  "noBoards": "No hay tableros. Cree uno para comenzar.",
+
+  "col_backlog": "Pendiente",
+  "col_in_queue": "En Cola",
+  "col_in_progress": "En Progreso",
+  "col_done": "Completado",
+  "col_shipped": "Enviado",
+  "column": "Columna",
+  "emptyColumn": "Sin tarjetas en esta columna",
+
+  "addCard": "Agregar Tarjeta",
+  "newCard": "Nueva Tarjeta",
+  "editCard": "Editar Tarjeta",
+  "createCard": "Crear Tarjeta",
+  "updateCard": "Actualizar Tarjeta",
+  "confirmDeleteCard": "Eliminar esta tarjeta?",
+
+  "orderNumber": "Orden #",
+  "productName": "Nombre del Producto",
+  "quantity": "Cantidad",
+  "priority": "Prioridad",
+  "priority_low": "Baja",
+  "priority_medium": "Media",
+  "priority_high": "Alta",
+  "priority_urgent": "Urgente",
+  "dueDate": "Fecha Limite",
+  "assignedLine": "Linea Asignada",
+  "description": "Descripcion",
+  "descriptionPlaceholder": "Descripcion de la tarjeta...",
+  "titlePlaceholder": "Ingrese titulo de tarjeta...",
+  "unassigned": "Sin asignar",
+
+  "pull": "PULL",
+  "leadTime": "Tiempo de Entrega",
+  "cycleTime": "Tiempo de Ciclo",
+
+  "filters": "Filtros",
+  "allPriorities": "Todas las Prioridades",
+  "allLines": "Todas las Lineas",
+
+  "totalWIP": "WIP Total",
+  "avgLeadTime": "Tiempo Entrega Promedio",
+  "throughput": "Rendimiento",
+  "onTimeDelivery": "Entrega a Tiempo",
+
+  "saving": "Guardando...",
+  "cancel": "Cancelar",
+
+  "blocked": "Bloqueado",
+  "markBlocked": "Marcar como Bloqueado",
+  "blockedReasonPlaceholder": "Razon del bloqueo...",
+  "cardAge": "Edad",
+  "days": "dias",
+
+  "exportTitle": "Exportacion Tablero Kanban"
+}

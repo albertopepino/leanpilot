@@ -29,9 +29,10 @@ const statusMap: Record<string, { bg: string; text: string; dot: string }> = {
 const fallback = { bg: "bg-gray-50 dark:bg-gray-800", text: "text-gray-600 dark:text-gray-400", dot: "bg-gray-400" };
 
 function StatusBadge({ status, variant = "pill" }: StatusBadgeProps) {
-  const key = status.toLowerCase().replace(/\s+/g, "_");
+  const safeStatus = status || "unknown";
+  const key = safeStatus.toLowerCase().replace(/\s+/g, "_");
   const colors = statusMap[key] || fallback;
-  const label = status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const label = safeStatus.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   if (variant === "dot") {
     return (

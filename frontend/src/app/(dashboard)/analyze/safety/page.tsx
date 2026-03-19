@@ -1,6 +1,2 @@
-"use client";
-import SafetyTracker from "@/components/lean/SafetyTracker";
-
-export default function SafetyRoute() {
-  return <SafetyTracker />;
-}
+import { redirect } from "next/navigation";
+export default function LegacyAnalyzeSafety() { redirect("/operations/safety"); }

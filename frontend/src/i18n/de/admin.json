@@ -88,5 +88,11 @@
   "groupNoMembers": "Noch keine Mitglieder in dieser Gruppe",
   "groupPoliciesSaved": "Richtlinien gespeichert",
   "groupPoliciesNote": "Wenn ein Benutzer mehreren Gruppen angehört, gilt die freizügigste Berechtigung pro Werkzeug.",
-  "groupFallbackNote": "Benutzer ohne Gruppe verwenden rollenbasierte Standardberechtigungen."
+  "groupFallbackNote": "Benutzer ohne Gruppe verwenden rollenbasierte Standardberechtigungen.",
+
+  "downloadTemplates": "Vorlagen Herunterladen",
+  "downloadTemplatesDesc": "CSV-Vorlagen mit Kopfzeilen und Beispieldaten herunterladen.",
+  "uploadImport": "Hochladen und Importieren",
+  "uploadImportDesc": "Datentyp auswahlen, CSV hochladen, validieren und importieren.",
+  "importResults": "Import-Ergebnisse"
 }

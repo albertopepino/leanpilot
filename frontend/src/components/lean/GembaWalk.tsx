@@ -228,9 +228,23 @@ export default function GembaWalk() {
     try {
       const res = await advancedLeanApi.listGembaWalks();
       const items: any[] = Array.isArray(res.data) ? res.data : [];
+      // Map observation_type from backend to frontend category
+      const typeToCategory: Record<string, ObservationCategory> = {
+        safety: "Safety", quality: "Quality", productivity: "Productivity",
+        "5s": "5S", maintenance: "Maintenance", positive: "Quality",
+        concern: "Quality", idea: "Productivity",
+      };
       setHistory(
         items.map((w: any) => {
-          const obs: Observation[] = w.observations ?? [];
+          const rawObs = w.observations ?? [];
+          const obs: Observation[] = rawObs.map((o: any) => ({
+            id: o.id ?? uid(),
+            description: o.description ?? "",
+            category: typeToCategory[(o.category || o.observation_type || "").toLowerCase()] ?? "Quality",
+            severity: o.severity ?? (o.priority === "high" ? "critical" : o.priority === "medium" ? "warning" : "info"),
+            photoPlaceholder: o.photo_url ?? "",
+            actions: o.actions ?? [],
+          }));
           let openCount = 0;
           let totalAct = 0;
           for (const o of obs) {
@@ -246,7 +260,7 @@ export default function GembaWalk() {
             observationCount: obs.length,
             openActions: openCount,
             totalActions: totalAct,
-            raw: w,
+            raw: { ...w, observations: obs },
           };
         })
       );

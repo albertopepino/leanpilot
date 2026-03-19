@@ -32,7 +32,6 @@
   "remove": "Usuń",
   "saveAnalysis": "Zapisz analizę",
   "exportPdf": "Eksportuj PDF",
-
   "savedAnalyses": "Zapisane analizy",
   "newAnalysis": "Nowa analiza",
   "loadError": "Nie udało się wczytać analiz",
@@ -60,7 +59,6 @@
   "close": "Zamknij",
   "loading": "Ładowanie...",
   "retry": "Ponów",
-
   "ishikawaTitle": "Diagram Ishikawy (rybiej ości)",
   "effectProblem": "Skutek / Problem",
   "effectPlaceholder": "Jaki jest problem lub niepożądany skutek?",
@@ -89,7 +87,6 @@
   "showAll": "Pokaż wszystkie",
   "category": "Kategoria",
   "cause": "Przyczyna",
-
   "paretoTitle": "Analiza Pareto",
   "paretoSubtitle": "Skoncentruj się na kluczowej mniejszości — reguła 80/20",
   "categories": "Kategorie",
@@ -109,7 +106,6 @@
   "itSystemDown": "Awaria systemu IT",
   "other": "Inne",
   "topContributor": "Główny Czynnik",
-
   "a3Title": "Raport A3 — rozwiązywanie problemów",
   "a3Subtitle": "Uporządkowane myślenie na jednej kartce",
   "a3TitlePlaceholder": "Tytuł raportu A3...",
@@ -137,7 +133,6 @@
   "results": "8. Wyniki",
   "resultsHint": "Udokumentuj rzeczywiste wyniki, dane i wyciągnięte wnioski.",
   "workflow": "Przebieg statusów",
-
   "owner": "Właściciel",
   "ownerPlaceholder": "Imię i nazwisko właściciela A3...",
   "date": "Data",
@@ -146,7 +141,6 @@
   "statusInReview": "W przeglądzie",
   "statusApproved": "Zatwierdzone",
   "statusClosed": "Zamknięte",
-
   "newReport": "Nowy",
   "loadReport": "Wczytaj",
   "saveReport": "Zapisz",
@@ -159,9 +153,7 @@
   "loadedDemo": "Wyświetlanie danych demonstracyjnych (API niedostępne).",
   "statusUpdated": "Status zaktualizowany.",
   "statusFailed": "Nie udało się zaktualizować statusu na serwerze.",
-
   "investigateWith5Why": "Zbadaj z 5 WHY",
-
   "dsDowntime": "Przyczyny przestojów",
   "dsDefects": "Typy wad",
   "dsScrap": "Przyczyny braków",
@@ -214,8 +206,36 @@
   "andonMaintenance": "Wywołanie konserwacji",
   "andonQuality": "Zatrzymanie jakości",
   "andonSafety": "Zatrzymanie BHP",
-
   "validationMinWhys": "Wymagane są co najmniej 2 odpowiedzi DLACZEGO",
   "statusImplementing": "Wdrażanie",
-  "statusCompleted": "Ukończone"
+  "statusCompleted": "Ukończone",
+  "fishboneView": "Diagram rybiej ości",
+  "listView": "Widok listy",
+  "listViewDesc": "Uporządkowana lista wszystkich przyczyn według kategorii",
+  "voteUp": "Dodaj głos",
+  "voteDown": "Usuń głos",
+  "topCauses": "Najczęściej głosowane przyczyny",
+  "trackWithKaizen": "Śledź z Kaizen",
+  "pdcaCycle": "Cykl PDCA",
+  "pdcaPlan": "Planuj",
+  "pdcaDo": "Wykonaj",
+  "pdcaCheck": "Sprawdź",
+  "pdcaAct": "Działaj",
+  "mentorReview": "Przegląd mentora",
+  "mentorReviewHint": "Poproś mentora o przegląd tego A3 pod kątem jakości i kompletności",
+  "reviewerName": "Nazwa recenzenta",
+  "reviewerNamePlaceholder": "Nazwa mentora / coacha...",
+  "reviewDate": "Data przeglądu",
+  "approvalStatus": "Status zatwierdzenia",
+  "mentorDraft": "Szkic",
+  "mentorReviewed": "Przejrzany",
+  "mentorApproved": "Zatwierdzony",
+  "reviewComments": "Komentarze do przeglądu",
+  "reviewCommentsPlaceholder": "Uwagi i sugestie mentora...",
+  "suggestedNextSteps": "Sugerowane następne kroki",
+  "nextStepsDesc": "Na podstawie analizy przyczyn źródłowych, rozważ te działania następcze",
+  "createKaizen": "Utwórz Kaizen",
+  "openIshikawa": "Otwórz Ishikawa",
+  "noParetoData": "Brak danych do analizy Pareto",
+  "confirmDelete": "Czy na pewno chcesz usunac te analize?"
 }

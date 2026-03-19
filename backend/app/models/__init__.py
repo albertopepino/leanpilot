@@ -1,4 +1,6 @@
 from app.models.user import User
+from app.models.organization import Organization
+from app.models.user_site_role import UserSiteRole
 from app.models.factory import Factory, ProductionLine, Shift
 from app.models.production import ProductionRecord, DowntimeEvent, ScrapRecord
 from app.models.lean import (
@@ -11,6 +13,7 @@ from app.models.lean import (
     SMEDRecord,
     SMEDStep,
 )
+from app.models.lean import LeanAssessment, MindMap
 from app.models.lean_advanced import (
     SixSAudit,
     SixSAuditItem,
@@ -47,9 +50,13 @@ from app.models.leader_standard_work import LeaderStandardWork, LSWCompletion
 from app.models.audit_schedule import AuditSchedule
 from app.models.horizontal_deploy import HorizontalDeployment
 from app.models.safety import SafetyIncident
+from app.models.kanban import KanbanBoard, KanbanCard
+from app.models.pokayoke import PokaYokeDevice, PokaYokeVerification
 
 __all__ = [
     "User",
+    "Organization",
+    "UserSiteRole",
     "Factory",
     "ProductionLine",
     "Shift",
@@ -111,4 +118,10 @@ __all__ = [
     "AuditSchedule",
     "HorizontalDeployment",
     "SafetyIncident",
+    "KanbanBoard",
+    "KanbanCard",
+    "PokaYokeDevice",
+    "PokaYokeVerification",
+    "LeanAssessment",
+    "MindMap",
 ]

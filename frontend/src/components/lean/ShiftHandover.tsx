@@ -61,7 +61,7 @@ export default function ShiftHandover() {
     try {
       const { default: api } = await import('@/lib/api');
       const res = await api.get('/shift-handover', { params: { line_id: lineId, limit: 10 } });
-      setHandovers(res.data);
+      setHandovers(Array.isArray(res.data) ? res.data : []);
     } catch { setHandovers([]); }
     setLoading(false);
   }
@@ -111,14 +111,14 @@ export default function ShiftHandover() {
 
   return (
     <div className="p-4 md:p-6 space-y-6">
-      <PageHeader titleKey="shiftHandover.title" subtitleKey="shiftHandover.subtitle" icon={ArrowRightLeft}
+      <PageHeader titleKey="handover.title" subtitleKey="handover.subtitle" icon={ArrowRightLeft}
         actions={
           <div className="flex gap-2">
             <button onClick={autoGenerate} disabled={generating} className="flex items-center gap-2 px-3 py-1.5 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-500 transition disabled:opacity-50">
-              <Zap size={14} /> {generating ? (t('common.generating') || 'Generating...') : (t('shiftHandover.autoGenerate') || 'Auto-Generate')}
+              <Zap size={14} /> {generating ? (t('common.generating') || 'Generating...') : (t('handover.autoGenerate') || 'Auto-Generate')}
             </button>
             <button onClick={() => setCreateMode(true)} className="flex items-center gap-2 px-3 py-1.5 border border-th-border text-th-text rounded-lg text-sm hover:bg-th-bg-hover transition">
-              {t('shiftHandover.manual') || 'Manual Entry'}
+              {t('handover.manual') || 'Manual Entry'}
             </button>
           </div>
         }
@@ -137,11 +137,11 @@ export default function ShiftHandover() {
       {latest && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {[
-            { label: t('shiftHandover.totalPieces') || 'Total Pieces', value: latest.total_pieces, icon: Package },
-            { label: t('shiftHandover.goodPieces') || 'Good Pieces', value: latest.good_pieces, icon: CheckCircle },
-            { label: t('shiftHandover.scrap') || 'Scrap', value: latest.scrap_pieces, icon: AlertTriangle },
+            { label: t('handover.totalPieces') || 'Total Pieces', value: latest.total_pieces, icon: Package },
+            { label: t('handover.goodPieces') || 'Good Pieces', value: latest.good_pieces, icon: CheckCircle },
+            { label: t('handover.scrap') || 'Scrap', value: latest.scrap_pieces, icon: AlertTriangle },
             { label: 'OEE', value: latest.oee_percent != null ? `${latest.oee_percent}%` : '--', icon: Percent },
-            { label: t('shiftHandover.downtime') || 'Downtime', value: latest.downtime_minutes != null ? `${latest.downtime_minutes}m` : '--', icon: Clock },
+            { label: t('handover.downtime') || 'Downtime', value: latest.downtime_minutes != null ? `${latest.downtime_minutes}m` : '--', icon: Clock },
           ].map((card, i) => (
             <div key={i} className="bg-th-card rounded-xl border border-th-border p-3">
               <div className="flex items-center gap-2 mb-1">
@@ -157,7 +157,7 @@ export default function ShiftHandover() {
       {/* Recent handovers list */}
       <div className="bg-th-card rounded-xl border border-th-border divide-y divide-th-border">
         <div className="px-4 py-3">
-          <h3 className="text-sm font-semibold text-th-text">{t('shiftHandover.recent') || 'Recent Handovers'}</h3>
+          <h3 className="text-sm font-semibold text-th-text">{t('handover.recent') || 'Recent Handovers'}</h3>
         </div>
         {loading && <div className="p-4 text-sm text-th-text-3">{t('common.loading') || 'Loading...'}</div>}
         {!loading && handovers.length === 0 && <div className="p-4 text-sm text-th-text-3 italic">{t('common.noData') || 'No handovers found'}</div>}
@@ -175,18 +175,18 @@ export default function ShiftHandover() {
               <div className="mt-3 space-y-2 text-sm">
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div><span className="text-th-text-3">Total:</span> <span className="text-th-text font-medium">{h.total_pieces}</span></div>
-                  <div><span className="text-th-text-3">Good:</span> <span className="text-th-text font-medium">{h.good_pieces}</span></div>
-                  <div><span className="text-th-text-3">Scrap:</span> <span className="text-th-text font-medium">{h.scrap_pieces}</span></div>
-                  <div><span className="text-th-text-3">Downtime:</span> <span className="text-th-text font-medium">{h.downtime_minutes ?? '--'}m</span></div>
+                  <div><span className="text-th-text-3">{t('handover.good') || 'Good'}:</span> <span className="text-th-text font-medium">{h.good_pieces}</span></div>
+                  <div><span className="text-th-text-3">{t('handover.scrap') || 'Scrap'}:</span> <span className="text-th-text font-medium">{h.scrap_pieces}</span></div>
+                  <div><span className="text-th-text-3">{t('handover.downtime') || 'Downtime'}:</span> <span className="text-th-text font-medium">{h.downtime_minutes ?? '--'}m</span></div>
                 </div>
-                {h.safety_issues && <p className="text-xs"><span className="font-semibold text-rose-600">Safety:</span> <span className="text-th-text">{h.safety_issues}</span></p>}
-                {h.quality_issues && <p className="text-xs"><span className="font-semibold text-blue-600">Quality:</span> <span className="text-th-text">{h.quality_issues}</span></p>}
-                {h.equipment_issues && <p className="text-xs"><span className="font-semibold text-amber-600">Equipment:</span> <span className="text-th-text">{h.equipment_issues}</span></p>}
-                {h.material_issues && <p className="text-xs"><span className="font-semibold text-purple-600">Material:</span> <span className="text-th-text">{h.material_issues}</span></p>}
-                {h.pending_actions && <p className="text-xs"><span className="font-semibold text-th-text-2">Pending:</span> <span className="text-th-text">{h.pending_actions}</span></p>}
+                {h.safety_issues && <p className="text-xs"><span className="font-semibold text-rose-600">{t('handover.safety') || 'Safety'}:</span> <span className="text-th-text">{h.safety_issues}</span></p>}
+                {h.quality_issues && <p className="text-xs"><span className="font-semibold text-blue-600">{t('handover.quality') || 'Quality'}:</span> <span className="text-th-text">{h.quality_issues}</span></p>}
+                {h.equipment_issues && <p className="text-xs"><span className="font-semibold text-amber-600">{t('handover.equipment') || 'Equipment'}:</span> <span className="text-th-text">{h.equipment_issues}</span></p>}
+                {h.material_issues && <p className="text-xs"><span className="font-semibold text-purple-600">{t('handover.material') || 'Material'}:</span> <span className="text-th-text">{h.material_issues}</span></p>}
+                {h.pending_actions && <p className="text-xs"><span className="font-semibold text-th-text-2">{t('handover.pending') || 'Pending'}:</span> <span className="text-th-text">{h.pending_actions}</span></p>}
                 {!h.acknowledged && (
                   <button onClick={() => acknowledge(h.id)} className="mt-2 px-3 py-1.5 bg-brand-600 text-white rounded-lg text-xs hover:bg-brand-500 transition">
-                    {t('shiftHandover.acknowledge') || 'Acknowledge'}
+                    {t('handover.acknowledge') || 'Acknowledge'}
                   </button>
                 )}
               </div>
@@ -199,7 +199,7 @@ export default function ShiftHandover() {
       {createMode && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setCreateMode(false)}>
           <div className="bg-th-card rounded-xl p-6 w-full max-w-lg space-y-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-th-text">{t('shiftHandover.manual') || 'Manual Handover Entry'}</h3>
+            <h3 className="text-lg font-bold text-th-text">{t('handover.manual') || 'Manual Handover Entry'}</h3>
             <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="text-xs text-th-text-3 block mb-1">Shift</label>
@@ -230,10 +230,10 @@ export default function ShiftHandover() {
                 <input type="number" value={form.downtime_minutes} onChange={e => setForm(p => ({ ...p, downtime_minutes: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm" />
               </div>
             </div>
-            {['safety_issues', 'quality_issues', 'equipment_issues', 'material_issues', 'pending_actions'].map(field => (
+            {(['safety_issues', 'quality_issues', 'equipment_issues', 'material_issues', 'pending_actions'] as const).map(field => (
               <div key={field}>
                 <label className="text-xs text-th-text-3 block mb-1">{field.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}</label>
-                <textarea value={(form as any)[field]} onChange={e => setForm(p => ({ ...p, [field]: e.target.value }))} rows={2} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm" />
+                <textarea value={form[field]} onChange={e => setForm(p => ({ ...p, [field]: e.target.value }))} rows={2} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm" />
               </div>
             ))}
             <div className="flex gap-2 pt-2">

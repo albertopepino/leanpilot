@@ -1,50 +1,83 @@
 /**
- * Maps legacy view IDs (used in old state-based routing) to App Router paths.
- * Used to bridge components that still call onNavigate(viewId).
+ * Maps view IDs (used in sidebar navigation and legacy onNavigate calls)
+ * to App Router paths.
  */
 const VIEW_TO_ROUTE: Record<string, string> = {
-  home: "/home",
-  "master-calendar": "/home/calendar",
-  "lean-scorecard": "/home/scorecard",
-  assessment: "/getting-started/assessment",
-  copilot: "/getting-started/copilot",
-  resources: "/getting-started/resources",
-  "production-orders": "/define/production-orders",
-  products: "/define/products",
-  production: "/define/production",
-  andon: "/define/andon",
-  dashboard: "/measure/oee",
-  "consolidated-oee": "/measure/consolidated",
-  hourly: "/measure/hourly",
-  pareto: "/measure/pareto",
-  "defect-catalog": "/measure/defects",
-  "qc-checks": "/measure/qc",
-  "five-why": "/analyze/five-why",
-  ishikawa: "/analyze/ishikawa",
-  vsm: "/analyze/vsm",
-  gemba: "/analyze/gemba",
-  safety: "/analyze/safety",
-  a3: "/analyze/a3",
-  "mind-map": "/analyze/mind-map",
-  waste: "/analyze/waste",
-  kaizen: "/improve/kaizen",
-  smed: "/improve/smed",
-  capa: "/improve/capa",
-  tpm: "/improve/tpm",
-  cilt: "/improve/cilt",
-  "six-s": "/control/six-s",
-  "qc-policies": "/control/qc-policies",
-  ncr: "/control/ncr",
-  settings: "/system/settings",
+  // ── Operations ──
+  home: "/operations/home",
+  dashboard: "/operations/home",
+  safety: "/operations/safety",
+  shopfloor: "/operations/shopfloor",
+  sqcdp: "/operations/sqcdp",
+  production: "/operations/production",
+  andon: "/operations/andon",
+  oee: "/operations/oee",
+
+  // ── Quality ──
+  quality: "/quality",
+  "qc-dashboard": "/quality",
+
+  // ── Planning ──
+  orders: "/planning/orders",
+  "production-orders": "/planning/orders",
+  products: "/planning/products",
+
+  // ── Improvement ──
+  kaizen: "/improvement/kaizen",
+  "root-cause": "/improvement/root-cause",
+  "five-why": "/improvement/root-cause",
+  ishikawa: "/improvement/root-cause",
+  a3: "/improvement/a3",
+  gemba: "/improvement/gemba",
+  "lean-tools": "/improvement/lean-tools",
+  vsm: "/improvement/lean-tools",
+  waste: "/improvement/lean-tools",
+  tpm: "/improvement/tpm",
+  "six-s": "/improvement/six-s",
+
+  // ── System ──
   admin: "/system/admin",
-  sqcdp: "/home/sqcdp",
-  "shift-handover": "/define/handover",
-  lsw: "/control/lsw",
-  "audit-scheduler": "/control/audit-scheduler",
-  "horizontal-deploy": "/improve/horizontal-deploy",
+  settings: "/system/settings",
+
+  // ── Operations (additional) ──
+  handover: "/operations/handover",
+  "shift-handover": "/operations/handover",
+
+  // ── Quality (additional) ──
+  "poka-yoke": "/quality/poka-yoke",
+  spc: "/quality/spc",
+
+  // ── Planning (additional) ──
+  kanban: "/planning/kanban",
+
+  // ── Improvement (additional) ──
+  smed: "/improvement/smed",
+
+  // Legacy aliases (redirect to closest new path)
+  hourly: "/operations/production",
+  "production-input": "/operations/production",
+  ncr: "/quality",
+  capa: "/quality",
+  defects: "/quality",
+  lsw: "/improvement/kaizen",
+  "audit-scheduler": "/system/settings",
+  assessment: "/system/settings",
+  copilot: "/system/settings",
+  resources: "/system/settings",
+  "lean-scorecard": "/operations/home",
+  "master-calendar": "/system/settings",
+  "consolidated-oee": "/operations/oee",
+  pareto: "/improvement/pareto",
+  "defect-catalog": "/quality",
+  "qc-checks": "/quality",
+  "mind-map": "/improvement/root-cause",
+  cilt: "/improvement/tpm",
+  "qc-policies": "/quality",
+  "horizontal-deploy": "/improvement/kaizen",
+  "setup-wizard": "/system/settings",
 };
 
-/** Convert a legacy view ID to an App Router path */
+/** Convert a view ID to an App Router path */
 export function viewToRoute(viewId: string): string {
-  return VIEW_TO_ROUTE[viewId] || `/home`;
+  return VIEW_TO_ROUTE[viewId] || `/operations/home`;
 }

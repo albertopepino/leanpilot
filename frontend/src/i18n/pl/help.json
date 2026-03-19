@@ -1,0 +1,199 @@
+{
+  "ariaLabel": "Panel Pomocy Kontekstowej",
+  "openHelp": "Co to jest?",
+  "whatIsThis": "Co to jest?",
+  "whenToUse": "Kiedy uzywac",
+  "dmaicPhase": "Faza DMAIC",
+  "connectedTools": "Powiazane Narzedzia",
+  "proTip": "Wskazowka Black Belt",
+
+  "phaseDefine": "Definiuj",
+  "phaseMeasure": "Mierz",
+  "phaseAnalyze": "Analizuj",
+  "phaseImprove": "Ulepszaj",
+  "phaseControl": "Kontroluj",
+
+  "defineReason": "To narzedzie pomaga zdefiniowac problem i zrozumiec obecny stan przed podjęciem dzialania.",
+  "measureReason": "To narzedzie zbiera i wizualizuje dane, aby okreslic luke miedzy obecna a docelowa wydajnoscia.",
+  "analyzeReason": "To narzedzie pomaga identyfikowac i walidowac przyczyny zrodlowe za pomoca strukturalnych metod analizy.",
+  "improveReason": "To narzedzie wspiera opracowywanie, testowanie i wdrazanie srodkow zaradczych eliminujacych przyczyny zrodlowe.",
+  "controlReason": "To narzedzie utrzymuje osiagniete wyniki poprzez standaryzacje nowych procesow i monitorowanie wydajnosci.",
+
+  "oee_whatIsThis": "OEE (Calkowita Efektywnosc Sprzetu) to referencyjny wskaznik produktywnosci produkcyjnej. Laczy Dostepnosc, Wydajnosc i Jakosc w jeden procent. Swiatowej klasy OEE wynosi 85% lub wiecej.",
+  "oee_whenToUse": "Sprawdzaj Dashboard OEE codziennie na spotkaniach Tier 1 i co tydzien do analizy trendow.",
+  "oee_proTip": "Nie goncie za 100% OEE — skupcie sie najpierw na najwiekszej kategorii strat.",
+
+  "andon_whatIsThis": "Tablica Andon to system zarzadzania wizualnego w czasie rzeczywistym, sygnalizujacy stan linii produkcyjnych i umozliwiajacy operatorom natychmiastowe zglaszanie problemow.",
+  "andon_whenToUse": "Uzywaj Tablicy Andon w sposob ciagly podczas zmian produkcyjnych.",
+  "andon_proTip": "Wartosc Andon tkwi w szybkosci reakcji, nie w samym alarmie. Ustal reguly eskalacji z okreslonymi czasami.",
+
+  "sqcdp_whatIsThis": "SQCDP (Bezpieczenstwo, Jakosc, Koszt, Dostawa, Ludzie) to ustrukturyzowana tablica zarzadzania dziennego. Kazda kategoria otrzymuje prosty status Czerwony/Zielony/Zolty.",
+  "sqcdp_whenToUse": "Przeprowadzaj przeglad SQCDP na poczatku kazdej zmiany. Tier 1 powinien trwac 10 minut, Tier 2 — 15 minut.",
+  "sqcdp_proTip": "Spotkanie SQCDP prowadz na stojaco, z limitem czasu i nastawieniem na dzialanie.",
+
+  "kaizen_whatIsThis": "Tablica Kaizen to Twoj system zarzadzania ciaglym doskonaleniem. Zbiera pomysly od wszystkich pracownikow fabryki i kwantyfikuje wplyw finansowy i operacyjny.",
+  "kaizen_whenToUse": "Uzywaj Tablicy Kaizen do zbierania pomyslow z Gemba Walk, analiz przyczyn zrodlowych i spotkan SQCDP.",
+  "kaizen_proTip": "Ustal cel 1 Kaizen na osobe miesiecznie. Szybkie wygrane buduja kulture doskonalenia.",
+
+  "vsm_whatIsThis": "Mapowanie Strumienia Wartosci wizualizuje caly przeplyw materialow i informacji, identyfikujac kazdy krok procesu.",
+  "vsm_whenToUse": "Twórz VSM na poczatku kazdej wiekszej inicjatywy doskonalenia. Najpierw mapuj stan obecny.",
+  "vsm_proTip": "Zawsze przejdz rzeczywisty proces (Gemba) podczas mapowania — nigdy nie tworz VSM z sali konferencyjnej.",
+
+  "sixs_whatIsThis": "Audyt 6S to systematyczna metoda organizacji miejsca pracy. Szesc S to Sortuj, Systematyzuj, Sprzataj, Standaryzuj, Samodyscyplina i Bezpieczenstwo.",
+  "sixs_whenToUse": "Przeprowadzaj audyty 6S co najmniej raz w tygodniu dla kazdego obszaru.",
+  "sixs_proTip": "6S to nie program sprzatania — to system dyscypliny. Trend wyniku audytu jest wazniejszy niz wartosc biezaca.",
+
+  "smed_whatIsThis": "SMED to systematyczna metoda redukcji czasu przezbrojenia poprzez konwersje zadan wewnetrznych na zewnetrzne. Typowa redukcja to 50-90%.",
+  "smed_whenToUse": "Stosuj SMED, gdy czas przezbrojenia stanowi znaczna czesc przestojow.",
+  "smed_proTip": "Nagraj na wideo kazde przezbrojenie przed analiza. Odkryjesz, ze 30-50% czasu wewnetrznego to praca zewnetrzna.",
+
+  "tpm_whatIsThis": "TPM (Calkowite Produktywne Utrzymanie Ruchu) to holistyczne podejscie do konserwacji sprzetu zmierzajace do zera awarii, zera defektow i zera wypadkow.",
+  "tpm_whenToUse": "Uzywaj Dashboardu TPM do monitorowania stanu sprzetu i planowania konserwacji prewencyjnej.",
+  "tpm_proTip": "Zacznij TPM od sprzetu bedacego waskiem gardlem — tam awarie bolą najbardziej.",
+
+  "gemba_whatIsThis": "Gemba Walk to praktyka chodzenia do rzeczywistego miejsca pracy w celu obserwacji procesow i identyfikacji marnotrawstwa. To nie audyt — to cwiczenie uczenia sie.",
+  "gemba_whenToUse": "Liderzy powinni wykonywac ustrukturyzowany Gemba Walk co najmniej raz w tygodniu.",
+  "gemba_proTip": "Przestrzegaj 3 zasad Gemba: idz i zobacz, pytaj dlaczego, okazuj szacunek.",
+
+  "a3_whatIsThis": "Raport A3 to ustrukturyzowana metodologia rozwiazywania problemow na jednym arkuszu A3, podazajaca za cyklem PDCA.",
+  "a3_whenToUse": "Uzywaj A3 dla srednich i duzych problemow wymagajacych wspolpracy miedzyfunkcyjnej.",
+  "a3_proTip": "A3 to narzedzie coachingu, nie formularz do wypelnienia. Dialog mentor-uczeń jest cenniejszy niz sam dokument.",
+
+  "hourly_whatIsThis": "Tablica Produkcji Godzinowej sledzi produkcje planowana vs rzeczywista dla kazdej godziny zmiany.",
+  "hourly_whenToUse": "Uzywaj Tablicy Godzinowej podczas kazdej zmiany. Operatorzy powinni ja aktualizowac co godzine.",
+  "hourly_proTip": "Sila sledzenia godzinowego tkwi w reakcji, nie w rejestrowaniu.",
+
+  "lsw_whatIsThis": "Praca Standardowa Lidera definiuje powtarzalne zadania i zachowania oczekiwane dla kazdego poziomu przywodztwa.",
+  "lsw_whenToUse": "Twórz LSW dla kazdej roli liderskiej. Sledz wskazniki realizacji, aby identyfikowac mozliwosci coachingu.",
+  "lsw_proTip": "LSW nie sluzy do kontrolowania liderow — chroni ich czas na najwazniejsza prace.",
+
+  "handover_whatIsThis": "Przekazanie Zmiany to ustrukturyzowany proces komunikacji miedzy zmianami wychodzaca i przychodzaca.",
+  "handover_whenToUse": "Wykonuj przekazanie zmiany przy kazdej zmianie bez wyjatku.",
+  "handover_proTip": "Najlepsze przekazania przestrzegaja standardowego formatu: Bezpieczenstwo, Jakosc, Produkcja, Sprzet, Ludzie.",
+
+  "safety_whatIsThis": "Tracker BHP rejestruje wszystkie incydenty bezpieczenstwa, zdarzenia potencjalnie wypadkowe i zgloszenia zagrozen.",
+  "safety_whenToUse": "Rejestruj kazde zdarzenie bezpieczenstwa natychmiast. Przeglądaj wszystkie zdarzenia na codziennym spotkaniu SQCDP.",
+  "safety_proTip": "Doceniaj zglaszanie zdarzen potencjalnie wypadkowych — to znak zaufania do systemu.",
+
+  "kanban_whatIsThis": "Kanban to wizualny system planowania kontrolujacy przeplyw pracy za pomoca sygnalow, wdrazajacy system ssacy zapobiegajacy nadprodukcji.",
+  "kanban_whenToUse": "Wdroz Kanban, gdy musisz kontrolowac poziomy zapasow miedzy etapami procesu.",
+  "kanban_proTip": "Zacznij od wiekszej liczby kart Kanban, a nastepnie systematycznie je redukuj.",
+
+  "pokayoke_whatIsThis": "Poka-Yoke (zabezpieczenie przed bledem) to praktyka projektowania procesow tak, aby bledy byly niemozliwe lub natychmiast wykrywane.",
+  "pokayoke_whenToUse": "Stosuj Poka-Yoke, gdy analiza 5 Why ujawni blad ludzki jako przyczyne zrodlowa.",
+  "pokayoke_proTip": "Najlepsze Poka-Yoke sa proste i tanie: asymetryczne zlacza, kodowanie kolorami, listy kontrolne z wymuszona kolejnoscia.",
+
+  "fivewhy_whatIsThis": "Analiza 5 Why to technika analizy przyczyn zrodlowych, ktora drazy od objawu do fundamentalnej przyczyny pytajac wielokrotnie 'Dlaczego?'",
+  "fivewhy_whenToUse": "Uzywaj 5 Why przy kazdym istotnym defekcie jakosciowym, awarii sprzetu lub incydencie bezpieczenstwa.",
+  "fivewhy_proTip": "Kazda odpowiedz 'Dlaczego' musi byc faktem, nie opinia. Weryfikuj kazda odpowiedz na Gemba.",
+
+  "ishikawa_whatIsThis": "Diagram Ishikawy (Oscia Rybia) organizuje potencjalne przyczyny w kategorie: Czlowiek, Maszyna, Metoda, Material, Pomiar i Srodowisko.",
+  "ishikawa_whenToUse": "Uzywaj Ishikawy, gdy problem ma wiele potencjalnych przyczyn w roznych kategoriach.",
+  "ishikawa_proTip": "Nie przeprowadzaj burzy mozgow z sali konferencyjnej — idz na Gemba i buduj diagram obserwujac rzeczywisty proces.",
+
+  "pareto_whatIsThis": "Diagram Pareto stosuje zasade 80/20 do danych produkcyjnych, przeksztalcajac przytlaczajace dane w jasne priorytety.",
+  "pareto_whenToUse": "Uzywaj Diagramu Pareto, gdy masz dane kategoryczne i musisz priorytetyzowac dzialania doskonalace.",
+  "pareto_proTip": "Po naprawieniu glownej kategorii Pareto zawsze ponownie przeprowadz analize.",
+
+  "waste_whatIsThis": "Tracker Marnotrawstwa uzywa frameworku TIMWOODS do identyfikacji i kwantyfikacji osmiu typow marnotrawstwa produkcyjnego.",
+  "waste_whenToUse": "Uzywaj Trackera podczas Gemba Walk do rejestrowania obserwacji marnotrawstwa w czasie rzeczywistym.",
+  "waste_proTip": "Nie probuj eliminowac calego marnotrawstwa na raz — uzyj myslenia Pareto do ataku na najwieksza kategorie.",
+
+  "cilt_whatIsThis": "CILT (Czyszczenie, Inspekcja, Smarowanie, Dokrecanie) to lista kontrolna autonomicznej konserwacji operatora stanowiaca baze TPM.",
+  "cilt_whenToUse": "Wykonuj kontrole CILT na poczatku kazdej zmiany. Kazda maszyna powinna miec wizualny standard CILT.",
+  "cilt_proTip": "Najlepsze standardy CILT sa wizualne — zdjecia stanu 'dobrego' vs 'zlego'. Cel: obchod CILT w mniej niz 10 minut.",
+
+  "qc_whatIsThis": "Dashboard Kontroli Jakosci zapewnia scentralizowany widok wszystkich dzialan jakosciowych.",
+  "qc_whenToUse": "Sprawdzaj Dashboard QC codziennie. Analizuj trendy co tydzien. Przeglądaj skutecznosc CAPA co miesiac.",
+  "qc_proTip": "Jakosc jest darmowa — jej brak kosztuje. Sledz Koszty Zlej Jakosci (COPQ).",
+
+  "spc_whatIsThis": "Karty SPC monitoruja zmiennosc procesu z limitami kontrolnymi obliczonymi z Twoich danych, rozrozniajac zmiennosc normalna od sygnalow specjalnych.",
+  "spc_whenToUse": "Stosuj SPC do cech krytycznych dla jakosci (CTQ). Monitoruj karty SPC w czasie rzeczywistym.",
+  "spc_proTip": "Nigdy nie myl granic specyfikacji z granicami kontrolnymi. Skup sie na redukcji zmiennosci.",
+
+  "assessment_whatIsThis": "Ocena Lean to ustrukturyzowana ocena dojrzalosci, ktora punktuje Twoja fabryke we wszystkich wymiarach Lean manufacturing.",
+  "assessment_whenToUse": "Wykonaj Ocene Lean przy wdrazaniu LeanPilot, nastepnie powtarzaj co 6 miesiecy.",
+  "assessment_proTip": "Badz szczery w ocenie — zawyzone wyniki prowadza do blednych priorytetow.",
+
+  "auditScheduler_whatIsThis": "Harmonogram Audytow zarzadza wszystkimi cyklami audytow: audyty 6S, audyty procesow, obchody bezpieczenstwa i trasy Gemba.",
+  "auditScheduler_whenToUse": "Skonfiguruj harmonogram audytow podczas poczatkowej konfiguracji i przeglądaj go kwartalnie.",
+  "auditScheduler_proTip": "Warstwowe audyty procesow (LPA) sa najskuteczniejsze: operatorzy audytuja codziennie, przelozeni co tydzien, menedzerowie co miesiac.",
+
+  "spcTitle": "Karty SPC",
+
+  "learnMore": "Dowiedz sie wiecej",
+  "gotIt": "Rozumiem!",
+  "dismissTip": "Zamknij wskazowke",
+  "metric_explain_aria": "Wyjasnij te metryke",
+  "metric_benchmark_label": "Dobry wynik:",
+  "metric_action_label": "Jesli jest niski:",
+  "metric_status_good": "W celu",
+  "metric_status_warning": "Wymaga uwagi",
+  "metric_status_critical": "Krytyczny — wymagane dzialanie",
+
+  "metric_oee_title": "OEE",
+  "metric_oee_desc": "Calkowita Efektywnosc Wyposazenia laczy Dostepnosc x Wydajnosc x Jakosc w jeden procent. Pokazuje, ile z zaplanowanego czasu produkcji jest naprawde produktywne.",
+  "metric_oee_bench": "OEE klasy swiatowej to 85%+. Wiekszosc fabryk zaczyna od 40-60%.",
+  "metric_oee_action": "Sprawdz wykres kaskadowy strat OEE. Skoncentruj sie na kategorii strat #1.",
+
+  "metric_availability_title": "Dostepnosc",
+  "metric_availability_desc": "Procent zaplanowanego czasu produkcji, w ktorym linia faktycznie pracowala.",
+  "metric_availability_bench": "Dostepnosc klasy swiatowej to 90%+.",
+  "metric_availability_action": "Sprawdz Pareto przestojow. Jesli dominuja awarie, wzmocnij TPM/CILT.",
+
+  "metric_performance_title": "Wydajnosc",
+  "metric_performance_desc": "Procent teoretycznej maksymalnej predkosci osiagniety podczas pracy linii.",
+  "metric_performance_bench": "Wydajnosc klasy swiatowej to 95%+.",
+  "metric_performance_action": "Sprawdz mikroprzestoje i straty predkosci.",
+
+  "metric_quality_title": "Jakosc",
+  "metric_quality_desc": "Procent czesci wyprodukowanych poprawnie za pierwszym razem.",
+  "metric_quality_bench": "Wskaznik jakosci klasy swiatowej to 99,9%+.",
+  "metric_quality_action": "Sprawdz Pareto defektow. Zastosuj Poka-Yoke. Uzyj kart SPC.",
+
+  "metric_mtbf_title": "MTBF",
+  "metric_mtbf_desc": "Sredni Czas Miedzy Awariami — sredni czas pracy maszyny przed awaria.",
+  "metric_mtbf_bench": "Cel zalezy od typu maszyny. MTBF powinien rosnac w czasie.",
+  "metric_mtbf_action": "Wzmocnij plany konserwacji zapobiegawczej.",
+
+  "metric_mttr_title": "MTTR",
+  "metric_mttr_desc": "Sredni Czas Naprawy — sredni czas przywracania maszyny po awarii.",
+  "metric_mttr_bench": "Cel ponizej 30 minut dla wiekszosci urzadzen.",
+  "metric_mttr_action": "Wstepnie rozmieszczaj czesci zamienne i narzedzia.",
+
+  "metric_fty_title": "FTY",
+  "metric_fty_desc": "Wydajnosc Pierwszego Przebiegu — procent jednostek przechodzacych inspekcje za pierwszym razem.",
+  "metric_fty_bench": "Cel 95%+ dla wiekszosci procesow.",
+  "metric_fty_action": "Zidentyfikuj glowne typy defektow analiza Pareto.",
+
+  "metric_cp_title": "Cp",
+  "metric_cp_desc": "Wskaznik Zdolnosci Procesu — mierzy czy rozrzut procesu miesci sie w tolerancji specyfikacji.",
+  "metric_cp_bench": "Cp >= 1,33 oznacza, ze proces jest zdolny.",
+  "metric_cp_action": "Zmniejsz zmiennosc procesu poprzez monitoring SPC.",
+
+  "metric_cpk_title": "Cpk",
+  "metric_cpk_desc": "Wskaznik Zdolnosci Procesu (centrowany) — jak Cp, ale uwzglednia centrowanie procesu.",
+  "metric_cpk_bench": "Cpk >= 1,33 to minimalny standard przemyslowy.",
+  "metric_cpk_action": "Jesli Cpk < Cp, wycentruj proces. Jesli oba sa niskie, zmniejsz zmiennosc.",
+
+  "metric_ppm_title": "PPM",
+  "metric_ppm_desc": "Czesci Na Milion wadliwych — uniwersalna metryka jakosci.",
+  "metric_ppm_bench": "Ponizej 100 PPM jest doskonale.",
+  "metric_ppm_action": "Skoncentruj sie na glownym typie defektu. Zastosuj Poka-Yoke.",
+
+  "metric_sigma_title": "Poziom Sigma",
+  "metric_sigma_desc": "Poziom sigma wskazuje ile odchylen standardowych miesci sie miedzy srednia procesu a najblizszym limitem specyfikacji.",
+  "metric_sigma_bench": "3 sigma = 66 807 PPM. 4 sigma = 6 210 PPM. 6 sigma = 3,4 PPM.",
+  "metric_sigma_action": "Zidentyfikuj i wyeliminuj najwieksze zrodla zmiennosci.",
+
+  "metric_takt_title": "Czas Taktu",
+  "metric_takt_desc": "Tempo produkcji potrzebne do zaspokojenia popytu klienta.",
+  "metric_takt_bench": "Czas cyklu powinien byc rowny lub nieco nizszy od czasu taktu.",
+  "metric_takt_action": "Zidentyfikuj waskie gardlo. Zastosuj rownowazenie linii.",
+
+  "firstVisitTip_oee": "OEE mierzy jak efektywnie pracuja Twoje urzadzenia. Laczy Dostepnosc x Wydajnosc x Jakosc. OEE klasy swiatowej to 85%+.",
+  "firstVisitTip_kanban": "Tablice Kanban wizualizuja przeplyw pracy i ograniczaja Work-In-Progress (WIP). Przeciagaj karty miedzy kolumnami.",
+  "firstVisitTip_fiveWhy": "Analiza 5 Dlaczego znajduje przyczyny zrodlowe poprzez wielokrotne pytanie 'Dlaczego?'",
+  "firstVisitTip_kaizen": "Kaizen oznacza ciagłe doskonalenie. Zglaszaj pomysly, sledz je od zatwierdzenia do weryfikacji.",
+  "firstVisitTip_sixS": "6S tworzy zorganizowane miejsca pracy: Selekcja, Systematyka, Sprzatanie, Standaryzacja, Samodyscyplina, Bezpieczenstwo."
+}

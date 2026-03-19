@@ -61,9 +61,12 @@ export default function DefectCatalogAdmin() {
         manufacturingApi.listProducts(),
         adminApi.getFactory(),
       ]);
-      setDefects(defRes.data ?? defRes);
-      setProducts(prodRes.data ?? prodRes);
-      setLines((factRes.data ?? factRes).production_lines ?? []);
+      const rawDef = defRes.data ?? defRes;
+      setDefects(Array.isArray(rawDef) ? rawDef : []);
+      const rawProd = prodRes.data ?? prodRes;
+      setProducts(Array.isArray(rawProd) ? rawProd : []);
+      const factory = factRes.data ?? factRes ?? {};
+      setLines(Array.isArray(factory?.production_lines) ? factory.production_lines : []);
     } catch { setError("Failed to load data"); }
     finally { setLoading(false); }
   }, []);

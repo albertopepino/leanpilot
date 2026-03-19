@@ -48,7 +48,6 @@
   "materialsAdded": "{count} materijala dodato",
   "errorsCount": "{count} grešaka",
   "noNewData": "Nema novih podataka za uvoz",
-
   "ordersTotal": "{count} naloga ukupno",
   "newOrder": "+ Novi nalog",
   "newProductionOrder": "Novi proizvodni nalog",
@@ -82,7 +81,6 @@
   "orderLines": "Linije naloga",
   "failedUpdateOrder": "Ažuriranje naloga nije uspelo",
   "viewOnlyNotice": "Imate pristup samo za čitanje proizvodnih naloga",
-
   "titleQCPolicies": "Repozitorijum QC dokumenata",
   "documentsStored": "{count} dokumenata sačuvano",
   "documentsStoredSingular": "{count} dokument sačuvan",
@@ -111,7 +109,6 @@
   "removeConfirm": "Ukloniti \"{title}\" iz repozitorijuma?",
   "uploadedSuccess": "\"{title}\" uspešno otpremljen",
   "fileFormatHint": "PDF, Word (.docx), JPEG, PNG — Maks. 20 MB",
-
   "titleQCChecks": "Kontrole kvaliteta",
   "checksRecorded": "{count} kontrola zabeleženo",
   "checksRecordedSingular": "{count} kontrola zabeležena",
@@ -172,7 +169,6 @@
   "measuredValue": "Izmerena vrednost",
   "enterObservation": "Unesite zapažanje...",
   "templates": "Šabloni",
-
   "titleNCR": "Izveštaji o neusaglašenosti",
   "ncrTotal": "{count} NCR ukupno",
   "ncrTotalSingular": "{count} NCR ukupno",
@@ -209,7 +205,6 @@
   "failedCreateNCR": "Nije moguće kreirati NCR",
   "failedUpdateNCR": "Nije moguće ažurirati NCR",
   "saving": "Čuvanje...",
-
   "titleCAPA": "Korektivne i preventivne mere",
   "capaTotal": "{count} CAPA",
   "capaCorrective": "korektivne",
@@ -238,7 +233,6 @@
   "effectivenessResult": "Rezultat efektivnosti",
   "effectivenessHint": "Da li je mera bila efikasna? Opišite ishod...",
   "timeline": "Vremenska linija",
-  "created": "Kreirano",
   "due": "Rok",
   "implemented": "Implementirano",
   "verified": "Verifikovano",
@@ -253,7 +247,6 @@
   "capaCreated": "CAPA uspešno kreirana",
   "capaUpdated": "CAPA ažurirana",
   "view": "Prikaži",
-
   "titleDefectCatalog": "Katalog defekata",
   "defectTypesConfigured": "{count} tipova defekata konfigurisano",
   "addDefectType": "+ Dodaj tip defekta",
@@ -275,5 +268,18 @@
   "catMaterial": "materijalno",
   "catContamination": "kontaminacija",
   "catPackaging": "pakovanje",
-  "noneOption": "— Ništa —"
+  "catOther": "ostalo",
+  "noneOption": "— Ništa —",
+  "productCode": "Šifra proizvoda",
+  "productName": "Naziv proizvoda",
+  "productNamePlaceholder": "npr. Radilica",
+  "batchLotNumber": "Broj serije / lota",
+  "productionOrder": "Proizvodni nalog",
+  "activeProducts": "aktivni proizvodi",
+  "addProduct": "Dodaj Proizvod",
+  "editProduct": "Izmeni Proizvod",
+  "newProduct": "Novi Proizvod",
+  "noProducts": "Nema proizvoda. Dodajte rucno ili otpremite Excel fajl.",
+  "productFamily": "Porodica Proizvoda",
+  "laborMin": "Rad (min)"
 }

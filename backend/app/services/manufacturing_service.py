@@ -185,8 +185,13 @@ class ProductionOrderService:
             db.add(ol)
 
         await db.commit()
-        await db.refresh(po)
-        return po
+        # Re-fetch with eager load so response serialization works in async context
+        result = await db.execute(
+            select(ProductionOrder)
+            .options(selectinload(ProductionOrder.order_lines))
+            .where(ProductionOrder.id == po.id)
+        )
+        return result.scalar_one()
 
     @staticmethod
     async def get(db: AsyncSession, po_id: int, factory_id: int):

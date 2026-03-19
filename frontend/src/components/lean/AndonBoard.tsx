@@ -2,46 +2,40 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { advancedLeanApi, adminApi } from "@/lib/api";
-import { useExport } from "@/hooks/useExport";
-import ExportToolbar from "@/components/ui/ExportToolbar";
 import {
-  AlertCircle,
+  Activity,
   AlertTriangle,
-  BarChart3,
-  Bell,
-  BellOff,
   CheckCircle,
   Clock,
-  ClipboardList,
   Factory,
   Loader2,
-  Package,
+  Monitor,
+
+  PackageCheck,
   PauseCircle,
-  PlayCircle,
+  RefreshCw,
   Search,
-  Settings,
   ShieldAlert,
-  User,
+
+  Timer,
   Wrench,
-  X,
   XCircle,
   Zap,
 } from "lucide-react";
 
-/* -- types ----------------------------------------------------------------- */
+/* ------------------------------------------------------------------ types */
 
-type AndonStatus = "green" | "yellow" | "red" | "blue";
-type Severity = "low" | "medium" | "high" | "critical";
-type Category = "quality" | "equipment" | "material" | "safety" | "other";
+type AndonColor = "green" | "yellow" | "red" | "blue" | "gray";
 
 interface AndonEvent {
   id: number;
   line_name: string;
   line_id?: number;
-  status: AndonStatus;
-  category?: Category;
-  reason?: Category; // backend may use "reason" key
-  severity?: Severity;
+  production_line_id?: number;
+  status: string;
+  category?: string;
+  reason?: string;
+  severity?: string;
   description?: string;
   operator?: string;
   resolution_notes?: string;
@@ -50,1271 +44,511 @@ interface AndonEvent {
   resolved_at?: string | null;
 }
 
-interface AndonKpis {
-  avg_acknowledge_min: number;
-  avg_resolve_min: number;
-  open_count: number;
-  today_total: number;
-  escalated_count: number;
+interface ProductionLine {
+  id: number;
+  name: string;
+  description?: string;
+  product_type?: string;
+  is_active?: boolean;
 }
 
-interface AndonStatusResponse {
-  lines: AndonEvent[];
-  kpis?: AndonKpis;
+interface LineCard {
+  lineId: number;
+  lineName: string;
+  color: AndonColor;
+  statusKey: string;
+  poNumber: string;
+  since: string; // ISO timestamp
+  latestEvent?: AndonEvent;
 }
 
-/* -- constants ------------------------------------------------------------- */
+/* --------------------------------------------------------------- helpers */
 
-const STATUS_CFG: Record<
-  AndonStatus,
-  {
-    labelKey: string;
-    descKey: string;
-    bg: string;
-    text: string;
-    glow: string;
-    ring: string;
-    lightColor: string;
-    lightGlow: string;
-    borderAccent: string;
+function normalizeColor(raw: string | undefined): AndonColor {
+  if (!raw) return "gray";
+  const c = raw.toLowerCase().trim();
+  if (c === "green") return "green";
+  if (c === "yellow") return "yellow";
+  if (c === "red") return "red";
+  if (c === "blue") return "blue";
+  return "gray";
+}
+
+function statusKeyFromColor(color: AndonColor, reason?: string): string {
+  if (reason) {
+    const r = reason.toLowerCase();
+    if (r.includes("changeover")) return "andonChangeover";
+    if (r.includes("breakdown")) return "andonBreakdown";
+    if (r.includes("maintenance")) return "andonMaintenance";
+    if (r.includes("quality")) return "andonQualityHold";
+    if (r.includes("minor")) return "andonMinorStop";
   }
-> = {
+  switch (color) {
+    case "green": return "andonRunning";
+    case "yellow": return "andonChangeover";
+    case "red": return "andonStopped";
+    case "blue": return "andonQualityHold";
+    default: return "andonIdle";
+  }
+}
+
+function extractPO(desc?: string): string {
+  if (!desc) return "";
+  // Try to find PO/WO/order numbers in common formats
+  const match = desc.match(/\b(?:PO|WO|ORD|SO|MO)[-#]?\s*(\w[\w-]*)/i);
+  return match ? match[0] : "";
+}
+
+function elapsedText(since: string, t: (k: string, r?: Record<string, string | number>) => string): string {
+  const diffMs = Date.now() - new Date(since).getTime();
+  if (diffMs < 0) return "--";
+  const totalMin = Math.floor(diffMs / 60000);
+  if (totalMin < 1) return t("common.andonJustNow");
+  if (totalMin < 60) return t("common.andonMinAgo", { n: totalMin });
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h < 24) return t("common.andonHourMinAgo", { h, m });
+  const d = Math.floor(h / 24);
+  return t("common.andonDaysAgo", { n: d });
+}
+
+/** Escalation thresholds (minutes) matching backend lean_advanced.py */
+const ESCALATION_THRESHOLDS: Record<AndonColor, number | null> = {
+  yellow: 10,
+  red: 5,
+  blue: 15,
+  green: null,
+  gray: null,
+};
+
+interface EscalationInfo {
+  label: string;
+  urgency: "ok" | "warning" | "danger" | "overdue";
+}
+
+function getEscalationInfo(
+  color: AndonColor,
+  since: string,
+  t: (k: string, r?: Record<string, string | number>) => string,
+): EscalationInfo | null {
+  const threshold = ESCALATION_THRESHOLDS[color];
+  if (threshold == null) return null;
+
+  const elapsedMin = Math.floor((Date.now() - new Date(since).getTime()) / 60000);
+  const remaining = threshold - elapsedMin;
+
+  if (remaining <= 0) {
+    const overdue = Math.abs(remaining);
+    return {
+      label: t("common.andonOverdueBy", { n: overdue }),
+      urgency: "overdue",
+    };
+  }
+  if (remaining <= 2) {
+    return {
+      label: t("common.andonEscalatesIn", { n: remaining }),
+      urgency: "danger",
+    };
+  }
+  if (remaining <= Math.ceil(threshold / 2)) {
+    return {
+      label: t("common.andonEscalatesIn", { n: remaining }),
+      urgency: "warning",
+    };
+  }
+  return {
+    label: t("common.andonEscalatesIn", { n: remaining }),
+    urgency: "ok",
+  };
+}
+
+/* ---------------------------------------------------------- color config */
+
+const COLOR_STYLES: Record<AndonColor, {
+  border: string; bg: string; bgDark: string;
+  dot: string; text: string; textDark: string;
+  pulse?: boolean;
+}> = {
   green: {
-    labelKey: "running",
-    descKey: "runningDesc",
-    bg: "bg-emerald-500",
-    text: "text-white",
-    glow: "shadow-[0_0_30px_rgba(16,185,129,0.5)]",
-    ring: "ring-emerald-500",
-    lightColor: "bg-emerald-400",
-    lightGlow: "shadow-[0_0_40px_12px_rgba(16,185,129,0.6)]",
-    borderAccent: "border-l-emerald-500",
+    border: "border-emerald-500", bg: "bg-emerald-50", bgDark: "bg-emerald-950/40",
+    dot: "bg-emerald-500", text: "text-emerald-700", textDark: "text-emerald-300",
   },
   yellow: {
-    labelKey: "caution",
-    descKey: "cautionDesc",
-    bg: "bg-amber-400",
-    text: "text-gray-900",
-    glow: "shadow-[0_0_30px_rgba(245,158,11,0.5)]",
-    ring: "ring-amber-400",
-    lightColor: "bg-amber-400",
-    lightGlow: "shadow-[0_0_40px_12px_rgba(245,158,11,0.6)]",
-    borderAccent: "border-l-amber-400",
+    border: "border-amber-400", bg: "bg-amber-50", bgDark: "bg-amber-950/40",
+    dot: "bg-amber-400", text: "text-amber-700", textDark: "text-amber-300",
   },
   red: {
-    labelKey: "stopped",
-    descKey: "stoppedDesc",
-    bg: "bg-red-500",
-    text: "text-white",
-    glow: "shadow-[0_0_30px_rgba(239,68,68,0.6)]",
-    ring: "ring-red-500",
-    lightColor: "bg-red-500",
-    lightGlow: "shadow-[0_0_40px_12px_rgba(239,68,68,0.7)]",
-    borderAccent: "border-l-red-500",
+    border: "border-red-500", bg: "bg-red-50", bgDark: "bg-red-950/40",
+    dot: "bg-red-500", text: "text-red-700", textDark: "text-red-300",
+    pulse: true,
   },
   blue: {
-    labelKey: "changeover",
-    descKey: "changeoverDesc",
-    bg: "bg-blue-500",
-    text: "text-white",
-    glow: "shadow-[0_0_30px_rgba(59,130,246,0.5)]",
-    ring: "ring-blue-500",
-    lightColor: "bg-blue-500",
-    lightGlow: "shadow-[0_0_40px_12px_rgba(59,130,246,0.6)]",
-    borderAccent: "border-l-blue-500",
+    border: "border-blue-500", bg: "bg-blue-50", bgDark: "bg-blue-950/40",
+    dot: "bg-blue-500", text: "text-blue-700", textDark: "text-blue-300",
+  },
+  gray: {
+    border: "border-gray-300", bg: "bg-gray-50", bgDark: "bg-gray-800/40",
+    dot: "bg-gray-400", text: "text-gray-600", textDark: "text-gray-400",
   },
 };
 
-const SEVERITY_BADGE: Record<Severity, string> = {
-  low: "bg-slate-500/10 text-th-text-2 border border-slate-500/20",
-  medium: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
-  high: "bg-orange-500/10 text-orange-400 border border-orange-500/20",
-  critical: "bg-red-500/10 text-red-400 border border-red-500/20",
+const STATUS_ICONS: Record<string, React.ElementType> = {
+  andonRunning: CheckCircle,
+  andonChangeover: RefreshCw,
+  andonMinorStop: AlertTriangle,
+  andonStopped: XCircle,
+  andonBreakdown: Zap,
+  andonMaintenance: Wrench,
+  andonQualityHold: ShieldAlert,
+  andonIdle: PauseCircle,
 };
 
-const CATEGORY_ICON_MAP: Record<Category, React.ReactNode> = {
-  quality: <Search className="w-4 h-4" />,
-  equipment: <Settings className="w-4 h-4" />,
-  material: <Package className="w-4 h-4" />,
-  safety: <ShieldAlert className="w-4 h-4" />,
-  other: <ClipboardList className="w-4 h-4" />,
-};
-
-const CATEGORY_ICON_LG: Record<Category, React.ReactNode> = {
-  quality: <Search className="w-5 h-5" />,
-  equipment: <Settings className="w-5 h-5" />,
-  material: <Package className="w-5 h-5" />,
-  safety: <ShieldAlert className="w-5 h-5" />,
-  other: <ClipboardList className="w-5 h-5" />,
-};
-
-const ESCALATION_YELLOW_MIN = 15;
-const ESCALATION_RED_MIN = 30;
-const REFRESH_MS = 15_000;
-const ELAPSED_TICK_MS = 30_000;
-
-const EMPTY_KPIS: AndonKpis = {
-  avg_acknowledge_min: 0,
-  avg_resolve_min: 0,
-  open_count: 0,
-  today_total: 0,
-  escalated_count: 0,
-};
-
-/* -- helpers --------------------------------------------------------------- */
-
-function elapsedMin(iso: string): number {
-  return Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60_000));
-}
-
-function fmtDuration(minutes: number): string {
-  if (minutes >= 60) {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return `${h}h ${String(m).padStart(2, "0")}m`;
-  }
-  return `${minutes}m`;
-}
-
-function resolutionMin(created: string, resolved: string): number {
-  return Math.max(0, Math.floor((new Date(resolved).getTime() - new Date(created).getTime()) / 60_000));
-}
-
-function escalationTier(mins: number): "none" | "yellow" | "red" {
-  if (mins >= ESCALATION_RED_MIN) return "red";
-  if (mins >= ESCALATION_YELLOW_MIN) return "yellow";
-  return "none";
-}
-
-function eventCategory(ev: AndonEvent): Category {
-  return ev.category ?? ev.reason ?? "other";
-}
-
-function playAlertBeep() {
-  try {
-    const ctx = new AudioContext();
-    const gain = ctx.createGain();
-    gain.gain.value = 0.15;
-    gain.connect(ctx.destination);
-
-    const osc1 = ctx.createOscillator();
-    osc1.type = "square";
-    osc1.frequency.value = 880;
-    osc1.connect(gain);
-    osc1.start();
-    osc1.stop(ctx.currentTime + 0.25);
-
-    const osc2 = ctx.createOscillator();
-    osc2.type = "square";
-    osc2.frequency.value = 1100;
-    osc2.connect(gain);
-    osc2.start(ctx.currentTime + 0.35);
-    osc2.stop(ctx.currentTime + 0.6);
-
-    setTimeout(() => ctx.close(), 1200);
-  } catch {
-    /* audio unavailable -- silent fallback */
-  }
-}
-
-/* -- CSS keyframes injected once ------------------------------------------- */
-
-const STYLE_ID = "__andon-pulse-keyframes";
-function ensurePulseStyles() {
-  if (typeof document === "undefined") return;
-  if (document.getElementById(STYLE_ID)) return;
-  const style = document.createElement("style");
-  style.id = STYLE_ID;
-  style.textContent = `
-    @keyframes andon-pulse-ring {
-      0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
-      70%  { box-shadow: 0 0 0 12px rgba(239,68,68,0); }
-      100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
-    }
-    .andon-pulse-red {
-      animation: andon-pulse-ring 1.5s ease-out infinite;
-    }
-    @keyframes andon-flash {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
-    }
-    .andon-flash-new {
-      animation: andon-flash 0.8s ease-in-out 3;
-    }
-    @keyframes andon-light-pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.7; transform: scale(1.1); }
-    }
-    .andon-light-active {
-      animation: andon-light-pulse 1.5s ease-in-out infinite;
-    }
-    @keyframes andon-border-glow {
-      0%, 100% { border-color: rgba(239, 68, 68, 0.3); }
-      50% { border-color: rgba(239, 68, 68, 0.8); }
-    }
-    .andon-border-pulse {
-      animation: andon-border-glow 2s ease-in-out infinite;
-    }
-  `;
-  document.head.appendChild(style);
-}
-
-/* =========================================================================
-   MAIN COMPONENT
-   ========================================================================= */
+/* =================================================================== */
 
 export default function AndonBoard() {
   const { t } = useI18n();
-  const { printView, exportToExcel, exportToCSV } = useExport();
-
-  /* -- state -- */
+  const [lines, setLines] = useState<ProductionLine[]>([]);
   const [events, setEvents] = useState<AndonEvent[]>([]);
-  const [kpis, setKpis] = useState<AndonKpis>(EMPTY_KPIS);
-  const isDemo = false; // demo fallbacks removed
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [clock, setClock] = useState("");
 
-  const [soundOn, setSoundOn] = useState(true);
-  const [showHistory, setShowHistory] = useState(false);
-  const [showTriggerModal, setShowTriggerModal] = useState(false);
-  const [resolveTarget, setResolveTarget] = useState<AndonEvent | null>(null);
-  const [resolvingId, setResolvingId] = useState<number | null>(null);
-  const [resolveNotes, setResolveNotes] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [searchQ, setSearchQ] = useState("");
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // trigger form fields
-  const [formLineId, setFormLineId] = useState<number>(0);
-  const [formLine, setFormLine] = useState("");
-  const [formCategory, setFormCategory] = useState<Category>("equipment");
-  const [formSeverity, setFormSeverity] = useState<"red" | "yellow">("yellow");
-  const [formDesc, setFormDesc] = useState("");
-  const [productionLines, setProductionLines] = useState<{id: number; name: string}[]>([]);
+  /* -------------------------------------------------------------- fetch */
 
-  // force re-render for elapsed timers
-  const [, setTick] = useState(0);
-
-  const prevRedIds = useRef<Set<number>>(new Set());
-  const newRedIds = useRef<Set<number>>(new Set());
-
-  /* -- inject pulse CSS -- */
-  useEffect(() => {
-    ensurePulseStyles();
-  }, []);
-
-  /* -- fetch data -- */
   const fetchData = useCallback(async () => {
     try {
-      const res = await advancedLeanApi.getAndonStatus();
-      const raw: AndonStatusResponse = res.data ?? res;
-      const lines: AndonEvent[] = Array.isArray(raw) ? raw : (raw.lines ?? []);
-      if (lines.length === 0) throw new Error("empty");
+      // Fetch production lines and andon status in parallel
+      const [linesRes, statusRes] = await Promise.allSettled([
+        adminApi.listProductionLines(),
+        advancedLeanApi.getAndonStatus(),
+      ]);
 
-      // detect new RED events for sound + flash
-      const currentRedIds = new Set(
-        lines.filter((e) => e.status === "red" && !e.resolved_at).map((e) => e.id),
-      );
-      const freshReds = new Set<number>();
-      currentRedIds.forEach((id) => {
-        if (!prevRedIds.current.has(id)) freshReds.add(id);
-      });
-      if (freshReds.size > 0 && soundOn) playAlertBeep();
-      prevRedIds.current = currentRedIds;
-      newRedIds.current = freshReds;
-      // clear flash after 3s
-      if (freshReds.size > 0) {
-        setTimeout(() => {
-          newRedIds.current = new Set();
-        }, 3000);
+      if (linesRes.status === "fulfilled") {
+        const linesData = linesRes.value.data;
+        setLines(Array.isArray(linesData) ? linesData : linesData?.lines ?? []);
       }
 
-      setEvents(lines);
-      if (raw.kpis) setKpis(raw.kpis);
+      if (statusRes.status === "fulfilled") {
+        const sd = statusRes.value.data;
+        const evts: AndonEvent[] = Array.isArray(sd)
+          ? sd
+          : Array.isArray(sd?.lines) ? sd.lines : [];
+        setEvents(evts);
+      }
+
       setError(null);
-    } catch {
-      setEvents([]);
-      setKpis(EMPTY_KPIS);
-      setError(null);
+      setLastRefresh(new Date());
+    } catch (err: any) {
+      setError(err?.message ?? "Failed to load data");
     } finally {
       setLoading(false);
     }
-  }, [t, soundOn]);
+  }, []);
 
-  /* -- effects -- */
   useEffect(() => {
     fetchData();
-    const iv = setInterval(fetchData, REFRESH_MS);
-    return () => clearInterval(iv);
+    intervalRef.current = setInterval(fetchData, 15000);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [fetchData]);
 
-  // real-time clock
+  // Force tick every 15s to update elapsed & escalation timers
+  const [, setTick] = useState(0);
   useEffect(() => {
-    const tick = () =>
-      setClock(
-        new Date().toLocaleTimeString(undefined, {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        }),
-      );
-    tick();
-    const iv = setInterval(tick, 1000);
+    const iv = setInterval(() => setTick((p) => p + 1), 15000);
     return () => clearInterval(iv);
   }, []);
 
-  // elapsed timer tick
-  useEffect(() => {
-    const iv = setInterval(() => setTick((n) => n + 1), ELAPSED_TICK_MS);
-    return () => clearInterval(iv);
-  }, []);
+  /* -------------------------------------------------------------- cards */
 
-  // load production lines for trigger form
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await adminApi.getFactory();
-        const factory = res.data ?? res;
-        const lines = factory?.production_lines ?? [];
-        setProductionLines(lines);
-        if (lines.length > 0 && formLineId === 0) setFormLineId(lines[0].id);
-      } catch { /* ignore */ }
-    })();
-  }, []);
+  const cards: LineCard[] = useMemo(() => {
+    // Build map: lineId -> latest unresolved event
+    const eventMap = new Map<number, AndonEvent>();
+    // Sort events newest first
+    const sorted = [...events].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+    for (const ev of sorted) {
+      const lid = ev.production_line_id ?? ev.line_id;
+      if (lid && !eventMap.has(lid)) {
+        eventMap.set(lid, ev);
+      }
+    }
 
-  /* -- handlers -- */
-  const handleTrigger = async () => {
-    if (!formLineId) return;
-    setSubmitting(true);
-    try {
-      await advancedLeanApi.createAndonEvent({
-        production_line_id: formLineId,
-        reason: formCategory,
-        status: formSeverity,
-        description: formDesc.trim() || undefined,
+    return lines
+      .filter((l) => l.is_active !== false)
+      .map((line) => {
+        const ev = eventMap.get(line.id);
+        const color = ev ? normalizeColor(ev.status) : "gray";
+        const statusKey = ev
+          ? statusKeyFromColor(color, ev.reason ?? ev.category)
+          : "andonIdle";
+        const po = ev ? extractPO(ev.description) : "";
+        return {
+          lineId: line.id,
+          lineName: line.name,
+          color,
+          statusKey,
+          poNumber: po,
+          since: ev?.created_at ?? new Date().toISOString(),
+          latestEvent: ev,
+        };
       });
-      setShowTriggerModal(false);
-      setFormDesc("");
-      setFormSeverity("yellow");
-      setFormCategory("equipment");
-      await fetchData();
-    } catch {
-      setError(t("dashboard.andonTriggerError"));
-      setTimeout(() => setError(null), 4000);
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  }, [lines, events]);
 
-  const handleResolve = async () => {
-    if (!resolveTarget) return;
-    setResolvingId(resolveTarget.id);
-    try {
-      if (isDemo) {
-        // In demo mode, resolve locally (no real backend data)
-        setEvents((prev) =>
-          prev.map((e) =>
-            e.id === resolveTarget.id
-              ? { ...e, resolved_at: new Date().toISOString(), resolution_notes: resolveNotes || undefined }
-              : e,
-          ),
-        );
-      } else {
-        await advancedLeanApi.resolveAndon(resolveTarget.id, resolveNotes || undefined);
-        await fetchData();
-      }
-      setResolveTarget(null);
-      setResolveNotes("");
-    } catch {
-      setError(t("dashboard.andonResolveError"));
-      setTimeout(() => setError(null), 4000);
-    } finally {
-      setResolvingId(null);
-    }
-  };
+  const filteredCards = useMemo(() => {
+    if (!searchQ.trim()) return cards;
+    const q = searchQ.toLowerCase();
+    return cards.filter(
+      (c) =>
+        c.lineName.toLowerCase().includes(q) ||
+        t(`common.${c.statusKey}`).toLowerCase().includes(q) ||
+        c.poNumber.toLowerCase().includes(q)
+    );
+  }, [cards, searchQ, t]);
 
-  /* -- derived data -- */
-  const statusCounts: Record<AndonStatus, number> = { green: 0, yellow: 0, red: 0, blue: 0 };
-  events.forEach((e) => {
-    if (!e.resolved_at) statusCounts[e.status]++;
-  });
+  /* -------------------------------------------------------- recent list */
 
-  const activeEvents = useMemo(
-    () =>
-      events
-        .filter((e) => e.status !== "green" && !e.resolved_at)
-        .sort((a, b) => {
-          const sa = a.severity === "critical" ? 0 : a.severity === "high" ? 1 : 2;
-          const sb = b.severity === "critical" ? 0 : b.severity === "high" ? 1 : 2;
-          if (sa !== sb) return sa - sb;
-          return elapsedMin(b.created_at) - elapsedMin(a.created_at);
-        }),
-    [events],
-  );
-
-  const resolvedEvents = useMemo(
-    () =>
-      events
-        .filter((e) => e.resolved_at)
-        .sort((a, b) => new Date(b.resolved_at!).getTime() - new Date(a.resolved_at!).getTime()),
-    [events],
-  );
-
-  const categoryStats = useMemo(() => {
-    const map: Record<string, number> = {};
-    events.forEach((e) => {
-      if (e.status !== "green") {
-        const cat = eventCategory(e);
-        map[cat] = (map[cat] || 0) + 1;
-      }
-    });
-    return Object.entries(map).sort((a, b) => b[1] - a[1]);
+  const recentEvents = useMemo(() => {
+    return [...events]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 20);
   }, [events]);
 
-  const lineNames = useMemo(() => Array.from(new Set(events.map((e) => e.line_name))), [events]);
+  /* ----------------------------------------------------------- summary */
 
-  const CATEGORIES: { key: Category; labelKey: string }[] = [
-    { key: "quality", labelKey: "dashboard.andonReasonQuality" },
-    { key: "equipment", labelKey: "dashboard.andonReasonBreakdown" },
-    { key: "material", labelKey: "dashboard.andonReasonMaterial" },
-    { key: "safety", labelKey: "dashboard.andonReasonSafety" },
-    { key: "other", labelKey: "dashboard.andonReasonOther" },
-  ];
+  const summary = useMemo(() => {
+    const counts: Record<AndonColor, number> = { green: 0, yellow: 0, red: 0, blue: 0, gray: 0 };
+    for (const c of cards) counts[c.color]++;
+    return counts;
+  }, [cards]);
 
-  /* -- loading state -- */
+  /* =========================================================== render */
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative">
-            <Loader2 className="w-16 h-16 text-red-500 animate-spin" />
-          </div>
-          <span className="text-sm font-medium text-th-text-2 uppercase tracking-wider">{t("dashboard.andonLoading")}</span>
-        </div>
+      <div className="flex items-center justify-center h-96 bg-th-bg text-th-text">
+        <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
+        <span className="ml-3 text-lg">{t("common.loading")}</span>
       </div>
     );
   }
 
-  /* =========================================================================
-     RENDER
-     ========================================================================= */
   return (
-    <div className="max-w-[1400px] mx-auto space-y-6" data-print-area="true" role="region" aria-label="Andon Board">
-      {/* -- demo data banner -- */}
-      {isDemo && (
-        <div className="px-4 py-3 rounded-xl border border-amber-500/20 bg-amber-500/10 flex items-center justify-between text-sm">
-          <span className="text-amber-600 dark:text-amber-400 font-medium flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4" />
-            {t("dashboard.demoDataBadge")} — {t("dashboard.usingDemoData")}
-          </span>
-          <button onClick={() => fetchData()} className="text-amber-500 hover:text-amber-300 font-semibold underline transition-colors duration-300">
-            {t("dashboard.retry")}
-          </button>
-        </div>
-      )}
-
-      {/* -- error toast -- */}
-      {error && (
-        <div role="alert" aria-live="assertive" className="rounded-xl border border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400 px-4 py-3 text-sm font-medium flex items-center justify-between">
-          <span className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4" />
-            {error}
-          </span>
-          <button onClick={() => setError(null)} className="ml-4 text-red-400 hover:text-red-300 font-bold transition-colors">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
-      {/* -- empty state -- */}
-      {!loading && events.length === 0 && !error && (
-        <div className="px-4 py-6 bg-th-bg-2 border border-th-border rounded-xl text-center text-sm text-th-text-2">
-          {t("dashboard.noAndonEvents") || "No data yet. Andon events will appear here when production lines report status."}
-        </div>
-      )}
-
-      {/* ======= CONTROL ROOM HEADER ======= */}
-      <div className="relative overflow-hidden rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
-        <div>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center border border-th-border bg-th-bg text-red-500">
-                <AlertCircle className="w-7 h-7" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight text-th-text">{t("dashboard.andonTitle")}</h2>
-                <p className="text-sm text-th-text-2 mt-0.5">{t("dashboard.andonSubtitle")}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 flex-wrap">
-              {/* Sound toggle */}
-              <button
-                onClick={() => setSoundOn((p) => !p)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300 border flex items-center gap-1.5 ${
-                  soundOn
-                    ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/25"
-                    : "bg-th-bg text-th-text-2 border-th-border hover:bg-th-bg-2"
-                }`}
-                title={soundOn ? t("dashboard.andonSoundOn") : t("dashboard.andonSoundOff")}
-              >
-                {soundOn ? <Bell className="w-3.5 h-3.5" /> : <BellOff className="w-3.5 h-3.5" />}
-                {soundOn ? t("dashboard.andonSoundOn") : t("dashboard.andonSoundOff")}
-              </button>
-
-              {/* History toggle */}
-              <button
-                onClick={() => setShowHistory((p) => !p)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300 border flex items-center gap-1.5 ${
-                  showHistory
-                    ? "bg-blue-500/15 text-blue-400 border-blue-500/30 hover:bg-blue-500/25"
-                    : "bg-th-bg text-th-text-2 border-th-border hover:bg-th-bg-2"
-                }`}
-              >
-                <ClipboardList className="w-3.5 h-3.5" />
-                {t("dashboard.andonHistory")}
-              </button>
-
-              {/* Trigger Andon */}
-              <button
-                onClick={() => setShowTriggerModal(true)}
-                className="px-5 py-2.5 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2 shadow-sm"
-              >
-                <AlertTriangle className="w-4 h-4" />
-                {t("dashboard.andonTriggerAlert")}
-              </button>
-
-              {/* Real-time Clock */}
-              <div className="text-right ml-2">
-                <div className="text-4xl font-mono font-bold tracking-widest text-emerald-400">
-                  {clock}
-                </div>
-                <div className="text-[10px] text-th-text-2 uppercase tracking-widest mt-0.5">
-                  {t("dashboard.factoryFloorLive")}
-                  {isDemo && (
-                    <span className="ml-2 text-amber-400">({t("dashboard.andonDemoMode")})</span>
-                  )}
-                </div>
-              </div>
-
-              <ExportToolbar
-                className="ml-2"
-                onPrint={() => printView({ title: t("dashboard.andonTitle") || "Andon Board" })}
-                onExportExcel={() => exportToExcel({
-                  filename: "andon_events",
-                  sheetName: "Andon",
-                  columns: [
-                    { key: "line", header: t("dashboard.productionLine") || "Line", width: 18 },
-                    { key: "status", header: t("dashboard.andonStatus") || "Status", width: 10 },
-                    { key: "category", header: t("dashboard.andonCategory") || "Category", width: 14 },
-                    { key: "description", header: t("dashboard.andonDescription") || "Description", width: 30 },
-                    { key: "created", header: t("dashboard.andonCreatedAt") || "Created At", width: 18 },
-                    { key: "resolved", header: t("dashboard.andonResolvedAt") || "Resolved At", width: 18 },
-                  ],
-                  rows: events.map((e) => ({
-                    line: e.line_name,
-                    status: e.status,
-                    category: e.category || e.reason || "",
-                    description: e.description || "",
-                    created: e.created_at ? new Date(e.created_at).toLocaleString() : "",
-                    resolved: e.resolved_at ? new Date(e.resolved_at).toLocaleString() : "",
-                  })),
-                  headerRows: [
-                    [t("dashboard.andonOpenCount") || "Open Events", String(kpis.open_count)],
-                    [t("dashboard.andonAvgResolve") || "Avg Resolve (min)", String(kpis.avg_resolve_min.toFixed(1))],
-                  ],
-                })}
-                onExportCSV={() => exportToCSV({
-                  filename: "andon_events",
-                  columns: [
-                    { key: "line", header: t("dashboard.productionLine") || "Line" },
-                    { key: "status", header: t("dashboard.andonStatus") || "Status" },
-                    { key: "category", header: t("dashboard.andonCategory") || "Category" },
-                    { key: "description", header: t("dashboard.andonDescription") || "Description" },
-                    { key: "created", header: t("dashboard.andonCreatedAt") || "Created At" },
-                    { key: "resolved", header: t("dashboard.andonResolvedAt") || "Resolved At" },
-                  ],
-                  rows: events.map((e) => ({
-                    line: e.line_name,
-                    status: e.status,
-                    category: e.category || e.reason || "",
-                    description: e.description || "",
-                    created: e.created_at ? new Date(e.created_at).toLocaleString() : "",
-                    resolved: e.resolved_at ? new Date(e.resolved_at).toLocaleString() : "",
-                  })),
-                })}
-              />
+    <div
+      ref={containerRef}
+      className="min-h-screen transition-colors duration-300 bg-th-bg text-th-text"
+    >
+      {/* ──────── HEADER ──────── */}
+      <div className="sticky top-0 z-20 border-b px-4 py-3 bg-th-card/95 border-th-border backdrop-blur">
+        <div className="max-w-[1800px] mx-auto flex flex-wrap items-center justify-between gap-3">
+          {/* Title */}
+          <div className="flex items-center gap-3">
+            <Monitor className="w-7 h-7 text-blue-600 dark:text-blue-400" />
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold tracking-tight">
+                {t("common.andonLiveBoard")}
+              </h1>
+              <p className="text-xs text-th-text-3">
+                {t("common.andonLastUpdate")}: {lastRefresh.toLocaleTimeString()}
+              </p>
             </div>
           </div>
 
-          {/* -- Traffic Light Status Summary -- */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {(["green", "yellow", "red", "blue"] as AndonStatus[]).map((s) => {
-              const cfg = STATUS_CFG[s];
-              const count = statusCounts[s];
-              const isActive = count > 0 && s !== "green";
-              const isRedAlert = s === "red" && count > 0;
-
-              return (
-                <div
-                  key={s}
-                  className={`relative rounded-xl p-5 text-center transition-all duration-300 border overflow-hidden ${
-                    isRedAlert
-                      ? "bg-red-500/15 border-red-500/40 andon-pulse-red"
-                      : isActive
-                        ? `bg-th-bg border-th-border ${cfg.glow}`
-                        : "bg-th-bg border-th-border"
-                  }`}
-                >
-                  {/* Large traffic light circle */}
-                  <div className="flex justify-center mb-3">
-                    <div
-                      className={`w-12 h-12 rounded-full ${
-                        count > 0 ? cfg.lightColor : "bg-slate-700"
-                      } ${count > 0 ? cfg.lightGlow : ""} ${
-                        isActive ? "andon-light-active" : ""
-                      } transition-all duration-500`}
-                    />
-                  </div>
-                  <div className={`text-4xl font-bold ${count > 0 ? "text-th-text" : "text-th-text-3"} transition-colors`}>
-                    {count}
-                  </div>
-                  <div className={`text-[10px] font-bold uppercase tracking-[0.15em] mt-1 ${
-                    count > 0 ? "text-th-text" : "text-th-text-3"
-                  }`}>
-                    {t(`dashboard.${cfg.labelKey}`)}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* ======= KPI CARDS ======= */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-        <KpiCard
-          label={t("dashboard.andonTodayTotal")}
-          value={String(kpis.today_total)}
-          icon={<BarChart3 className="w-5 h-5" />}
-          accentColor="slate"
-        />
-        <KpiCard
-          label={t("dashboard.andonOpenAlerts")}
-          value={String(kpis.open_count)}
-          icon={<Zap className="w-5 h-5" />}
-          accentColor="red"
-          pulse={kpis.open_count > 0}
-        />
-        <KpiCard
-          label={t("dashboard.andonAvgAck")}
-          value={`${kpis.avg_acknowledge_min.toFixed(1)}m`}
-          icon={<Clock className="w-5 h-5" />}
-          accentColor="blue"
-        />
-        <KpiCard
-          label={t("dashboard.andonAvgResolve")}
-          value={`${kpis.avg_resolve_min.toFixed(1)}m`}
-          icon={<Wrench className="w-5 h-5" />}
-          accentColor="emerald"
-        />
-        <KpiCard
-          label={t("dashboard.andonEscalated")}
-          value={String(kpis.escalated_count)}
-          icon={<AlertTriangle className="w-5 h-5" />}
-          accentColor="amber"
-          pulse={kpis.escalated_count > 0}
-        />
-      </div>
-
-      {/* ======= EVENTS BY CATEGORY ======= */}
-      {categoryStats.length > 0 && (
-        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5">
-          <h3 className="text-xs font-bold text-th-text-2 uppercase tracking-[0.15em] mb-4">
-            {t("dashboard.andonByCategory")}
-          </h3>
-          <div className="flex flex-wrap gap-3">
-            {categoryStats.map(([cat, count]) => (
-              <div
-                key={cat}
-                className="flex items-center gap-3 rounded-lg px-4 py-3 border border-th-border bg-th-bg transition-all duration-300 hover:scale-[1.02]"
+          {/* Summary pills */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {(["green", "yellow", "red", "blue", "gray"] as AndonColor[]).map((c) => (
+              <span
+                key={c}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-th-bg-3 text-th-text-2"
               >
-                <span className="text-th-text-2">{CATEGORY_ICON_LG[cat as Category] ?? <ClipboardList className="w-5 h-5" />}</span>
-                <div>
-                  <div className="text-[10px] text-th-text-2 uppercase tracking-wider font-medium">
-                    {t(`dashboard.andonReason${cat.charAt(0).toUpperCase() + cat.slice(1)}`)}
-                  </div>
-                  <div className="text-xl font-bold text-th-text">{count}</div>
-                </div>
-              </div>
+                <span className={`w-2.5 h-2.5 rounded-full ${COLOR_STYLES[c].dot}`} />
+                {summary[c]}
+              </span>
             ))}
           </div>
+
+          {/* Controls */}
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-th-text-3" />
+              <input
+                type="text"
+                placeholder={t("common.search")}
+                value={searchQ}
+                onChange={(e) => setSearchQ(e.target.value)}
+                className="pl-8 pr-3 py-1.5 w-40 md:w-52 rounded-lg border text-sm bg-th-input border-th-input-border text-th-text placeholder-th-text-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <button
+              onClick={fetchData}
+              className="p-2 rounded-lg border transition-colors border-th-border hover:bg-th-bg-hover text-blue-600 dark:text-blue-400"
+              title={t("common.retry")}
+            >
+              <RefreshCw className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ──────── ERROR ──────── */}
+      {error && (
+        <div className="max-w-[1800px] mx-auto px-4 pt-4">
+          <div className="rounded-lg p-3 text-sm flex items-center gap-2 bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            {error}
+          </div>
         </div>
       )}
 
-      {/* ======= LINE STATUS CARDS (monitoring panels) ======= */}
-      <div>
-        <h3 className="text-xs font-bold text-th-text-2 uppercase tracking-[0.15em] mb-4 flex items-center gap-2">
-          <Factory className="w-4 h-4" />
-          {t("dashboard.andonLineStatus")}
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {events
-            .filter((e) => !e.resolved_at)
-            .map((ev) => {
-              const cfg = STATUS_CFG[ev.status];
-              const hasIssue = ev.status !== "green";
-              const elapsed = hasIssue ? elapsedMin(ev.created_at) : 0;
-              const tier = hasIssue ? escalationTier(elapsed) : "none";
-              const isNewRed = newRedIds.current.has(ev.id);
+      {/* ──────── GRID ──────── */}
+      <div className="max-w-[1800px] mx-auto px-4 py-6">
+        {filteredCards.length === 0 && !loading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <Factory className="w-16 h-16 text-th-text-3" />
+            <p className="text-lg font-medium text-th-text-3">
+              {t("common.andonNoLines")}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+            {filteredCards.map((card) => {
+              const cs = COLOR_STYLES[card.color];
+              const Icon = STATUS_ICONS[card.statusKey] ?? PauseCircle;
+              const isPulsing = card.color === "red";
 
               return (
                 <div
-                  key={ev.id}
-                  className={`group rounded-xl overflow-hidden transition-all duration-300 border-l-4 ${cfg.borderAccent} ${
-                    hasIssue
-                      ? `bg-th-bg-2 border border-l-4 ${
-                          ev.status === "red" ? "border-red-500/30 andon-border-pulse" : "border-th-border"
-                        }`
-                      : "bg-th-bg-2 border border-l-4 border-th-border"
-                  } ${tier === "red" ? "andon-pulse-red" : ""} ${
-                    tier === "yellow" ? "ring-1 ring-amber-400/40" : ""
-                  } ${isNewRed ? "andon-flash-new" : ""} shadow-sm hover:scale-[1.02] hover:shadow-md`}
+                  key={card.lineId}
+                  className={`relative rounded-xl border-2 overflow-hidden transition-all duration-300
+                    ${cs.border} ${cs.bg} dark:${cs.bgDark}
+                    ${isPulsing ? "animate-pulse-subtle" : ""}
+                    hover:shadow-lg hover:scale-[1.01]`}
                 >
-                  {/* Status bar */}
-                  <div className={`${cfg.bg} ${cfg.text} px-4 py-3 flex items-center justify-between`}>
-                    <span className="font-bold text-xs uppercase tracking-[0.12em]">
-                      {t(`dashboard.${cfg.labelKey}`)}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      {ev.severity && (
-                        <span
-                          className={`text-[9px] px-2 py-0.5 rounded-full font-bold ${SEVERITY_BADGE[ev.severity]}`}
-                        >
-                          {t(
-                            `dashboard.andonSeverity${ev.severity.charAt(0).toUpperCase() + ev.severity.slice(1)}`,
-                          )}
-                        </span>
-                      )}
-                      {/* Animated traffic light dot */}
-                      <span className="relative">
-                        <span className={`inline-block w-4 h-4 rounded-full border-2 border-white/40 ${cfg.bg}`} />
-                        {hasIssue && (
-                          <span className={`absolute inset-0 w-4 h-4 rounded-full ${cfg.bg} animate-ping opacity-40`} />
-                        )}
+                  {/* Status bar top */}
+                  <div className={`h-1.5 ${cs.dot}`} />
+
+                  <div className="p-4 md:p-5">
+                    {/* Line name */}
+                    <h2 className="text-xl md:text-2xl lg:text-3xl font-extrabold tracking-tight leading-tight mb-2 text-th-text">
+                      {card.lineName}
+                    </h2>
+
+                    {/* Status row */}
+                    <div className="flex items-center gap-2 mb-3">
+                      <Icon className={`w-6 h-6 ${cs.text} dark:${cs.textDark}`} />
+                      <span className={`text-base md:text-lg font-bold ${cs.text} dark:${cs.textDark}`}>
+                        {t(`common.${card.statusKey}`)}
                       </span>
                     </div>
-                  </div>
 
-                  {/* Body */}
-                  <div className="p-4">
-                    <h4 className="font-bold text-th-text mb-1.5 text-sm tracking-tight flex items-center gap-1.5">
-                      <Factory className="w-3.5 h-3.5 text-th-text-3" />
-                      {ev.line_name}
-                    </h4>
-                    {hasIssue ? (
-                      <div className="space-y-2.5">
-                        {ev.description && (
-                          <p className="text-xs text-th-text-2 line-clamp-2">{ev.description}</p>
-                        )}
-                        {eventCategory(ev) !== "other" && (
-                          <span className="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-full bg-th-bg text-th-text font-medium border border-th-border">
-                            <span className="text-th-text-2">{CATEGORY_ICON_MAP[eventCategory(ev)]}</span>
-                            {t(
-                              `dashboard.andonReason${eventCategory(ev).charAt(0).toUpperCase() + eventCategory(ev).slice(1)}`,
-                            )}
-                          </span>
-                        )}
+                    {/* PO number */}
+                    <div className="flex items-center gap-2 text-sm mb-2 text-th-text-2">
+                      <PackageCheck className="w-4 h-4 shrink-0" />
+                      <span className="truncate">
+                        {card.poNumber || t("common.andonNoActivePO")}
+                      </span>
+                    </div>
 
-                        {/* Elapsed + escalation bar */}
-                        <div className="flex items-center gap-2 text-[10px] text-th-text-2">
-                          <Clock className="w-3 h-3" />
-                          <span
-                            className={`font-mono font-bold text-xs ${
-                              tier === "red"
-                                ? "text-red-400"
-                                : tier === "yellow"
-                                  ? "text-amber-400"
-                                  : "text-th-text"
-                            }`}
-                          >
-                            {fmtDuration(elapsed)}
-                          </span>
-                          {ev.operator && (
-                            <span className="text-th-text-2 flex items-center gap-1">
-                              <User className="w-3 h-3" />
-                              {ev.operator}
-                            </span>
-                          )}
+                    {/* Time in state */}
+                    <div className="flex items-center gap-2 text-sm text-th-text-2">
+                      <Timer className="w-4 h-4 shrink-0" />
+                      <span>{elapsedText(card.since, t)}</span>
+                    </div>
+
+                    {/* Escalation countdown badge */}
+                    {(() => {
+                      const esc = getEscalationInfo(card.color, card.since, t);
+                      if (!esc) return null;
+                      const urgencyStyles: Record<string, string> = {
+                        ok: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
+                        warning: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+                        danger: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+                        overdue: "bg-red-200 text-red-800 dark:bg-red-900/60 dark:text-red-200 font-bold",
+                      };
+                      return (
+                        <div className={`mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${urgencyStyles[esc.urgency]}`}>
+                          <AlertTriangle className="w-3 h-3" />
+                          {esc.label}
                         </div>
-                        {elapsed > 0 && (
-                          <div className="w-full h-2 rounded-full bg-th-bg overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all duration-500 ${
-                                tier === "red"
-                                  ? "bg-gradient-to-r from-red-600 to-red-400"
-                                  : tier === "yellow"
-                                    ? "bg-gradient-to-r from-amber-500 to-amber-300"
-                                    : "bg-gradient-to-r from-emerald-500 to-teal-400"
-                              }`}
-                              style={{
-                                width: `${Math.min(100, (elapsed / ESCALATION_RED_MIN) * 100)}%`,
-                              }}
-                            />
-                          </div>
-                        )}
+                      );
+                    })()}
 
-                        {/* Resolve */}
-                        <button
-                          onClick={() => {
-                            setResolveTarget(ev);
-                            setResolveNotes("");
-                          }}
-                          disabled={resolvingId === ev.id}
-                          className="mt-1 w-full py-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 disabled:from-gray-600 disabled:to-gray-600 text-white text-xs font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-1.5"
-                        >
-                          {resolvingId === ev.id ? (
-                            <>
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              {t("dashboard.andonResolving")}
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle className="w-3.5 h-3.5" />
-                              {t("dashboard.andonResolve")}
-                            </>
-                          )}
-                        </button>
+                    {/* Operator badge */}
+                    {card.latestEvent?.operator && (
+                      <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-th-bg-3 text-th-text-2">
+                        <Activity className="w-3 h-3" />
+                        {card.latestEvent.operator}
                       </div>
-                    ) : (
-                      <p className="text-xs text-emerald-500 dark:text-emerald-400 font-medium flex items-center gap-1.5">
-                        <PlayCircle className="w-3.5 h-3.5" />
-                        {t(`dashboard.${cfg.descKey}`)}
-                      </p>
                     )}
                   </div>
                 </div>
               );
             })}
-        </div>
-      </div>
+          </div>
+        )}
 
-      {/* ======= ACTIVE ISSUES TABLE ======= */}
-      {activeEvents.length > 0 ? (
-        <div className="rounded-xl border border-red-500/20 bg-red-500/5 shadow-sm p-6">
-          <h3 className="font-bold text-red-600 dark:text-red-400 flex items-center gap-3 mb-5">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500" />
-            </span>
-            <span className="uppercase tracking-[0.1em] text-sm">{t("dashboard.activeStoppages")} ({activeEvents.length})</span>
-          </h3>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-[10px] text-red-600/70 dark:text-red-400/70 uppercase tracking-[0.12em]">
-                  <th className="pb-3 pr-4 font-semibold">{t("dashboard.andonTableLine")}</th>
-                  <th className="pb-3 pr-4 font-semibold">{t("dashboard.andonSeverity")}</th>
-                  <th className="pb-3 pr-4 font-semibold">{t("dashboard.andonReason")}</th>
-                  <th className="pb-3 pr-4 font-semibold">{t("dashboard.andonDescription")}</th>
-                  <th className="pb-3 pr-4 font-semibold">{t("dashboard.andonElapsed")}</th>
-                  <th className="pb-3 font-semibold" />
-                </tr>
-              </thead>
-              <tbody>
-                {activeEvents.map((ev) => {
-                  const elapsed = elapsedMin(ev.created_at);
-                  const tier = escalationTier(elapsed);
+        {/* ──────── RECENT EVENTS ──────── */}
+        {recentEvents.length > 0 && (
+          <div className="mt-10">
+            <h3 className="text-lg font-bold mb-3 flex items-center gap-2 text-th-text">
+              <Clock className="w-5 h-5" />
+              {t("common.andonRecentEvents")}
+            </h3>
+            <div className="rounded-xl border overflow-hidden bg-th-card border-th-border">
+              <div className="max-h-[400px] overflow-y-auto divide-y divide-th-border">
+                {recentEvents.map((ev) => {
+                  const ec = normalizeColor(ev.status);
+                  const ecs = COLOR_STYLES[ec];
                   return (
-                    <tr key={ev.id} className="border-b border-th-border/50 hover:bg-th-bg transition-colors duration-200">
-                      <td className="py-3 pr-4">
-                        <div className="flex items-center gap-2">
-                          <span className="relative">
-                            <span className={`w-2.5 h-2.5 rounded-full ${STATUS_CFG[ev.status].bg} inline-block`} />
-                            {ev.status === "red" && (
-                              <span className={`absolute inset-0 w-2.5 h-2.5 rounded-full ${STATUS_CFG[ev.status].bg} animate-ping opacity-50`} />
-                            )}
-                          </span>
-                          <span className="font-bold text-th-text">{ev.line_name}</span>
-                        </div>
-                      </td>
-                      <td className="py-3 pr-4">
-                        {ev.severity && (
-                          <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold ${SEVERITY_BADGE[ev.severity]}`}>
-                            {t(`dashboard.andonSeverity${ev.severity.charAt(0).toUpperCase() + ev.severity.slice(1)}`)}
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3 pr-4 text-xs text-th-text-2">
-                        <span className="inline-flex items-center gap-1.5">
-                          {CATEGORY_ICON_MAP[eventCategory(ev)]}
-                          {t(`dashboard.andonReason${eventCategory(ev).charAt(0).toUpperCase() + eventCategory(ev).slice(1)}`)}
+                    <div
+                      key={ev.id}
+                      className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-th-bg-hover"
+                    >
+                      <span className={`w-3 h-3 rounded-full shrink-0 ${ecs.dot}`} />
+                      <span className="font-semibold min-w-[120px] text-th-text">
+                        {ev.line_name}
+                      </span>
+                      <span className="flex-1 truncate text-th-text-2">
+                        {ev.description || ev.reason || ev.category || "--"}
+                      </span>
+                      {ev.operator && (
+                        <span className="hidden sm:inline text-xs text-th-text-3">
+                          {ev.operator}
                         </span>
-                      </td>
-                      <td className="py-3 pr-4 text-xs text-th-text-2 max-w-[200px] truncate">
-                        {ev.description ?? "-"}
-                      </td>
-                      <td className="py-3 pr-4">
-                        <span className={`text-xs font-mono font-bold flex items-center gap-1 ${
-                          tier === "red"
-                            ? "text-red-400"
-                            : tier === "yellow"
-                              ? "text-amber-400"
-                              : "text-th-text"
-                        }`}>
-                          <Clock className="w-3 h-3" />
-                          {fmtDuration(elapsed)}
+                      )}
+                      <span className="text-xs whitespace-nowrap text-th-text-3">
+                        {new Date(ev.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        {" "}
+                        {new Date(ev.created_at).toLocaleDateString([], { day: "2-digit", month: "short" })}
+                      </span>
+                      {ev.resolved_at && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                          {t("common.andonResolved")}
                         </span>
-                      </td>
-                      <td className="py-3 text-right">
-                        <button
-                          onClick={() => {
-                            setResolveTarget(ev);
-                            setResolveNotes("");
-                          }}
-                          disabled={resolvingId === ev.id}
-                          className="px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 disabled:from-gray-600 disabled:to-gray-600 text-white text-xs font-bold rounded-lg transition-all duration-300 inline-flex items-center gap-1.5"
-                        >
-                          {resolvingId === ev.id ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                          ) : (
-                            <CheckCircle className="w-3 h-3" />
-                          )}
-                          {resolvingId === ev.id
-                            ? "..."
-                            : t("dashboard.andonResolve")}
-                        </button>
-                      </td>
-                    </tr>
+                      )}
+                    </div>
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : (
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 shadow-sm p-6 text-center">
-          <div className="flex items-center justify-center gap-3">
-            <CheckCircle className="w-5 h-5 text-emerald-500" />
-            <p className="text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-[0.1em] text-sm">
-              {t("dashboard.andonNoActiveAlerts")}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* ======= HISTORY (resolved events) ======= */}
-      {showHistory && (
-        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
-          <h3 className="font-bold text-th-text flex items-center gap-2 mb-5 text-sm uppercase tracking-[0.1em]">
-            <ClipboardList className="w-4 h-4 text-th-text-2" />
-            {t("dashboard.andonHistory")} ({resolvedEvents.length})
-          </h3>
-          {resolvedEvents.length === 0 ? (
-            <p className="text-sm text-th-text-2 text-center py-6">
-              {t("dashboard.andonNoHistory")}
-            </p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-[10px] text-th-text-2 uppercase tracking-[0.12em]">
-                    <th className="pb-3 pr-4 font-semibold">{t("dashboard.andonTableLine")}</th>
-                    <th className="pb-3 pr-4 font-semibold">{t("dashboard.andonReason")}</th>
-                    <th className="pb-3 pr-4 font-semibold">{t("dashboard.andonDescription")}</th>
-                    <th className="pb-3 pr-4 font-semibold">{t("dashboard.andonResolutionTime")}</th>
-                    <th className="pb-3 pr-4 font-semibold">{t("dashboard.andonResolutionNotes")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {resolvedEvents.map((ev) => {
-                    const resMins = ev.resolved_at
-                      ? resolutionMin(ev.created_at, ev.resolved_at)
-                      : 0;
-                    return (
-                      <tr key={ev.id} className="border-b border-th-border/50 hover:bg-th-bg transition-colors duration-200">
-                        <td className="py-3 pr-4 font-medium text-th-text">{ev.line_name}</td>
-                        <td className="py-3 pr-4 text-xs text-th-text-2">
-                          <span className="inline-flex items-center gap-1.5">
-                            {CATEGORY_ICON_MAP[eventCategory(ev)]}
-                            {t(`dashboard.andonReason${eventCategory(ev).charAt(0).toUpperCase() + eventCategory(ev).slice(1)}`)}
-                          </span>
-                        </td>
-                        <td className="py-3 pr-4 text-xs text-th-text-2 max-w-[200px] truncate">
-                          {ev.description ?? "-"}
-                        </td>
-                        <td className="py-3 pr-4">
-                          <span className="text-xs font-mono text-emerald-400 font-bold flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {fmtDuration(resMins)}
-                          </span>
-                        </td>
-                        <td className="py-3 text-xs text-th-text-2 max-w-[200px] truncate">
-                          {ev.resolution_notes ?? "-"}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ======= TRIGGER ANDON MODAL ======= */}
-      {showTriggerModal && (
-        <ModalOverlay onClose={() => setShowTriggerModal(false)}>
-          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm w-full max-w-lg mx-4">
-            <div className="p-6 border-b border-th-border">
-              <h3 className="font-bold text-th-text text-lg flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-red-500" />
-                {t("dashboard.andonTriggerAlert")}
-              </h3>
-            </div>
-
-            <div className="p-6 space-y-5">
-              {/* Line selector */}
-              <div>
-                <label className="block text-[10px] font-bold text-th-text-2 uppercase tracking-[0.12em] mb-1.5">
-                  {t("dashboard.andonSelectLine")}
-                </label>
-                <select
-                  value={formLineId}
-                  onChange={(e) => setFormLineId(Number(e.target.value))}
-                  className="w-full border border-th-border rounded-lg px-3 py-2.5 text-sm bg-th-bg text-th-text focus:ring-2 focus:ring-red-500/50 focus:outline-none"
-                  autoFocus
-                >
-                  {productionLines.length === 0 && (
-                    <option value={0}>{t("dashboard.andonSelectLine")}</option>
-                  )}
-                  {productionLines.map((l) => (
-                    <option key={l.id} value={l.id}>{l.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Severity (red / yellow) */}
-              <div>
-                <label className="block text-[10px] font-bold text-th-text-2 uppercase tracking-[0.12em] mb-1.5">
-                  {t("dashboard.andonSeverity")}
-                </label>
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setFormSeverity("red")}
-                    className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300 border-2 flex items-center justify-center gap-2 ${
-                      formSeverity === "red"
-                        ? "bg-red-500/20 text-red-400 border-red-500/50"
-                        : "bg-th-bg border-th-border text-th-text-2 hover:border-red-500/30"
-                    }`}
-                  >
-                    <XCircle className="w-4 h-4" />
-                    {t("dashboard.stopped")} (RED)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormSeverity("yellow")}
-                    className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300 border-2 flex items-center justify-center gap-2 ${
-                      formSeverity === "yellow"
-                        ? "bg-amber-500/20 text-amber-400 border-amber-500/50"
-                        : "bg-th-bg border-th-border text-th-text-2 hover:border-amber-500/30"
-                    }`}
-                  >
-                    <PauseCircle className="w-4 h-4" />
-                    {t("dashboard.caution")} (YELLOW)
-                  </button>
-                </div>
-              </div>
-
-              {/* Category */}
-              <div>
-                <label className="block text-[10px] font-bold text-th-text-2 uppercase tracking-[0.12em] mb-1.5">
-                  {t("dashboard.andonReason")}
-                </label>
-                <div className="grid grid-cols-5 gap-2">
-                  {CATEGORIES.map((c) => (
-                    <button
-                      key={c.key}
-                      type="button"
-                      onClick={() => setFormCategory(c.key)}
-                      className={`py-2.5 rounded-lg text-center text-xs font-semibold transition-all duration-300 border flex flex-col items-center gap-1 ${
-                        formCategory === c.key
-                          ? "bg-blue-500/20 text-blue-400 border-blue-500/40"
-                          : "bg-th-bg border-th-border text-th-text-2 hover:bg-th-bg-2"
-                      }`}
-                    >
-                      <span>{CATEGORY_ICON_LG[c.key]}</span>
-                      {t(c.labelKey)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-[10px] font-bold text-th-text-2 uppercase tracking-[0.12em] mb-1.5">
-                  {t("dashboard.andonDescription")}
-                </label>
-                <textarea
-                  value={formDesc}
-                  onChange={(e) => setFormDesc(e.target.value)}
-                  rows={3}
-                  className="w-full border border-th-border rounded-lg px-3 py-2.5 text-sm bg-th-bg text-th-text focus:ring-2 focus:ring-red-500/50 focus:outline-none resize-none"
-                  placeholder={t("dashboard.andonDescription")}
-                />
               </div>
             </div>
-
-            <div className="p-6 border-t border-th-border flex gap-3 justify-end">
-              <button
-                onClick={() => setShowTriggerModal(false)}
-                className="px-4 py-2 rounded-lg text-sm font-semibold text-th-text-2 hover:bg-th-bg transition-all duration-300"
-              >
-                {t("dashboard.andonCancel")}
-              </button>
-              <button
-                onClick={handleTrigger}
-                disabled={!formLineId || submitting}
-                className="px-5 py-2 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 disabled:from-gray-600 disabled:to-gray-600 text-white rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2"
-              >
-                {submitting && (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                )}
-                {t("dashboard.andonSubmit")}
-              </button>
-            </div>
           </div>
-        </ModalOverlay>
-      )}
+        )}
+      </div>
 
-      {/* ======= RESOLVE MODAL ======= */}
-      {resolveTarget && (
-        <ModalOverlay onClose={() => setResolveTarget(null)}>
-          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm w-full max-w-md mx-4">
-            <div className="p-6 border-b border-th-border">
-              <h3 className="font-bold text-th-text text-lg flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-emerald-500" />
-                {t("dashboard.andonResolve")}
-              </h3>
-              <p className="text-sm text-th-text-2 mt-1">
-                {resolveTarget.line_name} &mdash; {resolveTarget.description ?? ""}
-              </p>
-              <p className="text-xs text-th-text-2 mt-1 flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {t("dashboard.andonElapsed")}: <span className="font-mono font-bold text-amber-400">{fmtDuration(elapsedMin(resolveTarget.created_at))}</span>
-              </p>
-            </div>
-
-            <div className="p-6">
-              <label className="block text-[10px] font-bold text-th-text-2 uppercase tracking-[0.12em] mb-1.5">
-                {t("dashboard.andonResolutionNotes")}
-              </label>
-              <textarea
-                value={resolveNotes}
-                onChange={(e) => setResolveNotes(e.target.value)}
-                rows={3}
-                className="w-full border border-th-border rounded-lg px-3 py-2.5 text-sm bg-th-bg text-th-text focus:ring-2 focus:ring-emerald-500/50 focus:outline-none resize-none"
-                placeholder={t("dashboard.andonResolutionNotes")}
-                autoFocus
-              />
-            </div>
-
-            <div className="p-6 border-t border-th-border flex gap-3 justify-end">
-              <button
-                onClick={() => setResolveTarget(null)}
-                className="px-4 py-2 rounded-lg text-sm font-semibold text-th-text-2 hover:bg-th-bg transition-all duration-300"
-              >
-                {t("dashboard.andonCancel")}
-              </button>
-              <button
-                onClick={handleResolve}
-                disabled={resolvingId === resolveTarget.id}
-                className="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 disabled:from-gray-600 disabled:to-gray-600 text-white rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2"
-              >
-                {resolvingId === resolveTarget.id && (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                )}
-                <CheckCircle className="w-4 h-4" />
-                {t("dashboard.andonResolve")}
-              </button>
-            </div>
-          </div>
-        </ModalOverlay>
-      )}
-    </div>
-  );
-}
-
-/* -- sub-components -------------------------------------------------------- */
-
-function KpiCard({
-  label,
-  value,
-  icon,
-  accentColor,
-  pulse = false,
-}: {
-  label: string;
-  value: string;
-  icon: React.ReactNode;
-  accentColor: "slate" | "red" | "blue" | "emerald" | "amber";
-  pulse?: boolean;
-}) {
-  const borderColors: Record<string, string> = {
-    slate: "border-l-slate-400",
-    red: "border-l-red-500",
-    blue: "border-l-blue-500",
-    emerald: "border-l-emerald-500",
-    amber: "border-l-amber-500",
-  };
-
-  const glowColors: Record<string, string> = {
-    slate: "text-th-text",
-    red: "text-red-400",
-    blue: "text-blue-400",
-    emerald: "text-emerald-400",
-    amber: "text-amber-400",
-  };
-
-  const iconColors: Record<string, string> = {
-    slate: "text-th-text-2",
-    red: "text-red-400",
-    blue: "text-blue-400",
-    emerald: "text-emerald-400",
-    amber: "text-amber-400",
-  };
-
-  const pulseAnim: Record<string, string> = {
-    slate: "",
-    red: "animate-glow-pulse-red",
-    blue: "animate-glow-pulse",
-    emerald: "animate-glow-pulse",
-    amber: "animate-glow-pulse-amber",
-  };
-
-  return (
-    <div className={`rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5 text-center border-l-4 ${borderColors[accentColor]} ${pulse ? pulseAnim[accentColor] : ""}`}>
-      <div className={`flex justify-center mb-2 ${iconColors[accentColor]}`}>{icon}</div>
-      <div className={`text-3xl font-bold text-th-text ${glowColors[accentColor]}`}>{value}</div>
-      <div className="text-[10px] text-th-text-2 font-bold mt-1 uppercase tracking-[0.1em]">{label}</div>
-    </div>
-  );
-}
-
-function ModalOverlay({
-  children,
-  onClose,
-}: {
-  children: React.ReactNode;
-  onClose: () => void;
-}) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* backdrop */}
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={onClose} />
-      {/* content */}
-      <div className="relative z-10 animate-slide-in">{children}</div>
+      {/* ──────── PULSE ANIMATION STYLE ──────── */}
+      <style>{`
+        @keyframes pulse-subtle {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+          50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+        }
+        .animate-pulse-subtle {
+          animation: pulse-subtle 2s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 }

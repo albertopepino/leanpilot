@@ -167,5 +167,11 @@
   "permFullAccess": "Full Access",
   "permModifyAccess": "Modify",
   "permViewOnly": "View Only",
-  "permHiddenAccess": "Hidden"
+  "permHiddenAccess": "Hidden",
+
+  "downloadTemplates": "Download Templates",
+  "downloadTemplatesDesc": "Download CSV templates pre-filled with headers and sample data. Fill in your data, then upload below.",
+  "uploadImport": "Upload & Import",
+  "uploadImportDesc": "Select a data type, upload your CSV, validate, and import.",
+  "importResults": "Import Results"
 }

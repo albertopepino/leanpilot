@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Enum as SAEnum, Boolean
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Enum as SAEnum, Boolean, JSON
 from sqlalchemy.orm import relationship
 import enum
 
@@ -16,9 +16,16 @@ class Factory(TimestampMixin, Base):
     employee_count = Column(Integer)
     subscription_tier = Column(SAEnum(SubscriptionTier), default=SubscriptionTier.STARTER)
     ai_enabled = Column(Boolean, default=False)
+    timezone = Column(String(50), default="UTC", nullable=True)
+    custom_permissions = Column(JSON, nullable=True)  # overrides for TAB_PERMISSIONS
+
+    # Multi-site fields
+    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=True, index=True)
+    site_code = Column(String(20), nullable=True)  # short code like "MIL", "BGD"
 
     users = relationship("User", back_populates="factory")
     production_lines = relationship("ProductionLine", back_populates="factory")
+    organization = relationship("Organization", back_populates="sites")
 
 
 class ProductionLine(TimestampMixin, Base):

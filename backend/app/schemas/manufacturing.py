@@ -212,6 +212,7 @@ class ProductionOrderCreate(BaseModel):
     planned_start: datetime | None = None
     planned_end: datetime | None = None
     customer_ref: str | None = None
+    batch_lot_number: str | None = None
     notes: str | None = None
     order_lines: list[ProductionOrderLineCreate] = []  # multi-line support
 
@@ -228,6 +229,7 @@ class ProductionOrderUpdate(BaseModel):
     planned_start: datetime | None = None
     planned_end: datetime | None = None
     customer_ref: str | None = None
+    batch_lot_number: str | None = None
     notes: str | None = None
     bom_id: int | None = None
 
@@ -255,6 +257,7 @@ class ProductionOrderResponse(BaseModel):
     actual_start: datetime | None
     actual_end: datetime | None
     customer_ref: str | None
+    batch_lot_number: str | None = None
     notes: str | None
     qc_hold: bool | None = False
     qc_hold_reason: str | None

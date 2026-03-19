@@ -32,7 +32,6 @@
   "remove": "Ukloni",
   "saveAnalysis": "Sacuvaj analizu",
   "exportPdf": "Izvezi PDF",
-
   "savedAnalyses": "Sacuvane analize",
   "newAnalysis": "Nova analiza",
   "loadError": "Nije moguce ucitati analize",
@@ -60,7 +59,6 @@
   "close": "Zatvori",
   "loading": "Ucitavanje...",
   "retry": "Pokusaj ponovo",
-
   "ishikawaTitle": "Ishikawa (Riblja kost) dijagram",
   "effectProblem": "Efekat / Problem",
   "effectPlaceholder": "Koji je problem ili nezeljena posledica?",
@@ -89,7 +87,6 @@
   "showAll": "Prikazi sve",
   "category": "Kategorija",
   "cause": "Uzrok",
-
   "paretoTitle": "Pareto analiza",
   "paretoSubtitle": "Fokus na kljucne faktore — pravilo 80/20",
   "categories": "Kategorije",
@@ -109,7 +106,6 @@
   "itSystemDown": "IT sistem nedostupan",
   "other": "Ostalo",
   "topContributor": "Glavni uzrok",
-
   "a3Title": "A3 izvestaj o resavanju problema",
   "a3Subtitle": "Strukturirano razmisljanje na jednom listu",
   "a3TitlePlaceholder": "Naziv A3 izvestaja...",
@@ -137,7 +133,6 @@
   "results": "8. Rezultati",
   "resultsHint": "Dokumentujte stvarne rezultate, podatke i naucene lekcije.",
   "workflow": "Tok statusa",
-
   "owner": "Vlasnik",
   "ownerPlaceholder": "Ime vlasnika A3 izvestaja...",
   "date": "Datum",
@@ -146,7 +141,6 @@
   "statusInReview": "Na pregledu",
   "statusApproved": "Odobreno",
   "statusClosed": "Zatvoreno",
-
   "newReport": "Novi",
   "loadReport": "Ucitaj",
   "saveReport": "Sacuvaj",
@@ -159,9 +153,7 @@
   "loadedDemo": "Prikazuju se demo podaci (API nije dostupan).",
   "statusUpdated": "Status azuriran.",
   "statusFailed": "Azuriranje statusa na serveru nije uspelo.",
-
   "investigateWith5Why": "Istrazi sa 5 Zasto",
-
   "dsDowntime": "Uzroci zastoja",
   "dsDefects": "Vrste defekata",
   "dsScrap": "Razlozi za skart",
@@ -214,8 +206,36 @@
   "andonMaintenance": "Poziv za odrzavanje",
   "andonQuality": "Zaustavljanje kvaliteta",
   "andonSafety": "Zaustavljanje bezbednosti",
-
   "validationMinWhys": "Potrebna su najmanje 2 ZASTO",
   "statusImplementing": "U sprovodjenju",
-  "statusCompleted": "Zavrseno"
+  "statusCompleted": "Zavrseno",
+  "fishboneView": "Riblja kost",
+  "listView": "Prikaz liste",
+  "listViewDesc": "Strukturirana lista svih uzroka po kategoriji",
+  "voteUp": "Dodaj glas",
+  "voteDown": "Ukloni glas",
+  "topCauses": "Najviše glasani uzroci",
+  "trackWithKaizen": "Prati sa Kaizen",
+  "pdcaCycle": "PDCA ciklus",
+  "pdcaPlan": "Planiraj",
+  "pdcaDo": "Uradi",
+  "pdcaCheck": "Proveri",
+  "pdcaAct": "Deluj",
+  "mentorReview": "Pregled mentora",
+  "mentorReviewHint": "Neka mentor pregleda ovaj A3 za kvalitet i kompletnost",
+  "reviewerName": "Ime recenzenta",
+  "reviewerNamePlaceholder": "Ime mentora / kouča...",
+  "reviewDate": "Datum pregleda",
+  "approvalStatus": "Status odobrenja",
+  "mentorDraft": "Nacrt",
+  "mentorReviewed": "Pregledano",
+  "mentorApproved": "Odobreno",
+  "reviewComments": "Komentari pregleda",
+  "reviewCommentsPlaceholder": "Povratne informacije i sugestije mentora...",
+  "suggestedNextSteps": "Predloženi sledeći koraci",
+  "nextStepsDesc": "Na osnovu analize uzroka, razmotrite ove naknadne akcije",
+  "createKaizen": "Kreiraj Kaizen",
+  "openIshikawa": "Otvori Ishikawa",
+  "noParetoData": "Nema podataka za Pareto analizu",
+  "confirmDelete": "Da li ste sigurni da zelite da obrisete ovu analizu?"
 }

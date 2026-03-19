@@ -103,3 +103,4 @@ async def delete_notification(
     await db.delete(notif)
     await db.commit()
     return {"ok": True}
+

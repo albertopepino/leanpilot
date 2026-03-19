@@ -1,6 +1,2 @@
-"use client";
-import ParetoChart from "@/components/lean/ParetoChart";
-
-export default function ParetoRoute() {
-  return <ParetoChart />;
-}
+import { redirect } from "next/navigation";
+export default function LegacyPareto() { redirect("/improvement/pareto"); }

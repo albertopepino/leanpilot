@@ -16,7 +16,6 @@
   "gapToWorldClass": "Abstand zur Weltklasse",
   "oeeTrend": "OEE-Trend",
   "chartPlaceholder": "Diagramm wird mit echten Daten über recharts dargestellt",
-
   "prodTitle": "Produktionsdaten erfassen",
   "productionLine": "Produktionslinie",
   "date": "Datum",
@@ -29,7 +28,6 @@
   "optionalNotes": "Optionale Notizen...",
   "saveProductionRecord": "Produktionsdatensatz speichern",
   "liveOeePreview": "Live-OEE-Vorschau",
-
   "hourlyTitle": "Stundenproduktion",
   "hourlyTarget": "Ziel",
   "hourlyActual": "Ist",
@@ -40,7 +38,6 @@
   "result": "Ergebnis",
   "cumDelta": "Kum. Delta",
   "notesPlaceholder": "Notizen...",
-
   "andonTitle": "Andon Board",
   "andonSubtitle": "Produktionsstatus in Echtzeit",
   "factoryFloorLive": "Werkshalle — Live",
@@ -54,7 +51,6 @@
   "changeoverDesc": "Rüstung / Materialwechsel",
   "activeStoppages": "Aktive Stillstände",
   "since": "Seit",
-
   "demoLine1": "Montagelinie 1",
   "demoLine2": "Montagelinie 2",
   "demoWeldA": "Schweißzelle A",
@@ -63,15 +59,12 @@
   "demoPackaging": "Verpackungslinie",
   "demoCNC": "CNC-Bearbeitung",
   "demoQualityLab": "Qualitätslabor",
-
   "demoIssueJig": "Defekte Positioniervorrichtung — Ersatz wird erwartet",
   "demoIssueWire": "Drahtvorschubsensor intermittierend — Wartung gerufen",
   "demoIssueChangeover": "Formatwechsel A → B läuft",
   "demoIssueInspection": "Wareneingangsprüfung ausstehend",
-
   "demoNoteMaterialDelay": "Materialverzögerung aus dem Lager",
   "demoNoteToolChange": "Geplanter Werkzeugwechsel",
-
   "reasonCode": "Grund",
   "selectReason": "— Auswählen —",
   "reason_breakdown": "Maschinenausfall",
@@ -82,21 +75,17 @@
   "reason_minor_stop": "Kurzstopp",
   "reason_planned": "Geplanter Stopp",
   "reason_other": "Sonstiges",
-
   "analyzeInPareto": "Verluste in Pareto analysieren",
-
   "saving": "Wird gespeichert...",
   "resetForm": "Zurücksetzen",
   "saveSuccess": "Produktionsdatensatz erfolgreich gespeichert",
   "saveError": "Produktionsdatensatz konnte nicht gespeichert werden",
   "recentRecords": "Letzte Datensätze",
   "noRecordsYet": "Noch keine Produktionsdatensätze vorhanden",
-
   "validationRequired": "Dieses Feld ist erforderlich",
   "validationPositive": "Muss größer als 0 sein",
   "validationRunExceedsPlanned": "Laufzeit darf die geplante Zeit nicht überschreiten",
   "validationGoodExceedsTotal": "Gutteile dürfen die Gesamtstückzahl nicht überschreiten",
-
   "downtimeEvents": "Stillstandsereignisse",
   "addDowntime": "Stillstand hinzufügen",
   "noDowntimeYet": "Noch keine Stillstandsereignisse erfasst",
@@ -105,7 +94,6 @@
   "unplanned": "Ungeplant",
   "durationMin": "Dauer (min)",
   "remove": "Entfernen",
-
   "scrapEntries": "Ausschuss / Fehler",
   "addScrap": "Ausschusseintrag hinzufügen",
   "noScrapYet": "Noch keine Ausschusseinträge vorhanden",
@@ -118,7 +106,6 @@
   "defect_material": "Materialfehler",
   "defect_contamination": "Verunreinigung",
   "defect_other": "Sonstiges",
-
   "andonTriggerAlert": "Alarm auslösen",
   "andonResolve": "Lösen",
   "andonSelectLine": "Linie auswählen",
@@ -152,7 +139,6 @@
   "andonNoActiveAlerts": "Keine aktiven Alarme — alle Linien laufen",
   "andonResolving": "Wird gelöst...",
   "andonResolved": "Gelöst",
-
   "shift": "Schicht",
   "shiftMorning": "Frühschicht",
   "shiftAfternoon": "Spätschicht",
@@ -160,7 +146,6 @@
   "selectLine": "-- Linie auswählen --",
   "loadingLines": "Linien werden geladen...",
   "noLinesAvailable": "Keine Produktionslinien verfügbar",
-
   "today": "Heute",
   "saveAll": "Alle speichern",
   "saveAllSuccess": "Alle Zeilen erfolgreich gespeichert",
@@ -185,7 +170,6 @@
   "errorLoadingData": "Daten konnten nicht geladen werden",
   "retry": "Erneut versuchen",
   "noDataForDate": "Keine Daten für dieses Datum",
-
   "allLines": "Alle Linien",
   "last14": "Letzte 14 Tage",
   "usingDemoData": "Zeigt Demodaten",
@@ -212,9 +196,13 @@
   "setupAdjustments": "Rüst- & Einstellverluste",
   "minorStops": "Kurzstopps",
   "reducedSpeed": "Geschwindigkeitsverluste",
+  "equipmentFailure": "Anlagenausfall",
+  "setupAdjustment": "Rüsten und Einstellen",
+  "idlingMinorStops": "Leerlauf und Kurzstillstände",
+  "processDefects": "Prozessfehler",
+  "reducedYield": "Reduzierte Ausbeute",
   "startupLosses": "Anlaufverluste",
   "liveAutoRefresh": "Live — automatische Aktualisierung 60s",
-
   "andonHistory": "Alarmverlauf",
   "andonByCategory": "Alarme nach Kategorie",
   "andonLineStatus": "Linienstatus",
@@ -253,14 +241,35 @@
   "cancel": "Abbrechen",
   "creating": "Wird erstellt...",
   "create": "Erstellen",
-
   "units": "Einheiten",
   "totalTime": "Gesamtzeit",
   "availabilityLoss": "Verfügbarkeitsverlust",
   "performanceLoss": "Leistungsverlust",
   "qualityLoss": "Qualitätsverlust",
   "oeeWaterfallDesc": "Wie sich Ihre verfügbare Gesamtzeit in OEE aufteilt",
-
   "weeklyHeatmap": "Wöchentliche Produktions-Heatmap",
-  "noData": "Keine Daten"
+  "noData": "Keine Daten",
+  "overview": "Übersicht",
+  "lossAnalysis": "Verlustanalyse",
+  "noAndonEvents": "Noch keine Daten. Andon-Ereignisse erscheinen hier, wenn Produktionslinien ihren Status melden.",
+  "totalAvailable": "Verfügbare Zeit",
+  "productiveTime": "Produktive Zeit",
+  "totalLosses": "Gesamtverluste",
+  "lossRatio": "Verlustquote",
+  "sixBigLossesWaterfall": "Sechs große Verluste — Wasserfall",
+  "sixBigLossesDesc": "Verlorene Minuten pro Verlustkategorie mit kumulativer Produktivzeitlinie",
+  "lossBreakdown": "Verlustaufschlüsselung",
+  "andonLegend": "Legende",
+  "andonGreen": "Läuft",
+  "andonYellow": "Achtung",
+  "andonRed": "Gestoppt",
+  "andonGray": "Offline",
+  "cumulativeLineChart": "Kumulatives Liniendiagramm",
+  "noRecords": "Keine aktuellen Datensatze gefunden.",
+  "recentRecords": "Letzte Datensatze",
+  "good": "Gut",
+  "runMin": "Laufzeit (min)",
+  "modeHourly": "Stundlich",
+  "modeShift": "Pro Schicht",
+  "modeDaily": "Taglich"
 }

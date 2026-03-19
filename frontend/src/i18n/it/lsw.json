@@ -15,5 +15,11 @@
   "todayTasks": "Attività di oggi",
   "completionHistory": "Storico completamento",
   "completion": "Completamento",
-  "noTemplates": "Nessun modello creato"
+  "noTemplates": "Nessun modello creato",
+  "newTemplate": "Nuovo Modello",
+  "startChecklist": "Inizia Checklist",
+  "saveCompletion": "Salva Completamento",
+  "today": "Oggi",
+  "templates": "Modelli",
+  "history": "Storico"
 }

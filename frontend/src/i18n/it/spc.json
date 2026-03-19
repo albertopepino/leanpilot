@@ -1,0 +1,65 @@
+{
+  "title": "Grafici SPC",
+  "subtitle": "Controllo Statistico di Processo — Monitora stabilità e capacità del processo",
+
+  "xbarR": "X-bar R",
+  "xbarS": "X-bar S",
+  "pChart": "Grafico p",
+  "npChart": "Grafico np",
+  "cChart": "Grafico c",
+  "uChart": "Grafico u",
+
+  "chartType": "Tipo Grafico",
+  "subgroupSize": "Dim. Sottogruppo",
+  "usl": "LSS",
+  "lsl": "LSI",
+  "dataSource": "Fonte Dati",
+  "manualEntry": "Inserimento Manuale",
+  "fromInspections": "Da Ispezioni",
+  "productionLine": "Linea di Produzione",
+  "allLines": "Tutte le Linee",
+  "dateFrom": "Data Da",
+  "dateTo": "Data A",
+  "calculate": "Calcola",
+
+  "manualHintVariable": "Inserisci un sottogruppo per riga, valori separati da virgole",
+  "manualHintAttribute": "Inserisci un valore per riga (difettosi o conteggio difetti)",
+
+  "needMoreData": "Servono almeno 2 sottogruppi per l'analisi SPC",
+  "calculationError": "Calcolo fallito. Controlla i dati.",
+
+  "cp": "Cp",
+  "cpk": "Cpk",
+  "pctInControl": "% Sotto Controllo",
+  "totalSubgroups": "Sottogruppi",
+  "sigmaLevel": "Livello Sigma",
+
+  "chartLabel": "Carta di Controllo",
+  "subgroup": "Sottogruppo",
+  "value": "Valore",
+  "dataPoints": "Punti Dati",
+  "centerLine": "Linea Centrale",
+
+  "rule1": "Regola 1: Oltre 3σ",
+  "rule2": "Regola 2: 9 stesso lato",
+  "rule3": "Regola 3: 6 in trend",
+  "rule4": "Regola 4: 14 alternati",
+
+  "rule1Desc": "Un punto oltre 3 deviazioni standard dalla linea centrale",
+  "rule2Desc": "Nove punti consecutivi sullo stesso lato della linea centrale",
+  "rule3Desc": "Sei punti consecutivi in costante aumento o diminuzione",
+  "rule4Desc": "Quattordici punti consecutivi alternati su e giù",
+
+  "processCapability": "Capacità di Processo",
+  "mean": "Media",
+  "stdDev": "Dev. Std",
+  "specLimits": "LSI / LSS",
+  "excellent": "Eccellente",
+  "capable": "Capace",
+  "marginal": "Marginale",
+  "incapable": "Incapace",
+
+  "outOfControl": "Punti Fuori Controllo",
+  "rule": "Regola",
+  "ruleDescription": "Descrizione"
+}

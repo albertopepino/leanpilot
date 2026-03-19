@@ -8,6 +8,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 from app.core.config import get_settings
+from app.core.security import _mask_email
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()
@@ -41,7 +42,7 @@ class EmailService:
 
         # If no SMTP configured, log to console (development mode)
         if not settings.smtp_host:
-            logger.info(f"[EMAIL DEV] To: {to}")
+            logger.info(f"[EMAIL DEV] To: {_mask_email(to)}")
             logger.info(f"[EMAIL DEV] Subject: {subject}")
             logger.info(f"[EMAIL DEV] Body preview: {html_body[:200]}...")
             return True
@@ -64,11 +65,11 @@ class EmailService:
 
             server.sendmail(settings.smtp_from_email, to, msg.as_string())
             server.quit()
-            logger.info(f"Email sent to {to}: {subject}")
+            logger.info(f"Email sent to {_mask_email(to)}: {subject}")
             return True
 
         except Exception as e:
-            logger.error(f"Failed to send email to {to}: {e}")
+            logger.error(f"Failed to send email to {_mask_email(to)}: {e}")
             return False
 
 

@@ -2,6 +2,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { leanApi } from "@/lib/api";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
 import CreateLinkedAction from "@/components/ui/CreateLinkedAction";
@@ -138,6 +139,7 @@ export default function FiveWhyForm() {
   // --- UI state ---
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [savedAnalyses, setSavedAnalyses] = useState<SavedAnalysis[]>([]);
@@ -168,7 +170,7 @@ export default function FiveWhyForm() {
     setHistoryError(false);
     try {
       const res = await leanApi.listFiveWhy();
-      setSavedAnalyses(res.data ?? []);
+      setSavedAnalyses(Array.isArray(res.data) ? res.data : []);
     } catch {
       setHistoryError(true);
     } finally {
@@ -308,13 +310,18 @@ export default function FiveWhyForm() {
   };
 
   // --- delete ---
-  const handleDelete = async (id: string) => {
-    if (!confirm(t("problem-solving.confirmDelete"))) return;
+  const handleDelete = (id: string) => {
+    setConfirmDeleteId(id);
+  };
+
+  const executeDelete = async () => {
+    const id = confirmDeleteId;
+    setConfirmDeleteId(null);
+    if (!id) return;
     setDeleting(id);
     try {
       await leanApi.deleteFiveWhy(id as unknown as number);
       setSavedAnalyses((prev) => prev.filter((a) => a.id !== id));
-      // If the deleted analysis is currently loaded, reset the form
       if (activeAnalysisId === id) {
         handleNewAnalysis();
       }
@@ -1052,6 +1059,48 @@ export default function FiveWhyForm() {
             </div>
 
             {/* ============================================================ */}
+            {/*  SUGGESTED NEXT STEPS                                          */}
+            {/* ============================================================ */}
+            {rootCause && chainComplete && filledWhyCount >= MIN_STEPS && (
+              <div className="mt-8 rounded-xl border border-brand-500/20 bg-brand-500/5 shadow-sm p-5 print:hidden">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-lg bg-brand-500/20 flex items-center justify-center">
+                    <Lightbulb className="h-3.5 w-3.5 text-brand-600 dark:text-brand-400" />
+                  </div>
+                  <h4 className="text-xs font-bold text-th-text uppercase tracking-wider">
+                    {t("problem-solving.suggestedNextSteps") || "Suggested Next Steps"}
+                  </h4>
+                </div>
+                <p className="text-xs text-th-text-3 mb-4">
+                  {t("problem-solving.nextStepsDesc") || "Continue your improvement journey with these linked tools:"}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href={`#kaizen?title=${encodeURIComponent(title || problem)}&description=${encodeURIComponent(`Root cause: ${rootCause}\nProblem: ${problem}`)}`}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 text-xs font-medium hover:bg-amber-500/20 transition-all"
+                  >
+                    <Lightbulb className="h-3.5 w-3.5" />
+                    {t("problem-solving.createKaizen") || "Create Kaizen from this analysis"}
+                  </a>
+                  <a
+                    href={`#ishikawa?effect=${encodeURIComponent(problem)}`}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/20 text-xs font-medium hover:bg-cyan-500/20 transition-all"
+                  >
+                    <Target className="h-3.5 w-3.5" />
+                    {t("problem-solving.openIshikawa") || "Open Ishikawa for deeper analysis"}
+                  </a>
+                  <a
+                    href={`#a3?root_cause_analysis=${encodeURIComponent(rootCause)}&background=${encodeURIComponent(problem)}`}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-500/10 text-violet-700 dark:text-violet-400 border border-violet-500/20 text-xs font-medium hover:bg-violet-500/20 transition-all"
+                  >
+                    <FileText className="h-3.5 w-3.5" />
+                    {t("problem-solving.createA3") || "Create A3 Report"}
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {/* ============================================================ */}
             {/*  ACTION BUTTONS                                                */}
             {/* ============================================================ */}
             <div className="flex flex-wrap gap-3 mt-8 pt-6 border-t border-th-border print:hidden">
@@ -1121,6 +1170,14 @@ export default function FiveWhyForm() {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        title={t("problem-solving.confirmDelete") || "Delete Analysis"}
+        message={t("problem-solving.confirmDeleteMsg") || "Are you sure you want to delete this analysis?"}
+        onConfirm={executeDelete}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </div>
   );
 }

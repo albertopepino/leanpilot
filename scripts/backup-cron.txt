@@ -1,0 +1,5 @@
+# LeanPilot daily database backup — add to crontab with: crontab scripts/backup-cron.txt
+# Or merge into existing crontab: (crontab -l; cat scripts/backup-cron.txt) | crontab -
+#
+# Runs daily at 2:00 AM server time. Keeps last 30 backups.
+0 2 * * * /home/ubuntu/lean-os/scripts/backup.sh >> /var/log/leanpilot/backup.log 2>&1

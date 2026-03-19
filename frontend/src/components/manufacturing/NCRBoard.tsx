@@ -81,9 +81,12 @@ export default function NCRBoard() {
   const [showDetail, setShowDetail] = useState<NCR | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const [orders, setOrders] = useState<{id: number; order_number: string; batch_lot_number?: string}[]>([]);
+
   const [form, setForm] = useState({
     title: "", description: "", severity: "major",
     production_line_id: 0, product_id: 0, quantity_affected: "",
+    production_order_id: 0, batch_lot_number: "",
   });
 
   const [updateForm, setUpdateForm] = useState({
@@ -92,14 +95,18 @@ export default function NCRBoard() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [ncrRes, factRes, prodRes] = await Promise.all([
+      const [ncrRes, factRes, prodRes, ordRes] = await Promise.all([
         qcApi.listNCRs({ status: filterStatus || undefined, severity: filterSeverity || undefined }),
         adminApi.getFactory(),
         manufacturingApi.listProducts(),
+        manufacturingApi.listOrders().catch(() => ({ data: [] })),
       ]);
       setNCRs(ncrRes.data ?? ncrRes);
-      setLines((factRes.data as any)?.production_lines || (factRes as any).production_lines || []);
+      const factory = factRes.data ?? factRes;
+      setLines(factory?.production_lines || []);
       setProducts((prodRes.data ?? prodRes).map((p: any) => ({ id: p.id, code: p.code, name: p.name })));
+      const rawOrders = ordRes.data ?? ordRes;
+      setOrders(Array.isArray(rawOrders) ? rawOrders.map((o: any) => ({ id: o.id, order_number: o.order_number, batch_lot_number: o.batch_lot_number })) : []);
     } catch {
       setError(t("manufacturing.failedLoadNCR"));
     } finally {
@@ -120,10 +127,12 @@ export default function NCRBoard() {
         production_line_id: form.production_line_id || null,
         product_id: form.product_id || null,
         quantity_affected: form.quantity_affected ? parseInt(form.quantity_affected) : null,
+        production_order_id: form.production_order_id || null,
+        batch_lot_number: form.batch_lot_number || null,
       });
       setSuccess(t("manufacturing.ncrCreated"));
       setShowCreate(false);
-      setForm({ title: "", description: "", severity: "major", production_line_id: 0, product_id: 0, quantity_affected: "" });
+      setForm({ title: "", description: "", severity: "major", production_line_id: 0, product_id: 0, quantity_affected: "", production_order_id: 0, batch_lot_number: "" });
       await fetchData();
     } catch {
       setError(t("manufacturing.failedCreateNCR"));
@@ -396,6 +405,35 @@ export default function NCRBoard() {
                       <option key={p.id} value={p.id}>{p.code} - {p.name}</option>
                     ))}
                   </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-th-text-2 mb-1">{t("manufacturing.productionOrder") || "Production Order"}</label>
+                  <select
+                    value={form.production_order_id}
+                    onChange={(e) => {
+                      const ordId = Number(e.target.value);
+                      const selectedOrd = orders.find(o => o.id === ordId);
+                      setForm({ ...form, production_order_id: ordId, batch_lot_number: selectedOrd?.batch_lot_number || form.batch_lot_number });
+                    }}
+                    className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text"
+                  >
+                    <option value={0}>{t("manufacturing.noneOption")}</option>
+                    {orders.map((o) => (
+                      <option key={o.id} value={o.id}>{o.order_number}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-th-text-2 mb-1">{t("manufacturing.batchLotNumber") || "Batch / Lot #"}</label>
+                  <input
+                    type="text"
+                    value={form.batch_lot_number}
+                    onChange={(e) => setForm({ ...form, batch_lot_number: e.target.value })}
+                    className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text"
+                    placeholder="e.g. LOT-2026-0042"
+                  />
                 </div>
               </div>
             </div>

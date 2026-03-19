@@ -7,7 +7,6 @@
   "auditResults": "{area} — 6S Audit-Ergebnisse",
   "maturityLevel": "Reifegrad {level}",
   "scorePoor": "1=Mangelhaft 5=Ausgezeichnet",
-
   "catSort": "Sortieren (Seiri)",
   "catSortShort": "Sortieren",
   "catSortDesc": "Unnötige Gegenstände entfernen",
@@ -26,7 +25,6 @@
   "catSafety": "Sicherheit",
   "catSafetyShort": "Sicherheit",
   "catSafetyDesc": "Gefahrenidentifikation",
-
   "sort_q1": "Wurden alle unnötigen Gegenstände aus dem Bereich entfernt?",
   "sort_q2": "Sind rot markierte Gegenstände ordnungsgemäß gekennzeichnet?",
   "sort_q3": "Ist eine klare Unterscheidung zwischen Benötigtem und Nicht-Benötigtem erkennbar?",
@@ -57,18 +55,15 @@
   "safety_q3": "Sind Sicherheitsrisiken identifiziert und behoben?",
   "safety_q4": "Sind SDS/MSDS-Blätter zugänglich?",
   "safety_q5": "Ist Brandschutzausrüstung geprüft und zugänglich?",
-
   "scoreBelowAvg": "Unterdurchschnittlich",
   "scoreAverage": "Durchschnittlich",
   "scoreGood": "Gut",
   "scoreExcellent": "Ausgezeichnet",
-
   "matWorldClass": "Weltklasse",
   "matSustainable": "Nachhaltig",
   "matStandardized": "Standardisiert",
   "matDeveloping": "In Entwicklung",
   "matInitial": "Anfangsstufe",
-
   "saveError": "Audit konnte nicht gespeichert werden",
   "currentAudit": "Aktuelles Audit",
   "previousAudit": "Vorheriges Audit",
@@ -98,7 +93,6 @@
   "nextCategory": "Nächste →",
   "saving": "Wird gespeichert...",
   "submitAudit": "Audit einreichen",
-
   "tpmTitle": "TPM Dashboard",
   "tpmSubtitle": "Total Productive Maintenance — Null Ausfälle, null Fehler",
   "tpmRunning": "In Betrieb",
@@ -113,7 +107,6 @@
   "statusMaintenance": "WARTUNG",
   "statusBreakdown": "AUSFALL",
   "nextPm": "Nächste PM",
-
   "demoMode": "Demo",
   "tpmAddEquipment": "Anlage hinzufügen",
   "tpmEqName": "Anlagenname",
@@ -170,7 +163,6 @@
   "dayFri": "Fr",
   "daySat": "Sa",
   "daySun": "So",
-
   "pillarAutonomous": "Autonome Wartung",
   "pillarPlanned": "Geplante Wartung",
   "pillarQuality": "Qualitätswartung",
@@ -179,7 +171,6 @@
   "pillarTraining": "Schulung & Ausbildung",
   "pillarSafety": "Sicherheit & Umwelt",
   "pillarOffice": "Büro-TPM",
-
   "eqCncLathe": "CNC-Drehmaschine #1",
   "eqHydraulicPress": "Hydraulikpresse",
   "eqWeldingRobot": "Schweißroboter #3",
@@ -190,7 +181,6 @@
   "areaAssembly": "Montage",
   "areaPackaging": "Verpackung",
   "areaFinishing": "Oberflächenbehandlung",
-
   "ciltTitle": "CILT Checkliste",
   "ciltSubtitle": "Autonome Wartung",
   "ciltProgress": "Fortschritt",
@@ -206,7 +196,6 @@
   "ciltSkipBtn": "Überspringen",
   "ciltDescribeIssue": "Problem beschreiben...",
   "ciltStandard": "Standard",
-
   "ciltCatC": "Reinigung",
   "ciltCatI": "Inspektion",
   "ciltCatL": "Schmierung",
@@ -214,10 +203,8 @@
   "ciltFreqDaily": "Täglich",
   "ciltFreqWeekly": "Wöchentlich",
   "ciltFreqMonthly": "Monatlich",
-
   "ciltViewExecute": "Checkliste ausführen",
   "ciltViewStandards": "Standards verwalten",
-
   "ciltLoadError": "CILT-Standards konnten nicht geladen werden",
   "ciltStdCreated": "Standard erfolgreich erstellt",
   "ciltStdError": "Standard konnte nicht erstellt werden",
@@ -271,12 +258,10 @@
   "ciltTime": "Zeit",
   "ciltStatus": "Status",
   "ciltNotes": "Notizen",
-
   "catCleaning": "Reinigung",
   "catInspection": "Inspektion",
   "catLubrication": "Schmierung",
   "catTightening": "Anzug",
-
   "cilt_clean1": "Maschinengehäuse und Spänekasten reinigen",
   "cilt_clean1_std": "Keine Späne, Öl oder Schmutz sichtbar",
   "cilt_clean2": "Bedienfeld und Sensoren abwischen",
@@ -295,8 +280,12 @@
   "cilt_tight1_std": "Anzugsmoment: 45 Nm",
   "cilt_tight2": "Fundamentschrauben prüfen",
   "cilt_tight2_std": "Anzugsmoment: 120 Nm, keine sichtbare Bewegung",
-
   "freqDaily": "täglich",
   "freqWeekly": "wöchentlich",
-  "freqMonthly": "monatlich"
+  "freqMonthly": "monatlich",
+  "tpmFleetHealth": "Anlagenzustand",
+  "tpmOverdueAlerts": "Überfällige Warnungen",
+  "tpmEquipmentOverdue": "{count} Anlage überfällig",
+  "tpmEquipmentOverduePlural": "{count} Anlagen überfällig",
+  "tpmDueSince": "Fällig seit"
 }

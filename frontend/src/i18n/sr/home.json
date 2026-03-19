@@ -34,5 +34,39 @@
   "capaActions": "CAPA akcije",
   "kaizenItems": "Kaizen u toku",
   "ncrOpen": "Otvoreni NCR",
-  "gembaFindings": "Gemba nalazi"
+  "gembaFindings": "Gemba nalazi",
+
+  "liveData": "Uzivo",
+  "availability": "Raspolozivost",
+  "performanceLabel": "Performanse",
+  "qualityLabel": "Kvalitet",
+  "weekTrend": "Trend 7 dana",
+
+  "sqcdpBoard": "SQCDP tabla",
+  "sqcdpSafety": "Bezbednost",
+  "sqcdpQuality": "Kvalitet",
+  "sqcdpCost": "Troskovi",
+  "sqcdpDelivery": "Isporuka",
+  "sqcdpPeople": "Ljudi",
+  "daysNoIncident": "Dana bez incidenta",
+  "defectRate": "Stopa defekata",
+  "scrapCost": "Trosak skarta danas",
+  "onTimeDelivery": "Isporuka na vreme",
+  "attendance": "Prisustvo",
+  "days": "dana",
+
+  "hourlyOutput": "Casovna proizvodnja",
+  "outputVsTarget": "Ostvareno vs Plan",
+  "actual": "Ostvareno",
+  "totalOutput": "Ukupna proizvodnja",
+
+  "leanJourney": "Lean putovanje",
+  "leanJourneyDesc": "Vas DMAIC napredak kroz sve module",
+  "viewAssessment": "Pogledaj procenu",
+  "phaseDefine": "Definisati",
+  "phaseMeasure": "Meriti",
+  "phaseAnalyze": "Analizirati",
+  "phaseImprove": "Poboljsati",
+  "phaseControl": "Kontrolisati",
+  "modules": "modula"
 }

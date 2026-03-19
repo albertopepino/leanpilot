@@ -57,5 +57,25 @@
   "copilotDesc": "Your AI-powered manufacturing assistant.\nAsk questions about Lean methodology, get help interpreting your OEE data, or brainstorm improvement ideas.\n\nThe Copilot understands your factory context and speaks your language.",
 
   "finishTitle": "You're all set! 🎉",
-  "finishDesc": "You now know the main tools in LeanPilot.\n\nStart with the Lean Assessment to discover your improvement priorities, then explore each tool at your own pace.\n\nYou can always replay this tutorial from Settings."
+  "finishDesc": "You now know the main tools in LeanPilot.\n\nStart with the Lean Assessment to discover your improvement priorities, then explore each tool at your own pace.\n\nYou can always replay this tutorial from Settings.",
+
+  "welcomeAriaLabel": "Welcome to LeanPilot",
+  "welcomeModalDesc": "Your Lean Manufacturing OS is ready. How would you like to get started?",
+  "welcomeOptionTour": "Take a Quick Tour",
+  "welcomeOptionTourDesc": "See the main tools in 2 minutes",
+  "welcomeOptionSetup": "Set Up Your Factory",
+  "welcomeOptionSetupDesc": "Create lines, products, and first OEE score",
+  "welcomeOptionJump": "Jump Right In",
+  "welcomeOptionJumpDesc": "Explore on your own — you know what you're doing",
+  "welcomeDontShowAgain": "Don't show this again",
+
+  "checklistTitle": "Getting Started",
+  "checklistProgress": "{done} of {total} complete",
+  "hideChecklist": "Hide checklist",
+  "checkAccount": "Create your account",
+  "checkLines": "Add production lines",
+  "checkProducts": "Add products",
+  "checkProduction": "Record first production",
+  "checkAssessment": "Complete lean assessment",
+  "checkTeam": "Set up your team"
 }

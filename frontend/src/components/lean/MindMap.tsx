@@ -4,6 +4,7 @@ import { useI18n } from "@/stores/useI18n";
 import { advancedLeanApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import {
   Brain,
   Plus,
@@ -155,6 +156,9 @@ export default function MindMap() {
   const [feedback, setFeedback] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
   const feedbackTimer = useRef<ReturnType<typeof setTimeout>>();
 
+  // Confirm dialog
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+
   // Canvas state
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -254,7 +258,6 @@ export default function MindMap() {
   }, [t]);
 
   const handleDelete = useCallback(async (id: number) => {
-    if (!confirm(t("improvement.confirmDeleteMindmap"))) return;
     try {
       await advancedLeanApi.deleteMindMap?.(id);
       flash("ok", t("improvement.mindmapDeleted") || "Deleted");
@@ -692,7 +695,7 @@ export default function MindMap() {
                   <span className="text-sm font-medium text-th-text">{m.title}</span>
                   <span className="text-xs text-th-text-3 ml-2">{new Date(m.created_at).toLocaleDateString()}</span>
                 </button>
-                <button onClick={() => handleDelete(m.id)} className="text-red-500 hover:text-red-600 ml-2 p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition" aria-label={t("improvement.mindmapDelete")}><Trash2 className="w-3.5 h-3.5" /></button>
+                <button onClick={() => setConfirmDeleteId(m.id)} className="text-red-500 hover:text-red-600 ml-2 p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition" aria-label={t("improvement.mindmapDelete")}><Trash2 className="w-3.5 h-3.5" /></button>
               </div>
             ))
           )}
@@ -1054,6 +1057,18 @@ export default function MindMap() {
           {t("improvement.mindmapHelp") || "Double-click to edit • Tab to add child • Drag to move • Scroll to zoom • Alt+drag to pan"}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        title={t("common.confirmDelete")}
+        message={t("improvement.confirmDeleteMindmap")}
+        variant="danger"
+        onConfirm={() => {
+          if (confirmDeleteId !== null) handleDelete(confirmDeleteId);
+          setConfirmDeleteId(null);
+        }}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </div>
   );
 }

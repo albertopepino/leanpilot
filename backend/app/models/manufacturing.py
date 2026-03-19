@@ -165,6 +165,7 @@ class ProductionOrder(TimestampMixin, Base):
     actual_end = Column(DateTime(timezone=True), nullable=True)
 
     customer_ref = Column(String, nullable=True)  # for make-to-order
+    batch_lot_number = Column(String, nullable=True)
     notes = Column(Text)
 
     # QC hold management

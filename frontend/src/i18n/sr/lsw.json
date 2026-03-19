@@ -15,5 +15,11 @@
   "todayTasks": "Današnji zadaci",
   "completionHistory": "Istorija izvršenja",
   "completion": "Izvršenje",
-  "noTemplates": "Još nema kreiranih šablona"
+  "noTemplates": "Još nema kreiranih šablona",
+  "newTemplate": "Novi šablon",
+  "startChecklist": "Započni kontrolnu listu",
+  "saveCompletion": "Sačuvaj završetak",
+  "today": "Danas",
+  "templates": "Šabloni",
+  "history": "Istorija"
 }

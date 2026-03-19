@@ -355,6 +355,10 @@ class AndonEvent(TimestampMixin, Base):
     resolution_time_min = Column(Float)
     escalated = Column(Boolean, default=False)
 
+    # Escalation tracking
+    escalated_at = Column(DateTime(timezone=True), nullable=True)
+    escalation_count = Column(Integer, default=0)
+
     # QC integration (Phase 1)
     source = Column(String, nullable=True)  # "manual", "qc_check", "auto"
     qc_record_id = Column(Integer, ForeignKey("qc_records.id"), nullable=True)

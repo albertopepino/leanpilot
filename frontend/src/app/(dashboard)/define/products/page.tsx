@@ -1,6 +1,2 @@
-"use client";
-import ProductCatalog from "@/components/manufacturing/ProductCatalog";
-
-export default function ProductsRoute() {
-  return <ProductCatalog />;
-}
+import { redirect } from "next/navigation";
+export default function LegacyDefineProducts() { redirect("/planning/products"); }

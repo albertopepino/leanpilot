@@ -18,7 +18,7 @@ export default function TwoFactorSetup() {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
-  const isEnabled = (user as any)?.totp_enabled;
+  const isEnabled = user?.totp_enabled;
 
   const startSetup = async () => {
     setLoading(true);
