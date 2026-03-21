@@ -1,8 +1,9 @@
 "use client";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useI18n } from "@/stores/useI18n";
 import { safetyApi, adminApi } from "@/lib/api";
+import { useCelebration } from "@/hooks/useCelebration";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import PhotoUpload from "@/components/ui/PhotoUpload";
 import type { SafetyIncidentResponse, SafetyStats } from "@/lib/types";
@@ -171,6 +172,28 @@ export default function SafetyTracker() {
     }
     return best;
   }, [incidents, currentStreak]);
+
+  // Safety streak milestone celebration
+  const STREAK_MILESTONES = [7, 14, 30, 60, 90];
+  const { triggerCelebration } = useCelebration();
+  const streakCelebratedRef = useRef(false);
+  useEffect(() => {
+    if (loading || streakCelebratedRef.current || currentStreak === 0) return;
+    const milestone = STREAK_MILESTONES.find((m) => currentStreak >= m);
+    if (!milestone) return;
+    // Only celebrate once per browser session for this milestone
+    const sessionKey = `safety_streak_${milestone}`;
+    if (typeof sessionStorage !== "undefined" && sessionStorage.getItem(sessionKey)) return;
+    streakCelebratedRef.current = true;
+    if (typeof sessionStorage !== "undefined") sessionStorage.setItem(sessionKey, "1");
+    const titleTemplate = t("safety.streakMilestone") || "{days} Days Safe!";
+    triggerCelebration({
+      type: "safety-streak",
+      icon: "\uD83D\uDEE1\uFE0F",
+      title: titleTemplate.replace("{days}", String(currentStreak)),
+      subtitle: t("safety.streakMilestoneDesc") || "Keep the streak going!",
+    });
+  }, [loading, currentStreak, t, triggerCelebration]);
 
   // Add incident
   const handleAdd = useCallback(async (data: {
@@ -476,7 +499,7 @@ function CounterView({
       {/* Side cards */}
       <div className="space-y-6">
         {/* Current streak card */}
-        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
+        <div className={`rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6${currentStreak > 0 ? " animate-pulse-green" : ""}`}>
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-lg bg-emerald-500/15 flex items-center justify-center">
               <Flame className="w-5 h-5 text-emerald-500" />
@@ -487,7 +510,7 @@ function CounterView({
           <div className="text-xs text-th-text-3 mt-1">{t("safety.days")}</div>
         </div>
 
-        {/* Best streak card */}
+        {/* Best streak card — pulse green when streak is active */}
         <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-lg bg-amber-500/15 flex items-center justify-center">
@@ -1147,7 +1170,7 @@ function SafetyCrossView({
                 key={day}
                 className={`aspect-square rounded-lg flex items-center justify-center text-xs font-bold transition-all ${colorMap[status]} ${
                   status === "gray" ? "text-th-text-3" : "text-white"
-                } ${isToday ? "ring-2 ring-th-text ring-offset-2 ring-offset-th-bg-2" : ""}`}
+                } ${isToday ? "ring-2 ring-th-text ring-offset-2 ring-offset-th-bg-2" : ""} ${status === "red" ? "animate-pulse-red" : ""} ${status === "yellow" ? "animate-pulse-amber" : ""}`}
                 title={`${day} ${MONTH_LABELS[month]} — ${colorLabel[status]}`}
               >
                 {day}

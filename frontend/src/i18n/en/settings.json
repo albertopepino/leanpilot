@@ -1,6 +1,7 @@
 {
   "title": "Settings",
   "subtitle": "Manage your profile, appearance, security, and privacy preferences",
+  "achievements": "Achievements",
 
   "profile": "Profile",
   "fullName": "Full Name",
@@ -100,5 +101,9 @@
   "tabAuditScheduler": "Audit Scheduler",
   "tabExtraTools": "Extra Tools",
   "tabDataImport": "Import / Export",
-  "tabERP": "ERP Integration"
+  "tabERP": "ERP Integration",
+
+  "testCelebrationBtn": "\ud83c\udf89 Test celebration effect",
+  "testCelebration": "Test Celebration!",
+  "testCelebrationDesc": "Confetti is working!"
 }

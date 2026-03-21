@@ -4,7 +4,7 @@ import { Info, X, ArrowRight, ArrowLeft } from "lucide-react";
 import { useI18n } from "@/stores/useI18n";
 import { useAuth } from "@/hooks/useAuth";
 import { useBeginnerMode } from "@/stores/useBeginnerMode";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 /**
  * ToolInfoCard — A dismissable info card shown at the top of each tool page.
@@ -35,6 +35,7 @@ export default function ToolInfoCard({ info }: { info: ToolInfo }) {
   const { t } = useI18n();
   const { user } = useAuth();
   const { enabled: beginnerMode } = useBeginnerMode();
+  const router = useRouter();
   const [dismissed, setDismissed] = useState(true); // start hidden to avoid flash
   const [loaded, setLoaded] = useState(false);
 
@@ -113,9 +114,9 @@ export default function ToolInfoCard({ info }: { info: ToolInfo }) {
                   <span className="font-medium">{t("common.toolInfoFrom") || "Receives from"}:</span>
                   {info.connectsFrom.map((c, i) => (
                     <span key={i}>
-                      <Link href={c.href} className="text-brand-600 dark:text-brand-400 hover:underline">
+                      <button onClick={() => router.push(c.href)} className="text-brand-600 dark:text-brand-400 hover:underline">
                         {t(c.labelKey) || c.fallback}
-                      </Link>
+                      </button>
                       {i < info.connectsFrom!.length - 1 && ", "}
                     </span>
                   ))}
@@ -127,9 +128,9 @@ export default function ToolInfoCard({ info }: { info: ToolInfo }) {
                   <span className="font-medium">{t("common.toolInfoTo") || "Feeds into"}:</span>
                   {info.connectsTo.map((c, i) => (
                     <span key={i}>
-                      <Link href={c.href} className="text-emerald-600 dark:text-emerald-400 hover:underline">
+                      <button onClick={() => router.push(c.href)} className="text-emerald-600 dark:text-emerald-400 hover:underline">
                         {t(c.labelKey) || c.fallback}
-                      </Link>
+                      </button>
                       {i < info.connectsTo!.length - 1 && ", "}
                     </span>
                   ))}

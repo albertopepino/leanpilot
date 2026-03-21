@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useRef, useMemo, Suspense } from "react";
+import { useCountUp } from "@/hooks/useCountUp";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/stores/useI18n";
 import DisplayModeWrapper from "@/components/ui/DisplayModeWrapper";
@@ -30,6 +31,8 @@ import ToolInfoCard from "@/components/ui/ToolInfoCard";
 import FlowBreadcrumb from "@/components/ui/FlowBreadcrumb";
 import { TOOL_INFO } from "@/lib/toolInfo";
 import { AlertTriangle, BarChart3, ExternalLink } from "lucide-react";
+import { useCelebration } from "@/hooks/useCelebration";
+import GlassCard from "@/components/ui/GlassCard";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -296,6 +299,7 @@ function RadialGauge({
   const offset = circumference - progress * circumference;
   const color = getGaugeColor(value);
   const glowClass = getGaugeGlowClass(value);
+  const animatedValue = useCountUp(value, { duration: 1200, decimals: 1 });
 
   const fontSize = size >= 200 ? "text-5xl" : size >= 120 ? "text-2xl" : "text-lg";
   const labelSize = size >= 200 ? "text-sm" : "text-xs";
@@ -334,15 +338,16 @@ function RadialGauge({
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
-          className="transition-all duration-1000 ease-out"
+          className="animate-gauge transition-all duration-1000 ease-out"
           style={{
+            "--gauge-circumference": circumference,
             filter: `drop-shadow(0 0 8px ${color}60)`,
-          }}
+          } as React.CSSProperties}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className={`${fontSize} font-bold tabular-nums`} style={{ color }}>
-          {value.toFixed(1)}%
+          {animatedValue.toFixed(1)}%
         </span>
         {showLabel && label && (
           <span className={`${labelSize} text-th-text-2 mt-0.5 font-medium`}>
@@ -433,6 +438,7 @@ function KPICard({
   icon,
   accentColor,
   trend: trendValue,
+  stagger,
 }: {
   label: string;
   value: string;
@@ -440,6 +446,7 @@ function KPICard({
   icon: React.ReactNode;
   accentColor: "emerald" | "amber" | "rose" | "blue";
   trend?: { direction: "up" | "down"; pct: number };
+  stagger?: 1 | 2 | 3 | 4 | 5 | 6;
 }) {
   const borderColors = {
     emerald: "border-l-emerald-500",
@@ -463,8 +470,10 @@ function KPICard({
   };
 
   return (
-    <div
-      className={`kpi-card-premium oee-dashboard-card bg-gradient-to-br ${bgGradients[accentColor]} border border-th-card-border ${borderColors[accentColor]} border-l-4 rounded-xl p-5 animate-count-up`}
+    <GlassCard
+      hover
+      glow={accentColor === "emerald" ? "emerald" : accentColor === "amber" ? "amber" : accentColor === "rose" ? "rose" : "brand"}
+      className={`kpi-card-premium oee-dashboard-card bg-gradient-to-br ${bgGradients[accentColor]} ${borderColors[accentColor]} border-l-4 p-5 animate-count-up animate-card-enter${stagger ? ` animate-card-enter-${stagger}` : ""}`}
     >
       <div className="flex items-start justify-between mb-3">
         <div className={`p-2 rounded-lg ${iconBg[accentColor]}`}>
@@ -496,7 +505,7 @@ function KPICard({
         <span className="text-2xl font-bold text-th-text tabular-nums">{value}</span>
         {unit && <span className="text-sm text-th-text-2 font-medium">{unit}</span>}
       </div>
-    </div>
+    </GlassCard>
   );
 }
 
@@ -635,6 +644,21 @@ function OEEDashboardInner({ onNavigate }: { onNavigate?: (view: string) => void
       quality: avg(second.map((p) => p.quality)) - avg(first.map((p) => p.quality)),
     };
   }, [trend]);
+
+  // World-class OEE celebration — trigger once per page load
+  const oeeCelebratedRef = useRef(false);
+  const { triggerCelebration } = useCelebration();
+  useEffect(() => {
+    if (!loading && summary.avg_oee >= 85 && summary.record_count > 0 && !oeeCelebratedRef.current) {
+      oeeCelebratedRef.current = true;
+      triggerCelebration({
+        type: "oee-target",
+        icon: "\u2b50",
+        title: t("dashboard.worldClassOEE") || "World-Class OEE!",
+        subtitle: t("dashboard.worldClassOEEDesc") || "Your line is performing in the top tier",
+      });
+    }
+  }, [loading, summary.avg_oee, summary.record_count, t, triggerCelebration]);
 
   // Downtime breakdown for donut chart
   const downtimeBreakdown = useMemo(() => {
@@ -963,13 +987,13 @@ function OverviewTabContent({
       {/* ================================================================ */}
       {/*  ROW 1: Hero OEE Gauge + Sub-Metrics                            */}
       {/* ================================================================ */}
-      <div className={`oee-dashboard-card oee-hero-section rounded-xl border border-th-card-border p-8 ${getGlowAnimClass(summary.avg_oee)}`}>
+      <GlassCard glow="brand" className={`oee-dashboard-card oee-hero-section p-8 ${getGlowAnimClass(summary.avg_oee)}`}>
         {loading ? (
           <SkeletonGauge />
         ) : (
           <div className="flex flex-col items-center">
             {/* Main OEE Gauge */}
-            <div className="mb-4">
+            <div className={`mb-4 rounded-full ${summary.avg_oee >= 85 ? "animate-gold-ring" : ""}`}>
               <RadialGauge
                 value={summary.avg_oee}
                 size={220}
@@ -1035,7 +1059,7 @@ function OverviewTabContent({
             <span>{t("dashboard.hiddenFactoryWarning") || "Quality at 100% may indicate untracked scrap or rework. Verify data accuracy."}</span>
           </div>
         )}
-      </div>
+      </GlassCard>
 
       {/* ================================================================ */}
       {/*  ROW 2: KPI Cards                                               */}
@@ -1051,6 +1075,7 @@ function OverviewTabContent({
             value={totalProduction.toLocaleString()}
             unit={t("dashboard.units") || "units"}
             accentColor="emerald"
+            stagger={1}
             trend={{ direction: "up", pct: 3.2 }}
             icon={
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -1063,6 +1088,7 @@ function OverviewTabContent({
             value={goodUnits.toLocaleString()}
             unit={t("dashboard.units") || "units"}
             accentColor="blue"
+            stagger={2}
             trend={{ direction: "up", pct: 1.8 }}
             icon={
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -1075,6 +1101,7 @@ function OverviewTabContent({
             value={defects.toLocaleString()}
             unit={t("dashboard.units") || "units"}
             accentColor="rose"
+            stagger={3}
             trend={{ direction: "down", pct: 2.1 }}
             icon={
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -1086,6 +1113,7 @@ function OverviewTabContent({
             label={t("dashboard.totalDowntime") || "Downtime"}
             value={`${Math.floor(summary.total_downtime_min / 60)}h ${(summary.total_downtime_min % 60).toFixed(0)}m`}
             accentColor="amber"
+            stagger={4}
             trend={{ direction: "down", pct: 5.4 }}
             icon={
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

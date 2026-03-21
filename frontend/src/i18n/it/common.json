@@ -245,6 +245,8 @@
   "titleQCDashboard": "Dashboard Controllo Qualità",
   "navSPC": "Grafici SPC",
   "titleSPC": "Controllo Statistico di Processo",
+  "navFMEA": "FMEA",
+  "titleFMEA": "Analisi dei Modi e degli Effetti dei Guasti",
   "navShopFloor": "Shop Floor",
   "titleShopFloor": "Operazioni Shop Floor",
   "select": "Seleziona...",

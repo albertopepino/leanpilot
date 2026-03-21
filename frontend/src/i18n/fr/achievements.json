@@ -1,0 +1,18 @@
+{
+  "title": "Succes",
+  "progress": "{unlocked} sur {total} debloques",
+  "firstLogin": "Bienvenue a bord !",
+  "firstProduction": "Premiere production enregistree",
+  "firstKaizen": "Premiere idee d'amelioration",
+  "firstSafety": "Champion de la securite",
+  "firstGemba": "Allez voir par vous-meme",
+  "first5Why": "Cause racine trouvee",
+  "oee85": "OEE de classe mondiale",
+  "safety7": "7 jours en securite",
+  "safety30": "30 jours en securite",
+  "kaizen10": "10 ameliorations terminees",
+  "streak7": "Serie de 7 jours",
+  "streak30": "Serie de 30 jours",
+  "locked": "Continuez pour debloquer !",
+  "unlockedOn": "Debloque le {date}"
+}

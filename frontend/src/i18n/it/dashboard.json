@@ -303,5 +303,7 @@
   "hiddenFactoryTitle": "Avviso Fabbrica Nascosta",
   "deepDivePareto": "Analizza nel Pareto",
   "paretoTooltip": "Trova le cause principali delle perdite — concentrati sulle poche cause vitali",
-  "paretoSubtitle": "Trova le poche cause vitali"
+  "paretoSubtitle": "Trova le poche cause vitali",
+  "worldClassOEE": "OEE World-Class!",
+  "worldClassOEEDesc": "La tua linea sta performando ai massimi livelli"
 }

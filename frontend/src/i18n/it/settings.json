@@ -1,6 +1,7 @@
 {
   "title": "Impostazioni",
   "subtitle": "Gestisci il tuo profilo, aspetto, sicurezza e preferenze sulla privacy",
+  "achievements": "Traguardi",
 
   "profile": "Profilo",
   "fullName": "Nome Completo",
@@ -88,5 +89,9 @@
   "tabAuditScheduler": "Pianificazione Audit",
   "tabExtraTools": "Strumenti Extra",
   "tabDataImport": "Importa / Esporta",
-  "tabERP": "Integrazione ERP"
+  "tabERP": "Integrazione ERP",
+
+  "testCelebrationBtn": "\ud83c\udf89 Testa effetto celebrazione",
+  "testCelebration": "Test Celebrazione!",
+  "testCelebrationDesc": "I coriandoli funzionano!"
 }

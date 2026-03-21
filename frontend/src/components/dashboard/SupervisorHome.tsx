@@ -242,7 +242,7 @@ export default function SupervisorHome({ onNavigate }: SupervisorHomeProps) {
 
       {/* ─── SQCDP Status Strip ─── */}
       <div className="grid grid-cols-5 gap-2">
-        {(Object.entries(SQCDP_CONFIG) as [string, typeof SQCDP_CONFIG.S][]).map(([letter, cfg]) => {
+        {(Object.entries(SQCDP_CONFIG) as [string, typeof SQCDP_CONFIG.S][]).map(([letter, cfg], sqIdx) => {
           const statusKey = { S: "safety", Q: "quality", C: "cost", D: "delivery", P: "people" }[letter] as keyof SqcdpStatus;
           const status = sqcdp[statusKey];
           const StatusIcon = STATUS_ICONS[status];
@@ -250,7 +250,7 @@ export default function SupervisorHome({ onNavigate }: SupervisorHomeProps) {
             <button
               key={letter}
               onClick={() => onNavigate("sqcdp")}
-              className={`rounded-xl border border-th-border bg-th-bg-2 p-3 text-center hover:shadow-md transition-all active:scale-[0.98]`}
+              className={`rounded-xl border border-th-border bg-th-bg-2 p-3 text-center hover:shadow-md transition-all active:scale-[0.98] animate-card-enter animate-card-enter-${sqIdx + 1}`}
             >
               <div className="flex items-center justify-center gap-1.5 mb-1">
                 <span className={`text-lg font-bold text-${cfg.color}-600 dark:text-${cfg.color}-400`}>{letter}</span>
@@ -264,7 +264,7 @@ export default function SupervisorHome({ onNavigate }: SupervisorHomeProps) {
 
       {/* ─── KPI Summary Cards ─── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <button onClick={() => onNavigate("oee")} className="rounded-xl border border-th-border bg-th-bg-2 p-4 text-left hover:shadow-md transition-all">
+        <button onClick={() => onNavigate("oee")} className="rounded-xl border border-th-border bg-th-bg-2 p-4 text-left hover:shadow-md transition-all animate-card-enter animate-card-enter-1">
           <div className="flex items-center gap-2 mb-2">
             <Gauge size={16} className="text-brand-500" />
             <span className="text-xs text-th-text-3 font-medium">OEE</span>
@@ -274,7 +274,7 @@ export default function SupervisorHome({ onNavigate }: SupervisorHomeProps) {
           </p>
         </button>
 
-        <button onClick={() => onNavigate("andon")} className="rounded-xl border border-th-border bg-th-bg-2 p-4 text-left hover:shadow-md transition-all">
+        <button onClick={() => onNavigate("andon")} className="rounded-xl border border-th-border bg-th-bg-2 p-4 text-left hover:shadow-md transition-all animate-card-enter animate-card-enter-2">
           <div className="flex items-center gap-2 mb-2">
             <Zap size={16} className={kpi.activeAndon > 0 ? "text-rose-500" : "text-emerald-500"} />
             <span className="text-xs text-th-text-3 font-medium">{t("supervisorHome.andonAlerts") || "Andon"}</span>
@@ -284,7 +284,7 @@ export default function SupervisorHome({ onNavigate }: SupervisorHomeProps) {
           </p>
         </button>
 
-        <button onClick={() => onNavigate("quality")} className="rounded-xl border border-th-border bg-th-bg-2 p-4 text-left hover:shadow-md transition-all">
+        <button onClick={() => onNavigate("quality")} className="rounded-xl border border-th-border bg-th-bg-2 p-4 text-left hover:shadow-md transition-all animate-card-enter animate-card-enter-3">
           <div className="flex items-center gap-2 mb-2">
             <AlertTriangle size={16} className={kpi.openNCRs > 0 ? "text-amber-500" : "text-emerald-500"} />
             <span className="text-xs text-th-text-3 font-medium">{t("supervisorHome.openNCRs") || "Open NCRs"}</span>
@@ -292,7 +292,7 @@ export default function SupervisorHome({ onNavigate }: SupervisorHomeProps) {
           <p className="text-2xl font-bold text-th-text">{kpi.openNCRs}</p>
         </button>
 
-        <button onClick={() => onNavigate("kaizen")} className="rounded-xl border border-th-border bg-th-bg-2 p-4 text-left hover:shadow-md transition-all">
+        <button onClick={() => onNavigate("kaizen")} className="rounded-xl border border-th-border bg-th-bg-2 p-4 text-left hover:shadow-md transition-all animate-card-enter animate-card-enter-4">
           <div className="flex items-center gap-2 mb-2">
             <Wrench size={16} className="text-amber-500" />
             <span className="text-xs text-th-text-3 font-medium">{t("supervisorHome.actionItems") || "Action Items"}</span>

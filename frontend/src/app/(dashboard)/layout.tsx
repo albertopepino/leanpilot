@@ -16,6 +16,8 @@ import SiteSwitcher from "@/components/ui/SiteSwitcher";
 import OfflineBanner from "@/components/ui/OfflineBanner";
 import ToastContainer from "@/components/shared/Toast";
 import QuickActionsFAB from "@/components/ui/QuickActionsFAB";
+import CelebrationOverlay from "@/components/ui/CelebrationOverlay";
+import { useCelebration } from "@/hooks/useCelebration";
 
 const CORP_ROLES = ["admin", "plant_manager", "manager"];
 
@@ -26,6 +28,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { sites, setSites } = useSite();
+  const { triggerCelebration } = useCelebration();
   const searchParams = useSearchParams();
   const isDisplayMode = searchParams.get("display") === "true";
 
@@ -81,6 +84,21 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, [user?.role]);
+
+  // Welcome celebration on first-ever dashboard visit
+  useEffect(() => {
+    if (!user) return;
+    if (typeof window === "undefined") return;
+    if (!localStorage.getItem("leanpilot_welcome_shown")) {
+      triggerCelebration({
+        type: "first-login",
+        icon: "\u{1F680}",
+        title: "Welcome to LeanPilot!",
+        subtitle: "Your lean journey starts here",
+      });
+      localStorage.setItem("leanpilot_welcome_shown", "1");
+    }
+  }, [user, triggerCelebration]);
 
   // Show loading spinner — uses th-* theme classes
   if (loading) {
@@ -156,6 +174,9 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
         {/* Toast notifications */}
         <ToastContainer />
+
+        {/* Gamification celebrations */}
+        <CelebrationOverlay />
       </div>
     </ConsentGate>
   );

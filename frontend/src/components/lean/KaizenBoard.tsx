@@ -4,6 +4,7 @@ import { useI18n } from "@/stores/useI18n";
 import { useCurrency } from "@/stores/useCurrency";
 import { useSearchParams } from "next/navigation";
 import { leanApi, lswApi, advancedLeanApi } from "@/lib/api";
+import { useCelebration } from "@/hooks/useCelebration";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
 import LinkedItemBadge from "@/components/ui/LinkedItemBadge";
@@ -11,6 +12,7 @@ import CreateLinkedAction from "@/components/ui/CreateLinkedAction";
 import PhotoUpload from "@/components/ui/PhotoUpload";
 import ToolInfoCard from "@/components/ui/ToolInfoCard";
 import FlowBreadcrumb from "@/components/ui/FlowBreadcrumb";
+import EmptyState from "@/components/ui/EmptyState";
 import { TOOL_INFO } from "@/lib/toolInfo";
 import { useLinkedItems } from "@/hooks/useLinkedItems";
 import { viewToRoute } from "@/lib/routes";
@@ -1266,6 +1268,7 @@ export default function KaizenBoard() {
   const sym = useCurrency((s) => s.currency.symbol);
   const { printView, exportToExcel } = useExport();
   const searchParams = useSearchParams();
+  const { triggerCelebration } = useCelebration();
 
   const [items, setItems] = useState<KaizenItem[]>([]);
   const [savings, setSavings] = useState<KaizenSavings>(EMPTY_SAVINGS);
@@ -1442,6 +1445,16 @@ export default function KaizenBoard() {
     );
     setSelectedItem(null);
 
+    // Celebrate completed / verified kaizen
+    if (newStatus === "completed" || newStatus === "verified") {
+      triggerCelebration({
+        type: "kaizen-complete",
+        icon: "\uD83C\uDFC6",
+        title: t("improvement.kaizenCompleted") || "Improvement Completed!",
+        subtitle: item.title,
+      });
+    }
+
     if (isDemo) {
       setUpdating(false);
       return;
@@ -1591,13 +1604,19 @@ export default function KaizenBoard() {
 
       {/* ---- Empty state message ---- */}
       {!loading && items.length === 0 && (
-        <div className="px-4 py-6 bg-th-bg-2 border border-th-border rounded-xl text-center text-sm text-th-text-2">
-          {t("improvement.noKaizenYet") || "No data yet. Start by creating your first Kaizen improvement."}
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm">
+          <EmptyState
+            variant="kaizen"
+            title={t("improvement.noKaizenYet") || "No Kaizen improvements yet"}
+            description={t("improvement.noKaizenDesc") || "Start by creating your first Kaizen improvement to track continuous improvement ideas."}
+            actionLabel={t("improvement.newKaizen") || "New Kaizen"}
+            onAction={() => setShowForm(true)}
+          />
         </div>
       )}
 
       {/* ---- Kaizen Funnel ---- */}
-      <div className="rounded-xl border border-th-border bg-th-bg-2 p-5 shadow-card">
+      <div className="rounded-xl border border-th-border bg-th-bg-2 p-5 shadow-card animate-card-enter animate-card-enter-1">
         <h3 className="text-sm font-bold text-th-text mb-3">{t("improvement.kaizenFunnel") || "Kaizen Funnel"}</h3>
         <div className="flex items-end gap-1 h-20">
           {COLUMNS.map((col) => {
@@ -1922,14 +1941,14 @@ export default function KaizenBoard() {
 
       {/* ---- Kanban board ---- */}
       {viewMode === "kanban" && <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 pb-4">
-        {COLUMNS.map((col) => {
+        {COLUMNS.map((col, colIdx) => {
           const colItems = filteredItems.filter((i) => i.status === col.key);
           const isDropTarget = dragOverCol === col.key;
 
           return (
             <div
               key={col.key}
-              className={`rounded-xl p-3 min-h-[320px] border-2 transition-all duration-300 ${
+              className={`rounded-xl p-3 min-h-[320px] border-2 transition-all duration-300 animate-card-enter animate-card-enter-${Math.min(colIdx + 1, 6)} ${
                 col.color
               } ${
                 isDropTarget

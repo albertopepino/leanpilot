@@ -341,5 +341,8 @@
   "countermeasurePlaceholder": "Descrivi la contromisura standard...",
   "lswUpdated": "Lavoro standard aggiornato dal Kaizen",
   "lswRequiredForStandardize": "Collegare un modello LSW prima di standardizzare questo kaizen",
-  "beforeAfterPhotos": "Foto Prima / Dopo"
+  "beforeAfterPhotos": "Foto Prima / Dopo",
+  "kaizenCompleted": "Miglioramento Completato!",
+  "kaizenCompletedDesc": "Un altro passo verso l'eccellenza operativa",
+  "noKaizenDesc": "Inizia creando il tuo primo miglioramento Kaizen per tracciare le idee di miglioramento continuo."
 }

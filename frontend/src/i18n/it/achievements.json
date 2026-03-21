@@ -1,0 +1,18 @@
+{
+  "title": "Traguardi",
+  "progress": "{unlocked} di {total} sbloccati",
+  "firstLogin": "Benvenuto a bordo!",
+  "firstProduction": "Prima produzione registrata",
+  "firstKaizen": "Prima idea di miglioramento",
+  "firstSafety": "Campione della sicurezza",
+  "firstGemba": "Vai a vedere di persona",
+  "first5Why": "Causa radice trovata",
+  "oee85": "OEE di classe mondiale",
+  "safety7": "7 giorni sicuri",
+  "safety30": "30 giorni sicuri",
+  "kaizen10": "10 miglioramenti completati",
+  "streak7": "Striscia di 7 giorni",
+  "streak30": "Striscia di 30 giorni",
+  "locked": "Continua cosi per sbloccare!",
+  "unlockedOn": "Sbloccato il {date}"
+}

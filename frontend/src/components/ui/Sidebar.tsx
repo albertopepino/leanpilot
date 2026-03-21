@@ -47,6 +47,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useSite } from "@/stores/useSite";
+import LoginStreakBadge from "./LoginStreakBadge";
 
 /* ─── Types ─── */
 interface SidebarProps {
@@ -81,8 +82,8 @@ const corporateSection: NavSection = {
   titleKey: "common.navCorporate",
   fallbackTitle: "Corporate",
   icon: Globe,
-  color: "blue",
-  dotColor: "bg-blue-500",
+  color: "violet",
+  dotColor: "bg-violet-500",
   items: [
     { id: "corporate-dashboard", labelKey: "dashboard.corporateTitle", icon: Globe, href: "/corporate" },
     { id: "site-management", labelKey: "common.navSiteManagement", icon: Building2, href: "/system/admin" },
@@ -109,8 +110,8 @@ const sections: NavSection[] = [
     titleKey: "common.navDaily",
     fallbackTitle: "Daily",
     icon: CalendarCheck,
-    color: "emerald",
-    dotColor: "bg-emerald-500",
+    color: "brand",
+    dotColor: "bg-brand-500",
     items: [
       { id: "home", labelKey: "common.navDashboard", icon: LayoutDashboard, href: "/operations/home" },
       { id: "safety", labelKey: "common.navSafety", icon: Shield, href: "/operations/safety" },
@@ -124,8 +125,8 @@ const sections: NavSection[] = [
     titleKey: "common.navMonitor",
     fallbackTitle: "Monitor",
     icon: Activity,
-    color: "blue",
-    dotColor: "bg-blue-500",
+    color: "emerald",
+    dotColor: "bg-emerald-500",
     items: [
       { id: "oee", labelKey: "common.navOEE", icon: Gauge, href: "/operations/oee" },
       { id: "andon", labelKey: "common.navAndon", icon: Zap, href: "/operations/andon" },
@@ -579,6 +580,7 @@ export default function Sidebar({ collapsed = false, onToggleCollapse, currentVi
                   className="w-full flex items-center gap-2 px-2 pt-3 pb-1 group"
                   aria-expanded={!isCollapsed}
                 >
+                  <span className={`w-1 h-4 rounded-full shrink-0 ${section.dotColor}`} />
                   <SectionIcon size={12} className={`shrink-0 ${section.dotColor.replace('bg-', 'text-')}`} />
                   <span className="text-[10px] uppercase text-th-text-3 tracking-widest font-semibold flex-1 text-left truncate">
                     {t(section.titleKey) !== section.titleKey ? t(section.titleKey) : section.fallbackTitle}
@@ -659,7 +661,10 @@ export default function Sidebar({ collapsed = false, onToggleCollapse, currentVi
               onClick={handleSettingsClick}
               className="flex-1 min-w-0 text-left hover:opacity-80 transition"
             >
-              <p className="text-sm font-medium truncate text-th-text leading-tight">{user?.full_name}</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-medium truncate text-th-text leading-tight">{user?.full_name}</p>
+                <LoginStreakBadge />
+              </div>
               <div className="flex items-center gap-1.5">
                 <span className="text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded bg-brand-500/15 text-brand-600 dark:text-brand-400 leading-none">
                   {(user?.role || "").replace(/_/g, " ")}

@@ -225,13 +225,13 @@ export default function OperatorHome({ onNavigate }: OperatorHomeProps) {
 
       {/* ─── Line Status Cards ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {lines.map((line) => {
+        {lines.map((line, idx) => {
           const sc = getStatusColor(line.status);
           return (
             <button
               key={line.id}
               onClick={() => onNavigate("shopfloor")}
-              className="rounded-2xl border border-th-border bg-th-bg-2 p-4 text-left hover:shadow-md transition-all active:scale-[0.98]"
+              className={`rounded-2xl border border-th-border bg-th-bg-2 p-4 text-left hover:shadow-md transition-all active:scale-[0.98] animate-card-enter animate-card-enter-${Math.min(idx + 1, 6)}`}
             >
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-semibold text-th-text">{line.name}</span>
@@ -279,13 +279,13 @@ export default function OperatorHome({ onNavigate }: OperatorHomeProps) {
             { id: "andon", icon: Zap, label: t("operatorHome.flagIssue") || "Flag Issue", color: "bg-rose-500/10 text-rose-600 dark:text-rose-400", border: "border-rose-200 dark:border-rose-500/20" },
             { id: "safety", icon: Shield, label: t("operatorHome.safetyCheck") || "Safety Check", color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400", border: "border-emerald-200 dark:border-emerald-500/20" },
             { id: "kaizen", icon: Lightbulb, label: t("operatorHome.suggestImprovement") || "Suggest Improvement", color: "bg-amber-500/10 text-amber-600 dark:text-amber-400", border: "border-amber-200 dark:border-amber-500/20" },
-          ].map((action) => {
+          ].map((action, actionIdx) => {
             const Icon = action.icon;
             return (
               <button
                 key={action.id}
                 onClick={() => onNavigate(action.id)}
-                className={`flex items-center gap-3 rounded-2xl border ${action.border} ${action.color.split(" ")[0]} p-4 min-h-[56px] text-left hover:shadow-md transition-all active:scale-[0.98]`}
+                className={`flex items-center gap-3 rounded-2xl border ${action.border} ${action.color.split(" ")[0]} p-4 min-h-[56px] text-left hover:shadow-md transition-all active:scale-[0.98] animate-card-enter animate-card-enter-${actionIdx + 1}`}
               >
                 <Icon size={22} className={action.color.split(" ").slice(1).join(" ")} />
                 <span className="text-sm font-semibold text-th-text">{action.label}</span>

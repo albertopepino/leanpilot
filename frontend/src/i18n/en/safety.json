@@ -100,5 +100,7 @@
   "goToAndonBoard": "Go to Andon Board",
 
   "reportSafetyIncident": "Report Safety Incident",
-  "andonIncidentPrefix": "Andon Event"
+  "andonIncidentPrefix": "Andon Event",
+  "streakMilestone": "{days} Days Safe!",
+  "streakMilestoneDesc": "Keep the streak going — safety is #1"
 }

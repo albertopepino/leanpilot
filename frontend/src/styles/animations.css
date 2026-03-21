@@ -1,0 +1,77 @@
+/* ===== Quick-Win Animations — v3.1 Sprint 1 ===== */
+
+/* Card entrance with stagger */
+@keyframes slide-up-fade {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-card-enter {
+  animation: slide-up-fade 0.4s ease-out both;
+}
+.animate-card-enter-1 { animation-delay: 0ms; }
+.animate-card-enter-2 { animation-delay: 60ms; }
+.animate-card-enter-3 { animation-delay: 120ms; }
+.animate-card-enter-4 { animation-delay: 180ms; }
+.animate-card-enter-5 { animation-delay: 240ms; }
+.animate-card-enter-6 { animation-delay: 300ms; }
+
+/* Status pulse for critical items */
+@keyframes pulse-glow-red {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+}
+@keyframes pulse-glow-amber {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+}
+@keyframes pulse-glow-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+}
+.animate-pulse-red { animation: pulse-glow-red 2s ease-in-out infinite; }
+.animate-pulse-amber { animation: pulse-glow-amber 2s ease-in-out infinite; }
+.animate-pulse-green { animation: pulse-glow-green 2s ease-in-out infinite; }
+
+/* OEE gauge fill */
+@keyframes gauge-draw {
+  from { stroke-dashoffset: var(--gauge-circumference, 565); }
+}
+.animate-gauge {
+  animation: gauge-draw 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Number count-up shimmer */
+@keyframes shimmer-once {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.animate-shimmer-text {
+  background: linear-gradient(90deg, currentColor 40%, rgba(99,102,241,0.8) 50%, currentColor 60%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shimmer-once 1.2s ease-out 0.8s both;
+}
+
+/* Sparkline fade-in */
+@keyframes draw-line {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+.animate-sparkline path {
+  stroke-dasharray: 1000;
+  animation: draw-line 1.5s ease-out both;
+}
+
+/* Disable all animations for print */
+@media print {
+  .animate-card-enter,
+  .animate-pulse-red,
+  .animate-pulse-amber,
+  .animate-pulse-green,
+  .animate-gauge,
+  .animate-shimmer-text,
+  .animate-sparkline path {
+    animation: none !important;
+  }
+}

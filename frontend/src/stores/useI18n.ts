@@ -74,6 +74,7 @@ const DOMAINS = [
   "login",
   "production",
   "toolInfo",
+  "achievements",
 ];
 
 async function loadTranslations(locale: Locale): Promise<Record<string, Translations>> {

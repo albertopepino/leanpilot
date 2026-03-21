@@ -1,0 +1,18 @@
+{
+  "title": "Osiagniecia",
+  "progress": "{unlocked} z {total} odblokowanych",
+  "firstLogin": "Witaj na pokladzie!",
+  "firstProduction": "Pierwsza produkcja zarejestrowana",
+  "firstKaizen": "Pierwszy pomysl na usprawnienie",
+  "firstSafety": "Mistrz bezpieczenstwa",
+  "firstGemba": "Idz i zobacz sam",
+  "first5Why": "Znaleziono przyczyne glowna",
+  "oee85": "OEE klasy swiatowej",
+  "safety7": "7 dni bezpieczenstwa",
+  "safety30": "30 dni bezpieczenstwa",
+  "kaizen10": "10 usprawnien ukonczonych",
+  "streak7": "Seria 7 dni logowania",
+  "streak30": "Seria 30 dni logowania",
+  "locked": "Kontynuuj, aby odblokowac!",
+  "unlockedOn": "Odblokowano {date}"
+}

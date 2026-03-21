@@ -73,15 +73,15 @@ function FlowBreadcrumbInner({ currentLabel }: { currentLabel: string }) {
   const fromLabel = searchParams.get("fromLabel");
   const currentStep = getCurrentStep(pathname);
 
-  // In beginner mode, show PDCA stepper even without ?from= on relevant pages
+  // Show PDCA stepper on relevant pages even without ?from= param
   const hasFlowContext = !!fromModule;
-  const showPDCAbeginner = beginnerMode && currentStep >= 0;
+  const showPDCAalways = currentStep >= 0;
 
-  if (!hasFlowContext && !showPDCAbeginner) return null;
+  if (!hasFlowContext && !showPDCAalways) return null;
 
   const backRoute = fromModule ? (BACK_ROUTES[fromModule] || "/") : "/";
   const parentLabel = fromLabel || (fromModule ? MODULE_LABELS[fromModule] : "") || fromModule || "";
-  const showPDCA = (hasFlowContext && PDCA_SOURCES.has(fromModule!) && currentStep >= 0) || showPDCAbeginner;
+  const showPDCA = (hasFlowContext && PDCA_SOURCES.has(fromModule!) && currentStep >= 0) || showPDCAalways;
 
   return (
     <div className="space-y-2 print:hidden">

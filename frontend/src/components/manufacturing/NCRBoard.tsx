@@ -4,6 +4,7 @@ import { useI18n } from "@/stores/useI18n";
 import { qcApi, manufacturingApi, adminApi } from "@/lib/api";
 import PhotoUpload from "@/components/ui/PhotoUpload";
 import ToolInfoCard from "@/components/ui/ToolInfoCard";
+import EmptyState from "@/components/ui/EmptyState";
 import { TOOL_INFO } from "@/lib/toolInfo";
 import {
   AlertTriangle,
@@ -283,9 +284,14 @@ export default function NCRBoard() {
 
       {/* NCR List */}
       {filteredNCRs.length === 0 ? (
-        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-12 text-center">
-          <CheckCircle className="w-10 h-10 text-green-500 mx-auto mb-3" />
-          <p className="text-th-text-3">{t("manufacturing.noNCRs")}</p>
+        <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm">
+          <EmptyState
+            variant="quality"
+            title={t("manufacturing.noNCRs") || "No non-conformances found"}
+            description={t("manufacturing.noNCRsDesc") || "All clear! Raise a new NCR when a quality issue is detected."}
+            actionLabel={t("manufacturing.raiseNCR") || "Raise NCR"}
+            onAction={() => setShowCreate(true)}
+          />
         </div>
       ) : (
         <div className="space-y-3">

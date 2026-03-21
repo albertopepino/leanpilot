@@ -1,0 +1,18 @@
+{
+  "title": "Achievements",
+  "progress": "{unlocked} of {total} unlocked",
+  "firstLogin": "Welcome aboard!",
+  "firstProduction": "First production recorded",
+  "firstKaizen": "First improvement idea",
+  "firstSafety": "Safety champion",
+  "firstGemba": "Go see for yourself",
+  "first5Why": "Root cause found",
+  "oee85": "World-class OEE",
+  "safety7": "7 days safe",
+  "safety30": "30 days safe",
+  "kaizen10": "10 improvements completed",
+  "streak7": "7-day login streak",
+  "streak30": "30-day login streak",
+  "locked": "Keep going to unlock this!",
+  "unlockedOn": "Unlocked on {date}"
+}

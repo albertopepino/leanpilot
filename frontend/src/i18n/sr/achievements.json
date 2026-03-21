@@ -1,0 +1,18 @@
+{
+  "title": "Dostignuca",
+  "progress": "{unlocked} od {total} otključanih",
+  "firstLogin": "Dobrodosli!",
+  "firstProduction": "Prva proizvodnja zabelezena",
+  "firstKaizen": "Prva ideja za poboljsanje",
+  "firstSafety": "Sampion bezbednosti",
+  "firstGemba": "Idite i vidite sami",
+  "first5Why": "Osnovni uzrok pronadjen",
+  "oee85": "OEE svetske klase",
+  "safety7": "7 dana bezbednosti",
+  "safety30": "30 dana bezbednosti",
+  "kaizen10": "10 poboljsanja zavrseno",
+  "streak7": "Serija od 7 dana prijave",
+  "streak30": "Serija od 30 dana prijave",
+  "locked": "Nastavite da otključate!",
+  "unlockedOn": "Otključano {date}"
+}

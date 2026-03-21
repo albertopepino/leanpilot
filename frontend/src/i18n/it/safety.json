@@ -90,5 +90,7 @@
   "goToAndonBoard": "Vai alla Board Andon",
 
   "reportSafetyIncident": "Segnala Incidente di Sicurezza",
-  "andonIncidentPrefix": "Evento Andon"
+  "andonIncidentPrefix": "Evento Andon",
+  "streakMilestone": "{days} Giorni Sicuri!",
+  "streakMilestoneDesc": "Continua cos\u00ec — la sicurezza viene prima di tutto"
 }

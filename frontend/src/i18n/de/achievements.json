@@ -1,0 +1,18 @@
+{
+  "title": "Erfolge",
+  "progress": "{unlocked} von {total} freigeschaltet",
+  "firstLogin": "Willkommen an Bord!",
+  "firstProduction": "Erste Produktion erfasst",
+  "firstKaizen": "Erste Verbesserungsidee",
+  "firstSafety": "Sicherheits-Champion",
+  "firstGemba": "Selbst vor Ort sehen",
+  "first5Why": "Grundursache gefunden",
+  "oee85": "Weltklasse-OEE",
+  "safety7": "7 Tage sicher",
+  "safety30": "30 Tage sicher",
+  "kaizen10": "10 Verbesserungen abgeschlossen",
+  "streak7": "7-Tage-Anmeldeserie",
+  "streak30": "30-Tage-Anmeldeserie",
+  "locked": "Mach weiter, um dies freizuschalten!",
+  "unlockedOn": "Freigeschaltet am {date}"
+}

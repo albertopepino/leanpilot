@@ -12,6 +12,8 @@ import LogoUpload from "@/components/settings/LogoUpload";
 import TwoFactorSetup from "@/components/settings/TwoFactorSetup";
 import { resetOnboarding } from "@/components/onboarding/OnboardingTutorial";
 import { useBeginnerMode, saveBeginnerMode } from "@/stores/useBeginnerMode";
+import AchievementWall from "@/components/ui/AchievementWall";
+import { useCelebration } from "@/hooks/useCelebration";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import {
   Settings,
@@ -27,6 +29,7 @@ import {
   GraduationCap,
   Info,
   Download,
+  Trophy,
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -37,6 +40,7 @@ export default function SettingsPage() {
   const { logoUrl, fetchLogo, clearLogo } = useCompanyBranding();
   const { auditLabel, fetchSettings, setAuditLabel } = useCompanySettings();
   const { enabled: beginnerMode, setEnabled: setBeginnerMode, initBeginnerMode } = useBeginnerMode();
+  const { triggerCelebration } = useCelebration();
 
   // Profile
   const [fullName, setFullName] = useState("");
@@ -498,6 +502,20 @@ export default function SettingsPage() {
         >
           <Download className="w-4 h-4" />
           {t("settings.downloadMyData")}
+        </button>
+      </section>
+
+      {/* Achievements */}
+      <section className={cardCls}>
+        <h2 className="text-lg font-semibold text-th-text flex items-center gap-2">
+          <Trophy className="w-5 h-5 text-amber-500" /> {t("settings.achievements") || "Achievements"}
+        </h2>
+        <AchievementWall />
+        <button
+          onClick={() => triggerCelebration({ type: "kaizen-complete", icon: "\u{1F389}", title: t("settings.testCelebration") || "Test Celebration!", subtitle: t("settings.testCelebrationDesc") || "Confetti is working!" })}
+          className="text-xs text-th-text-3 hover:text-brand-600 transition-colors"
+        >
+          {t("settings.testCelebrationBtn") || "\u{1F389} Test celebration effect"}
         </button>
       </section>
 

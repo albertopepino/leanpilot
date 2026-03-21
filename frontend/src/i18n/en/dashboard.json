@@ -303,5 +303,7 @@
   "hiddenFactoryTitle": "Hidden Factory Warning",
   "deepDivePareto": "Analyze in Pareto",
   "paretoTooltip": "Find the top causes of losses — focus on the vital few",
-  "paretoSubtitle": "Find the vital few causes"
+  "paretoSubtitle": "Find the vital few causes",
+  "worldClassOEE": "World-Class OEE!",
+  "worldClassOEEDesc": "Your line is performing in the top tier"
 }

@@ -7,6 +7,7 @@ import { useI18n } from '@/stores/useI18n';
 import { adminApi, manufacturingApi, productionApi } from '@/lib/api';
 import type { ProductionRecordCreate } from '@/lib/types';
 import ToolInfoCard from "@/components/ui/ToolInfoCard";
+import EmptyState from "@/components/ui/EmptyState";
 import { TOOL_INFO } from "@/lib/toolInfo";
 
 const HourlyProductionBoard = dynamic(
@@ -482,8 +483,12 @@ function RecentRecords({ records }: { records: ProductionRecord[] }) {
   const { t } = useI18n();
   if (records.length === 0) {
     return (
-      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6 text-center text-sm text-th-text-3">
-        {t("dashboard.noRecords") || "No recent records found."}
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm">
+        <EmptyState
+          variant="production"
+          title={t("dashboard.noRecords") || "No recent records found"}
+          description={t("dashboard.noRecordsDesc") || "Submit your first production entry above to start tracking."}
+        />
       </div>
     );
   }
