@@ -170,30 +170,30 @@ function getEscalationInfo(
 /* ---------------------------------------------------------- color config */
 
 const COLOR_STYLES: Record<AndonColor, {
-  border: string; bg: string; bgDark: string;
-  dot: string; text: string; textDark: string;
+  border: string; bgClass: string;
+  dot: string; textClass: string;
   pulse?: boolean;
 }> = {
   green: {
-    border: "border-emerald-500", bg: "bg-emerald-50", bgDark: "bg-emerald-950/40",
-    dot: "bg-emerald-500", text: "text-emerald-700", textDark: "text-emerald-300",
+    border: "border-emerald-500", bgClass: "bg-emerald-50 dark:bg-emerald-950/40",
+    dot: "bg-emerald-500", textClass: "text-emerald-700 dark:text-emerald-300",
   },
   yellow: {
-    border: "border-amber-400", bg: "bg-amber-50", bgDark: "bg-amber-950/40",
-    dot: "bg-amber-400", text: "text-amber-700", textDark: "text-amber-300",
+    border: "border-amber-400", bgClass: "bg-amber-50 dark:bg-amber-950/40",
+    dot: "bg-amber-400", textClass: "text-amber-700 dark:text-amber-300",
   },
   red: {
-    border: "border-red-500", bg: "bg-red-50", bgDark: "bg-red-950/40",
-    dot: "bg-red-500", text: "text-red-700", textDark: "text-red-300",
+    border: "border-red-500", bgClass: "bg-red-50 dark:bg-red-950/40",
+    dot: "bg-red-500", textClass: "text-red-700 dark:text-red-300",
     pulse: true,
   },
   blue: {
-    border: "border-blue-500", bg: "bg-blue-50", bgDark: "bg-blue-950/40",
-    dot: "bg-blue-500", text: "text-blue-700", textDark: "text-blue-300",
+    border: "border-blue-500", bgClass: "bg-blue-50 dark:bg-blue-950/40",
+    dot: "bg-blue-500", textClass: "text-blue-700 dark:text-blue-300",
   },
   gray: {
-    border: "border-gray-300", bg: "bg-gray-50", bgDark: "bg-gray-800/40",
-    dot: "bg-gray-400", text: "text-gray-600", textDark: "text-gray-400",
+    border: "border-gray-300", bgClass: "bg-gray-50 dark:bg-gray-800/40",
+    dot: "bg-gray-400", textClass: "text-gray-600 dark:text-gray-400",
   },
 };
 
@@ -271,7 +271,7 @@ function AndonBoardInner() {
 
   useEffect(() => {
     fetchData();
-    intervalRef.current = setInterval(fetchData, 15000);
+    intervalRef.current = setInterval(fetchData, 5000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [fetchData]);
 
@@ -282,10 +282,10 @@ function AndonBoardInner() {
     return () => window.removeEventListener("display-mode-refresh", handler);
   }, [fetchData]);
 
-  // Force tick every 15s to update elapsed & escalation timers
+  // Force tick every 5s to update elapsed & escalation timers
   const [, setTick] = useState(0);
   useEffect(() => {
-    const iv = setInterval(() => setTick((p) => p + 1), 15000);
+    const iv = setInterval(() => setTick((p) => p + 1), 5000);
     return () => clearInterval(iv);
   }, []);
 
@@ -452,7 +452,7 @@ function AndonBoardInner() {
                 <div
                   key={card.lineId}
                   className={`relative rounded-xl border-2 overflow-hidden transition-all duration-300
-                    ${cs.border} ${cs.bg} dark:${cs.bgDark}
+                    ${cs.border} ${cs.bgClass}
                     ${isPulsing ? "animate-pulse-subtle" : ""}
                     hover:shadow-lg hover:scale-[1.01]`}
                 >
@@ -467,8 +467,8 @@ function AndonBoardInner() {
 
                     {/* Status row */}
                     <div className="flex items-center gap-2 mb-3">
-                      <Icon className={`w-6 h-6 ${cs.text} dark:${cs.textDark}`} />
-                      <span className={`text-base md:text-lg font-bold ${cs.text} dark:${cs.textDark}`}>
+                      <Icon className={`w-6 h-6 ${cs.textClass}`} />
+                      <span className={`text-base md:text-lg font-bold ${cs.textClass}`}>
                         {t(`common.${card.statusKey}`)}
                       </span>
                     </div>

@@ -403,7 +403,7 @@ export default function MasterCalendar({ onNavigate }: MasterCalendarProps) {
   const renderModal = () => {
     if (!selectedEvent) return null;
     const ev = selectedEvent;
-    const colors = SOURCE_COLORS[ev.source] || { bg: "bg-gray-100", text: "text-gray-700" };
+    const colors = SOURCE_COLORS[ev.source] || { bg: "bg-gray-100 dark:bg-gray-800", text: "text-gray-700 dark:text-gray-300" };
     const label = SOURCE_LABELS[ev.source];
 
     return (

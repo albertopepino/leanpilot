@@ -414,13 +414,14 @@ function SavingsBar({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
           {Object.entries(savings.by_category).map(([cat, v]) => {
             const catPct = v.expected > 0 ? Math.round((v.actual / v.expected) * 100) : 0;
+            const categoryText = (() => { const k = CATEGORY_I18N_MAP[cat] || `cat${cat.charAt(0).toUpperCase() + cat.slice(1)}`; const v = t(`improvement.${k}`); return v.startsWith("improvement.") ? cat.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : v; })();
             return (
               <div
                 key={cat}
                 className="bg-th-bg-3 rounded-xl p-3 text-center border border-th-border hover:shadow-md transition-shadow"
               >
-                <p className="text-xs text-th-text-3 truncate font-medium uppercase tracking-wider">
-                  {(() => { const k = CATEGORY_I18N_MAP[cat] || `cat${cat.charAt(0).toUpperCase() + cat.slice(1)}`; const v = t(`improvement.${k}`); return v.startsWith("improvement.") ? cat.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : v; })()}
+                <p className="text-xs text-th-text-3 truncate font-medium uppercase tracking-wider" title={categoryText}>
+                  {categoryText}
                 </p>
                 <p className="text-lg font-bold text-th-text mt-1">
                   {sym}{v.actual.toLocaleString()}
@@ -2036,7 +2037,7 @@ export default function KaizenBoard() {
                           <div className="w-4 h-4 rounded-full bg-brand-500/10 flex items-center justify-center text-[8px] font-bold text-brand-500">
                             {item.owner.charAt(0).toUpperCase()}
                           </div>
-                          <span className="truncate">{item.owner}</span>
+                          <span className="truncate" title={item.owner}>{item.owner}</span>
                         </div>
                       )}
                     </div>

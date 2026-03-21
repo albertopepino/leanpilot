@@ -129,7 +129,7 @@ export default function ERPSettings() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Delete this ERP integration?")) return;
+    if (!confirm(t("settings.erpConfirmDelete") || "Delete this ERP integration?")) return;
     try {
       await adminApi.deleteERPIntegration(id);
       await loadIntegrations();
@@ -222,7 +222,7 @@ export default function ERPSettings() {
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition"
           >
             <Plus className="w-4 h-4" />
-            Add Integration
+            {t("settings.erpAddIntegration") || "Add Integration"}
           </button>
         )}
       </div>
@@ -237,7 +237,7 @@ export default function ERPSettings() {
       {showForm && (
         <div className="rounded-xl border border-th-border bg-th-bg-2 p-6 space-y-4">
           <h4 className="text-sm font-bold text-th-text">
-            {editId ? "Edit Integration" : "New Integration"}
+            {editId ? (t("settings.erpEditIntegration") || "Edit Integration") : (t("settings.erpNewIntegration") || "New Integration")}
           </h4>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -430,8 +430,8 @@ export default function ERPSettings() {
       {integrations.length === 0 && !showForm ? (
         <div className="text-center py-16 rounded-xl border border-dashed border-th-border bg-th-bg-2">
           <Settings className="w-12 h-12 mx-auto text-th-text-3 opacity-40 mb-3" />
-          <p className="text-sm text-th-text-3">No ERP integrations configured yet.</p>
-          <p className="text-xs text-th-text-3 mt-1">Click "Add Integration" to connect your ERP system.</p>
+          <p className="text-sm text-th-text-3">{t("settings.erpNoIntegrations") || "No ERP integrations configured yet."}</p>
+          <p className="text-xs text-th-text-3 mt-1">{t("settings.erpAddHint") || "Click 'Add Integration' to connect your ERP system."}</p>
         </div>
       ) : (
         <div className="space-y-4">

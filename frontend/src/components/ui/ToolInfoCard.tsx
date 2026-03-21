@@ -81,7 +81,7 @@ export default function ToolInfoCard({ info }: { info: ToolInfo }) {
   const whenToUse = t(info.whenToUseKey) || info.whenToUseFallback;
 
   return (
-    <div className="relative rounded-xl border border-brand-200 dark:border-brand-800 bg-brand-50/50 dark:bg-brand-950/20 p-4 print:hidden animate-in fade-in slide-in-from-top-2 duration-300">
+    <div className="relative rounded-xl border border-brand-200 dark:border-brand-800 bg-brand-50 dark:bg-brand-950/30 p-4 print:hidden animate-in fade-in slide-in-from-top-2 duration-300">
       {/* Dismiss button — hidden in beginner mode */}
       {!forceShow && (
         <button
@@ -99,10 +99,10 @@ export default function ToolInfoCard({ info }: { info: ToolInfo }) {
         </div>
         <div className="flex-1 min-w-0 pr-6">
           {/* Description */}
-          <p className="text-sm text-th-text leading-relaxed">{description}</p>
+          <p className="text-sm text-gray-800 dark:text-gray-100 leading-relaxed">{description}</p>
 
           {/* When to use */}
-          <p className="text-xs text-th-text-3 mt-2 italic">{whenToUse}</p>
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 italic">{whenToUse}</p>
 
           {/* Connections */}
           {((info.connectsFrom && info.connectsFrom.length > 0) ||

@@ -64,7 +64,7 @@ export default function ConsentGate({ children }: { children: React.ReactNode })
               type="checkbox"
               checked={privacyAccepted}
               onChange={(e) => setPrivacyAccepted(e.target.checked)}
-              className="mt-0.5 w-5 h-5 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+              className="mt-0.5 w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500"
               aria-required="true"
             />
             <div>
@@ -81,7 +81,7 @@ export default function ConsentGate({ children }: { children: React.ReactNode })
               type="checkbox"
               checked={termsAccepted}
               onChange={(e) => setTermsAccepted(e.target.checked)}
-              className="mt-0.5 w-5 h-5 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+              className="mt-0.5 w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500"
               aria-required="true"
             />
             <div>
@@ -98,7 +98,7 @@ export default function ConsentGate({ children }: { children: React.ReactNode })
               type="checkbox"
               checked={aiConsent}
               onChange={(e) => setAiConsent(e.target.checked)}
-              className="mt-0.5 w-5 h-5 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+              className="mt-0.5 w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500"
             />
             <div>
               <span className="text-sm font-medium text-th-text">{t("consent.aiProcessing")}</span>
@@ -112,7 +112,7 @@ export default function ConsentGate({ children }: { children: React.ReactNode })
               type="checkbox"
               checked={marketingConsent}
               onChange={(e) => setMarketingConsent(e.target.checked)}
-              className="mt-0.5 w-5 h-5 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+              className="mt-0.5 w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500"
             />
             <div>
               <span className="text-sm font-medium text-th-text">{t("consent.marketing")}</span>

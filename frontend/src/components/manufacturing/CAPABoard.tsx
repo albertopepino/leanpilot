@@ -334,7 +334,7 @@ export default function CAPABoard() {
                       <td className="px-4 py-3">
                         <span className="text-xs inline-flex items-center gap-1">{typeInfo?.icon} {typeInfo?.label}</span>
                       </td>
-                      <td className="px-4 py-3 font-medium text-th-text max-w-xs truncate">{capa.title}</td>
+                      <td className="px-4 py-3 font-medium text-th-text max-w-xs truncate" title={capa.title}>{capa.title}</td>
                       <td className="px-4 py-3">
                         <span className={`text-xs font-bold ${prioInfo?.color || ""}`}>
                           {capa.priority.toUpperCase()}

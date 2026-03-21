@@ -949,12 +949,12 @@ function KanbanBoardInner() {
         {/* Blocked banner */}
         {isBlocked && (
           <div className="flex items-center gap-1.5 px-2 py-1 mb-2 -mx-1 -mt-1 rounded-t bg-red-500/15 border-b border-red-500/30">
-            <AlertTriangle className="w-3 h-3 text-red-400 flex-shrink-0" />
-            <span className="text-[10px] font-bold text-red-400 uppercase tracking-wide">
+            <AlertTriangle className="w-3 h-3 text-red-600 dark:text-red-400 flex-shrink-0" />
+            <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wide">
               {t("kanban.blocked") || "Blocked"}
             </span>
             {card.blocked_reason && (
-              <span className="text-[10px] text-red-300 truncate">— {card.blocked_reason}</span>
+              <span className="text-[10px] text-red-600 dark:text-red-300 truncate" title={card.blocked_reason}>— {card.blocked_reason}</span>
             )}
           </div>
         )}
@@ -1000,7 +1000,7 @@ function KanbanBoardInner() {
         {(card.order_number || card.product_name) && (
           <div className="flex items-center gap-2 text-[11px] text-th-text-3 mb-1.5">
             {card.order_number && <span className="font-mono">#{card.order_number}</span>}
-            {card.product_name && <span className="truncate">{card.product_name}</span>}
+            {card.product_name && <span className="truncate" title={card.product_name}>{card.product_name}</span>}
           </div>
         )}
 
@@ -1119,7 +1119,7 @@ function KanbanBoardInner() {
                 type="text"
                 value={cardForm.title}
                 onChange={(e) => setCardForm((f) => ({ ...f, title: e.target.value }))}
-                className="w-full rounded-lg border border-th-border bg-th-card px-3 py-2 text-sm text-th-text-2"
+                className="w-full rounded-lg border border-th-border bg-th-input px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
                 placeholder={t("kanban.titlePlaceholder")}
                 required
               />
@@ -1132,7 +1132,7 @@ function KanbanBoardInner() {
                   type="text"
                   value={cardForm.order_number}
                   onChange={(e) => setCardForm((f) => ({ ...f, order_number: e.target.value }))}
-                  className="w-full rounded-lg border border-th-border bg-th-card px-3 py-2 text-sm text-th-text-2"
+                  className="w-full rounded-lg border border-th-border bg-th-input px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
                   placeholder="ORD-001"
                 />
               </div>
@@ -1142,7 +1142,7 @@ function KanbanBoardInner() {
                   type="text"
                   value={cardForm.product_name}
                   onChange={(e) => setCardForm((f) => ({ ...f, product_name: e.target.value }))}
-                  className="w-full rounded-lg border border-th-border bg-th-card px-3 py-2 text-sm text-th-text-2"
+                  className="w-full rounded-lg border border-th-border bg-th-input px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
                 />
               </div>
             </div>
@@ -1155,7 +1155,7 @@ function KanbanBoardInner() {
                   min="0"
                   value={cardForm.quantity}
                   onChange={(e) => setCardForm((f) => ({ ...f, quantity: e.target.value }))}
-                  className="w-full rounded-lg border border-th-border bg-th-card px-3 py-2 text-sm text-th-text-2"
+                  className="w-full rounded-lg border border-th-border bg-th-input px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
                   placeholder="0"
                 />
               </div>
@@ -1164,7 +1164,7 @@ function KanbanBoardInner() {
                 <select
                   value={cardForm.column_name}
                   onChange={(e) => setCardForm((f) => ({ ...f, column_name: e.target.value }))}
-                  className="w-full rounded-lg border border-th-border bg-th-card px-3 py-2 text-sm text-th-text-2"
+                  className="w-full rounded-lg border border-th-border bg-th-input px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
                 >
                   {(board?.columns || DEFAULT_COLUMNS).map((col) => (
                     <option key={col} value={col}>{t(`kanban.col_${col}`) || col}</option>
@@ -1200,7 +1200,7 @@ function KanbanBoardInner() {
                   type="datetime-local"
                   value={cardForm.due_date}
                   onChange={(e) => setCardForm((f) => ({ ...f, due_date: e.target.value }))}
-                  className="w-full rounded-lg border border-th-border bg-th-card px-3 py-2 text-sm text-th-text-2"
+                  className="w-full rounded-lg border border-th-border bg-th-input px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
                 />
               </div>
               <div>
@@ -1208,7 +1208,7 @@ function KanbanBoardInner() {
                 <select
                   value={cardForm.assigned_line_id}
                   onChange={(e) => setCardForm((f) => ({ ...f, assigned_line_id: e.target.value }))}
-                  className="w-full rounded-lg border border-th-border bg-th-card px-3 py-2 text-sm text-th-text-2"
+                  className="w-full rounded-lg border border-th-border bg-th-input px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
                 >
                   <option value="">{t("kanban.unassigned")}</option>
                   {lines.map((l) => (
@@ -1235,7 +1235,7 @@ function KanbanBoardInner() {
                   type="text"
                   value={cardForm.blocked_reason}
                   onChange={(e) => setCardForm((f) => ({ ...f, blocked_reason: e.target.value }))}
-                  className="w-full mt-2 rounded-lg border border-red-500/30 bg-th-card px-3 py-2 text-sm text-th-text-2"
+                  className="w-full mt-2 rounded-lg border border-red-500/30 bg-th-input px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
                   placeholder={t("kanban.blockedReasonPlaceholder") || "Reason for block..."}
                 />
               )}
@@ -1247,7 +1247,7 @@ function KanbanBoardInner() {
                 value={cardForm.description}
                 onChange={(e) => setCardForm((f) => ({ ...f, description: e.target.value }))}
                 rows={3}
-                className="w-full rounded-lg border border-th-border bg-th-card px-3 py-2 text-sm text-th-text-2"
+                className="w-full rounded-lg border border-th-border bg-th-input px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
                 placeholder={t("kanban.descriptionPlaceholder")}
               />
             </div>
@@ -1291,7 +1291,7 @@ function KanbanBoardInner() {
               type="text"
               value={boardForm.name}
               onChange={(e) => setBoardForm((f) => ({ ...f, name: e.target.value }))}
-              className="w-full rounded-lg border border-th-border bg-th-card px-3 py-2 text-sm text-th-text-2"
+              className="w-full rounded-lg border border-th-border bg-th-input px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
               placeholder={t("kanban.boardNamePlaceholder")}
               required
             />
@@ -1302,7 +1302,7 @@ function KanbanBoardInner() {
               value={boardForm.description}
               onChange={(e) => setBoardForm((f) => ({ ...f, description: e.target.value }))}
               rows={2}
-              className="w-full rounded-lg border border-th-border bg-th-card px-3 py-2 text-sm text-th-text-2"
+              className="w-full rounded-lg border border-th-border bg-th-input px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
             />
           </div>
           <button

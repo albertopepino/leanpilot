@@ -105,5 +105,12 @@
 
   "testCelebrationBtn": "\ud83c\udf89 Test celebration effect",
   "testCelebration": "Test Celebration!",
-  "testCelebrationDesc": "Confetti is working!"
+  "testCelebrationDesc": "Confetti is working!",
+
+  "erpConfirmDelete": "Delete this ERP integration?",
+  "erpEditIntegration": "Edit Integration",
+  "erpNewIntegration": "New Integration",
+  "erpNoIntegrations": "No ERP integrations configured yet.",
+  "erpAddHint": "Click 'Add Integration' to connect your ERP system.",
+  "erpAddIntegration": "Add Integration"
 }

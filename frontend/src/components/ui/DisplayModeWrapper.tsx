@@ -107,7 +107,7 @@ function DisplayModeWrapperInner({
     <div className="fixed inset-0 z-[9999] bg-gray-950 text-white flex flex-col overflow-hidden">
       {/* Title bar */}
       <div className="flex items-center justify-between px-3 sm:px-6 py-2 sm:py-3 bg-gray-900 border-b border-gray-800 shrink-0">
-        <h1 className="text-lg sm:text-2xl md:text-3xl font-bold tracking-tight display-mode-header truncate mr-2">
+        <h1 className="text-lg sm:text-2xl md:text-3xl font-bold tracking-tight display-mode-header truncate mr-2" title={title}>
           {title}
         </h1>
         <div className="flex items-center gap-2 sm:gap-6 shrink-0">

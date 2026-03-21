@@ -230,7 +230,7 @@ function AnalysisList({ onOpen, onNew }: { onOpen: (entry: AnalysisEntry) => voi
                 <span className="text-xs text-th-text-3 font-mono">#{a.id}</span>
 
                 {/* Title */}
-                <span className="text-sm font-medium text-th-text truncate">{a.title}</span>
+                <span className="text-sm font-medium text-th-text truncate" title={a.title}>{a.title}</span>
 
                 {/* Tool badge */}
                 <span>
@@ -262,7 +262,7 @@ function AnalysisList({ onOpen, onNew }: { onOpen: (entry: AnalysisEntry) => voi
                 </span>
 
                 {/* Author */}
-                <span className="text-xs text-th-text-3 truncate">
+                <span className="text-xs text-th-text-3 truncate" title={a.author || ""}>
                   {a.author || '-'}
                 </span>
               </button>

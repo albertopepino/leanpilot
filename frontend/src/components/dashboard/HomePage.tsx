@@ -205,50 +205,55 @@ function OEEGauge({ value, size = 180 }: { value: number | null; size?: number }
   const offset = circumference - (v / 100) * circumference;
   const center = size / 2;
 
+  const svgHeight = size * 0.6;
+
   return (
-    <div className="relative flex flex-col items-center">
-      <svg width={size} height={size * 0.6} viewBox={`0 0 ${size} ${size * 0.6}`} className="overflow-visible">
-        {/* Background arc */}
-        <path
-          d={`M ${12} ${size * 0.55} A ${radius} ${radius} 0 0 1 ${size - 12} ${size * 0.55}`}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="10"
-          strokeLinecap="round"
-          className="text-th-border"
-        />
-        {/* Value arc */}
-        <path
-          d={`M ${12} ${size * 0.55} A ${radius} ${radius} 0 0 1 ${size - 12} ${size * 0.55}`}
-          fill="none"
-          stroke={status.fill}
-          strokeWidth="10"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          className="transition-all duration-1000 ease-out"
-        />
-        {/* World class marker at 85% */}
-        {(() => {
-          const wcAngle = Math.PI * (1 - 0.85);
-          const wx = center + radius * Math.cos(wcAngle);
-          const wy = size * 0.55 - radius * Math.sin(wcAngle);
-          return (
-            <g>
-              <line x1={wx} y1={wy - 6} x2={wx} y2={wy + 6} stroke="#10b981" strokeWidth="2" opacity="0.5" />
-              <text x={wx} y={wy - 10} textAnchor="middle" className="fill-emerald-500 text-[8px] font-medium">85%</text>
-            </g>
-          );
-        })()}
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-end pb-2">
-        <span className={`text-3xl font-bold tracking-tight ${status.text}`}>
-          {value !== null ? value.toFixed(1) : "—"}
-        </span>
-        <span className="text-[9px] font-medium text-th-text-3 uppercase tracking-widest mt-0.5">OEE %</span>
+    <div className="flex flex-col items-center">
+      <div className="relative" style={{ width: size, height: svgHeight }}>
+        <svg width={size} height={svgHeight} viewBox={`0 0 ${size} ${svgHeight}`} className="overflow-visible">
+          {/* Background arc */}
+          <path
+            d={`M ${12} ${size * 0.55} A ${radius} ${radius} 0 0 1 ${size - 12} ${size * 0.55}`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="10"
+            strokeLinecap="round"
+            className="text-th-border"
+          />
+          {/* Value arc */}
+          <path
+            d={`M ${12} ${size * 0.55} A ${radius} ${radius} 0 0 1 ${size - 12} ${size * 0.55}`}
+            fill="none"
+            stroke={status.fill}
+            strokeWidth="10"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            className="transition-all duration-1000 ease-out"
+          />
+          {/* World class marker at 85% */}
+          {(() => {
+            const wcAngle = Math.PI * (1 - 0.85);
+            const wx = center + radius * Math.cos(wcAngle);
+            const wy = size * 0.55 - radius * Math.sin(wcAngle);
+            return (
+              <g>
+                <line x1={wx} y1={wy - 6} x2={wx} y2={wy + 6} stroke="#10b981" strokeWidth="2" opacity="0.5" />
+                <text x={wx} y={wy - 10} textAnchor="middle" className="fill-emerald-500 text-[8px] font-medium">85%</text>
+              </g>
+            );
+          })()}
+        </svg>
+        {/* Centered value inside the arc */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ paddingTop: svgHeight * 0.15 }}>
+          <span className={`text-3xl font-bold tracking-tight leading-none ${status.text}`}>
+            {value !== null ? value.toFixed(1) : "—"}
+          </span>
+          <span className="text-[9px] font-medium text-th-text-3 uppercase tracking-widest mt-1">OEE %</span>
+        </div>
       </div>
-      {/* Target and status labels */}
-      <div className="flex flex-col items-center mt-2 gap-0.5">
+      {/* Status and target below the gauge */}
+      <div className="flex flex-col items-center mt-1 gap-0.5">
         <OEEStatusLabel value={v} />
         <span className="text-[8px] text-th-text-3">Target: 85%</span>
       </div>
@@ -327,7 +332,7 @@ function SQCDPCard({
   return (
     <button
       onClick={onClick}
-      className={`relative overflow-hidden rounded-xl border ${cfg.border} ${cfg.lightBg} p-3 text-left transition-all duration-200 hover:shadow-md hover:scale-[1.01] group min-w-0`}
+      className={`relative overflow-hidden rounded-xl border ${cfg.border} ${cfg.lightBg} p-3 text-left transition-all duration-200 hover:shadow-md hover:scale-[1.01] group flex-1 min-w-[100px]`}
     >
       {/* Letter badge */}
       <div className={`absolute top-2 right-2 w-6 h-6 rounded-md ${cfg.bg} flex items-center justify-center`}>
@@ -762,7 +767,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
               <h2 className="text-xs font-semibold text-th-text-3 uppercase tracking-wider">{t("home.sqcdpBoard") || "SQCDP Board"}</h2>
               <div className="flex-1 h-px bg-th-border" />
             </div>
-            <div className="grid grid-cols-5 gap-2">
+            <div className="flex flex-wrap gap-2">
               <SQCDPCard
                 letter="S" label={t("home.sqcdpSafety")}
                 metric={t("home.daysNoIncident") || "Days w/o incident"}
@@ -905,32 +910,41 @@ export default function HomePage({ onNavigate }: HomePageProps) {
               <p className="text-[10px] text-th-text-3 mt-0.5">{t("home.openActionsDesc")}</p>
             </div>
             <div className="p-3 space-y-2">
-              {[
-                { label: t("home.capaActions"), count: openActions.capaOverdue, icon: Wrench, color: "rose", view: "capa" },
-                { label: t("home.kaizenItems"), count: openActions.kaizenInProgress, icon: Lightbulb, color: "amber", view: "kaizen" },
-                { label: t("home.ncrOpen"), count: openActions.ncrOpen, icon: FileWarning, color: "violet", view: "ncr" },
-                { label: t("home.gembaFindings"), count: openActions.gembaFindings, icon: Footprints, color: "blue", view: "gemba" },
-              ].map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.view}
-                    onClick={() => onNavigate(item.view)}
-                    className="flex items-center gap-3 w-full p-3 rounded-lg border border-th-border hover:border-brand-500/30 bg-th-bg hover:bg-th-bg-hover transition-all group"
-                  >
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center bg-${item.color}-500/10`}>
-                      <Icon size={16} className={`text-${item.color}-500`} />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="text-[10px] text-th-text-3">{item.label}</p>
-                      <p className="text-lg font-bold text-th-text">{item.count}</p>
-                    </div>
-                    {item.count > 0 && (
-                      <span className={`w-2 h-2 rounded-full bg-${item.color}-500 animate-pulse`} />
-                    )}
-                  </button>
-                );
-              })}
+              {(() => {
+                const ACTION_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
+                  rose:   { bg: "bg-rose-500/10",   text: "text-rose-500",   dot: "bg-rose-500" },
+                  amber:  { bg: "bg-amber-500/10",  text: "text-amber-500",  dot: "bg-amber-500" },
+                  violet: { bg: "bg-violet-500/10", text: "text-violet-500", dot: "bg-violet-500" },
+                  blue:   { bg: "bg-blue-500/10",   text: "text-blue-500",   dot: "bg-blue-500" },
+                };
+                return [
+                  { label: t("home.capaActions"), count: openActions.capaOverdue, icon: Wrench, color: "rose", view: "capa" },
+                  { label: t("home.kaizenItems"), count: openActions.kaizenInProgress, icon: Lightbulb, color: "amber", view: "kaizen" },
+                  { label: t("home.ncrOpen"), count: openActions.ncrOpen, icon: FileWarning, color: "violet", view: "ncr" },
+                  { label: t("home.gembaFindings"), count: openActions.gembaFindings, icon: Footprints, color: "blue", view: "gemba" },
+                ].map((item) => {
+                  const Icon = item.icon;
+                  const c = ACTION_COLORS[item.color] || { bg: "bg-gray-500/10", text: "text-gray-500", dot: "bg-gray-500" };
+                  return (
+                    <button
+                      key={item.view}
+                      onClick={() => onNavigate(item.view)}
+                      className="flex items-center gap-3 w-full p-3 rounded-lg border border-th-border hover:border-brand-500/30 bg-th-bg hover:bg-th-bg-hover transition-all group"
+                    >
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${c.bg}`}>
+                        <Icon size={16} className={c.text} />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="text-[10px] text-th-text-3">{item.label}</p>
+                        <p className="text-lg font-bold text-th-text">{item.count}</p>
+                      </div>
+                      {item.count > 0 && (
+                        <span className={`w-2 h-2 rounded-full ${c.dot} animate-pulse`} />
+                      )}
+                    </button>
+                  );
+                });
+              })()}
             </div>
           </div>
         </div>

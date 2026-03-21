@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useI18n } from "@/stores/useI18n";
 
 export interface AutoSaveStatus {
   /** Current save state */
   state: "idle" | "saving" | "saved" | "error" | "unsaved";
-  /** Human-readable label for the status indicator */
+  /** i18n key for the status indicator (e.g. "saving", "saved", "saveFailed", "unsavedChanges") */
   label: string;
   /** Timestamp string (HH:MM) of the last successful save */
   savedAt: string | null;
@@ -119,16 +120,18 @@ export function useAutoSave<T>(
     };
   }, []);
 
+  // Label keys are returned for the calling component to translate via t().
+  // Keys: "saving", "saved", "saveFailed", "unsavedChanges", "" (idle)
   const label = (() => {
     switch (state) {
       case "saving":
-        return "Saving...";
+        return "saving";
       case "saved":
-        return savedAt ? `Saved at ${savedAt}` : "Saved";
+        return "saved";
       case "error":
-        return "Save failed";
+        return "saveFailed";
       case "unsaved":
-        return "Unsaved changes";
+        return "unsavedChanges";
       default:
         return "";
     }
@@ -145,6 +148,8 @@ export function useAutoSave<T>(
  * Import and render in any component header area.
  */
 export function AutoSaveIndicator({ status }: { status: AutoSaveStatus }) {
+  const { t } = useI18n();
+
   if (status.state === "idle") return null;
 
   const styles: Record<AutoSaveStatus["state"], string> = {
@@ -163,6 +168,10 @@ export function AutoSaveIndicator({ status }: { status: AutoSaveStatus }) {
     unsaved: "\u25CF", // ●
   };
 
+  // status.label is an i18n key (e.g. "saving", "saved", "saveFailed", "unsavedChanges")
+  const base = status.label ? (t(`common.${status.label}`) || status.label) : "";
+  const translatedLabel = status.state === "saved" && status.savedAt ? `${base} ${status.savedAt}` : base;
+
   return (
     <span
       className={`inline-flex items-center gap-1 text-xs font-medium ${styles[status.state]} transition-colors duration-300`}
@@ -170,7 +179,7 @@ export function AutoSaveIndicator({ status }: { status: AutoSaveStatus }) {
       <span className={status.state === "saving" ? "animate-spin" : ""}>
         {icons[status.state]}
       </span>
-      {status.label}
+      {translatedLabel}
     </span>
   );
 }

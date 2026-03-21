@@ -93,5 +93,12 @@
 
   "testCelebrationBtn": "\ud83c\udf89 Testa effetto celebrazione",
   "testCelebration": "Test Celebrazione!",
-  "testCelebrationDesc": "I coriandoli funzionano!"
+  "testCelebrationDesc": "I coriandoli funzionano!",
+
+  "erpConfirmDelete": "Eliminare questa integrazione ERP?",
+  "erpEditIntegration": "Modifica Integrazione",
+  "erpNewIntegration": "Nuova Integrazione",
+  "erpNoIntegrations": "Nessuna integrazione ERP configurata.",
+  "erpAddHint": "Clicca 'Aggiungi Integrazione' per connettere il tuo ERP.",
+  "erpAddIntegration": "Aggiungi Integrazione"
 }

@@ -667,7 +667,7 @@ function NCRView({
                     <tr key={ncr.id} className="border-b border-th-border/50 hover:bg-th-bg transition cursor-pointer"
                       onClick={() => setExpandedNCR(expandedNCR === ncr.id ? null : ncr.id)}>
                       <td className="px-4 py-3 text-th-text font-mono text-xs">{ncr.ncr_number}</td>
-                      <td className="px-4 py-3 text-th-text max-w-xs truncate">{ncr.title}</td>
+                      <td className="px-4 py-3 text-th-text max-w-xs truncate" title={ncr.title}>{ncr.title}</td>
                       <td className="px-4 py-3">
                         <SeverityBadge severity={ncr.severity} t={t} />
                       </td>
@@ -778,7 +778,7 @@ function CAPAView({
                             capa.capa_type === "corrective" ? "bg-blue-500/15 text-blue-500" : "bg-purple-500/15 text-purple-500"
                           }`}>{t(`quality.capaType${capa.capa_type.charAt(0).toUpperCase()}${capa.capa_type.slice(1)}`)}</span>
                         </td>
-                        <td className="px-4 py-3 text-th-text max-w-xs truncate">{capa.title}</td>
+                        <td className="px-4 py-3 text-th-text max-w-xs truncate" title={capa.title}>{capa.title}</td>
                         <td className="px-4 py-3">
                           <StatusBadge status={capa.status} colorMap={CAPA_STATUS_COLORS} t={t} prefix="quality.capaStatus" />
                         </td>

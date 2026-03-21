@@ -17,5 +17,12 @@
   "downtime": "Fermo macchina (min)",
   "manual": "Inserimento manuale",
   "scrap": "Scarto",
-  "recent": "Ultimi passaggi di consegne"
+  "recent": "Ultimi passaggi di consegne",
+
+  "status_acknowledged": "Confermato",
+  "status_submitted": "Inviato",
+  "status_draft": "Bozza",
+  "priority_high": "Alta",
+  "priority_medium": "Media",
+  "priority_low": "Bassa"
 }

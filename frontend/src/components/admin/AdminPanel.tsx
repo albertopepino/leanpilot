@@ -974,7 +974,7 @@ function AuditTabContent({
                     </span>
                   </td>
                   <td className="px-4 py-3 text-xs text-th-text-2">{log.user_email || "\u2014"}</td>
-                  <td className="px-4 py-3 text-xs text-th-text-2 max-w-xs truncate">{log.detail || "\u2014"}</td>
+                  <td className="px-4 py-3 text-xs text-th-text-2 max-w-xs truncate" title={log.detail || ""}>{log.detail || "\u2014"}</td>
                   <td className="px-4 py-3 text-xs text-th-text-3 font-mono">{log.ip_address || "\u2014"}</td>
                 </tr>
               ))}

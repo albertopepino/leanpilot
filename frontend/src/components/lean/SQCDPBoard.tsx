@@ -551,12 +551,38 @@ function SQCDPBoardInner() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-th-text-3 block mb-1">{t('common.actual') || 'Actual'}</label>
-                <input type="number" value={formData.metric_value} onChange={e => setFormData(p => ({ ...p, metric_value: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-input text-th-text text-sm" />
+                <label className="text-xs text-th-text-3 block mb-1">{
+                  editModal === 'safety' ? (t('sqcdp.incidentsToday') || 'Incidents today') :
+                  editModal === 'quality' ? (t('sqcdp.defectRate') || 'Defect rate %') :
+                  editModal === 'cost' ? (t('sqcdp.wasteScrap') || 'Waste / scrap (€)') :
+                  editModal === 'delivery' ? (t('sqcdp.onTimePercent') || 'On-time delivery %') :
+                  editModal === 'people' ? (t('sqcdp.absentToday') || 'Absent today') :
+                  (t('common.actual') || 'Actual')
+                }</label>
+                <input type="number" value={formData.metric_value} onChange={e => setFormData(p => ({ ...p, metric_value: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-input text-th-text text-sm" placeholder={
+                  editModal === 'safety' ? '0' :
+                  editModal === 'quality' ? '0.5' :
+                  editModal === 'cost' ? '0' :
+                  editModal === 'delivery' ? '95' :
+                  editModal === 'people' ? '0' : ''
+                } />
               </div>
               <div>
-                <label className="text-xs text-th-text-3 block mb-1">{t('common.target') || 'Target'}</label>
-                <input type="number" value={formData.target_value} onChange={e => setFormData(p => ({ ...p, target_value: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-input text-th-text text-sm" />
+                <label className="text-xs text-th-text-3 block mb-1">{
+                  editModal === 'safety' ? (t('sqcdp.targetZero') || 'Target (0 = ideal)') :
+                  editModal === 'quality' ? (t('sqcdp.targetRate') || 'Target rate %') :
+                  editModal === 'cost' ? (t('sqcdp.budget') || 'Budget (€)') :
+                  editModal === 'delivery' ? (t('sqcdp.targetPercent') || 'Target %') :
+                  editModal === 'people' ? (t('sqcdp.plannedHeadcount') || 'Planned headcount') :
+                  (t('common.target') || 'Target')
+                }</label>
+                <input type="number" value={formData.target_value} onChange={e => setFormData(p => ({ ...p, target_value: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-input text-th-text text-sm" placeholder={
+                  editModal === 'safety' ? '0' :
+                  editModal === 'quality' ? '0.5' :
+                  editModal === 'cost' ? '1000' :
+                  editModal === 'delivery' ? '95' :
+                  editModal === 'people' ? '10' : ''
+                } />
               </div>
             </div>
             <div>

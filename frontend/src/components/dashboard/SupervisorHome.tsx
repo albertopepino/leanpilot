@@ -52,11 +52,11 @@ interface ChecklistItem {
 
 /* ─── Constants ─── */
 const SQCDP_CONFIG = {
-  S: { labelKey: "home.sqcdpSafety", fallback: "Safety", color: "emerald" },
-  Q: { labelKey: "home.sqcdpQuality", fallback: "Quality", color: "blue" },
-  C: { labelKey: "home.sqcdpCost", fallback: "Cost", color: "amber" },
-  D: { labelKey: "home.sqcdpDelivery", fallback: "Delivery", color: "violet" },
-  P: { labelKey: "home.sqcdpPeople", fallback: "People", color: "pink" },
+  S: { labelKey: "home.sqcdpSafety", fallback: "Safety", textClass: "text-emerald-600 dark:text-emerald-400" },
+  Q: { labelKey: "home.sqcdpQuality", fallback: "Quality", textClass: "text-blue-600 dark:text-blue-400" },
+  C: { labelKey: "home.sqcdpCost", fallback: "Cost", textClass: "text-amber-600 dark:text-amber-400" },
+  D: { labelKey: "home.sqcdpDelivery", fallback: "Delivery", textClass: "text-violet-600 dark:text-violet-400" },
+  P: { labelKey: "home.sqcdpPeople", fallback: "People", textClass: "text-pink-600 dark:text-pink-400" },
 } as const;
 
 const STATUS_ICONS = {
@@ -241,7 +241,7 @@ export default function SupervisorHome({ onNavigate }: SupervisorHomeProps) {
       </div>
 
       {/* ─── SQCDP Status Strip ─── */}
-      <div className="grid grid-cols-5 gap-2">
+      <div className="flex flex-wrap gap-2">
         {(Object.entries(SQCDP_CONFIG) as [string, typeof SQCDP_CONFIG.S][]).map(([letter, cfg], sqIdx) => {
           const statusKey = { S: "safety", Q: "quality", C: "cost", D: "delivery", P: "people" }[letter] as keyof SqcdpStatus;
           const status = sqcdp[statusKey];
@@ -250,10 +250,10 @@ export default function SupervisorHome({ onNavigate }: SupervisorHomeProps) {
             <button
               key={letter}
               onClick={() => onNavigate("sqcdp")}
-              className={`rounded-xl border border-th-border bg-th-bg-2 p-3 text-center hover:shadow-md transition-all active:scale-[0.98] animate-card-enter animate-card-enter-${sqIdx + 1}`}
+              className={`flex-1 min-w-[80px] rounded-xl border border-th-border bg-th-bg-2 p-3 text-center hover:shadow-md transition-all active:scale-[0.98] animate-card-enter ${["","animate-card-enter-1","animate-card-enter-2","animate-card-enter-3","animate-card-enter-4","animate-card-enter-5","animate-card-enter-6"][sqIdx + 1] || ""}`}
             >
               <div className="flex items-center justify-center gap-1.5 mb-1">
-                <span className={`text-lg font-bold text-${cfg.color}-600 dark:text-${cfg.color}-400`}>{letter}</span>
+                <span className={`text-lg font-bold ${cfg.textClass}`}>{letter}</span>
                 <StatusIcon size={16} className={STATUS_COLORS[status]} />
               </div>
               <p className="text-[10px] text-th-text-3 font-medium">{t(cfg.labelKey) || cfg.fallback}</p>

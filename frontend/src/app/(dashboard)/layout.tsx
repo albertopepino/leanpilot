@@ -15,7 +15,7 @@ import NotificationPanel from "@/components/ui/NotificationPanel";
 import SiteSwitcher from "@/components/ui/SiteSwitcher";
 import OfflineBanner from "@/components/ui/OfflineBanner";
 import ToastContainer from "@/components/shared/Toast";
-import QuickActionsFAB from "@/components/ui/QuickActionsFAB";
+// QuickActionsFAB removed per user preference
 import CelebrationOverlay from "@/components/ui/CelebrationOverlay";
 import { useCelebration } from "@/hooks/useCelebration";
 
@@ -166,8 +166,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
-        {/* Quick Actions FAB — hidden in display mode */}
-        {!isDisplayMode && <QuickActionsFAB />}
+        {/* QuickActionsFAB removed */}
 
         {/* Offline status banner */}
         <OfflineBanner />

@@ -341,7 +341,7 @@ export default function SettingsPage() {
               <img
                 src={logoUrl}
                 alt="Company logo"
-                className="h-16 max-w-[200px] object-contain rounded-lg border border-th-border bg-white p-2"
+                className="h-16 max-w-[200px] object-contain rounded-lg border border-th-border bg-th-card p-2"
               />
               <button
                 onClick={() => setConfirmRemoveLogo(true)}

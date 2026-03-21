@@ -23,5 +23,12 @@
   "quality": "Quality",
   "equipment": "Equipment",
   "material": "Material",
-  "good": "Good"
+  "good": "Good",
+
+  "status_acknowledged": "Acknowledged",
+  "status_submitted": "Submitted",
+  "status_draft": "Draft",
+  "priority_high": "High",
+  "priority_medium": "Medium",
+  "priority_low": "Low"
 }

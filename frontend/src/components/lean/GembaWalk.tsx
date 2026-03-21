@@ -996,7 +996,7 @@ export default function GembaWalk() {
                         <div className="md:col-span-2 text-sm text-th-text flex items-center gap-1.5">
                           <CalendarDays className="w-3.5 h-3.5 text-th-text-3" /> {walk.date}
                         </div>
-                        <div className="md:col-span-4 text-sm font-medium text-th-text truncate flex items-center gap-1.5">
+                        <div className="md:col-span-4 text-sm font-medium text-th-text truncate flex items-center gap-1.5" title={walk.area}>
                           <MapPin className="w-3.5 h-3.5 text-th-text-3 flex-shrink-0" /> {walk.area}
                         </div>
                         <div className="md:col-span-2 text-center">
