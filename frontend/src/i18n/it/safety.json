@@ -9,6 +9,7 @@
   "days": "giorni",
 
   "viewCounter": "Contatore",
+  "viewCross": "Vedi Croce Sicurezza",
   "viewLog": "Registra Evento",
   "viewHistory": "Storico",
   "viewStats": "Statistiche",
@@ -82,5 +83,12 @@
   "typeNearMiss": "Near Miss",
   "typeFirstAid": "Primo Soccorso",
   "typePropertyDamage": "Danno Materiale",
-  "typeEnvironmental": "Ambientale"
+  "typeEnvironmental": "Ambientale",
+
+  "andonSafetyHoldTriggered": "Blocco Sicurezza Andon attivato su {line}",
+  "andonSafetyHoldDesc": "Produzione fermata. Un incidente critico di sicurezza richiede attenzione immediata.",
+  "goToAndonBoard": "Vai alla Board Andon",
+
+  "reportSafetyIncident": "Segnala Incidente di Sicurezza",
+  "andonIncidentPrefix": "Evento Andon"
 }

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { useAuth } from "@/hooks/useAuth";
 import { adminApi, manufacturingApi } from "@/lib/api";
+import { getErrorMessage } from "@/lib/formatters";
 import GroupPoliciesPanel from "./GroupPoliciesPanel";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { useToast } from "@/stores/useToast";
@@ -236,7 +237,7 @@ export default function AdminPanel() {
       setShowLineForm(false);
       setLineForm({ name: "", product_type: "", target_oee: 85, target_cycle_time_seconds: "" });
       loadSetupData();
-    } catch (err: any) { setError(err.response?.data?.detail || "Failed"); }
+    } catch (err: unknown) { setError(getErrorMessage(err, "Failed")); }
     setLoading(false);
   };
 
@@ -253,7 +254,7 @@ export default function AdminPanel() {
       setSuccess(t("admin.lineUpdated"));
       setEditingLine(null);
       loadSetupData();
-    } catch (err: any) { setError(err.response?.data?.detail || "Failed"); }
+    } catch (err: unknown) { setError(getErrorMessage(err, "Failed")); }
     setLoading(false);
   };
 
@@ -290,7 +291,7 @@ export default function AdminPanel() {
       setShowShiftForm(null);
       setShiftForm({ name: "", start_hour: 6, end_hour: 14, planned_minutes: 480 });
       loadSetupData();
-    } catch (err: any) { setError(err.response?.data?.detail || "Failed"); }
+    } catch (err: unknown) { setError(getErrorMessage(err, "Failed")); }
     setLoading(false);
   };
 
@@ -327,7 +328,7 @@ export default function AdminPanel() {
       setShowWCForm(false);
       setWCForm({ name: "", description: "", machine_type: "", capacity_units_per_hour: "", production_line_id: 0 });
       loadSetupData();
-    } catch (err: any) { setError(err.response?.data?.detail || "Failed"); }
+    } catch (err: unknown) { setError(getErrorMessage(err, "Failed")); }
     setLoading(false);
   };
 
@@ -344,7 +345,7 @@ export default function AdminPanel() {
       setSuccess(t("admin.wcUpdated"));
       setEditingWC(null);
       loadSetupData();
-    } catch (err: any) { setError(err.response?.data?.detail || "Failed"); }
+    } catch (err: unknown) { setError(getErrorMessage(err, "Failed")); }
     setLoading(false);
   };
 
@@ -361,7 +362,7 @@ export default function AdminPanel() {
       setShowProductForm(false);
       setProductForm({ code: "", name: "", product_family: "", unit_of_measure: "pcs" });
       loadSetupData();
-    } catch (err: any) { setError(err.response?.data?.detail || "Failed"); }
+    } catch (err: unknown) { setError(getErrorMessage(err, "Failed")); }
     setLoading(false);
   };
 
@@ -393,8 +394,8 @@ export default function AdminPanel() {
       setShowUserForm(false);
       setFormData({ email: "", full_name: "", role: "operator", language: "en", password: "" });
       loadUsers();
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to create user");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Failed to create user"));
     }
     setLoading(false);
   };
@@ -412,8 +413,8 @@ export default function AdminPanel() {
       setSuccess(t("admin.userUpdated"));
       setEditingUser(null);
       loadUsers();
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to update user");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Failed to update user"));
     }
     setLoading(false);
   };
@@ -423,8 +424,8 @@ export default function AdminPanel() {
     try {
       await adminApi.updateUser(u.id, { is_active: !u.is_active });
       loadUsers();
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to update user");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Failed to update user"));
     }
   };
 
@@ -434,8 +435,8 @@ export default function AdminPanel() {
       const res = await adminApi.resetPassword(u.id);
       setTempPassword(res.data.temporary_password);
       setSuccess(t("admin.passwordResetSuccess"));
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to reset password");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Failed to reset password"));
     }
   };
 

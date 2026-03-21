@@ -1,0 +1,23 @@
+{
+  "myShift": "Mi Turno",
+  "shiftProgress": "Progreso del turno",
+  "remaining": "restante",
+  "noActiveShift": "No se detectó turno activo",
+  "quickActions": "Acciones Rápidas",
+  "logOutput": "Registrar Producción",
+  "flagIssue": "Reportar Problema",
+  "safetyCheck": "Control de Seguridad",
+  "suggestImprovement": "Sugerir Mejora",
+  "alerts": "alertas",
+  "activeAlerts": "alertas activas",
+  "tapToView": "Toca para ver el tablero Andon",
+  "handoverPending": "Entrega de turno pendiente",
+  "reviewAndAcknowledge": "Revisar y confirmar",
+  "allClear": "Todo bien — sin alertas ni acciones pendientes",
+  "noLines": "No hay líneas de producción configuradas",
+  "statusRunning": "En Marcha",
+  "statusChangeover": "Cambio de formato",
+  "statusStopped": "Detenida",
+  "statusBreakdown": "Avería",
+  "statusIdle": "Inactiva"
+}

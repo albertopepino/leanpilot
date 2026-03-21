@@ -60,5 +60,7 @@
   "cardAge": "Età",
   "days": "giorni",
 
-  "exportTitle": "Esportazione Kanban Board"
+  "exportTitle": "Esportazione Kanban Board",
+
+  "metricsView": "Metriche"
 }

@@ -1,0 +1,18 @@
+{
+  "title": "La Mia Area Oggi",
+  "andonAlerts": "Andon",
+  "openNCRs": "NCR Aperte",
+  "actionItems": "Azioni in Corso",
+  "dailyRoutine": "Routine Giornaliera",
+  "completed": "completate",
+  "checkHandover": "Rivedi passaggio turno",
+  "checkSQCDP": "Aggiorna tabellone SQCDP",
+  "checkGemba": "Gemba walk",
+  "checkLSW": "Controlli lavoro standard leader",
+  "checkKaizen": "Follow-up kaizen",
+  "escalations": "Escalation",
+  "andonActive": "avvisi Andon attivi",
+  "capaOverdue": "azioni CAPA scadute",
+  "ncrOpen": "NCR aperte da verificare",
+  "noEscalations": "Nessuna escalation — tutte le aree nei limiti"
+}

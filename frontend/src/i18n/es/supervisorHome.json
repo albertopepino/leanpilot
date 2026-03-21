@@ -1,0 +1,18 @@
+{
+  "title": "Mi Área Hoy",
+  "andonAlerts": "Andon",
+  "openNCRs": "NCR Abiertas",
+  "actionItems": "Acciones Pendientes",
+  "dailyRoutine": "Rutina Diaria",
+  "completed": "completadas",
+  "checkHandover": "Revisar entrega de turno",
+  "checkSQCDP": "Actualizar tablero SQCDP",
+  "checkGemba": "Caminata Gemba",
+  "checkLSW": "Checks de trabajo estándar del líder",
+  "checkKaizen": "Seguimiento kaizen",
+  "escalations": "Escalaciones",
+  "andonActive": "alertas Andon activas",
+  "capaOverdue": "acciones CAPA vencidas",
+  "ncrOpen": "NCR abiertas requieren atención",
+  "noEscalations": "Sin escalaciones — todas las áreas dentro de objetivos"
+}

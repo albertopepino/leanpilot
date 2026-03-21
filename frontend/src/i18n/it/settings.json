@@ -30,6 +30,11 @@
   "passwordMismatch": "Le password non corrispondono",
   "passwordRequirements": "Minimo 12 caratteri, con maiuscola, minuscola, numero e carattere speciale",
 
+  "2faTitle": "Autenticazione a Due Fattori",
+  "2faInactive": "Inattiva",
+  "2faDescription": "Aggiungi un ulteriore livello di sicurezza al tuo account con l'autenticazione a due fattori.",
+  "2faEnable": "Attiva 2FA",
+
   "privacy": "Privacy e Consenso",
   "aiConsentLabel": "Elaborazione Dati con AI",
   "aiConsentDesc": "Consenti a LeanPilot di elaborare i tuoi dati di produzione con l'AI per analisi, identificazione cause radice e raccomandazioni. I dati vengono anonimizzati prima dell'elaborazione.",
@@ -66,5 +71,22 @@
 
   "tutorial": "Tutorial",
   "tutorialDesc": "Ripeti il tutorial di onboarding per scoprire tutti gli strumenti disponibili.",
-  "replayTutorial": "Ripeti Tutorial"
+  "replayTutorial": "Ripeti Tutorial",
+  "beginnerMode": "Modalità Principiante",
+  "beginnerModeDesc": "Quando attiva, ogni pagina strumento mostra una descrizione di cosa fa, quando usarlo e come si collega ad altri strumenti. La guida al flusso di problem-solving (Identifica → Analizza → Causa Radice → Azione) è sempre visibile.",
+  "beginnerModeOn": "Attiva — descrizioni strumenti sempre visibili",
+  "beginnerModeOff": "Disattiva — descrizioni strumenti chiudibili",
+
+  "auditLabel": "Etichetta Programma Audit",
+  "auditLabelHint": "Scegli se la tua fabbrica utilizza la metodologia 5S o 6S",
+
+  "tabGeneral": "Impostazioni Generali",
+  "tabAssessment": "Valutazione Lean",
+  "tabCalendar": "Calendario Principale",
+  "tabCopilot": "Factory Copilot",
+  "tabResources": "Risorse Lean",
+  "tabAuditScheduler": "Pianificazione Audit",
+  "tabExtraTools": "Strumenti Extra",
+  "tabDataImport": "Importa / Esporta",
+  "tabERP": "Integrazione ERP"
 }

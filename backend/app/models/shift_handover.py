@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Text, Boolean, JSON, Date
+from sqlalchemy.ext.mutable import MutableList, MutableDict
 from sqlalchemy.orm import relationship
 import enum
 from datetime import datetime, timezone
@@ -38,7 +39,7 @@ class ShiftHandover(TimestampMixin, Base):
     quality_issues = Column(Text, nullable=True)
     equipment_issues = Column(Text, nullable=True)
     material_issues = Column(Text, nullable=True)
-    pending_actions = Column(JSON, default=list)  # [{description, priority, owner}]
+    pending_actions = Column(MutableList.as_mutable(JSON), default=list)  # [{description, priority, owner}]
     notes = Column(Text, nullable=True)
 
     acknowledged_at = Column(DateTime(timezone=True), nullable=True)

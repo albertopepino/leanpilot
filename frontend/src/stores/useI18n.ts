@@ -51,11 +51,14 @@ const DOMAINS = [
   "scheduling",
   "quality",
   "spc",
+  "operatorHome",
+  "supervisorHome",
   "help",
   "glossary",
   "wizard",
   "kanban",
   "pokayoke",
+  "fmea",
   "cookie",
   "cta",
   "features",
@@ -67,6 +70,10 @@ const DOMAINS = [
   "problem",
   "social",
   "shopfloor",
+  "portal",
+  "login",
+  "production",
+  "toolInfo",
 ];
 
 async function loadTranslations(locale: Locale): Promise<Record<string, Translations>> {

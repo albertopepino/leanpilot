@@ -6,5 +6,6 @@
   "startFiveWhy": "Start 5-Why Analysis",
   "createNCR": "Create NCR",
   "createCAPA": "Create CAPA",
-  "scheduleGemba": "Schedule Gemba Walk"
+  "scheduleGemba": "Schedule Gemba Walk",
+  "startIshikawa": "Start Ishikawa Diagram"
 }

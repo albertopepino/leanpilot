@@ -60,5 +60,7 @@
   "cardAge": "Starost",
   "days": "dana",
 
-  "exportTitle": "Izvoz Kanban Table"
+  "exportTitle": "Izvoz Kanban Table",
+
+  "metricsView": "Metrike"
 }

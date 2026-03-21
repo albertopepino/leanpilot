@@ -737,7 +737,7 @@ export default function IshikawaDiagram() {
             <ExportToolbar
               onPrint={() => printView({ title: t("problem-solving.ishikawaTitle") || "Ishikawa Diagram", subtitle: title || effect })}
               onExportExcel={() => {
-                const rows: Record<string, any>[] = [];
+                const rows: Record<string, string>[] = [];
                 for (const cat of CATEGORIES) {
                   const causes = categories[cat.key as CategoryKey] || [];
                   for (const cause of causes) {
@@ -761,7 +761,7 @@ export default function IshikawaDiagram() {
                 });
               }}
               onExportCSV={() => {
-                const rows: Record<string, any>[] = [];
+                const rows: Record<string, string>[] = [];
                 for (const cat of CATEGORIES) {
                   const causes = categories[cat.key as CategoryKey] || [];
                   for (const cause of causes) {

@@ -65,5 +65,22 @@
   "logoErrorSize": "El archivo es demasiado grande. Máximo 2 MB.",
   "tutorial": "Tutorial",
   "tutorialDesc": "Repite el tutorial de introducción para conocer todas las herramientas disponibles.",
-  "replayTutorial": "Repetir Tutorial"
+  "replayTutorial": "Repetir Tutorial",
+  "beginnerMode": "Modo Principiante",
+  "beginnerModeDesc": "Cuando está activado, cada página de herramienta muestra una descripción de lo que hace, cuándo usarla y cómo se conecta con otras herramientas. La guía de flujo de resolución de problemas (Identificar → Analizar → Causa Raíz → Acción) siempre es visible.",
+  "beginnerModeOn": "Activado — descripciones de herramientas siempre visibles",
+  "beginnerModeOff": "Desactivado — descripciones de herramientas se pueden cerrar",
+
+  "auditLabel": "Etiqueta del Programa de Auditoria",
+  "auditLabelHint": "Elija si su fabrica utiliza la metodologia 5S o 6S",
+
+  "tabGeneral": "Configuracion General",
+  "tabAssessment": "Evaluacion Lean",
+  "tabCalendar": "Calendario Principal",
+  "tabCopilot": "Factory Copilot",
+  "tabResources": "Recursos Lean",
+  "tabAuditScheduler": "Planificador de Auditorias",
+  "tabExtraTools": "Herramientas Extra",
+  "tabDataImport": "Importar / Exportar",
+  "tabERP": "Integracion ERP"
 }

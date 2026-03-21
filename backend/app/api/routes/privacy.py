@@ -434,8 +434,8 @@ async def request_account_deletion(
     Initiates soft deletion with a grace period before permanent data removal.
     Requires password re-confirmation for security.
     """
-    from app.core.security import verify_password
-    if not verify_password(body.password, current_user.hashed_password):
+    from app.core.security import verify_password_async
+    if not await verify_password_async(body.password, current_user.hashed_password):
         raise HTTPException(status_code=401, detail="Incorrect password")
     if current_user.is_deleted:
         raise HTTPException(status_code=400, detail="Account already marked for deletion")
@@ -501,7 +501,7 @@ SUB_PROCESSORS = [
 
 
 @router.get("/sub-processors")
-async def get_sub_processors():
+async def get_sub_processors(user=Depends(get_current_user)):
     """
     GDPR Art. 28 — Sub-processor transparency.
     Returns the list of third-party sub-processors that process personal data

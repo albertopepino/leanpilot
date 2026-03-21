@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Text, Enum as SAEnum, Boolean, JSON
+from sqlalchemy.ext.mutable import MutableList, MutableDict
 from sqlalchemy.orm import relationship
 import enum
 from datetime import datetime, timezone
@@ -77,7 +78,7 @@ class FiveWhyAnalysis(TimestampMixin, Base):
     countermeasure_owner = Column(String, nullable=True)      # forced owner
     countermeasure_deadline = Column(DateTime(timezone=True), nullable=True)  # forced deadline
     horizontal_deployed = Column(Boolean, default=False)      # horizontal deployment done
-    horizontal_lines = Column(JSON, default=list)             # list of line IDs deployed to
+    horizontal_lines = Column(MutableList.as_mutable(JSON), default=list)             # list of line IDs deployed to
     verification_result = Column(Text, nullable=True)         # root cause verification
 
     steps = relationship("FiveWhyStep", back_populates="analysis", order_by="FiveWhyStep.step_number")
@@ -151,6 +152,7 @@ class KaizenStatus(str, enum.Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     VERIFIED = "verified"
+    STANDARDIZED = "standardized"
     REJECTED = "rejected"
 
 
@@ -189,6 +191,9 @@ class KaizenItem(TimestampMixin, Base):
     source_type = Column(String, nullable=True)     # "manual", "six_s", "gemba", "oee_drop"
     source_id = Column(Integer, nullable=True)      # ID of source item
     linked_five_why_id = Column(Integer, ForeignKey("five_why_analyses.id"), nullable=True)
+    lsw_id = Column(Integer, ForeignKey("leader_standard_work.id"), nullable=True)  # Link to LSW for auto-update
+    pareto_rank = Column(Integer, nullable=True)  # Pareto priority rank (1=top defect)
+    countermeasure = Column(Text, nullable=True)  # Standardized countermeasure text
 
     @property
     def priority_normalized(self) -> str:
@@ -245,11 +250,11 @@ class LeanAssessment(TimestampMixin, Base):
     factory_id = Column(Integer, ForeignKey("factories.id"), nullable=False)
     assessed_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
-    scores = Column(JSON, nullable=False, default=dict)          # {category: score}
+    scores = Column(MutableDict.as_mutable(JSON), nullable=False, default=dict)          # {category: score}
     overall_score = Column(Float, nullable=False, default=0.0)
     maturity_level = Column(String, nullable=False, default="")  # e.g. "Beginner", "Developing"
-    recommendations = Column(JSON, nullable=False, default=list)  # [{"tool": ..., "priority": ...}]
-    answers = Column(JSON, nullable=False, default=dict)          # {question_id: answer_id}
+    recommendations = Column(MutableList.as_mutable(JSON), nullable=False, default=list)  # [{"tool": ..., "priority": ...}]
+    answers = Column(MutableDict.as_mutable(JSON), nullable=False, default=dict)          # {question_id: answer_id}
 
 
 # --- MIND MAP ---
@@ -263,5 +268,5 @@ class MindMap(TimestampMixin, Base):
 
     title = Column(String, nullable=False, default="")
     description = Column(String, nullable=False, default="")
-    nodes = Column(JSON, nullable=False, default=list)         # [{id, text, x, y, color, parentId}]
-    connectors = Column(JSON, nullable=False, default=list)    # [{id, fromId, toId, label, color}]
+    nodes = Column(MutableList.as_mutable(JSON), nullable=False, default=list)         # [{id, text, x, y, color, parentId}]
+    connectors = Column(MutableList.as_mutable(JSON), nullable=False, default=list)    # [{id, fromId, toId, label, color}]

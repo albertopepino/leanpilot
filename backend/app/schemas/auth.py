@@ -66,6 +66,7 @@ class UserResponse(BaseModel):
     marketing_consent: bool | None = False
     is_deleted: bool | None = False
     totp_enabled: bool | None = False
+    is_superadmin: bool = False
     needs_consent: bool = False
 
     @model_validator(mode="before")
@@ -86,13 +87,13 @@ class UserResponse(BaseModel):
                 "marketing_consent": obj.marketing_consent,
                 "is_deleted": obj.is_deleted,
                 "totp_enabled": getattr(obj, "totp_enabled", False),
+                "is_superadmin": getattr(obj, "is_superadmin", False),
                 "needs_consent": obj._needs_consent,
             }
             return d
         return data
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class ConsentAcceptRequest(BaseModel):

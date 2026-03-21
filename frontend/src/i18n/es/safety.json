@@ -67,5 +67,12 @@
   "areaMaintenance": "Zona de mantenimiento",
 
   "deleteConfirm": "¿Eliminar este incidente?",
-  "deleted": "Incidente eliminado"
+  "deleted": "Incidente eliminado",
+
+  "andonSafetyHoldTriggered": "Parada de seguridad Andon activada en {line}",
+  "andonSafetyHoldDesc": "Producción detenida. Un incidente de seguridad crítico requiere atención inmediata.",
+  "goToAndonBoard": "Ir al Tablero Andon",
+
+  "reportSafetyIncident": "Reportar Incidente de Seguridad",
+  "andonIncidentPrefix": "Evento Andon"
 }

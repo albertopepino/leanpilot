@@ -219,7 +219,7 @@ async def import_products_excel(
             existing_codes.add(code.upper())
             created += 1
         except Exception as e:
-            errors.append(f"Row {row_idx}: {str(e)[:80]}")
+            errors.append(f"Row {row_idx}: validation or processing error")
 
     return {
         "created": created,
@@ -573,7 +573,7 @@ async def import_bom_excel(
                 boms_created += 1
                 components_added += len(materials)
             except Exception as e:
-                errors.append(f"BOM for {prod_code}/{line_name}: {str(e)[:80]}")
+                errors.append(f"BOM for {prod_code}/{line_name}: processing error")
 
     await db.commit()
 

@@ -8,7 +8,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 from app.core.config import get_settings
-from app.core.security import _mask_email
+from app.core.security import mask_email
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()
@@ -38,16 +38,17 @@ class EmailService:
 
     @staticmethod
     async def _send(to: str, subject: str, html_body: str) -> bool:
-        """Send email via configured provider."""
+        """Send email via configured provider. SMTP runs in executor to avoid blocking."""
+        import asyncio
 
         # If no SMTP configured, log to console (development mode)
         if not settings.smtp_host:
-            logger.info(f"[EMAIL DEV] To: {_mask_email(to)}")
+            logger.info(f"[EMAIL DEV] To: {mask_email(to)}")
             logger.info(f"[EMAIL DEV] Subject: {subject}")
             logger.info(f"[EMAIL DEV] Body preview: {html_body[:200]}...")
             return True
 
-        try:
+        def _send_sync():
             msg = MIMEMultipart("alternative")
             msg["Subject"] = subject
             msg["From"] = f"LeanPilot <{settings.smtp_from_email}>"
@@ -65,15 +66,21 @@ class EmailService:
 
             server.sendmail(settings.smtp_from_email, to, msg.as_string())
             server.quit()
-            logger.info(f"Email sent to {_mask_email(to)}: {subject}")
+
+        try:
+            loop = asyncio.get_running_loop()
+            await loop.run_in_executor(None, _send_sync)
+            logger.info(f"Email sent to {mask_email(to)}: {subject}")
             return True
 
         except Exception as e:
-            logger.error(f"Failed to send email to {_mask_email(to)}: {e}")
+            logger.error(f"Failed to send email to {mask_email(to)}: {e}")
             return False
 
 
-def _welcome_template_en(name: str, email: str, password: str, factory: str) -> str:
+def _welcome_template_en(name: str, email: str, password: str, factory: str, app_url: str = "") -> str:
+    if not app_url:
+        app_url = get_settings().app_url
     return f"""
 <!DOCTYPE html>
 <html>
@@ -113,7 +120,7 @@ def _welcome_template_en(name: str, email: str, password: str, factory: str) -> 
 
       <!-- CTA Button -->
       <div style="text-align: center; margin: 28px 0;">
-        <a href="https://lean.autopilot.rs"
+        <a href="{app_url}"
            style="display: inline-block; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 15px;">
           Log In to LeanPilot →
         </a>
@@ -128,9 +135,9 @@ def _welcome_template_en(name: str, email: str, password: str, factory: str) -> 
     <div style="background: #f9fafb; padding: 20px 32px; border-top: 1px solid #e5e7eb;">
       <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
         LeanPilot — Digital Lean Manufacturing for Smart Factories<br/>
-        This email was sent because you registered at lean.autopilot.rs<br/>
-        <a href="https://lean.autopilot.rs/privacy" style="color: #6366f1;">Privacy Policy</a> &bull;
-        <a href="https://lean.autopilot.rs/unsubscribe" style="color: #6366f1;">Unsubscribe</a>
+        This email was sent because you registered at {app_url.replace('https://', '')}<br/>
+        <a href="{app_url}/privacy" style="color: #6366f1;">Privacy Policy</a> &bull;
+        <a href="{app_url}/unsubscribe" style="color: #6366f1;">Unsubscribe</a>
       </p>
     </div>
   </div>
@@ -138,7 +145,9 @@ def _welcome_template_en(name: str, email: str, password: str, factory: str) -> 
 </html>"""
 
 
-def _welcome_template_it(name: str, email: str, password: str, factory: str) -> str:
+def _welcome_template_it(name: str, email: str, password: str, factory: str, app_url: str = "") -> str:
+    if not app_url:
+        app_url = get_settings().app_url
     return f"""
 <!DOCTYPE html>
 <html>
@@ -178,7 +187,7 @@ def _welcome_template_it(name: str, email: str, password: str, factory: str) -> 
 
       <!-- CTA Button -->
       <div style="text-align: center; margin: 28px 0;">
-        <a href="https://lean.autopilot.rs"
+        <a href="{app_url}"
            style="display: inline-block; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 15px;">
           Accedi a LeanPilot →
         </a>
@@ -193,9 +202,9 @@ def _welcome_template_it(name: str, email: str, password: str, factory: str) -> 
     <div style="background: #f9fafb; padding: 20px 32px; border-top: 1px solid #e5e7eb;">
       <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
         LeanPilot — Lean Manufacturing Digitale per Fabbriche Intelligenti<br/>
-        Questa email è stata inviata perché ti sei registrato su lean.autopilot.rs<br/>
-        <a href="https://lean.autopilot.rs/privacy" style="color: #6366f1;">Informativa Privacy</a> &bull;
-        <a href="https://lean.autopilot.rs/unsubscribe" style="color: #6366f1;">Disiscriviti</a>
+        Questa email è stata inviata perché ti sei registrato su {app_url.replace('https://', '')}<br/>
+        <a href="{app_url}/privacy" style="color: #6366f1;">Informativa Privacy</a> &bull;
+        <a href="{app_url}/unsubscribe" style="color: #6366f1;">Disiscriviti</a>
       </p>
     </div>
   </div>

@@ -4,11 +4,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { useI18n, Locale } from "@/stores/useI18n";
 import { useTheme } from "@/stores/useTheme";
 import { authApi, adminApi } from "@/lib/api";
+import { useCompanySettings } from "@/stores/useCompanySettings";
+import { getErrorMessage } from "@/lib/formatters";
 import { useCurrency, CURRENCIES } from "@/stores/useCurrency";
 import { useCompanyBranding } from "@/stores/useCompanyBranding";
 import LogoUpload from "@/components/settings/LogoUpload";
 import TwoFactorSetup from "@/components/settings/TwoFactorSetup";
 import { resetOnboarding } from "@/components/onboarding/OnboardingTutorial";
+import { useBeginnerMode, saveBeginnerMode } from "@/stores/useBeginnerMode";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import {
   Settings,
@@ -32,6 +35,8 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { currency, setCurrency } = useCurrency();
   const { logoUrl, fetchLogo, clearLogo } = useCompanyBranding();
+  const { auditLabel, fetchSettings, setAuditLabel } = useCompanySettings();
+  const { enabled: beginnerMode, setEnabled: setBeginnerMode, initBeginnerMode } = useBeginnerMode();
 
   // Profile
   const [fullName, setFullName] = useState("");
@@ -70,6 +75,8 @@ export default function SettingsPage() {
       setFactoryName(factory?.name || "");
     }).catch(() => {});
     fetchLogo();
+    fetchSettings();
+    initBeginnerMode();
   }, [user]);
 
   const handleDeleteLogo = async () => {
@@ -88,8 +95,8 @@ export default function SettingsPage() {
       setLocale(language);
       await loadUser();
       setProfileMsg({ type: "ok", text: t("common.saved") });
-    } catch (e: any) {
-      setProfileMsg({ type: "err", text: e?.response?.data?.detail || t("common.saveFailed") });
+    } catch (e: unknown) {
+      setProfileMsg({ type: "err", text: getErrorMessage(e, t("common.saveFailed")) });
     }
     setProfileSaving(false);
   };
@@ -108,8 +115,8 @@ export default function SettingsPage() {
       setNewPw("");
       setConfirmPw("");
       setPwMsg({ type: "ok", text: t("settings.passwordChanged") });
-    } catch (e: any) {
-      setPwMsg({ type: "err", text: e?.response?.data?.detail || t("common.saveFailed") });
+    } catch (e: unknown) {
+      setPwMsg({ type: "err", text: getErrorMessage(e, t("common.saveFailed")) });
     }
     setPwSaving(false);
   };
@@ -122,8 +129,8 @@ export default function SettingsPage() {
       await authApi.updateConsent({ ai_consent: aiConsent, marketing_consent: marketingConsent });
       await loadUser();
       setConsentMsg({ type: "ok", text: t("common.saved") });
-    } catch (e: any) {
-      setConsentMsg({ type: "err", text: e?.response?.data?.detail || t("common.saveFailed") });
+    } catch (e: unknown) {
+      setConsentMsg({ type: "err", text: getErrorMessage(e, t("common.saveFailed")) });
     }
     setConsentSaving(false);
   };
@@ -341,6 +348,31 @@ export default function SettingsPage() {
             </div>
           )}
           <LogoUpload onUploadSuccess={fetchLogo} />
+
+          {/* Audit label toggle */}
+          <div className="mt-4 pt-4 border-t border-th-border">
+            <label className="block text-sm font-medium text-th-text-2 mb-2">
+              {t("settings.auditLabel") || "Audit Program Label"}
+            </label>
+            <div className="flex items-center gap-3">
+              {(["5S", "6S"] as const).map((label) => (
+                <button
+                  key={label}
+                  onClick={() => setAuditLabel(label)}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg border transition ${
+                    auditLabel === label
+                      ? "bg-brand-500 text-white border-brand-500"
+                      : "bg-th-bg-2 text-th-text-2 border-th-border hover:bg-th-bg-3"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-th-text-3 mt-1">
+              {t("settings.auditLabelHint") || "Choose whether your factory uses 5S or 6S methodology"}
+            </p>
+          </div>
         </section>
       )}
 
@@ -467,6 +499,35 @@ export default function SettingsPage() {
           <Download className="w-4 h-4" />
           {t("settings.downloadMyData")}
         </button>
+      </section>
+
+      {/* Beginner Mode */}
+      <section className={cardCls}>
+        <h2 className="text-lg font-semibold text-th-text flex items-center gap-2">
+          <GraduationCap className="w-5 h-5 text-th-text-2" /> {t("settings.beginnerMode") || "Beginner Mode"}
+        </h2>
+        <p className="text-sm text-th-text-2">
+          {t("settings.beginnerModeDesc") || "When enabled, every tool page shows a description of what it does, when to use it, and how it connects to other tools. The problem-solving flow guide (Identify → Analyze → Root Cause → Action) is also always visible."}
+        </p>
+        <label className="inline-flex items-center gap-3 cursor-pointer select-none">
+          <div className="relative">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={beginnerMode}
+              onChange={(e) => {
+                setBeginnerMode(e.target.checked);
+              }}
+            />
+            <div className="w-11 h-6 bg-th-bg-3 border border-th-border rounded-full peer-checked:bg-brand-600 peer-checked:border-brand-600 transition-colors" />
+            <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-5" />
+          </div>
+          <span className="text-sm font-medium text-th-text">
+            {beginnerMode
+              ? (t("settings.beginnerModeOn") || "On — tool descriptions always visible")
+              : (t("settings.beginnerModeOff") || "Off — tool descriptions dismissable")}
+          </span>
+        </label>
       </section>
 
       {/* Tutorial */}

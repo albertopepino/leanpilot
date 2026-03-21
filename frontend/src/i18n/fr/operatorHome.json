@@ -1,0 +1,23 @@
+{
+  "myShift": "Mon Poste",
+  "shiftProgress": "Progression du poste",
+  "remaining": "restant",
+  "noActiveShift": "Aucun poste actif détecté",
+  "quickActions": "Actions Rapides",
+  "logOutput": "Saisir Production",
+  "flagIssue": "Signaler un Problème",
+  "safetyCheck": "Contrôle Sécurité",
+  "suggestImprovement": "Suggérer une Amélioration",
+  "alerts": "alertes",
+  "activeAlerts": "alertes actives",
+  "tapToView": "Appuyez pour voir le tableau Andon",
+  "handoverPending": "Passage de poste en attente",
+  "reviewAndAcknowledge": "Revoir et confirmer",
+  "allClear": "Tout est en ordre — aucune alerte ni action en attente",
+  "noLines": "Aucune ligne de production configurée",
+  "statusRunning": "En Marche",
+  "statusChangeover": "Changement de série",
+  "statusStopped": "Arrêtée",
+  "statusBreakdown": "Panne",
+  "statusIdle": "Inactive"
+}

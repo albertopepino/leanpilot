@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Text, Boolean, JSON, Date
+from sqlalchemy.ext.mutable import MutableList, MutableDict
 import enum
 from datetime import datetime, timezone
 
@@ -23,7 +24,7 @@ class LeaderStandardWork(TimestampMixin, Base):
     frequency = Column(String(20), default="daily")
     estimated_time_min = Column(Integer, nullable=True)
     is_active = Column(Boolean, default=True)
-    tasks = Column(JSON, default=list)  # [{order, description, time_min, category}]
+    tasks = Column(MutableList.as_mutable(JSON), default=list)  # [{order, description, time_min, category}]
 
 
 class LSWCompletion(TimestampMixin, Base):
@@ -34,6 +35,6 @@ class LSWCompletion(TimestampMixin, Base):
     completed_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     date = Column(Date, nullable=False)
-    completed_tasks = Column(JSON, default=list)  # [{task_index, completed, notes, time_min}]
+    completed_tasks = Column(MutableList.as_mutable(JSON), default=list)  # [{task_index, completed, notes, time_min}]
     completion_pct = Column(Float, nullable=True)
     notes = Column(Text, nullable=True)

@@ -257,10 +257,11 @@ function OEEGauge({ value, size = 180 }: { value: number | null; size?: number }
 }
 
 function OEEStatusLabel({ value }: { value: number }) {
-  if (value >= 85) return <span className="text-[10px] font-semibold text-emerald-500">World Class</span>;
-  if (value >= 70) return <span className="text-[10px] font-semibold text-blue-500">Good</span>;
-  if (value >= 50) return <span className="text-[10px] font-semibold text-amber-500">Needs Improvement</span>;
-  return <span className="text-[10px] font-semibold text-rose-500">Critical</span>;
+  const { t } = useI18n();
+  if (value >= 85) return <span className="text-[10px] font-semibold text-emerald-500">{t('common.oeeWorldClass')}</span>;
+  if (value >= 70) return <span className="text-[10px] font-semibold text-blue-500">{t('common.oeeGood')}</span>;
+  if (value >= 50) return <span className="text-[10px] font-semibold text-amber-500">{t('common.oeeNeedsImprovement')}</span>;
+  return <span className="text-[10px] font-semibold text-rose-500">{t('common.oeeCritical')}</span>;
 }
 
 /* ------------------------------------------------------------------ */
@@ -459,7 +460,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         const summary = summaryRes.data;
         const trend = trendRes.data;
 
-        const sparkline = (trend || []).map((p: any) => ({
+        const sparkline = (trend || []).map((p: { date?: string; oee?: number }) => ({
           date: p.date ? p.date.slice(0, 10).slice(5) : "",
           value: p.oee ?? 0,
         }));
@@ -513,7 +514,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
       const andonRes = await advancedLeanApi.getAndonStatus();
       const andonData = andonRes.data;
       if (andonData) {
-        const activeCount = Array.isArray(andonData) ? andonData.filter((a: any) => !a.resolved_at).length : (andonData.active_count ?? 0);
+        const activeCount = Array.isArray(andonData) ? andonData.filter((a: { resolved_at?: string | null }) => !a.resolved_at).length : (andonData.active_count ?? 0);
         setKpi((prev) => ({ ...prev, activeAndon: activeCount }));
         usedDemo = false;
       }
@@ -527,21 +528,21 @@ export default function HomePage({ onNavigate }: HomePageProps) {
       try {
         const kaizenRes = await leanApi.getKaizenBoard();
         const kaizenItems = kaizenRes.data?.items || kaizenRes.data || [];
-        const sorted = [...kaizenItems].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 3);
+        const sorted = [...kaizenItems].sort((a: { created_at: string }, b: { created_at: string }) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 3);
         for (const k of sorted) {
           recentActivities.push({ id: `kaizen-${k.id}`, type: "kaizen", title: k.title || k.description || "Kaizen item", timestamp: formatRelativeTime(k.created_at, locale), icon: "kaizen" });
         }
       } catch { /* skip */ }
       try {
         const gembaRes = await advancedLeanApi.listGembaWalks();
-        const sorted = [...(gembaRes.data || [])].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 2);
+        const sorted = [...(gembaRes.data || [])].sort((a: { created_at: string }, b: { created_at: string }) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 2);
         for (const g of sorted) {
           recentActivities.push({ id: `gemba-${g.id}`, type: "gemba", title: `Gemba Walk — ${g.area || g.title || ""}`, timestamp: formatRelativeTime(g.created_at, locale), icon: "gemba" });
         }
       } catch { /* skip */ }
       try {
         const fwRes = await leanApi.listFiveWhy();
-        const sorted = [...(fwRes.data || [])].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 2);
+        const sorted = [...(fwRes.data || [])].sort((a: { created_at: string }, b: { created_at: string }) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 2);
         for (const f of sorted) {
           recentActivities.push({ id: `fw-${f.id}`, type: "five-why", title: f.problem_statement || "5 Why Analysis", timestamp: formatRelativeTime(f.created_at, locale), icon: "five-why" });
         }
@@ -571,13 +572,13 @@ export default function HomePage({ onNavigate }: HomePageProps) {
       try {
         const capaRes = await qcApi.listCAPAs({ status: "open" });
         const capas = capaRes.data || [];
-        capaOverdue = capas.filter((c: any) => c.due_date && new Date(c.due_date) < new Date()).length;
+        capaOverdue = capas.filter((c: { due_date?: string | null }) => c.due_date && new Date(c.due_date) < new Date()).length;
         if (capaOverdue === 0) capaOverdue = capas.length;
       } catch { /* skip */ }
       try {
         const kaizenRes = await leanApi.getKaizenBoard();
         const items = kaizenRes.data?.items || kaizenRes.data || [];
-        kaizenInProgress = items.filter((k: any) => k.status === "in_progress" || k.status === "doing").length;
+        kaizenInProgress = items.filter((k: { status: string }) => k.status === "in_progress" || k.status === "doing").length;
       } catch { /* skip */ }
       try {
         const ncrRes = await qcApi.listNCRs({ status: "open" });
@@ -585,9 +586,9 @@ export default function HomePage({ onNavigate }: HomePageProps) {
       } catch { /* skip */ }
       try {
         const gembaRes = await advancedLeanApi.listGembaWalks();
-        gembaFindings = (gembaRes.data || []).reduce((sum: number, g: any) => {
+        gembaFindings = (gembaRes.data || []).reduce((sum: number, g: { findings?: { status?: string; resolved?: boolean }[]; observations?: { status?: string; resolved?: boolean }[] }) => {
           const findings = g.findings || g.observations || [];
-          return sum + (Array.isArray(findings) ? findings.filter((f: any) => f.status === "open" || !f.resolved).length : 0);
+          return sum + (Array.isArray(findings) ? findings.filter((f) => f.status === "open" || !f.resolved).length : 0);
         }, 0);
       } catch { /* skip */ }
       if (capaOverdue || kaizenInProgress || ncrOpen || gembaFindings) {

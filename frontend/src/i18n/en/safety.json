@@ -93,5 +93,12 @@
   "typeNearMiss": "Near Miss",
   "typeFirstAid": "First Aid",
   "typePropertyDamage": "Property Damage",
-  "typeEnvironmental": "Environmental"
+  "typeEnvironmental": "Environmental",
+
+  "andonSafetyHoldTriggered": "Andon Safety Hold triggered on {line}",
+  "andonSafetyHoldDesc": "Production stopped. A critical safety incident requires immediate attention.",
+  "goToAndonBoard": "Go to Andon Board",
+
+  "reportSafetyIncident": "Report Safety Incident",
+  "andonIncidentPrefix": "Andon Event"
 }

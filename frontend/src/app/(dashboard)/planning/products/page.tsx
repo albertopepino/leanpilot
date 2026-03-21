@@ -2,6 +2,7 @@
 import { useState, Suspense } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
+import { useI18n } from "@/stores/useI18n";
 import { Package, ClipboardList, Loader2 } from "lucide-react";
 
 const ProductCatalog = dynamic(() => import("@/components/manufacturing/ProductCatalog"), {
@@ -23,16 +24,18 @@ function TabLoader() {
 
 type TabKey = "products" | "bom";
 
-const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
-  { key: "products", label: "Products", icon: <Package className="w-4 h-4" /> },
-  { key: "bom", label: "Bill of Materials", icon: <ClipboardList className="w-4 h-4" /> },
+const TAB_DEFS: { key: TabKey; labelKey: string; fallback: string; icon: React.ReactNode }[] = [
+  { key: "products", labelKey: "common.tabProducts", fallback: "Products", icon: <Package className="w-4 h-4" /> },
+  { key: "bom", labelKey: "common.tabBOM", fallback: "Bill of Materials", icon: <ClipboardList className="w-4 h-4" /> },
 ];
 
 function ProductsPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useI18n();
   const activeTab = (searchParams.get("tab") as TabKey) || "products";
+  const TABS = TAB_DEFS.map((td) => ({ ...td, label: t(td.labelKey) || td.fallback }));
 
   const setTab = (key: TabKey) => {
     const params = new URLSearchParams(searchParams.toString());

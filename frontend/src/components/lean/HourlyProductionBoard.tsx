@@ -185,7 +185,7 @@ export default function HourlyProductionBoard() {
         const factory = res.data;
         const factoryLines = factory?.production_lines || factory?.lines || [];
         if (Array.isArray(factoryLines) && factoryLines.length > 0) {
-          const mapped = factoryLines.map((l: any) => ({ id: l.id, name: l.name }));
+          const mapped = factoryLines.map((l: { id: number; name: string }) => ({ id: l.id, name: l.name }));
           if (!cancelled) {
             setLines(mapped);
             setSelectedLineId(mapped[0].id);
@@ -214,7 +214,7 @@ export default function HourlyProductionBoard() {
       const res = await advancedLeanApi.getHourlyView(lineId, date);
       const data = res.data;
       if (data && Array.isArray(data.slots) && data.slots.length > 0) {
-        const mapped: HourlySlot[] = data.slots.map((s: any) => ({
+        const mapped: HourlySlot[] = data.slots.map((s: { hour?: string; target?: number; actual?: number | null; notes?: string; reasonCode?: string; reason_code?: string }) => ({
           hour: s.hour ?? "00:00",
           target: s.target ?? DEFAULT_TARGET,
           actual: s.actual ?? null,
@@ -365,7 +365,7 @@ export default function HourlyProductionBoard() {
       const factory = res.data;
       const factoryLines = factory?.production_lines || factory?.lines || [];
       if (Array.isArray(factoryLines) && factoryLines.length > 0) {
-        const mapped = factoryLines.map((l: any) => ({ id: l.id, name: l.name }));
+        const mapped = factoryLines.map((l: { id: number; name: string }) => ({ id: l.id, name: l.name }));
         setLines(mapped);
         // Select the newly added line (last one)
         setSelectedLineId(mapped[mapped.length - 1].id);
@@ -908,8 +908,8 @@ export default function HourlyProductionBoard() {
           {/* ================================================================ */}
           {/* Hour-by-Hour Table                                               */}
           {/* ================================================================ */}
-          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm overflow-x-auto mobile-scroll-table">
+            <table className="w-full text-sm min-w-[800px]">
               <thead>
                 <tr className="bg-th-bg-3 text-[10px] font-bold text-th-text-2 uppercase tracking-[0.12em]">
                   <th className="p-4 text-left">{t("dashboard.hour")}</th>

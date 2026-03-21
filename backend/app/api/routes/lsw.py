@@ -134,8 +134,12 @@ async def list_completions(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    q = select(LSWCompletion).where(
-        LSWCompletion.completed_by_id == current_user.id
+    fid = require_factory(current_user)
+    q = select(LSWCompletion).join(
+        LeaderStandardWork, LSWCompletion.lsw_id == LeaderStandardWork.id
+    ).where(
+        LSWCompletion.completed_by_id == current_user.id,
+        LeaderStandardWork.factory_id == fid,
     )
     if lsw_id:
         q = q.where(LSWCompletion.lsw_id == lsw_id)

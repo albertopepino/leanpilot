@@ -404,7 +404,7 @@ export default function CILTChecklist() {
     }));
   }, []);
 
-  const updateItem = useCallback((idx: number, field: keyof NewItemForm, value: any) => {
+  const updateItem = useCallback((idx: number, field: keyof NewItemForm, value: string | number) => {
     setNewStdForm((f) => ({
       ...f,
       items: f.items.map((item, i) => (i === idx ? { ...item, [field]: value } : item)),

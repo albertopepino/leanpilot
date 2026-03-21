@@ -1,9 +1,12 @@
 "use client";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useI18n } from "@/stores/useI18n";
+import { useCompanySettings } from "@/stores/useCompanySettings";
 import { advancedLeanApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
+import ToolInfoCard from "@/components/ui/ToolInfoCard";
+import { TOOL_INFO } from "@/lib/toolInfo";
 import {
   ResponsiveContainer,
   RadarChart as ReRadarChart,
@@ -214,6 +217,7 @@ function ScoreGauge({ score, size = 160, label }: { score: number; size?: number
 
 export default function SixSAudit() {
   const { t } = useI18n();
+  const { auditLabel } = useCompanySettings();
   const { printView, exportToExcel } = useExport();
 
   // Core audit state
@@ -792,12 +796,13 @@ export default function SixSAudit() {
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6" data-print-area="true">
+      <ToolInfoCard info={TOOL_INFO["six-s"]} />
       {/* Export Toolbar */}
       <ExportToolbar
-        onPrint={() => printView(t("common.titleSixS"))}
+        onPrint={() => printView(`${auditLabel} Audit`)}
         onExportExcel={() =>
           exportToExcel({
-            title: t("common.titleSixS"),
+            title: `${auditLabel} Audit`,
             columns: [
               t("maintenance.category") || "Category",
               t("maintenance.score") || "Score",

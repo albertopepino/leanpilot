@@ -67,5 +67,12 @@
   "areaMaintenance": "Atelier maintenance",
 
   "deleteConfirm": "Supprimer cet incident ?",
-  "deleted": "Incident supprimé"
+  "deleted": "Incident supprimé",
+
+  "andonSafetyHoldTriggered": "Arrêt de sécurité Andon déclenché sur {line}",
+  "andonSafetyHoldDesc": "Production arrêtée. Un incident de sécurité critique nécessite une attention immédiate.",
+  "goToAndonBoard": "Aller au Tableau Andon",
+
+  "reportSafetyIncident": "Signaler un Incident de Securite",
+  "andonIncidentPrefix": "Evenement Andon"
 }

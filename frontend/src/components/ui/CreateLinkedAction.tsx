@@ -45,6 +45,15 @@ const MODULE_TARGETS: Record<string, TargetAction[]> = {
     { viewId: "ncr", labelKey: "crossModule.createNCR", fallback: "Create NCR", icon: "\u26D4" },
     { viewId: "capa", labelKey: "crossModule.createCAPA", fallback: "Create CAPA", icon: "\uD83D\uDEE1\uFE0F" },
   ],
+  "6s-audit": [
+    { viewId: "kaizen", labelKey: "crossModule.createKaizen", fallback: "Create Kaizen Event", icon: "\u2B50" },
+    { viewId: "five-why", labelKey: "crossModule.startFiveWhy", fallback: "Start 5-Why Analysis", icon: "\u2753" },
+  ],
+  pareto: [
+    { viewId: "five-why", labelKey: "crossModule.startFiveWhy", fallback: "Start 5-Why Analysis", icon: "\u2753" },
+    { viewId: "ishikawa", labelKey: "crossModule.startIshikawa", fallback: "Start Ishikawa Diagram", icon: "\uD83D\uDC1F" },
+    { viewId: "kaizen", labelKey: "crossModule.createKaizen", fallback: "Create Kaizen Event", icon: "\u2B50" },
+  ],
 };
 
 /* ------------------------------------------------------------------ */

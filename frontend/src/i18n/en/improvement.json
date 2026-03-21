@@ -313,6 +313,8 @@
   "noToolsYet": "No lean tool records yet. Create a VSM map, SMED analysis, or waste event to get started.",
   "backToTools": "Back to Lean Tools",
   "newRCA": "New Root Cause Analysis",
+  "linkedFrom": "Linked from",
+  "backToRCA": "Back to Root Cause Analysis",
 
   "standardizationVerification": "Standardization & Verification",
   "verificationDate": "Verification Date",
@@ -341,5 +343,26 @@
   "vsmMRP": "MRP",
   "vsmSchedule": "Schedule",
   "vsmSignal": "Signal",
-  "vsmOrder": "Order"
+  "vsmOrder": "Order",
+  "vsmLiveData": "Live Data",
+  "vsmLive": "LIVE",
+  "vsmCreateKaizen": "Create Kaizen",
+  "vsmReduceCycleTime": "Reduce Cycle Time",
+  "vsmBottleneckDesc": "Bottleneck",
+  "vsmGap": "gap",
+  "vsmOperators": "operators",
+  "vsmViewSMED": "View SMED",
+
+  "paretoPriority": "Pareto Priority",
+  "syncFromPareto": "Sync from Pareto",
+  "topDefect": "Top defect",
+  "createKaizenFromPareto": "Create Kaizen from Pareto",
+  "linkToLSW": "Link to LSW",
+  "linkToLSWHint": "When verified, the countermeasure will be added to this LSW template.",
+  "linkedToLSW": "Linked to LSW",
+  "countermeasure": "Countermeasure",
+  "countermeasurePlaceholder": "Describe the standard countermeasure...",
+  "lswUpdated": "Standard work updated from Kaizen",
+  "lswRequiredForStandardize": "Link an LSW template before standardizing this kaizen",
+  "beforeAfterPhotos": "Before / After Photos"
 }

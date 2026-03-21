@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { leanApi, adminApi } from "@/lib/api";
+import { getErrorMessage } from "@/lib/formatters";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
 import {
@@ -36,6 +37,8 @@ import {
   Cell,
   Legend,
 } from "recharts";
+import ToolInfoCard from "@/components/ui/ToolInfoCard";
+import { TOOL_INFO } from "@/lib/toolInfo";
 
 /* ─── Types ──────────────────────────────────────────────────────────── */
 
@@ -102,7 +105,7 @@ export default function SMEDTracker() {
         const res = await adminApi.getFactory();
         const data = res.data;
         const apiLines: LineOption[] =
-          (data?.lines ?? data?.production_lines ?? []).map((l: any) => ({
+          (data?.lines ?? data?.production_lines ?? []).map((l: { id: number; name: string }) => ({
             id: l.id,
             name: l.name,
           }));
@@ -248,9 +251,9 @@ export default function SMEDTracker() {
           setPotentialLoading(false);
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("SMED save failed", err);
-      setSaveError(err?.message || t("common.saveFailed"));
+      setSaveError(getErrorMessage(err, t("common.saveFailed")));
       setPotential(buildLocalPotential());
     } finally {
       setSaving(false);
@@ -334,6 +337,7 @@ export default function SMEDTracker() {
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6" data-print-area="true">
+      <ToolInfoCard info={TOOL_INFO.smed} />
       {/* ── Header & Config Card ── */}
       <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
         <div className="flex items-start justify-between gap-3 mb-5">
@@ -355,7 +359,7 @@ export default function SMEDTracker() {
                 { key: "order", header: "#", width: 5 },
                 { key: "description", header: t("improvement.stepDescription") || "Step", width: 30 },
                 { key: "phase", header: t("improvement.phase") || "Phase", width: 12 },
-                { key: "duration", header: t("improvement.duration") || "Duration", width: 12, format: (v: number) => fmtSeconds(v) },
+                { key: "duration", header: t("improvement.duration") || "Duration", width: 12, format: (v: unknown) => fmtSeconds(Number(v)) },
                 { key: "canExternalize", header: t("improvement.canExternalize") || "Can Externalize", width: 15 },
                 { key: "notes", header: t("improvement.improvementNotes") || "Improvement Notes", width: 30 },
               ],
@@ -378,7 +382,7 @@ export default function SMEDTracker() {
                 { key: "order", header: "#" },
                 { key: "description", header: t("improvement.stepDescription") || "Step" },
                 { key: "phase", header: t("improvement.phase") || "Phase" },
-                { key: "duration", header: t("improvement.duration") || "Duration", format: (v: number) => fmtSeconds(v) },
+                { key: "duration", header: t("improvement.duration") || "Duration", format: (v: unknown) => fmtSeconds(Number(v)) },
                 { key: "canExternalize", header: t("improvement.canExternalize") || "Can Externalize" },
                 { key: "notes", header: t("improvement.improvementNotes") || "Improvement Notes" },
               ],
@@ -583,10 +587,14 @@ export default function SMEDTracker() {
                 <Tooltip
                   contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-primary)', borderRadius: '8px', fontSize: 12, color: 'var(--text-primary)' }}
                   labelStyle={{ color: "var(--text-secondary)" }}
-                  formatter={(value: number, _name: string, entry: any) => [
-                    fmtSeconds(value),
-                    entry.payload.phase === "internal" ? t("improvement.internal") : t("improvement.external"),
-                  ]}
+                  formatter={(value: unknown, _name: unknown, entry: unknown) => {
+                    const v = Number(value);
+                    const e = entry as { payload?: { phase?: string } };
+                    return [
+                      fmtSeconds(v),
+                      e?.payload?.phase === "internal" ? t("improvement.internal") : t("improvement.external"),
+                    ];
+                  }}
                 />
                 <Bar dataKey="duration" radius={[0, 6, 6, 0]} maxBarSize={24}>
                   {ganttData.map((entry, idx) => (

@@ -9,7 +9,7 @@ from app.core.security import get_current_user, require_factory
 from app.models.user import User
 from app.models.factory import ProductionLine
 from app.models.lean import OEERecord
-from app.schemas.lean import OEEResponse, OEESummary
+from app.schemas.lean import OEEResponse, OEESummary, OEECalculateRequest, OEECalculateResponse
 from app.services.oee_calculator import OEECalculator
 
 
@@ -52,7 +52,7 @@ async def _verify_line_ownership(db: AsyncSession, line_id: int, factory_id: int
 @router.get("/summary/{line_id}")
 async def get_oee_summary(
     line_id: int,
-    days: int = 30,
+    days: int = Query(30, ge=1, le=365),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
@@ -64,7 +64,7 @@ async def get_oee_summary(
 @router.get("/trend/{line_id}")
 async def get_oee_trend(
     line_id: int,
-    days: int = 30,
+    days: int = Query(30, ge=1, le=365),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
@@ -73,18 +73,18 @@ async def get_oee_trend(
     return await OEECalculator.get_trend(db, line_id, days)
 
 
-@router.post("/calculate", response_model=OEEResponse)
+@router.post("/calculate", response_model=OEECalculateResponse)
 async def calculate_oee_manual(
-    planned_time_min: float,
-    run_time_min: float,
-    total_pieces: int,
-    good_pieces: int,
-    ideal_cycle_time_sec: float,
+    data: OEECalculateRequest,
     user: User = Depends(get_current_user),
 ):
     """Quick OEE calculation without storing - useful for what-if scenarios."""
     return OEECalculator.calculate_oee(
-        planned_time_min, run_time_min, total_pieces, good_pieces, ideal_cycle_time_sec
+        data.planned_time_min,
+        data.run_time_min,
+        data.total_pieces,
+        data.good_pieces,
+        data.ideal_cycle_time_sec,
     )
 
 
@@ -490,10 +490,12 @@ async def get_six_big_losses(
 async def get_oee_alerts(
     line_id: int,
     threshold_pct: float = 10.0,
+    oee_threshold: float = 75.0,
+    min_consecutive: int = 3,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    """Detect OEE drops >threshold% compared to 7-day average."""
+    """Detect OEE drops >threshold% compared to 7-day average, plus consecutive below-threshold alerts."""
     from sqlalchemy import and_
 
     fid = require_factory(user)
@@ -532,4 +534,79 @@ async def get_oee_alerts(
                 "suggest_root_cause": True,
             })
 
+    # Check consecutive records below threshold
+    recent_q = (
+        select(OEERecord.oee, OEERecord.date)
+        .where(OEERecord.production_line_id == line_id)
+        .order_by(OEERecord.date.desc())
+        .limit(max(min_consecutive + 2, 10))
+    )
+    recent_r = await db.execute(recent_q)
+    recent_records = recent_r.all()
+
+    consecutive_below = 0
+    for rec in recent_records:
+        if rec.oee < oee_threshold:
+            consecutive_below += 1
+        else:
+            break
+
+    if consecutive_below >= min_consecutive:
+        current_oee = recent_records[0].oee if recent_records else 0
+        severity_level = "critical" if current_oee < 60 else "major"
+        alerts.append({
+            "type": "oee_below_threshold",
+            "severity": severity_level,
+            "message": f"OEE below {oee_threshold}% for {consecutive_below} consecutive records",
+            "current_oee": round(current_oee, 1),
+            "threshold": oee_threshold,
+            "consecutive_count": consecutive_below,
+            "suggest_ncr": True,
+        })
+
     return {"alerts": alerts}
+
+
+from pydantic import BaseModel as PydanticBaseModel
+
+
+class OEETriggerNCRRequest(PydanticBaseModel):
+    production_line_id: int
+    oee_value: float
+    threshold: float = 75.0
+    consecutive_days: int = 3
+
+
+@router.post("/trigger-ncr")
+async def trigger_ncr_from_oee(
+    data: OEETriggerNCRRequest,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Create an NCR when OEE is below threshold for consecutive days."""
+    from app.services.qc_service import NCRService
+
+    fid = require_factory(user)
+    await _verify_line_ownership(db, data.production_line_id, fid)
+
+    severity = "major" if data.oee_value < 60 else "minor"
+    title = f"OEE Below Threshold: {data.oee_value:.1f}% for {data.consecutive_days} days"
+    description = (
+        f"OEE has been below the {data.threshold}% threshold for {data.consecutive_days} "
+        f"consecutive records on production line {data.production_line_id}. "
+        f"Current OEE: {data.oee_value:.1f}%. Investigation required."
+    )
+
+    ncr = await NCRService.create(db, fid, user.id, {
+        "production_line_id": data.production_line_id,
+        "title": title,
+        "description": description,
+        "severity": severity,
+    })
+
+    return {
+        "ncr_id": ncr.id,
+        "ncr_number": ncr.ncr_number,
+        "severity": severity,
+        "title": title,
+    }

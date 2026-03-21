@@ -35,6 +35,15 @@ const VIEW_TO_ROUTE: Record<string, string> = {
   tpm: "/improvement/tpm",
   "six-s": "/improvement/six-s",
 
+  // ── Portal (superadmin) ──
+  "portal-clients": "/portal",
+  portal: "/portal",
+
+  // ── Corporate ──
+  "corporate-dashboard": "/corporate",
+  corporate: "/corporate",
+  "site-management": "/system/admin",
+
   // ── System ──
   admin: "/system/admin",
   settings: "/system/settings",
@@ -46,6 +55,7 @@ const VIEW_TO_ROUTE: Record<string, string> = {
   // ── Quality (additional) ──
   "poka-yoke": "/quality/poka-yoke",
   spc: "/quality/spc",
+  fmea: "/quality/fmea",
 
   // ── Planning (additional) ──
   kanban: "/planning/kanban",
@@ -59,7 +69,7 @@ const VIEW_TO_ROUTE: Record<string, string> = {
   ncr: "/quality",
   capa: "/quality",
   defects: "/quality",
-  lsw: "/improvement/kaizen",
+  lsw: "/improvement/kaizen?tab=lsw",
   "audit-scheduler": "/system/settings",
   assessment: "/system/settings",
   copilot: "/system/settings",

@@ -34,6 +34,8 @@ import {
   CheckCircle2,
   RotateCcw,
 } from "lucide-react";
+import ToolInfoCard from "@/components/ui/ToolInfoCard";
+import { TOOL_INFO } from "@/lib/toolInfo";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -486,6 +488,7 @@ export default function A3Report() {
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6 print:max-w-none print:m-0 print:p-0" data-print-area="true" role="region" aria-label="A3 Report">
+      <ToolInfoCard info={TOOL_INFO.a3} />
       {/* ---------- Feedback toast ---------- */}
       {feedback && (
         <div

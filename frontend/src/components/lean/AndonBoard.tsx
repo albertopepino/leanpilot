@@ -1,7 +1,11 @@
 "use client";
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import { useI18n } from "@/stores/useI18n";
 import { advancedLeanApi, adminApi } from "@/lib/api";
+import DisplayModeWrapper from "@/components/ui/DisplayModeWrapper";
+import ToolInfoCard from "@/components/ui/ToolInfoCard";
+import { TOOL_INFO } from "@/lib/toolInfo";
 import {
   Activity,
   AlertTriangle,
@@ -15,6 +19,7 @@ import {
   PauseCircle,
   RefreshCw,
   Search,
+  Shield,
   ShieldAlert,
 
   Timer,
@@ -205,8 +210,23 @@ const STATUS_ICONS: Record<string, React.ElementType> = {
 
 /* =================================================================== */
 
-export default function AndonBoard() {
+/** Build a URL to SafetyTracker log form with pre-filled Andon data */
+function buildSafetyReportUrl(ev: AndonEvent): string {
+  const params = new URLSearchParams();
+  params.set("tab", "safety-cross");
+  params.set("andon_view", "log");
+  if (ev.description) params.set("andon_desc", ev.description);
+  if (ev.line_name) params.set("andon_line", ev.line_name);
+  if (ev.production_line_id) params.set("andon_line_id", String(ev.production_line_id));
+  else if (ev.line_id) params.set("andon_line_id", String(ev.line_id));
+  if (ev.created_at) params.set("andon_date", ev.created_at.slice(0, 10));
+  params.set("andon_event_id", String(ev.id));
+  return `/operations/safety?${params.toString()}`;
+}
+
+function AndonBoardInner() {
   const { t } = useI18n();
+  const router = useRouter();
   const [lines, setLines] = useState<ProductionLine[]>([]);
   const [events, setEvents] = useState<AndonEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -242,8 +262,8 @@ export default function AndonBoard() {
 
       setError(null);
       setLastRefresh(new Date());
-    } catch (err: any) {
-      setError(err?.message ?? "Failed to load data");
+    } catch (err: unknown) {
+      setError(t("common.failedToLoadData"));
     } finally {
       setLoading(false);
     }
@@ -253,6 +273,13 @@ export default function AndonBoard() {
     fetchData();
     intervalRef.current = setInterval(fetchData, 15000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [fetchData]);
+
+  // Listen for display-mode-refresh events to re-fetch data
+  useEffect(() => {
+    const handler = () => { fetchData(); };
+    window.addEventListener("display-mode-refresh", handler);
+    return () => window.removeEventListener("display-mode-refresh", handler);
   }, [fetchData]);
 
   // Force tick every 15s to update elapsed & escalation timers
@@ -342,6 +369,7 @@ export default function AndonBoard() {
       ref={containerRef}
       className="min-h-screen transition-colors duration-300 bg-th-bg text-th-text"
     >
+      <ToolInfoCard info={TOOL_INFO.andon} />
       {/* ──────── HEADER ──────── */}
       <div className="sticky top-0 z-20 border-b px-4 py-3 bg-th-card/95 border-th-border backdrop-blur">
         <div className="max-w-[1800px] mx-auto flex flex-wrap items-center justify-between gap-3">
@@ -484,6 +512,17 @@ export default function AndonBoard() {
                         {card.latestEvent.operator}
                       </div>
                     )}
+
+                    {/* Report Safety Incident button — shown on all non-green/non-gray cards */}
+                    {card.latestEvent && card.color !== "green" && card.color !== "gray" && (
+                      <button
+                        onClick={() => router.push(buildSafetyReportUrl(card.latestEvent!))}
+                        className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-colors bg-th-bg border-th-border text-th-text hover:bg-th-bg-hover"
+                      >
+                        <Shield className="w-3.5 h-3.5" />
+                        {t("safety.reportSafetyIncident")}
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -525,6 +564,16 @@ export default function AndonBoard() {
                         {" "}
                         {new Date(ev.created_at).toLocaleDateString([], { day: "2-digit", month: "short" })}
                       </span>
+                      {!ev.resolved_at && (
+                        <button
+                          onClick={() => router.push(buildSafetyReportUrl(ev))}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium border transition-colors bg-th-bg border-th-border text-th-text hover:bg-th-bg-hover whitespace-nowrap"
+                          title={t("safety.reportSafetyIncident")}
+                        >
+                          <Shield className="w-3 h-3" />
+                          <span className="hidden md:inline">{t("safety.reportSafetyIncident")}</span>
+                        </button>
+                      )}
                       {ev.resolved_at && (
                         <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
                           {t("common.andonResolved")}
@@ -550,5 +599,22 @@ export default function AndonBoard() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function AndonBoard() {
+  return (
+    <Suspense fallback={null}>
+      <AndonBoardWrapped />
+    </Suspense>
+  );
+}
+
+function AndonBoardWrapped() {
+  const { t } = useI18n();
+  return (
+    <DisplayModeWrapper title={t("common.andonLiveBoard") || "Andon Board"} refreshInterval={15}>
+      <AndonBoardInner />
+    </DisplayModeWrapper>
   );
 }

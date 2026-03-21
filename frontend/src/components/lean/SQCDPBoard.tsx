@@ -1,10 +1,15 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import { useI18n } from '@/stores/useI18n';
-import { Shield, CheckCircle, DollarSign, Truck, Users, Plus, Calendar, ChevronLeft, ChevronRight, MessageSquare, AlertTriangle, Grid3X3, LayoutList, ArrowUpCircle } from 'lucide-react';
+import { Shield, CheckCircle, DollarSign, Truck, Users, Plus, Calendar, ChevronLeft, ChevronRight, MessageSquare, AlertTriangle, Grid3X3, LayoutList, ArrowUpCircle, FileWarning, Activity, Search, Lightbulb, Gauge } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import PageHeader from '@/components/ui/PageHeader';
 import { useToast } from '@/stores/useToast';
+import { sqcdpApi } from '@/lib/api';
+import DisplayModeWrapper from '@/components/ui/DisplayModeWrapper';
+import ToolInfoCard from "@/components/ui/ToolInfoCard";
+import { TOOL_INFO } from "@/lib/toolInfo";
 
 interface SQCDPEntry {
   id: number;
@@ -51,9 +56,10 @@ const STATUS_BG: Record<string, string> = {
   red: 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800',
 };
 
-export default function SQCDPBoard() {
+function SQCDPBoardInner() {
   const { t } = useI18n();
   const toast = useToast();
+  const router = useRouter();
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [tierLevel, setTierLevel] = useState(1);
   const [entries, setEntries] = useState<SQCDPEntry[]>([]);
@@ -70,6 +76,13 @@ export default function SQCDPBoard() {
     fetchEntries();
   }, [date, tierLevel]);
 
+  // Listen for display-mode-refresh events to re-fetch data
+  useEffect(() => {
+    const handler = () => { fetchEntries(); };
+    window.addEventListener("display-mode-refresh", handler);
+    return () => window.removeEventListener("display-mode-refresh", handler);
+  }, [date, tierLevel]);
+
   // Fetch 30-day data for monthly view
   useEffect(() => {
     if (viewMode !== 'monthly') return;
@@ -78,17 +91,25 @@ export default function SQCDPBoard() {
       setMonthlyLoading(true);
       const result: Record<string, SQCDPEntry[]> = {};
       try {
-        const { default: api } = await import('@/lib/api');
+        const dates: string[] = [];
         for (let i = 29; i >= 0; i--) {
           const d = new Date(date);
           d.setDate(d.getDate() - i);
-          const dateStr = d.toISOString().split('T')[0];
-          try {
-            const res = await api.get('/sqcdp/entries', { params: { target_date: dateStr, tier_level: tierLevel } });
-            if (!cancelled) result[dateStr] = res.data || [];
-          } catch { if (!cancelled) result[dateStr] = []; }
+          dates.push(d.toISOString().split('T')[0]);
         }
-        if (!cancelled) setMonthlyData(result);
+        const responses = await Promise.all(
+          dates.map(dateStr =>
+            sqcdpApi.listEntries({ target_date: dateStr, tier_level: tierLevel })
+              .then(res => ({ dateStr, data: res.data || [] }))
+              .catch(() => ({ dateStr, data: [] as SQCDPEntry[] }))
+          )
+        );
+        if (!cancelled) {
+          for (const { dateStr, data } of responses) {
+            result[dateStr] = data;
+          }
+          setMonthlyData(result);
+        }
       } catch {
         toast.error(t('sqcdp.loadFailed') || 'Failed to load monthly data');
       }
@@ -129,8 +150,7 @@ export default function SQCDPBoard() {
   async function fetchEntries() {
     setLoading(true);
     try {
-      const { default: api } = await import('@/lib/api');
-      const res = await api.get('/sqcdp/entries', { params: { target_date: date, tier_level: tierLevel } });
+      const res = await sqcdpApi.listEntries({ target_date: date, tier_level: tierLevel });
       setEntries(Array.isArray(res.data) ? res.data : []);
     } catch {
       setEntries([]);
@@ -151,10 +171,9 @@ export default function SQCDPBoard() {
 
   async function saveEntry(category: string) {
     try {
-      const { default: api } = await import('@/lib/api');
       const existing = getEntry(category);
       if (existing) {
-        await api.patch(`/sqcdp/entries/${existing.id}`, {
+        await sqcdpApi.updateEntry(existing.id, {
           status: formData.status,
           metric_value: formData.metric_value ? parseFloat(formData.metric_value) : null,
           target_value: formData.target_value ? parseFloat(formData.target_value) : null,
@@ -164,7 +183,7 @@ export default function SQCDPBoard() {
           action_due_date: formData.action_due_date || null,
         });
       } else {
-        await api.post('/sqcdp/entries', {
+        await sqcdpApi.createEntry({
           date,
           category,
           tier_level: tierLevel,
@@ -186,8 +205,7 @@ export default function SQCDPBoard() {
 
   async function saveMeeting(notes: string, attendees: string) {
     try {
-      const { default: api } = await import('@/lib/api');
-      await api.post('/sqcdp/meetings', {
+      await sqcdpApi.createMeeting({
         date,
         tier_level: tierLevel,
         duration_min: 15,
@@ -240,6 +258,7 @@ export default function SQCDPBoard() {
 
   return (
     <div className="p-4 md:p-6 space-y-6">
+      <ToolInfoCard info={TOOL_INFO.sqcdp} />
       <PageHeader titleKey="sqcdp.title" subtitleKey="sqcdp.subtitle" icon={Shield} />
 
       {/* Controls */}
@@ -406,21 +425,84 @@ export default function SQCDPBoard() {
           const status = entry?.status || 'green';
           const Icon = cat.icon;
           return (
-            <button key={cat.key} onClick={() => openEdit(cat.key)} className={`relative p-4 rounded-xl border-2 text-left transition-all hover:shadow-md ${STATUS_BG[status]}`}>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Icon size={18} className="text-th-text-2" />
-                  <span className="text-sm font-bold uppercase tracking-wide text-th-text">{t(cat.labelKey)}</span>
+            <div key={cat.key} className="space-y-1.5">
+              <button onClick={() => openEdit(cat.key)} className={`relative w-full p-4 rounded-xl border-2 text-left transition-all hover:shadow-md ${STATUS_BG[status]}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Icon size={18} className="text-th-text-2" />
+                    <span className="text-sm font-bold uppercase tracking-wide text-th-text">{t(cat.labelKey)}</span>
+                  </div>
+                  <div className={`w-4 h-4 rounded-full ${STATUS_COLORS[status]}`} />
                 </div>
-                <div className={`w-4 h-4 rounded-full ${STATUS_COLORS[status]}`} />
-              </div>
-              {entry?.metric_value != null && (
-                <div className="text-2xl font-bold text-th-text">{entry.metric_value}{entry.target_value ? <span className="text-sm font-normal text-th-text-3"> / {entry.target_value}</span> : null}</div>
+                {entry?.metric_value != null && (
+                  <div className="text-2xl font-bold text-th-text">{entry.metric_value}{entry.target_value ? <span className="text-sm font-normal text-th-text-3"> / {entry.target_value}</span> : null}</div>
+                )}
+                {entry?.comment && <p className="text-xs text-th-text-3 mt-2 line-clamp-2">{entry.comment}</p>}
+                {entry?.action_required && <AlertTriangle size={14} className="absolute top-3 right-8 text-amber-500" />}
+                {!entry && <p className="text-xs text-th-text-3 italic mt-2">{t('sqcdp.clickToAdd') || 'Click to add entry'}</p>}
+              </button>
+              {/* Category-specific cross-tool navigation for RED/AMBER entries */}
+              {entry && (status === 'red' || status === 'amber') && (
+                <div className="flex flex-wrap gap-1 px-1">
+                  {/* Safety → Safety Hub & Incidents */}
+                  {cat.key === 'safety' && (
+                    <button onClick={() => router.push('/operations/safety')}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 hover:bg-red-500/20 transition">
+                      <Shield className="w-2.5 h-2.5" /> {t('sqcdp.openSafety')}
+                    </button>
+                  )}
+                  {/* Quality → NCR & SPC */}
+                  {cat.key === 'quality' && (
+                    <>
+                      <button onClick={() => router.push('/quality')}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 hover:bg-red-500/20 transition">
+                        <FileWarning className="w-2.5 h-2.5" /> {t('sqcdp.openNCR')}
+                      </button>
+                      <button onClick={() => router.push('/quality/spc')}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
+                        <Activity className="w-2.5 h-2.5" /> {t('sqcdp.viewSPC')}
+                      </button>
+                    </>
+                  )}
+                  {/* Cost → OEE & Waste Tracker */}
+                  {cat.key === 'cost' && (
+                    <>
+                      <button onClick={() => router.push('/operations/oee')}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition">
+                        <Gauge className="w-2.5 h-2.5" /> {t('sqcdp.viewOEE')}
+                      </button>
+                      <button onClick={() => router.push('/operations/waste')}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 transition">
+                        <AlertTriangle className="w-2.5 h-2.5" /> {t('sqcdp.viewWaste')}
+                      </button>
+                    </>
+                  )}
+                  {/* Delivery → Production tracking */}
+                  {cat.key === 'delivery' && (
+                    <button onClick={() => router.push('/operations/production')}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition">
+                      <Truck className="w-2.5 h-2.5" /> {t('sqcdp.viewProduction')}
+                    </button>
+                  )}
+                  {/* People → Shift handover */}
+                  {cat.key === 'people' && (
+                    <button onClick={() => router.push('/operations/shift-handover')}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 hover:bg-purple-500/20 transition">
+                      <Users className="w-2.5 h-2.5" /> {t('sqcdp.viewHandover')}
+                    </button>
+                  )}
+                  {/* Common: 5-Why and Kaizen always available */}
+                  <button onClick={() => router.push('/improvement/root-cause')}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition">
+                    <Search className="w-2.5 h-2.5" /> {t('sqcdp.startFiveWhy')}
+                  </button>
+                  <button onClick={() => router.push('/improvement/kaizen')}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition">
+                    <Lightbulb className="w-2.5 h-2.5" /> {t('sqcdp.createKaizen')}
+                  </button>
+                </div>
               )}
-              {entry?.comment && <p className="text-xs text-th-text-3 mt-2 line-clamp-2">{entry.comment}</p>}
-              {entry?.action_required && <AlertTriangle size={14} className="absolute top-3 right-8 text-amber-500" />}
-              {!entry && <p className="text-xs text-th-text-3 italic mt-2">{t('sqcdp.clickToAdd') || 'Click to add entry'}</p>}
-            </button>
+            </div>
           );
         })}
       </div>
@@ -470,16 +552,16 @@ export default function SQCDPBoard() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-th-text-3 block mb-1">{t('common.actual') || 'Actual'}</label>
-                <input type="number" value={formData.metric_value} onChange={e => setFormData(p => ({ ...p, metric_value: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm" />
+                <input type="number" value={formData.metric_value} onChange={e => setFormData(p => ({ ...p, metric_value: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-input text-th-text text-sm" />
               </div>
               <div>
                 <label className="text-xs text-th-text-3 block mb-1">{t('common.target') || 'Target'}</label>
-                <input type="number" value={formData.target_value} onChange={e => setFormData(p => ({ ...p, target_value: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm" />
+                <input type="number" value={formData.target_value} onChange={e => setFormData(p => ({ ...p, target_value: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-input text-th-text text-sm" />
               </div>
             </div>
             <div>
               <label className="text-xs text-th-text-3 block mb-1">{t('common.notes') || 'Comment'}</label>
-              <textarea value={formData.comment} onChange={e => setFormData(p => ({ ...p, comment: e.target.value }))} rows={2} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm" />
+              <textarea value={formData.comment} onChange={e => setFormData(p => ({ ...p, comment: e.target.value }))} rows={2} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-input text-th-text text-sm" />
             </div>
             <label className="flex items-center gap-2 text-sm text-th-text">
               <input type="checkbox" checked={formData.action_required} onChange={e => setFormData(p => ({ ...p, action_required: e.target.checked }))} className="rounded" />
@@ -487,8 +569,8 @@ export default function SQCDPBoard() {
             </label>
             {formData.action_required && (
               <div className="grid grid-cols-2 gap-3">
-                <input placeholder={t('sqcdp.owner') || 'Owner'} value={formData.action_owner} onChange={e => setFormData(p => ({ ...p, action_owner: e.target.value }))} className="px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm" />
-                <input type="date" value={formData.action_due_date} onChange={e => setFormData(p => ({ ...p, action_due_date: e.target.value }))} className="px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm" />
+                <input placeholder={t('sqcdp.owner') || 'Owner'} value={formData.action_owner} onChange={e => setFormData(p => ({ ...p, action_owner: e.target.value }))} className="px-3 py-2 rounded-lg border border-th-border bg-th-input text-th-text text-sm" />
+                <input type="date" value={formData.action_due_date} onChange={e => setFormData(p => ({ ...p, action_due_date: e.target.value }))} className="px-3 py-2 rounded-lg border border-th-border bg-th-input text-th-text text-sm" />
               </div>
             )}
             <div className="flex gap-2 pt-2">
@@ -507,6 +589,17 @@ export default function SQCDPBoard() {
   );
 }
 
+export default function SQCDPBoard() {
+  const { t } = useI18n();
+  return (
+    <Suspense fallback={null}>
+      <DisplayModeWrapper title={t('common.titleSQCDP') || 'SQCDP Board'} refreshInterval={30}>
+        <SQCDPBoardInner />
+      </DisplayModeWrapper>
+    </Suspense>
+  );
+}
+
 function MeetingModal({ onClose, onSave, t }: { onClose: () => void; onSave: (notes: string, attendees: string) => void; t: (k: string) => string }) {
   const [notes, setNotes] = useState('');
   const [attendees, setAttendees] = useState('');
@@ -516,11 +609,11 @@ function MeetingModal({ onClose, onSave, t }: { onClose: () => void; onSave: (no
         <h3 className="text-lg font-bold text-th-text">{t('sqcdp.logMeeting') || 'Log Tier Meeting'}</h3>
         <div>
           <label className="text-xs text-th-text-3 block mb-1">{t('sqcdp.attendees') || 'Attendees'}</label>
-          <input type="number" value={attendees} onChange={e => setAttendees(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm" />
+          <input type="number" value={attendees} onChange={e => setAttendees(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-input text-th-text text-sm" />
         </div>
         <div>
           <label className="text-xs text-th-text-3 block mb-1">{t('common.notes') || 'Notes'}</label>
-          <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm" />
+          <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-input text-th-text text-sm" />
         </div>
         <div className="flex gap-2">
           <button onClick={onClose} className="flex-1 py-2 rounded-lg border border-th-border text-th-text text-sm hover:bg-th-bg-hover">{t('common.cancel') || 'Cancel'}</button>

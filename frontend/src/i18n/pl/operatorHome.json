@@ -1,0 +1,23 @@
+{
+  "myShift": "Moja Zmiana",
+  "shiftProgress": "Postęp zmiany",
+  "remaining": "pozostało",
+  "noActiveShift": "Nie wykryto aktywnej zmiany",
+  "quickActions": "Szybkie Akcje",
+  "logOutput": "Zarejestruj Produkcję",
+  "flagIssue": "Zgłoś Problem",
+  "safetyCheck": "Kontrola BHP",
+  "suggestImprovement": "Zaproponuj Ulepszenie",
+  "alerts": "alerty",
+  "activeAlerts": "aktywne alerty",
+  "tapToView": "Dotknij aby zobaczyć tablicę Andon",
+  "handoverPending": "Przekazanie zmiany oczekuje",
+  "reviewAndAcknowledge": "Sprawdź i potwierdź",
+  "allClear": "Wszystko OK — brak alertów i oczekujących akcji",
+  "noLines": "Brak skonfigurowanych linii produkcyjnych",
+  "statusRunning": "Pracuje",
+  "statusChangeover": "Przezbrojenie",
+  "statusStopped": "Zatrzymana",
+  "statusBreakdown": "Awaria",
+  "statusIdle": "Bezczynna"
+}

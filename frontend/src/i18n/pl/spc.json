@@ -61,5 +61,11 @@
 
   "outOfControl": "Punkty Poza Kontrolą",
   "rule": "Reguła",
-  "ruleDescription": "Opis"
+  "ruleDescription": "Opis",
+
+  "createNCR": "Utworz NCR",
+  "ncrCreatedFromSPC": "NCR utworzona z naruszenia SPC",
+  "ncrCreateFailed": "Nie udalo sie utworzyc NCR",
+  "selectLineForNCR": "Wybierz linie produkcyjna do utworzenia NCR",
+  "investigate": "Zbadaj"
 }

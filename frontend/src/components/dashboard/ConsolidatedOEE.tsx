@@ -66,6 +66,7 @@ function DonutGauge({ value, size = 110, label }: { value: number; size?: number
 
   return (
     <div className="flex flex-col items-center">
+      <div className="relative">
       <svg width={size} height={size} className="transform -rotate-90">
         <circle cx={size / 2} cy={size / 2} r={r} fill="none"
           className="stroke-th-border" strokeWidth={8} />
@@ -73,8 +74,9 @@ function DonutGauge({ value, size = 110, label }: { value: number; size?: number
           stroke={color} strokeWidth={8}
           strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" />
       </svg>
-      <div className="absolute flex flex-col items-center justify-center" style={{ width: size, height: size }}>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className={`text-xl font-bold ${oeeColor(value)}`}>{value.toFixed(1)}%</span>
+      </div>
       </div>
       <span className="text-xs font-medium text-th-text-2 mt-1">{label}</span>
     </div>
@@ -142,9 +144,9 @@ export default function ConsolidatedOEE() {
       setLines(summaryRes.data.lines || []);
       setFactorySummary(summaryRes.data.factory_summary || null);
       setTrend(trendRes.data || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Consolidated OEE error:", err);
-      setError(err?.response?.data?.detail || "Failed to load data");
+      setError(t("common.failedToLoadData"));
       setFactorySummary(null);
       setLines([]);
       setTrend([]);
@@ -174,17 +176,17 @@ export default function ConsolidatedOEE() {
 
   const trendChart = useMemo(() => {
     if (trend.length < 2) return null;
-    const maxOee = Math.max(...trend.map(t => t.oee), 100);
-    const minOee = Math.min(...trend.map(t => t.oee), 0);
+    const maxOee = Math.max(...trend.map(pt => pt.oee), 100);
+    const minOee = Math.min(...trend.map(pt => pt.oee), 0);
     const range = maxOee - minOee || 1;
 
     function toY(v: number) { return chartH - pad - ((v - minOee) / range) * (chartH - pad * 2); }
     function toX(i: number) { return pad + (i / (trend.length - 1)) * (chartW - pad * 2); }
 
-    const oeePoints = trend.map((t, i) => `${toX(i)},${toY(t.oee)}`).join(" ");
-    const availPoints = trend.map((t, i) => `${toX(i)},${toY(t.availability)}`).join(" ");
-    const perfPoints = trend.map((t, i) => `${toX(i)},${toY(t.performance)}`).join(" ");
-    const qualPoints = trend.map((t, i) => `${toX(i)},${toY(t.quality)}`).join(" ");
+    const oeePoints = trend.map((pt, i) => `${toX(i)},${toY(pt.oee)}`).join(" ");
+    const availPoints = trend.map((pt, i) => `${toX(i)},${toY(pt.availability)}`).join(" ");
+    const perfPoints = trend.map((pt, i) => `${toX(i)},${toY(pt.performance)}`).join(" ");
+    const qualPoints = trend.map((pt, i) => `${toX(i)},${toY(pt.quality)}`).join(" ");
 
     // World class line at 85%
     const wcY = toY(85);
@@ -208,11 +210,11 @@ export default function ConsolidatedOEE() {
           className="text-[9px] font-medium" fill="#22c55e">WC 85%</text>
 
         {/* X-axis labels */}
-        {trend.filter((_, i) => i % Math.max(1, Math.floor(trend.length / 8)) === 0).map((t, idx) => {
-          const origIdx = trend.indexOf(t);
+        {trend.filter((_, i) => i % Math.max(1, Math.floor(trend.length / 8)) === 0).map((pt, idx) => {
+          const origIdx = trend.indexOf(pt);
           return (
             <text key={idx} x={toX(origIdx)} y={chartH - 8} textAnchor="middle"
-              className="fill-th-text-3 text-[9px]">{formatDate(t.date)}</text>
+              className="fill-th-text-3 text-[9px]">{formatDate(pt.date)}</text>
           );
         })}
 
@@ -223,8 +225,8 @@ export default function ConsolidatedOEE() {
         <polyline points={oeePoints} fill="none" stroke="#6366f1" strokeWidth={2.5} strokeLinecap="round" />
 
         {/* Data dots on OEE line */}
-        {trend.length <= 31 && trend.map((t, i) => (
-          <circle key={i} cx={toX(i)} cy={toY(t.oee)} r={3} fill="#6366f1" />
+        {trend.length <= 31 && trend.map((pt, i) => (
+          <circle key={i} cx={toX(i)} cy={toY(pt.oee)} r={3} fill="#6366f1" />
         ))}
       </svg>
     );
@@ -357,17 +359,17 @@ export default function ConsolidatedOEE() {
                 <div className="bg-th-bg-3 rounded-xl p-3 text-center">
                   <div className="text-2xl font-bold text-th-text">{fs.avg_availability.toFixed(1)}%</div>
                   <div className="text-xs text-th-text-2">{t("consolidated.availability") || "Availability"}</div>
-                  <Sparkline data={trend.map(t => t.availability)} color="#a78bfa" width={120} height={30} />
+                  <Sparkline data={trend.map(pt => pt.availability)} color="#a78bfa" width={120} height={30} />
                 </div>
                 <div className="bg-th-bg-3 rounded-xl p-3 text-center">
                   <div className="text-2xl font-bold text-th-text">{fs.avg_performance.toFixed(1)}%</div>
                   <div className="text-xs text-th-text-2">{t("consolidated.performance") || "Performance"}</div>
-                  <Sparkline data={trend.map(t => t.performance)} color="#f59e0b" width={120} height={30} />
+                  <Sparkline data={trend.map(pt => pt.performance)} color="#f59e0b" width={120} height={30} />
                 </div>
                 <div className="bg-th-bg-3 rounded-xl p-3 text-center">
                   <div className="text-2xl font-bold text-th-text">{fs.avg_quality.toFixed(1)}%</div>
                   <div className="text-xs text-th-text-2">{t("consolidated.quality") || "Quality"}</div>
-                  <Sparkline data={trend.map(t => t.quality)} color="#06b6d4" width={120} height={30} />
+                  <Sparkline data={trend.map(pt => pt.quality)} color="#06b6d4" width={120} height={30} />
                 </div>
                 <div className="bg-th-bg-3 rounded-xl p-3 text-center">
                   <div className="text-2xl font-bold text-th-text">{(fs.total_downtime_min / 60).toFixed(1)}h</div>

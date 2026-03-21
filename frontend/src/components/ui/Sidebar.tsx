@@ -8,37 +8,45 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import ThemeToggle from "./ThemeToggle";
 import Logo from "./Logo";
 import { useCompanyBranding } from "@/stores/useCompanyBranding";
+import { useCompanySettings } from "@/stores/useCompanySettings";
 import {
+  Activity,
+  AlertCircle,
+  ArrowLeftRight,
   BarChart3,
+  Briefcase,
+  Building2,
+  CalendarCheck,
+  ChevronDown,
+  ChevronRight,
   Clock,
   FileSpreadsheet,
   Footprints,
   Gauge,
+  Globe,
   HelpCircle,
+  Kanban,
   LayoutDashboard,
   Lightbulb,
+  LineChart,
+  LogOut,
+  Menu,
   Package,
   Settings,
   Shield,
+  ShieldAlert,
   ShieldCheck,
   Smartphone,
   Sparkles,
+  Timer,
+  TrendingUp,
   Users,
   Wrench,
-  Zap,
-  ClipboardList,
-  LogOut,
-  ChevronDown,
-  ChevronRight,
-  Menu,
   X,
-  Kanban,
-  ShieldAlert,
-  LineChart,
-  Timer,
-  ArrowLeftRight,
+  Zap,
   type LucideIcon,
 } from "lucide-react";
+import { useSite } from "@/stores/useSite";
 
 /* ─── Types ─── */
 interface SidebarProps {
@@ -67,106 +75,143 @@ interface NavSection {
   items: NavItem[];
 }
 
-/* ─── Workflow-oriented navigation sections ─── */
+/* ─── Corporate section (conditionally shown) ─── */
+const corporateSection: NavSection = {
+  key: "corporate",
+  titleKey: "common.navCorporate",
+  fallbackTitle: "Corporate",
+  icon: Globe,
+  color: "blue",
+  dotColor: "bg-blue-500",
+  items: [
+    { id: "corporate-dashboard", labelKey: "dashboard.corporateTitle", icon: Globe, href: "/corporate" },
+    { id: "site-management", labelKey: "common.navSiteManagement", icon: Building2, href: "/system/admin" },
+  ],
+};
+
+/* ─── Portal section (superadmin only) ─── */
+const portalSection: NavSection = {
+  key: "portal",
+  titleKey: "common.navPortal",
+  fallbackTitle: "Portal",
+  icon: Shield,
+  color: "purple",
+  dotColor: "bg-purple-500",
+  items: [
+    { id: "portal-clients", labelKey: "portal.title", icon: Building2, href: "/portal" },
+  ],
+};
+
+/* ─── Flow-based navigation: Daily → Monitor → Respond → Improve → Manage ─── */
 const sections: NavSection[] = [
   {
-    key: "operations",
-    titleKey: "common.navOperations",
-    fallbackTitle: "Operations",
-    icon: LayoutDashboard,
-    color: "orange",
-    dotColor: "bg-orange-500",
+    key: "daily",
+    titleKey: "common.navDaily",
+    fallbackTitle: "Daily",
+    icon: CalendarCheck,
+    color: "emerald",
+    dotColor: "bg-emerald-500",
     items: [
       { id: "home", labelKey: "common.navDashboard", icon: LayoutDashboard, href: "/operations/home" },
       { id: "safety", labelKey: "common.navSafety", icon: Shield, href: "/operations/safety" },
-      { id: "shopfloor", labelKey: "common.navShopFloor", icon: Smartphone, href: "/operations/shopfloor" },
       { id: "sqcdp", labelKey: "common.navSQCDP", icon: BarChart3, href: "/operations/sqcdp" },
       { id: "production", labelKey: "common.navProductionTracking", icon: Clock, href: "/operations/production" },
-      { id: "andon", labelKey: "common.navAndon", icon: Zap, href: "/operations/andon" },
-      { id: "oee", labelKey: "common.navOEE", icon: Gauge, href: "/operations/oee" },
       { id: "handover", labelKey: "common.navHandover", icon: ArrowLeftRight, href: "/operations/handover" },
     ],
   },
   {
-    key: "quality",
-    titleKey: "common.navQuality",
-    fallbackTitle: "Quality",
-    icon: ShieldCheck,
-    color: "emerald",
-    dotColor: "bg-emerald-500",
-    items: [
-      { id: "quality", labelKey: "common.navQualityDashboard", icon: ShieldCheck, href: "/quality" },
-      { id: "poka-yoke", labelKey: "common.navPokaYoke", icon: ShieldAlert, href: "/quality/poka-yoke" },
-      { id: "spc", labelKey: "common.navSPC", icon: LineChart, href: "/quality/spc" },
-    ],
-  },
-  {
-    key: "planning",
-    titleKey: "common.navPlanning",
-    fallbackTitle: "Planning",
-    icon: ClipboardList,
+    key: "monitor",
+    titleKey: "common.navMonitor",
+    fallbackTitle: "Monitor",
+    icon: Activity,
     color: "blue",
     dotColor: "bg-blue-500",
     items: [
-      { id: "orders", labelKey: "common.navOrders", icon: ClipboardList, href: "/planning/orders" },
-      { id: "products", labelKey: "common.navProducts", icon: Package, href: "/planning/products" },
-      { id: "kanban", labelKey: "common.navKanban", icon: Kanban, href: "/planning/kanban" },
+      { id: "oee", labelKey: "common.navOEE", icon: Gauge, href: "/operations/oee" },
+      { id: "andon", labelKey: "common.navAndon", icon: Zap, href: "/operations/andon" },
+      { id: "spc", labelKey: "common.navSPC", icon: LineChart, href: "/quality/spc" },
+      { id: "shopfloor", labelKey: "common.navShopFloor", icon: Smartphone, href: "/operations/shopfloor" },
     ],
   },
   {
-    key: "improvement",
-    titleKey: "common.navImprovement",
-    fallbackTitle: "Improvement",
-    icon: Lightbulb,
+    key: "respond",
+    titleKey: "common.navRespond",
+    fallbackTitle: "Respond",
+    icon: AlertCircle,
+    color: "rose",
+    dotColor: "bg-rose-500",
+    items: [
+      { id: "quality", labelKey: "common.navQualityDashboard", icon: ShieldCheck, href: "/quality" },
+      { id: "root-cause", labelKey: "common.navRootCause", icon: HelpCircle, href: "/improvement/root-cause" },
+      { id: "a3", labelKey: "common.navA3", icon: FileSpreadsheet, href: "/improvement/a3" },
+      { id: "poka-yoke", labelKey: "common.navPokaYoke", icon: ShieldAlert, href: "/quality/poka-yoke" },
+      { id: "fmea", labelKey: "common.navFMEA", icon: Shield, href: "/quality/fmea" },
+    ],
+  },
+  {
+    key: "improve",
+    titleKey: "common.navImprove",
+    fallbackTitle: "Improve",
+    icon: TrendingUp,
     color: "amber",
     dotColor: "bg-amber-500",
     items: [
       { id: "kaizen", labelKey: "common.navKaizen", icon: Lightbulb, href: "/improvement/kaizen" },
-      { id: "root-cause", labelKey: "common.navRootCause", icon: HelpCircle, href: "/improvement/root-cause" },
-      { id: "a3", labelKey: "common.navA3", icon: FileSpreadsheet, href: "/improvement/a3" },
-      { id: "pareto", labelKey: "common.navPareto", icon: BarChart3, href: "/improvement/pareto" },
       { id: "gemba", labelKey: "common.navGemba", icon: Footprints, href: "/improvement/gemba" },
       { id: "lean-tools", labelKey: "common.navLeanTools", icon: Wrench, href: "/improvement/lean-tools" },
       { id: "smed", labelKey: "common.navSmed", icon: Timer, href: "/improvement/smed" },
       { id: "tpm", labelKey: "common.navTPM", icon: Settings, href: "/improvement/tpm" },
       { id: "six-s", labelKey: "common.navSixS", icon: Sparkles, href: "/improvement/six-s" },
+      { id: "pareto", labelKey: "common.navPareto", icon: BarChart3, href: "/improvement/pareto" },
     ],
   },
   {
-    key: "system",
-    titleKey: "common.navSystem",
-    fallbackTitle: "System",
-    icon: Settings,
-    color: "gray",
+    key: "manage",
+    titleKey: "common.navManage",
+    fallbackTitle: "Manage",
+    icon: Briefcase,
+    color: "slate",
     dotColor: "bg-slate-400",
     defaultCollapsed: true,
     items: [
+      { id: "orders", labelKey: "common.navOrders", icon: Package, href: "/planning/orders" },
+      { id: "products", labelKey: "common.navProducts", icon: Package, href: "/planning/products" },
+      { id: "kanban", labelKey: "common.navKanban", icon: Kanban, href: "/planning/kanban" },
       { id: "admin", labelKey: "common.navAdmin", icon: Users, href: "/system/admin" },
       { id: "settings", labelKey: "common.navSettings", icon: Settings, href: "/system/settings" },
     ],
   },
 ];
 
-/* ─── Role-Based Menu Presets ─── */
+/* ─── Role-Based Menu Presets (flow-aligned) ─── */
 const ROLE_MENU_PRESETS: Record<string, string[]> = {
-  operator: ['home', 'safety', 'shopfloor', 'sqcdp', 'production', 'andon', 'kaizen'],
+  // Daily + Monitor basics — operators focus on their shift
+  operator: ['home', 'safety', 'sqcdp', 'production', 'handover', 'andon', 'shopfloor', 'kaizen'],
   shopfloor_operator: ['shopfloor', 'andon', 'sqcdp', 'safety'],
+  // Supervisors see Daily + Monitor + Respond + Improve (no Manage except kanban)
   line_supervisor: [
-    'home', 'safety', 'shopfloor', 'sqcdp', 'production', 'andon', 'oee', 'handover',
-    'quality', 'poka-yoke', 'spc', 'orders', 'kanban',
-    'kaizen', 'root-cause', 'a3', 'gemba', 'smed', 'tpm', 'six-s',
+    'home', 'safety', 'sqcdp', 'production', 'handover',
+    'oee', 'andon', 'spc', 'shopfloor',
+    'quality', 'root-cause', 'a3', 'poka-yoke',
+    'kaizen', 'gemba', 'smed', 'tpm', 'six-s', 'pareto',
+    'orders', 'kanban',
   ],
   supervisor: [
-    'home', 'safety', 'shopfloor', 'sqcdp', 'production', 'andon', 'oee', 'handover',
-    'quality', 'poka-yoke', 'spc', 'orders', 'kanban',
-    'kaizen', 'root-cause', 'a3', 'gemba', 'smed', 'tpm', 'six-s',
+    'home', 'safety', 'sqcdp', 'production', 'handover',
+    'oee', 'andon', 'spc', 'shopfloor',
+    'quality', 'root-cause', 'a3', 'poka-yoke',
+    'kaizen', 'gemba', 'smed', 'tpm', 'six-s', 'pareto',
+    'orders', 'kanban',
   ],
   plant_manager: ['*'],
   manager: ['*'],
   admin: ['*'],
-  quality: ['home', 'safety', 'shopfloor', 'quality', 'poka-yoke', 'spc', 'root-cause', 'a3', 'six-s'],
-  maintenance: ['home', 'production', 'tpm', 'andon', 'oee'],
-  viewer: ['home', 'oee', 'quality'],
+  // Quality role: Daily safety + Monitor SPC + full Respond + some Improve
+  quality_inspector: ['home', 'safety', 'spc', 'quality', 'root-cause', 'a3', 'poka-yoke', 'six-s', 'pareto'],
+  quality: ['home', 'safety', 'spc', 'quality', 'root-cause', 'a3', 'poka-yoke', 'six-s', 'pareto'],
+  // Maintenance: Monitor + TPM focus
+  maintenance: ['home', 'production', 'oee', 'andon', 'shopfloor', 'tpm'],
+  viewer: ['home', 'oee', 'quality', 'spc'],
 };
 
 function getVisibleItemIds(role?: string): string[] | null {
@@ -175,6 +220,39 @@ function getVisibleItemIds(role?: string): string[] | null {
   if (!preset || preset.includes('*')) return null; // null = show all
   return preset;
 }
+
+/* ─── Subtitle map: item id → i18n key ─── */
+const SUBTITLE_KEYS: Record<string, string> = {
+  home: "common.subtitleDashboard",
+  safety: "common.subtitleSafety",
+  sqcdp: "common.subtitleSQCDP",
+  production: "common.subtitleProduction",
+  handover: "common.subtitleHandover",
+  oee: "common.subtitleOEE",
+  andon: "common.subtitleAndon",
+  spc: "common.subtitleSPC",
+  shopfloor: "common.subtitleShopFloor",
+  quality: "common.subtitleQuality",
+  "root-cause": "common.subtitleRootCause",
+  a3: "common.subtitleA3",
+  "poka-yoke": "common.subtitlePokaYoke",
+  fmea: "common.subtitleFMEA",
+  kaizen: "common.subtitleKaizen",
+  pareto: "common.subtitlePareto",
+  gemba: "common.subtitleGemba",
+  "lean-tools": "common.subtitleLeanTools",
+  smed: "common.subtitleSMED",
+  tpm: "common.subtitleTPM",
+  "six-s": "common.subtitleSixS",
+  orders: "common.subtitleOrders",
+  products: "common.subtitleProducts",
+  kanban: "common.subtitleKanban",
+  admin: "common.subtitleAdmin",
+  settings: "common.subtitleSettings",
+  "corporate-dashboard": "common.subtitleCorporate",
+  "site-management": "common.subtitleSiteManagement",
+  "portal-clients": "common.subtitlePortal",
+};
 
 /* ─── Helpers ─── */
 function getStorageKey(userId?: number) {
@@ -200,8 +278,9 @@ function saveCollapsedState(userId: number | undefined, state: Record<string, bo
 }
 
 function findActiveItem(pathname: string): { sectionKey: string; itemId: string } | null {
+  const allNav = [portalSection, corporateSection, ...sections];
   // First pass: exact match takes priority
-  for (const section of sections) {
+  for (const section of allNav) {
     for (const item of section.items) {
       if (pathname === item.href) {
         return { sectionKey: section.key, itemId: item.id };
@@ -210,7 +289,7 @@ function findActiveItem(pathname: string): { sectionKey: string; itemId: string 
   }
   // Second pass: longest prefix match (most specific route wins)
   let best: { sectionKey: string; itemId: string; len: number } | null = null;
-  for (const section of sections) {
+  for (const section of allNav) {
     for (const item of section.items) {
       if (pathname.startsWith(item.href + "/") && (!best || item.href.length > best.len)) {
         best = { sectionKey: section.key, itemId: item.id, len: item.href.length };
@@ -230,6 +309,14 @@ export default function Sidebar({ collapsed = false, onToggleCollapse, currentVi
   const [permissions, setPermissions] = useState<Record<string, string> | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const { logoUrl, fetchLogo } = useCompanyBranding();
+  const { auditLabel, loaded: settingsLoaded, fetchSettings } = useCompanySettings();
+
+  // Fetch company settings on mount
+  useEffect(() => { if (!settingsLoaded) fetchSettings(); }, [settingsLoaded, fetchSettings]);
+
+  // Helper to get nav item label, with audit label override for six-s
+  const getLabel = (item: { id: string; labelKey: string }) =>
+    item.id === "six-s" ? `${auditLabel} Audit` : t(item.labelKey);
 
   const activeMatch = findActiveItem(pathname || "");
   const activeItemId = currentView || activeMatch?.itemId || "home";
@@ -313,10 +400,20 @@ export default function Sidebar({ collapsed = false, onToggleCollapse, currentVi
     }
   }, []);
 
+  const { isCorpView, sites } = useSite();
+  const CORP_ROLES = ["admin", "plant_manager", "manager"];
+  const hasCorpAccess = CORP_ROLES.includes(user?.role?.toLowerCase() ?? "") || sites.length > 1;
+
   const roleAllowedIds = getVisibleItemIds(user?.role);
   const isAdmin = user?.role?.toLowerCase() === 'admin';
+  const isSuperadmin = !!user?.is_superadmin;
 
-  const visibleSections = sections
+  // Prepend portal/corporate sections based on access level
+  let allSections = [...sections];
+  if (hasCorpAccess) allSections = [corporateSection, ...allSections];
+  if (isSuperadmin) allSections = [portalSection, ...allSections];
+
+  const visibleSections = allSections
     .map((section) => ({
       ...section,
       items: section.items.filter((item) => {
@@ -357,6 +454,11 @@ export default function Sidebar({ collapsed = false, onToggleCollapse, currentVi
               </div>
               {section.items.map((item) => {
                 const Icon = item.icon;
+                const subtitleKey = SUBTITLE_KEYS[item.id];
+                const subtitle = subtitleKey ? t(subtitleKey) : "";
+                const tooltipText = subtitle && subtitle !== subtitleKey
+                  ? `${getLabel(item)} — ${subtitle}`
+                  : getLabel(item);
                 return (
                   <button
                     key={item.id}
@@ -367,8 +469,8 @@ export default function Sidebar({ collapsed = false, onToggleCollapse, currentVi
                         : "text-th-text-3 hover:bg-th-bg-hover hover:text-th-text-2"
                     }`}
                     aria-current={activeItemId === item.id ? "page" : undefined}
-                    aria-label={t(item.labelKey)}
-                    title={t(item.labelKey)}
+                    aria-label={tooltipText}
+                    title={tooltipText}
                   >
                     <Icon size={18} strokeWidth={activeItemId === item.id ? 2.5 : 1.5} />
                   </button>
@@ -453,6 +555,16 @@ export default function Sidebar({ collapsed = false, onToggleCollapse, currentVi
           )}
         </div>
 
+        {/* Corporate view banner */}
+        {isCorpView && hasCorpAccess && (
+          <div className="mx-3 mt-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg flex items-center gap-2">
+            <Globe size={13} className="text-blue-500 shrink-0" />
+            <span className="text-[11px] font-medium text-blue-600 dark:text-blue-400 truncate">
+              {t("common.allSites") || "Viewing: All Sites"}
+            </span>
+          </div>
+        )}
+
         {/* Navigation */}
         <nav ref={navRef} onKeyDown={handleNavKeyDown} className="flex-1 px-2 py-1.5 overflow-y-auto" role="navigation" aria-label="Main navigation">
           {visibleSections.map((section) => {
@@ -488,6 +600,9 @@ export default function Sidebar({ collapsed = false, onToggleCollapse, currentVi
                   {section.items.map((item) => {
                     const Icon = item.icon;
                     const isActive = activeItemId === item.id;
+                    const subtitleKey = SUBTITLE_KEYS[item.id];
+                    const subtitle = subtitleKey ? t(subtitleKey) : "";
+                    const hasSubtitle = subtitle && subtitle !== subtitleKey;
                     return (
                       <button
                         key={item.id}
@@ -500,10 +615,17 @@ export default function Sidebar({ collapsed = false, onToggleCollapse, currentVi
                         }`}
                         aria-current={isActive ? "page" : undefined}
                       >
-                        <Icon size={15} strokeWidth={isActive ? 2 : 1.5} className="shrink-0" />
-                        <span className="truncate">{t(item.labelKey)}</span>
+                        <Icon size={15} strokeWidth={isActive ? 2 : 1.5} className="shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0 text-left">
+                          <span className="truncate block">{getLabel(item)}</span>
+                          {hasSubtitle && (
+                            <span className="block truncate text-[10px] leading-tight text-th-text-3 font-normal mt-px">
+                              {subtitle}
+                            </span>
+                          )}
+                        </div>
                         {item.badge && (
-                          <span className="ml-auto text-[9px] bg-brand-500 text-white px-1.5 py-0.5 rounded font-bold leading-none">
+                          <span className="ml-auto text-[9px] bg-brand-500 text-white px-1.5 py-0.5 rounded font-bold leading-none shrink-0">
                             {item.badge}
                           </span>
                         )}
@@ -540,7 +662,7 @@ export default function Sidebar({ collapsed = false, onToggleCollapse, currentVi
               <p className="text-sm font-medium truncate text-th-text leading-tight">{user?.full_name}</p>
               <div className="flex items-center gap-1.5">
                 <span className="text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded bg-brand-500/15 text-brand-600 dark:text-brand-400 leading-none">
-                  {user?.role}
+                  {(user?.role || "").replace(/_/g, " ")}
                 </span>
               </div>
             </button>

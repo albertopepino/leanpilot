@@ -67,5 +67,12 @@
   "areaMaintenance": "Strefa konserwacji",
 
   "deleteConfirm": "Usunąć ten wypadek?",
-  "deleted": "Wypadek usunięty"
+  "deleted": "Wypadek usunięty",
+
+  "andonSafetyHoldTriggered": "Wstrzymanie bezpieczeństwa Andon na {line}",
+  "andonSafetyHoldDesc": "Produkcja wstrzymana. Krytyczny incydent bezpieczeństwa wymaga natychmiastowej uwagi.",
+  "goToAndonBoard": "Przejdź do tablicy Andon",
+
+  "reportSafetyIncident": "Zglos Incydent Bezpieczenstwa",
+  "andonIncidentPrefix": "Zdarzenie Andon"
 }

@@ -1,8 +1,10 @@
 "use client";
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { useI18n } from "@/stores/useI18n";
 import { safetyApi, adminApi } from "@/lib/api";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import PhotoUpload from "@/components/ui/PhotoUpload";
 import type { SafetyIncidentResponse, SafetyStats } from "@/lib/types";
 import {
   Shield,
@@ -72,6 +74,7 @@ function getLocaleMonthNames(locale: string): string[] {
 
 export default function SafetyTracker() {
   const { t, locale } = useI18n();
+  const searchParams = useSearchParams();
   const MONTH_NAMES = useMemo(() => getLocaleMonthNames(locale), [locale]);
   const [incidents, setIncidents] = useState<SafetyIncidentResponse[]>([]);
   const [stats, setStats] = useState<SafetyStats | null>(null);
@@ -82,6 +85,27 @@ export default function SafetyTracker() {
   const [toast, setToast] = useState("");
   const [loading, setLoading] = useState(true);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [andonAlert, setAndonAlert] = useState<{ lineName: string; andonId: number } | null>(null);
+
+  // Pre-fill data from Andon Board navigation
+  const andonPrefill = useMemo(() => {
+    const andonView = searchParams.get("andon_view");
+    if (!andonView) return null;
+    return {
+      description: searchParams.get("andon_desc") || "",
+      lineName: searchParams.get("andon_line") || "",
+      lineId: searchParams.get("andon_line_id") ? Number(searchParams.get("andon_line_id")) : null,
+      date: searchParams.get("andon_date") || new Date().toISOString().slice(0, 10),
+      eventId: searchParams.get("andon_event_id") || "",
+    };
+  }, [searchParams]);
+
+  // Auto-switch to log view when arriving from Andon
+  useEffect(() => {
+    if (andonPrefill) {
+      setView("log");
+    }
+  }, [andonPrefill]);
 
   // Show toast
   const showToast = useCallback((msg: string) => {
@@ -158,9 +182,10 @@ export default function SafetyTracker() {
     location: string;
     production_line_id: number | null;
     corrective_action: string;
+    pendingPhoto?: File;
   }) => {
     try {
-      await safetyApi.createIncident({
+      const res = await safetyApi.createIncident({
         date: data.date,
         incident_type: data.incident_type,
         severity: data.severity,
@@ -170,13 +195,26 @@ export default function SafetyTracker() {
         production_line_id: data.production_line_id,
         corrective_action: data.corrective_action || null,
       });
+      // Upload photo if one was attached
+      if (data.pendingPhoto && res.data?.id) {
+        try {
+          await safetyApi.uploadIncidentPhoto(res.data.id, data.pendingPhoto);
+        } catch {
+          // Photo upload failed — incident was still saved
+        }
+      }
       showToast(t("safety.incidentSaved"));
+      // Show Andon Safety Hold alert for critical incidents
+      if (data.severity === "critical" && res.data?.andon_event_id) {
+        const lineName = productionLines.find(l => l.id === data.production_line_id)?.name || `Line ${data.production_line_id}`;
+        setAndonAlert({ lineName, andonId: res.data.andon_event_id });
+      }
       setView("counter");
       fetchData();
     } catch {
       showToast(t("common.saveFailed"));
     }
-  }, [fetchData, showToast, t]);
+  }, [fetchData, showToast, t, productionLines]);
 
   // Delete incident
   const handleDelete = useCallback((id: number) => {
@@ -215,6 +253,26 @@ export default function SafetyTracker() {
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
+      {/* Andon Safety Hold Alert */}
+      {andonAlert && (
+        <div className="rounded-xl border-2 border-red-500 bg-red-500/10 p-4 flex items-center justify-between animate-in slide-in-from-top-2 fade-in duration-200">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl" role="img" aria-label="alert">&#x1F6A8;</span>
+            <div>
+              <p className="font-bold text-red-600 text-sm">{t("safety.andonSafetyHoldTriggered", { line: andonAlert.lineName })}</p>
+              <p className="text-xs text-th-text-3 mt-0.5">{t("safety.andonSafetyHoldDesc")}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <a href="/respond/andon" className="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700 transition-colors">
+              {t("safety.goToAndonBoard")}
+            </a>
+            <button onClick={() => setAndonAlert(null)} className="p-1 text-th-text-3 hover:text-th-text">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
       {/* Toast */}
       {toast && (
         <div className="fixed top-6 right-6 z-50 flex items-center gap-2 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-lg text-sm font-medium animate-in slide-in-from-top-2 fade-in duration-200">
@@ -291,6 +349,7 @@ export default function SafetyTracker() {
           t={t}
           onSubmit={handleAdd}
           productionLines={productionLines}
+          andonPrefill={andonPrefill}
         />
       )}
       {view === "history" && (
@@ -466,6 +525,7 @@ function LogForm({
   t,
   onSubmit,
   productionLines,
+  andonPrefill,
 }: {
   t: (key: string) => string;
   onSubmit: (data: {
@@ -477,16 +537,29 @@ function LogForm({
     location: string;
     production_line_id: number | null;
     corrective_action: string;
+    pendingPhoto?: File;
   }) => void;
   productionLines: { id: number; name: string }[];
+  andonPrefill?: {
+    description: string;
+    lineName: string;
+    lineId: number | null;
+    date: string;
+    eventId: string;
+  } | null;
 }) {
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(andonPrefill?.date || new Date().toISOString().slice(0, 10));
   const [incidentType, setIncidentType] = useState<IncidentType>("near_miss");
+  const [pendingPhoto, setPendingPhoto] = useState<File | null>(null);
   const [severity, setSeverity] = useState<Severity>("minor");
-  const [title, setTitle] = useState("");
-  const [lineId, setLineId] = useState<number | null>(productionLines[0]?.id ?? null);
+  const [title, setTitle] = useState(
+    andonPrefill?.description
+      ? `${t("safety.andonIncidentPrefix")}: ${andonPrefill.description}`.slice(0, 200)
+      : ""
+  );
+  const [lineId, setLineId] = useState<number | null>(andonPrefill?.lineId ?? productionLines[0]?.id ?? null);
   const [area, setArea] = useState(AREA_ITEMS[0].value);
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState(andonPrefill?.description || "");
   const [correctiveAction, setCorrectiveAction] = useState("");
   const [error, setError] = useState("");
 
@@ -506,10 +579,12 @@ function LogForm({
       location: area,
       production_line_id: lineId,
       corrective_action: correctiveAction.trim(),
+      pendingPhoto: pendingPhoto ?? undefined,
     });
     setTitle("");
     setDescription("");
     setCorrectiveAction("");
+    setPendingPhoto(null);
   };
 
   const severityOptions: { value: Severity; label: string }[] = [
@@ -634,6 +709,18 @@ function LogForm({
               placeholder={t("safety.actionsTakenPlaceholder")}
               rows={3}
               className={inputCls + " resize-none"}
+            />
+          </div>
+
+          {/* Photo Evidence */}
+          <div>
+            <label className={labelCls}>{t("common.uploadPhoto") || "Photo Evidence"}</label>
+            <PhotoUpload
+              currentUrl={pendingPhoto ? URL.createObjectURL(pendingPhoto) : null}
+              onUpload={async (file) => { setPendingPhoto(file); }}
+              onRemove={() => setPendingPhoto(null)}
+              compact
+              label={t("safety.uploadEvidencePhoto") || "Upload evidence photo"}
             />
           </div>
 

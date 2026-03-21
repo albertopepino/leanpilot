@@ -281,5 +281,16 @@
   "newProduct": "Nowy Produkt",
   "noProducts": "Brak produktow. Dodaj recznie lub wgraj plik Excel.",
   "productFamily": "Rodzina Produktow",
-  "laborMin": "Praca (min)"
+  "laborMin": "Praca (min)",
+  "operation": "Operacja",
+  "machine": "Maszyna",
+  "cycleTime": "Czas Cyklu",
+  "basis": "Podstawa",
+  "createCAPAFromNCR": "Utwórz działanie korygujące (CAPA) z tej NCR",
+  "capaCreatedFromNCR": "CAPA utworzona pomyślnie z NCR",
+  "linkKaizenToCAPA": "Powiąż usprawnienie Kaizen z tą CAPA",
+  "selectKaizen": "Wybierz element Kaizen...",
+  "kaizenLinked": "Kaizen pomyślnie powiązany z CAPA",
+  "failedLinkKaizen": "Nie udało się powiązać Kaizen z CAPA",
+  "link": "Powiąż"
 }

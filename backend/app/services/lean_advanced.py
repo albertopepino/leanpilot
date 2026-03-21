@@ -1,3 +1,5 @@
+import re
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
 from sqlalchemy.orm import selectinload
@@ -178,7 +180,10 @@ class A3Service:
     @staticmethod
     async def update_status(db: AsyncSession, report_id: int, status: str, results: str | None = None, factory_id: int | None = None):
         result = await db.execute(select(A3Report).where(A3Report.id == report_id))
-        report = result.scalar_one()
+        report = result.scalar_one_or_none()
+        if not report:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail="A3 report not found")
         if factory_id is not None and report.factory_id != factory_id:
             from fastapi import HTTPException
             raise HTTPException(status_code=403, detail="A3 report does not belong to your factory")
@@ -424,7 +429,10 @@ class AndonService:
     @staticmethod
     async def resolve_event(db: AsyncSession, event_id: int, resolution_notes: str | None = None, factory_id: int | None = None):
         result = await db.execute(select(AndonEvent).where(AndonEvent.id == event_id))
-        event = result.scalar_one()
+        event = result.scalar_one_or_none()
+        if not event:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail="Andon event not found")
         if factory_id is not None and event.factory_id != factory_id:
             from fastapi import HTTPException
             raise HTTPException(status_code=403, detail="Andon event does not belong to your factory")
@@ -446,6 +454,130 @@ class AndonService:
             .order_by(AndonEvent.triggered_at.desc())
         )
         return result.scalars().all()
+
+    @staticmethod
+    async def detect_patterns(db: AsyncSession, factory_id: int, user_id: int) -> dict:
+        """Detect recurring Andon patterns and auto-create Kaizen items.
+
+        Groups AndonEvents by (production_line_id, reason) in the last 7 days.
+        For groups with count >= 3, creates a KaizenItem if one doesn't already exist.
+        """
+        import structlog
+        logger = structlog.get_logger(__name__)
+
+        from app.models.lean import KaizenItem
+        from app.models.factory import ProductionLine
+
+        cutoff = datetime.now(timezone.utc) - timedelta(days=7)
+
+        # Group events by (production_line_id, reason) in last 7 days
+        pattern_q = (
+            select(
+                AndonEvent.production_line_id,
+                AndonEvent.reason,
+                func.count(AndonEvent.id).label("event_count"),
+            )
+            .where(
+                and_(
+                    AndonEvent.factory_id == factory_id,
+                    AndonEvent.triggered_at >= cutoff,
+                    AndonEvent.reason.isnot(None),
+                    AndonEvent.reason != "",
+                )
+            )
+            .group_by(AndonEvent.production_line_id, AndonEvent.reason)
+            .having(func.count(AndonEvent.id) >= 3)
+        )
+        result = await db.execute(pattern_q)
+        patterns = result.all()
+
+        if not patterns:
+            return {"patterns_detected": 0, "kaizen_created": 0, "patterns": []}
+
+        # Load production line names for all relevant line IDs
+        line_ids = list({p.production_line_id for p in patterns})
+        lines_result = await db.execute(
+            select(ProductionLine).where(ProductionLine.id.in_(line_ids))
+        )
+        line_map = {line.id: line.name for line in lines_result.scalars().all()}
+
+        detected = []
+        created_count = 0
+
+        for pattern in patterns:
+            line_id = pattern.production_line_id
+            reason = pattern.reason
+            count = pattern.event_count
+            line_name = line_map.get(line_id, f"Line #{line_id}")
+
+            # Check if a Kaizen already exists for this pattern
+            # Escape LIKE wildcards in reason to prevent false matches
+            safe_reason = re.sub(r'([%_])', r'\\\1', reason.lower())
+            existing_q = select(KaizenItem).where(
+                and_(
+                    KaizenItem.factory_id == factory_id,
+                    KaizenItem.source_type == "andon_pattern",
+                    KaizenItem.production_line_id == line_id,
+                    func.lower(KaizenItem.title).contains(safe_reason),
+                )
+            )
+            existing_result = await db.execute(existing_q)
+            existing = existing_result.scalar_one_or_none()
+
+            pattern_info = {
+                "production_line_id": line_id,
+                "production_line_name": line_name,
+                "reason": reason,
+                "count": count,
+                "kaizen_created": False,
+                "kaizen_id": None,
+            }
+
+            if existing:
+                pattern_info["kaizen_id"] = existing.id
+                pattern_info["kaizen_already_existed"] = True
+            else:
+                title = f"Recurring Andon: {reason} on {line_name} ({count}x in 7 days)"
+                description = (
+                    f"Andon pattern detected: the reason '{reason}' occurred {count} times "
+                    f"in the last 7 days on production line '{line_name}' (ID: {line_id}). "
+                    f"This recurring issue warrants a structured improvement action."
+                )
+                kaizen = KaizenItem(
+                    factory_id=factory_id,
+                    production_line_id=line_id,
+                    created_by_id=user_id,
+                    title=title,
+                    description=description,
+                    category="reliability",
+                    priority="high",
+                    status="idea",
+                    source_type="andon_pattern",
+                    source_id=line_id,
+                )
+                db.add(kaizen)
+                await db.flush()
+
+                pattern_info["kaizen_created"] = True
+                pattern_info["kaizen_id"] = kaizen.id
+                created_count += 1
+
+                logger.info(
+                    "andon_pattern_kaizen_created",
+                    factory_id=factory_id,
+                    line_id=line_id,
+                    reason=reason,
+                    count=count,
+                    kaizen_id=kaizen.id,
+                )
+
+            detected.append(pattern_info)
+
+        return {
+            "patterns_detected": len(detected),
+            "kaizen_created": created_count,
+            "patterns": detected,
+        }
 
     @staticmethod
     async def check_escalation(db: AsyncSession, factory_id: int) -> list[dict]:

@@ -4,6 +4,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Suspense, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { Lightbulb, Copy, ClipboardList, Loader2 } from 'lucide-react';
+import { useI18n } from '@/stores/useI18n';
 
 const KaizenBoard = dynamic(() => import('@/components/lean/KaizenBoard'), {
   loading: () => <TabLoader />,
@@ -17,10 +18,10 @@ const LeaderStandardWork = dynamic(() => import('@/components/lean/LeaderStandar
 
 type TabKey = 'suggestions' | 'horizontal-deploy' | 'lsw';
 
-const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
-  { key: 'suggestions', label: 'Kaizen Suggestions', icon: <Lightbulb className="w-4 h-4" /> },
-  { key: 'horizontal-deploy', label: 'Horizontal Deploy', icon: <Copy className="w-4 h-4" /> },
-  { key: 'lsw', label: 'Leader Standard Work', icon: <ClipboardList className="w-4 h-4" /> },
+const TAB_KEYS: { key: TabKey; labelKey: string; icon: React.ReactNode }[] = [
+  { key: 'suggestions', labelKey: 'common.tabKaizenSuggestions', icon: <Lightbulb className="w-4 h-4" /> },
+  { key: 'horizontal-deploy', labelKey: 'common.tabHorizontalDeploy', icon: <Copy className="w-4 h-4" /> },
+  { key: 'lsw', labelKey: 'common.tabLeaderStandardWork', icon: <ClipboardList className="w-4 h-4" /> },
 ];
 
 function TabLoader() {
@@ -35,6 +36,7 @@ function KaizenHubInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useI18n();
   const activeTab = (searchParams.get('tab') as TabKey) || 'suggestions';
 
   const setTab = useCallback((key: TabKey) => {
@@ -46,18 +48,18 @@ function KaizenHubInner() {
   return (
     <div className="space-y-6">
       <div className="flex gap-1 overflow-x-auto border-b border-th-border">
-        {TABS.map((t) => (
+        {TAB_KEYS.map((tab) => (
           <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
+            key={tab.key}
+            onClick={() => setTab(tab.key)}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 ${
-              activeTab === t.key
+              activeTab === tab.key
                 ? 'border-brand-600 text-brand-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                : 'border-transparent text-th-text-3 hover:text-th-text-2'
             }`}
           >
-            {t.icon}
-            {t.label}
+            {tab.icon}
+            {t(tab.labelKey)}
           </button>
         ))}
       </div>

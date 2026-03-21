@@ -58,5 +58,22 @@
   "logoErrorSize": "Datei ist zu groß. Maximal 2 MB.",
   "tutorial": "Tutorial",
   "tutorialDesc": "Wiederhole das Onboarding-Tutorial, um alle verfügbaren Werkzeuge kennenzulernen.",
-  "replayTutorial": "Tutorial wiederholen"
+  "replayTutorial": "Tutorial wiederholen",
+  "beginnerMode": "Anfängermodus",
+  "beginnerModeDesc": "Wenn aktiviert, zeigt jede Tool-Seite eine Beschreibung, wann es zu verwenden ist und wie es mit anderen Tools verbunden ist. Der Problemlösungs-Flow (Identifizieren → Analysieren → Grundursache → Aktion) ist immer sichtbar.",
+  "beginnerModeOn": "An — Tool-Beschreibungen immer sichtbar",
+  "beginnerModeOff": "Aus — Tool-Beschreibungen ausblendbar",
+
+  "auditLabel": "Audit-Programm Bezeichnung",
+  "auditLabelHint": "Waehlen Sie ob Ihre Fabrik die 5S- oder 6S-Methodik verwendet",
+
+  "tabGeneral": "Allgemeine Einstellungen",
+  "tabAssessment": "Lean-Bewertung",
+  "tabCalendar": "Hauptkalender",
+  "tabCopilot": "Factory Copilot",
+  "tabResources": "Lean-Ressourcen",
+  "tabAuditScheduler": "Audit-Planer",
+  "tabExtraTools": "Zusaetzliche Werkzeuge",
+  "tabDataImport": "Import / Export",
+  "tabERP": "ERP-Integration"
 }

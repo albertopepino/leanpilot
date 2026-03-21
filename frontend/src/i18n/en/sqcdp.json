@@ -29,5 +29,15 @@
   "autoEscalatedT2": "Auto-escalated to T2",
   "loadFailed": "Failed to load SQCDP entries",
   "saveFailed": "Failed to save SQCDP entry",
-  "meetingSaveFailed": "Failed to log meeting"
+  "meetingSaveFailed": "Failed to log meeting",
+
+  "openNCR": "Open NCR",
+  "viewSPC": "View SPC",
+  "startFiveWhy": "Start 5-Why",
+  "createKaizen": "Create Kaizen",
+  "viewOEE": "View OEE",
+  "openSafety": "Open Safety",
+  "viewWaste": "View Waste",
+  "viewProduction": "View Production",
+  "viewHandover": "View Handover"
 }

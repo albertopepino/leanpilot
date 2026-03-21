@@ -199,6 +199,8 @@ class KaizenService:
             expected_impact=data.get("expected_impact"),
             expected_savings_eur=data.get("expected_savings_eur"),
             target_date=data.get("target_date"),
+            lsw_id=data.get("lsw_id"),
+            countermeasure=data.get("countermeasure"),
         )
         db.add(item)
         await db.flush()
@@ -224,17 +226,80 @@ class KaizenService:
         factory_id: int | None = None,
     ) -> KaizenItem:
         result = await db.execute(select(KaizenItem).where(KaizenItem.id == kaizen_id))
-        item = result.scalar_one()
+        item = result.scalar_one_or_none()
+        if not item:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail="Kaizen item not found")
         if factory_id is not None and item.factory_id != factory_id:
             from fastapi import HTTPException
             raise HTTPException(status_code=403, detail="Kaizen item does not belong to your factory")
+        # Enforce LSW link for standardization
+        normalized = new_status.lower() if new_status else ""
+        if normalized == "standardized" and not item.lsw_id:
+            from fastapi import HTTPException
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot standardize without linking to a Leader Standard Work template. Please link an LSW first.",
+            )
+
         item.status = new_status.lower() if new_status else new_status
         if new_status and new_status.lower() == "completed":
             item.completion_date = datetime.now(timezone.utc)
         if actual_savings is not None:
             item.actual_savings_eur = actual_savings
+
+        # Auto-update LSW when kaizen is verified or standardized
+        if normalized in ("verified", "standardized") and item.lsw_id:
+            await KaizenService._update_linked_lsw(db, item)
+
         await db.flush()
         return item
+
+    @staticmethod
+    async def _update_linked_lsw(db: AsyncSession, item: KaizenItem) -> None:
+        """Append kaizen countermeasure as a new task in the linked LSW template."""
+        from app.models.leader_standard_work import LeaderStandardWork
+        from app.models.notification import Notification
+        import structlog
+
+        try:
+            lsw_result = await db.execute(
+                select(LeaderStandardWork).where(LeaderStandardWork.id == item.lsw_id)
+            )
+            lsw = lsw_result.scalar_one_or_none()
+            if not lsw:
+                return
+
+            # Build new task from kaizen countermeasure
+            countermeasure_text = item.countermeasure or item.description or item.title
+            existing_tasks = list(lsw.tasks or [])
+            new_order = max((t.get("order", 0) for t in existing_tasks), default=0) + 1
+            new_task = {
+                "order": new_order,
+                "description": f"[Kaizen #{item.id}] {countermeasure_text}",
+                "time_min": 5,
+                "category": item.category or "improvement",
+                "source_kaizen_id": item.id,
+            }
+            existing_tasks.append(new_task)
+            lsw.tasks = existing_tasks
+
+            # Create notification for the LSW creator
+            notification = Notification(
+                factory_id=item.factory_id,
+                user_id=lsw.created_by_id,
+                notification_type="general",
+                priority="medium",
+                title=f"Standard work updated from Kaizen #{item.id}",
+                message=f'Kaizen "{item.title}" has been {item.status}. '
+                        f"A new task was added to LSW \"{lsw.title}\".",
+                link="/lean/kaizen?tab=lsw",
+                source_type="kaizen",
+                source_id=item.id,
+            )
+            db.add(notification)
+        except Exception as e:
+            structlog.get_logger().warning("lsw_auto_update_failed", kaizen_id=item.id, error=str(e))
 
     @staticmethod
     def _normalize(val):
@@ -269,6 +334,9 @@ class KaizenService:
             "production_line_id": item.production_line_id,
             "ai_generated": item.ai_generated,
             "ai_confidence": item.ai_confidence,
+            "lsw_id": item.lsw_id,
+            "pareto_rank": item.pareto_rank,
+            "countermeasure": item.countermeasure,
         }
 
     @staticmethod

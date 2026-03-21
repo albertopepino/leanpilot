@@ -93,3 +93,18 @@ export function formatPercent(
     maximumFractionDigits: decimals,
   }).format(fraction);
 }
+
+/**
+ * Extracts a human-readable error message from an unknown caught error.
+ * Handles Axios-style errors (response.data.detail), plain Error objects,
+ * and falls back to a default string.
+ */
+export function getErrorMessage(err: unknown, fallback = "An error occurred"): string {
+  if (typeof err === "object" && err !== null) {
+    const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+    if (axiosErr.response?.data?.detail) return axiosErr.response.data.detail;
+    if (axiosErr.message) return axiosErr.message;
+  }
+  if (typeof err === "string") return err;
+  return fallback;
+}

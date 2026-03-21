@@ -2,6 +2,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { adminApi } from "@/lib/api";
+import { getErrorMessage } from "@/lib/formatters";
 
 const ALLOWED = ["image/png", "image/jpeg", "image/svg+xml"];
 const MAX_BYTES = 2 * 1024 * 1024;
@@ -39,8 +40,8 @@ export default function LogoUpload({ onUploadSuccess }: Props) {
       try {
         await adminApi.uploadLogo(file);
         onUploadSuccess();
-      } catch (err: any) {
-        setError(err?.response?.data?.detail || "Upload failed");
+      } catch (err: unknown) {
+        setError(getErrorMessage(err, "Upload failed"));
       } finally {
         setUploading(false);
       }

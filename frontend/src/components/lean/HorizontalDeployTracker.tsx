@@ -36,7 +36,7 @@ export default function HorizontalDeployTracker() {
       const res = await horizontalDeployApi.list(params);
       setDeployments(res.data || []);
     } catch {
-      /* empty */
+      console.error("Failed to load horizontal deployments");
     } finally {
       setLoading(false);
     }
@@ -67,7 +67,7 @@ export default function HorizontalDeployTracker() {
     } catch { /* empty */ }
   };
 
-  if (loading) return <div className="p-8 text-th-text-secondary">{t("loading") || "Loading..."}</div>;
+  if (loading) return <div className="p-8 text-th-text-3">{t("common.loading") || "Loading..."}</div>;
 
   return (
     <div className="space-y-6">
@@ -76,7 +76,7 @@ export default function HorizontalDeployTracker() {
         <div className="flex items-center gap-3">
           <GitBranch className="w-6 h-6 text-brand-600" />
           <h1 className="text-2xl font-bold text-th-text">
-            {t("titleHorizontalDeploy") || "Horizontal Deployment"}
+            {t("improvement.titleHorizontalDeploy") || "Horizontal Deployment"}
           </h1>
         </div>
         <button
@@ -84,7 +84,7 @@ export default function HorizontalDeployTracker() {
           className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700"
         >
           <Plus className="w-4 h-4" />
-          {t("create") || "Create"}
+          {t("common.create") || "Create"}
         </button>
       </div>
 
@@ -97,7 +97,7 @@ export default function HorizontalDeployTracker() {
             className={`px-3 py-1 rounded-full text-sm ${
               filter === s
                 ? "bg-brand-600 text-white"
-                : "bg-th-card text-th-text-secondary border border-th-border"
+                : "bg-th-card text-th-text-3 border border-th-border"
             }`}
           >
             {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -111,15 +111,15 @@ export default function HorizontalDeployTracker() {
           <div className="bg-th-card rounded-xl shadow-xl p-6 w-full max-w-md space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-th-text">
-                {t("create") || "Create"} {t("titleHorizontalDeploy") || "Horizontal Deployment"}
+                {t("common.create") || "Create"} {t("improvement.titleHorizontalDeploy") || "Horizontal Deployment"}
               </h2>
               <button onClick={() => setShowCreate(false)}>
-                <X className="w-5 h-5 text-th-text-secondary" />
+                <X className="w-5 h-5 text-th-text-3" />
               </button>
             </div>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm text-th-text-secondary mb-1">Source Type</label>
+                <label className="block text-sm text-th-text-3 mb-1">{t("common.sourceType")}</label>
                 <select
                   value={form.source_type}
                   onChange={e => setForm(p => ({ ...p, source_type: e.target.value }))}
@@ -132,7 +132,7 @@ export default function HorizontalDeployTracker() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm text-th-text-secondary mb-1">Source ID</label>
+                <label className="block text-sm text-th-text-3 mb-1">{t("common.sourceId")}</label>
                 <input
                   type="number"
                   value={form.source_id || ""}
@@ -141,8 +141,8 @@ export default function HorizontalDeployTracker() {
                 />
               </div>
               <div>
-                <label className="block text-sm text-th-text-secondary mb-1">
-                  {t("description") || "Description"}
+                <label className="block text-sm text-th-text-3 mb-1">
+                  {t("common.description") || "Description"}
                 </label>
                 <textarea
                   value={form.description}
@@ -152,7 +152,7 @@ export default function HorizontalDeployTracker() {
                 />
               </div>
               <div>
-                <label className="block text-sm text-th-text-secondary mb-1">
+                <label className="block text-sm text-th-text-3 mb-1">
                   Target Line IDs (comma-separated)
                 </label>
                 <input
@@ -166,13 +166,13 @@ export default function HorizontalDeployTracker() {
 
               {/* Standardization Verification Fields */}
               <div className="pt-2 border-t border-th-border">
-                <p className="text-xs font-semibold text-th-text-secondary uppercase tracking-wider mb-2">
+                <p className="text-xs font-semibold text-th-text-3 uppercase tracking-wider mb-2">
                   {t("improvement.standardizationVerification") || "Standardization & Verification"}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm text-th-text-secondary mb-1">
+                  <label className="block text-sm text-th-text-3 mb-1">
                     {t("improvement.verificationDate") || "Verification Date"}
                   </label>
                   <input
@@ -183,7 +183,7 @@ export default function HorizontalDeployTracker() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-th-text-secondary mb-1">
+                  <label className="block text-sm text-th-text-3 mb-1">
                     {t("improvement.verifiedBy") || "Verified By"}
                   </label>
                   <input
@@ -196,7 +196,7 @@ export default function HorizontalDeployTracker() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm text-th-text-secondary mb-1">
+                <label className="block text-sm text-th-text-3 mb-1">
                   {t("improvement.standardizationStatus") || "Standardization Status"}
                 </label>
                 <select
@@ -210,7 +210,7 @@ export default function HorizontalDeployTracker() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm text-th-text-secondary mb-1">
+                <label className="block text-sm text-th-text-3 mb-1">
                   {t("improvement.deploymentLocations") || "Deployment Locations (comma-separated)"}
                 </label>
                 <input
@@ -225,15 +225,15 @@ export default function HorizontalDeployTracker() {
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setShowCreate(false)}
-                className="px-4 py-2 border border-th-border rounded-lg text-th-text-secondary"
+                className="px-4 py-2 border border-th-border rounded-lg text-th-text-3"
               >
-                {t("cancel") || "Cancel"}
+                {t("common.cancel") || "Cancel"}
               </button>
               <button
                 onClick={handleCreate}
                 className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700"
               >
-                {t("create") || "Create"}
+                {t("common.create") || "Create"}
               </button>
             </div>
           </div>
@@ -243,8 +243,8 @@ export default function HorizontalDeployTracker() {
       {/* Deployments List */}
       {deployments.length === 0 ? (
         <div className="bg-th-card rounded-xl border border-th-border p-8 text-center">
-          <GitBranch className="w-12 h-12 text-th-text-secondary mx-auto mb-3 opacity-40" />
-          <p className="text-th-text-secondary">
+          <GitBranch className="w-12 h-12 text-th-text-3 mx-auto mb-3 opacity-40" />
+          <p className="text-th-text-3">
             No horizontal deployments yet. Deploy solutions across production lines.
           </p>
         </div>
@@ -269,7 +269,7 @@ export default function HorizontalDeployTracker() {
                     </div>
                     <p className="text-th-text font-medium">{d.description}</p>
                   </div>
-                  <span className="text-xs text-th-text-secondary">
+                  <span className="text-xs text-th-text-3">
                     {new Date(d.created_at).toLocaleDateString()}
                   </span>
                 </div>
@@ -301,7 +301,7 @@ export default function HorizontalDeployTracker() {
                       style={{ width: `${d.target_lines.length ? (completedSet.size / d.target_lines.length * 100) : 0}%` }}
                     />
                   </div>
-                  <p className="text-xs text-th-text-secondary mt-1">
+                  <p className="text-xs text-th-text-3 mt-1">
                     {completedSet.size}/{d.target_lines.length} lines completed
                   </p>
                 </div>
@@ -315,35 +315,35 @@ export default function HorizontalDeployTracker() {
                     deployment_locations: d.deployment_locations || [],
                   };
                   const stdStatusColors: Record<string, string> = {
-                    draft: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+                    draft: "bg-th-bg-3 text-th-text-2",
                     verified: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
                     deployed: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
                   };
                   return (
                     <div className="mt-3 pt-3 border-t border-th-border">
                       <div className="flex items-center gap-2 mb-2">
-                        <ShieldCheck className="w-3.5 h-3.5 text-th-text-secondary" />
-                        <span className="text-xs font-semibold text-th-text-secondary uppercase tracking-wider">
+                        <ShieldCheck className="w-3.5 h-3.5 text-th-text-3" />
+                        <span className="text-xs font-semibold text-th-text-3 uppercase tracking-wider">
                           {t("improvement.standardizationVerification") || "Standardization & Verification"}
                         </span>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                         <div>
-                          <span className="text-th-text-secondary">{t("improvement.standardizationStatus") || "Status"}:</span>
+                          <span className="text-th-text-3">{t("improvement.standardizationStatus") || "Status"}:</span>
                           <span className={`ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${stdStatusColors[v.standardization_status] || stdStatusColors.draft}`}>
                             {t(`improvement.status${v.standardization_status.charAt(0).toUpperCase() + v.standardization_status.slice(1)}`) || v.standardization_status}
                           </span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-th-text-secondary" />
-                          <span className="text-th-text-secondary">{v.verification_date || "—"}</span>
+                          <Calendar className="w-3 h-3 text-th-text-3" />
+                          <span className="text-th-text-3">{v.verification_date || "—"}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <User className="w-3 h-3 text-th-text-secondary" />
+                          <User className="w-3 h-3 text-th-text-3" />
                           <span className="text-th-text">{v.verified_by || "—"}</span>
                         </div>
                         <div>
-                          <span className="text-th-text-secondary">{t("improvement.locations") || "Locations"}:</span>
+                          <span className="text-th-text-3">{t("improvement.locations") || "Locations"}:</span>
                           <span className="ml-1 text-th-text">{v.deployment_locations.length > 0 ? v.deployment_locations.join(", ") : "—"}</span>
                         </div>
                       </div>

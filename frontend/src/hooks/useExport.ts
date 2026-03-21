@@ -22,7 +22,7 @@ export interface ExportColumn {
   header: string;
   width?: number;
   /** Optional formatter — receives raw cell value, returns display string */
-  format?: (v: any) => string;
+  format?: (v: unknown) => string;
 }
 
 export interface PrintOptions {
@@ -45,8 +45,8 @@ export interface ExcelOptions {
   sheetName?: string;
   /** Column definitions — accepts ExportColumn[] or simple string[] headers */
   columns: ExportColumn[] | string[];
-  /** Data rows — accepts Record<string, any>[] or simple string[][] */
-  rows: Record<string, any>[] | string[][];
+  /** Data rows — accepts Record<string, unknown>[] or simple string[][] */
+  rows: Record<string, unknown>[] | string[][];
   /** Optional extra header rows (e.g. summary info) prepended above the table */
   headerRows?: string[][];
 }
@@ -158,18 +158,18 @@ export function useExport() {
         ? (opts.columns as string[]).map((h, i) => ({ key: `col${i}`, header: h }))
         : (opts.columns as ExportColumn[]);
 
-      // Normalize rows: accept string[][] or Record<string, any>[]
+      // Normalize rows: accept string[][] or Record<string, unknown>[]
       const isSimpleRows = opts.rows.length > 0 && Array.isArray(opts.rows[0]);
-      const normalizedRows: Record<string, any>[] = isSimpleRows
+      const normalizedRows: Record<string, unknown>[] = isSimpleRows
         ? (opts.rows as string[][]).map((row) => {
-            const obj: Record<string, any> = {};
+            const obj: Record<string, unknown> = {};
             normalizedCols.forEach((col, i) => { obj[col.key] = row[i] ?? ""; });
             return obj;
           })
-        : (opts.rows as Record<string, any>[]);
+        : (opts.rows as Record<string, unknown>[]);
 
       // Build worksheet data
-      const wsData: any[][] = [];
+      const wsData: (string | number | null)[][] = [];
 
       // Metadata header rows
       wsData.push(["LeanPilot — " + fname]);
@@ -192,7 +192,7 @@ export function useExport() {
         wsData.push(
           normalizedCols.map((col) => {
             const val = row[col.key];
-            return col.format ? col.format(val) : (val ?? "");
+            return col.format ? col.format(val) : ((val ?? "") as string | number | null);
           })
         );
       }
@@ -223,13 +223,13 @@ export function useExport() {
 
       // Normalize rows
       const isSimpleRows = opts.rows.length > 0 && Array.isArray(opts.rows[0]);
-      const normalizedRows: Record<string, any>[] = isSimpleRows
+      const normalizedRows: Record<string, unknown>[] = isSimpleRows
         ? (opts.rows as string[][]).map((row) => {
-            const obj: Record<string, any> = {};
+            const obj: Record<string, unknown> = {};
             normalizedCols.forEach((col, i) => { obj[col.key] = row[i] ?? ""; });
             return obj;
           })
-        : (opts.rows as Record<string, any>[]);
+        : (opts.rows as Record<string, unknown>[]);
 
       const headers = normalizedCols.map((c) => `"${c.header}"`).join(",");
       const rows = normalizedRows.map((row) =>
@@ -252,5 +252,101 @@ export function useExport() {
     []
   );
 
-  return { printView, exportToExcel, exportToCSV };
+  /* ---------- Export to PDF ---------- */
+  const exportToPDF = useCallback(
+    async (optsOrTitle: PrintOptions | string) => {
+      const opts: PrintOptions = typeof optsOrTitle === "string" ? { title: optsOrTitle } : optsOrTitle;
+      const { default: jsPDF } = await import("jspdf");
+      const { default: html2canvas } = await import("html2canvas");
+
+      const area = document.querySelector(opts.selector || "[data-print-area]") as HTMLElement;
+      if (!area) {
+        console.warn("useExport: print area not found for PDF export");
+        return;
+      }
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString(locale === "it" ? "it-IT" : "en-GB", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      const isLandscape = (opts.orientation || "landscape") === "landscape";
+      const canvas = await html2canvas(area, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+      });
+
+      const pdf = new jsPDF({
+        orientation: isLandscape ? "landscape" : "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const headerHeight = 15;
+      const footerHeight = 8;
+      const contentWidth = pageWidth - margin * 2;
+      const contentHeight = pageHeight - margin * 2 - headerHeight - footerHeight;
+
+      // Scale canvas to fit page width
+      const imgWidth = contentWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const totalPages = Math.ceil(imgHeight / contentHeight);
+
+      for (let page = 0; page < totalPages; page++) {
+        if (page > 0) pdf.addPage();
+
+        // Header
+        pdf.setFontSize(12);
+        pdf.setFont("helvetica", "bold");
+        pdf.text(opts.title, margin, margin + 5);
+        pdf.setFontSize(8);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(
+          `${t("common.date") || "Date"}: ${dateStr} | ${t("common.operator") || "Operator"}: ${user?.full_name || user?.email || "—"}`,
+          margin,
+          margin + 10,
+        );
+
+        // Content — clip to current page
+        const sourceY = page * contentHeight * (canvas.width / imgWidth);
+        const sourceH = Math.min(contentHeight * (canvas.width / imgWidth), canvas.height - sourceY);
+        const sliceCanvas = document.createElement("canvas");
+        sliceCanvas.width = canvas.width;
+        sliceCanvas.height = sourceH;
+        const ctx = sliceCanvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(canvas, 0, sourceY, canvas.width, sourceH, 0, 0, canvas.width, sourceH);
+        }
+
+        const sliceImgData = sliceCanvas.toDataURL("image/png");
+        const sliceHeight = (sourceH * imgWidth) / canvas.width;
+        pdf.addImage(sliceImgData, "PNG", margin, margin + headerHeight, imgWidth, sliceHeight);
+
+        // Footer
+        pdf.setFontSize(7);
+        pdf.setTextColor(128);
+        pdf.text(
+          `LeanPilot — ${opts.title} — ${t("common.page") || "Page"} ${page + 1}/${totalPages}`,
+          margin,
+          pageHeight - margin,
+        );
+        pdf.setTextColor(0);
+      }
+
+      const fname = opts.title.replace(/[^a-zA-Z0-9]/g, "_").substring(0, 50);
+      pdf.save(`${fname}.pdf`);
+    },
+    [t, locale, user],
+  );
+
+  return { printView, exportToExcel, exportToCSV, exportToPDF };
 }

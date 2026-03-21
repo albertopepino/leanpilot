@@ -61,5 +61,11 @@
 
   "outOfControl": "Out-of-Control Points",
   "rule": "Rule",
-  "ruleDescription": "Description"
+  "ruleDescription": "Description",
+
+  "createNCR": "Create NCR",
+  "ncrCreatedFromSPC": "NCR created from SPC violation",
+  "ncrCreateFailed": "Failed to create NCR",
+  "selectLineForNCR": "Select a production line to create NCR",
+  "investigate": "Investigate"
 }

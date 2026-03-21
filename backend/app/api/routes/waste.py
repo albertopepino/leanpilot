@@ -44,6 +44,7 @@ async def create_waste_event(
     )
     db.add(event)
     await db.flush()
+    await db.commit()
     await db.refresh(event)
     return event
 
@@ -220,6 +221,7 @@ async def update_waste_event(
         setattr(event, field, value)
 
     await db.flush()
+    await db.commit()
     await db.refresh(event)
     return event
 
@@ -241,4 +243,5 @@ async def delete_waste_event(
         raise HTTPException(status_code=404, detail="Waste event not found")
 
     await db.delete(event)
+    await db.commit()
     return {"status": "deleted"}

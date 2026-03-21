@@ -57,17 +57,19 @@ const TYPE_LABELS: Record<string, string> = {
 /*  Custom Tooltip                                                     */
 /* ------------------------------------------------------------------ */
 
-function YamazumiTooltip({ active, payload, label }: any) {
+interface YamazumiPayloadEntry { value: number; name?: string; color?: string; fill?: string }
+
+function YamazumiTooltip({ active, payload, label }: { active?: boolean; payload?: YamazumiPayloadEntry[]; label?: string }) {
   const { t } = useI18n();
   if (!active || !payload?.length) return null;
 
   // Filter out zero values and sort by type
-  const items = payload.filter((p: any) => p.value > 0);
+  const items = payload.filter((p) => p.value > 0);
 
   return (
     <div className="bg-th-bg-3 backdrop-blur-sm border border-th-border rounded-lg px-4 py-3 shadow-xl min-w-[180px]">
       <p className="text-xs text-th-text-2 mb-2 font-semibold">{label}</p>
-      {items.map((entry: any, i: number) => (
+      {items.map((entry, i: number) => (
         <div key={i} className="flex items-center justify-between gap-4 text-sm mb-0.5">
           <div className="flex items-center gap-2">
             <span
@@ -83,7 +85,7 @@ function YamazumiTooltip({ active, payload, label }: any) {
         <div className="flex items-center justify-between text-xs">
           <span className="text-th-text-3 font-medium">{t("improvement.totalTime") || "Total"}</span>
           <span className="font-bold text-th-text tabular-nums">
-            {items.reduce((s: number, p: any) => s + (p.value || 0), 0)}s
+            {items.reduce((s: number, p) => s + (p.value || 0), 0)}s
           </span>
         </div>
       </div>

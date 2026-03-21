@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useSite } from "@/stores/useSite";
 import type {
   ProductionRecordCreate, DowntimeEventCreate, ScrapRecordCreate,
   OEECalculateParams, AssessmentCreate,
@@ -24,6 +25,7 @@ import type {
   LSWCreate, LSWUpdate, LSWCompletionCreate,
   AuditScheduleCreate, AuditScheduleUpdate,
   SafetyIncidentCreate, SafetyIncidentUpdate,
+  PortalClientCreate,
 } from "./types";
 
 const api = axios.create({
@@ -33,10 +35,20 @@ const api = axios.create({
 });
 
 // Backwards-compatible: also send Authorization header if a legacy token exists
+// Also inject X-Site-Id from the site store when a specific site is active
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("leanpilot_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  // Inject active site id header from Zustand store
+  try {
+    const { activeSiteId, isCorpView } = useSite.getState();
+    if (activeSiteId !== null && !isCorpView) {
+      config.headers["X-Site-Id"] = String(activeSiteId);
+    }
+  } catch {
+    // Store not available during SSR — ignore
   }
   return config;
 });
@@ -92,10 +104,18 @@ api.interceptors.response.use(
           isRefreshing = false;
           localStorage.removeItem("leanpilot_token");
           localStorage.removeItem("leanpilot_refresh");
+          // Redirect to login on refresh failure
+          if (typeof window !== "undefined") {
+            window.location.href = "/login";
+          }
         }
       }
+      // No refresh cookie/token — clear and redirect to login
       localStorage.removeItem("leanpilot_token");
       localStorage.removeItem("leanpilot_refresh");
+      if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(err);
   }
@@ -126,6 +146,8 @@ export const oeeApi = {
     api.get(`/oee/alerts/${lineId}`, { params: { threshold_pct: thresholdPct } }),
   getLosses: (lineId: number, startDate?: string, endDate?: string) =>
     api.get(`/oee/losses/${lineId}`, { params: { start_date: startDate, end_date: endDate } }),
+  triggerNCR: (data: { production_line_id: number; oee_value: number; threshold?: number; consecutive_days?: number }) =>
+    api.post("/oee/trigger-ncr", data),
 };
 
 export const leanApi = {
@@ -151,9 +173,21 @@ export const leanApi = {
       params: { new_status: status, actual_savings: savings },
     }),
   getKaizenSavings: () => api.get("/lean/kaizen/savings"),
+  syncParetoPriorities: () => api.post("/lean/kaizen/sync-pareto-priorities"),
+  getAutoScore: () => api.get("/lean/assessment/auto-score"),
   // SMED
   createSmed: (data: SMEDCreate) => api.post("/lean/smed", data),
   getSmedPotential: (id: number) => api.get(`/lean/smed/${id}/potential`),
+  // Kaizen Photos
+  uploadKaizenPhoto: (id: number, type: "before" | "after", file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return api.post(`/lean/kaizen/${id}/photo/${type}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+  getKaizenPhotoUrl: (id: number, type: "before" | "after") =>
+    `${api.defaults.baseURL}/lean/kaizen/${id}/photo/${type}`,
 };
 
 // Advanced Lean APIs
@@ -166,6 +200,7 @@ export const advancedLeanApi = {
   // VSM
   createVSM: (data: VSMCreate) => api.post("/lean-advanced/vsm", data),
   listVSM: () => api.get("/lean-advanced/vsm"),
+  getVSMLiveData: (vsmId: number) => api.get(`/lean-advanced/vsm/${vsmId}/live-data`),
   // A3 Report
   createA3: (data: A3ReportCreate) => api.post("/lean-advanced/a3", data),
   listA3: () => api.get("/lean-advanced/a3"),
@@ -189,18 +224,41 @@ export const advancedLeanApi = {
   createAndonEvent: (data: AndonEventCreate) => api.post("/lean-advanced/andon", data),
   resolveAndon: (id: number, notes?: string) => api.post(`/lean-advanced/andon/${id}/resolve`, { resolution_notes: notes ?? null }),
   getAndonStatus: () => api.get("/lean-advanced/andon/status"),
+  detectAndonPatterns: () => api.post("/lean-advanced/andon/detect-patterns"),
   // Hourly Production
   logHourly: (data: HourlyProductionCreate) => api.post("/lean-advanced/hourly", data),
   getHourlyView: (lineId: number, date: string) =>
     api.get(`/lean-advanced/hourly/${lineId}`, { params: { date } }),
   // Mind Map
-  createMindMap: (data: { title: string; description: string; nodes: any[]; connectors: any[] }) =>
+  createMindMap: (data: { title: string; description: string; nodes: Record<string, unknown>[]; connectors: Record<string, unknown>[] }) =>
     api.post("/lean-advanced/mindmap", data),
   listMindMaps: () => api.get("/lean-advanced/mindmap"),
   getMindMap: (id: number) => api.get(`/lean-advanced/mindmap/${id}`),
-  updateMindMap: (id: number, data: { title?: string; description?: string; nodes?: any[]; connectors?: any[] }) =>
+  updateMindMap: (id: number, data: { title?: string; description?: string; nodes?: Record<string, unknown>[]; connectors?: Record<string, unknown>[] }) =>
     api.patch(`/lean-advanced/mindmap/${id}`, data),
   deleteMindMap: (id: number) => api.delete(`/lean-advanced/mindmap/${id}`),
+  // Gemba Observation Photo
+  uploadGembaPhoto: (observationId: number, file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return api.post(`/lean-advanced/gemba/observations/${observationId}/photo`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+  getGembaPhotoUrl: (observationId: number) =>
+    `${api.defaults.baseURL}/lean-advanced/gemba/observations/${observationId}/photo`,
+  linkGembaKaizen: (observationId: number, kaizenId: number) =>
+    api.post(`/lean-advanced/gemba/observations/${observationId}/link-kaizen/${kaizenId}`),
+  // 6S Audit Item Photo
+  uploadSixSPhoto: (auditId: number, itemId: number, file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return api.post(`/lean-advanced/6s/audits/${auditId}/items/${itemId}/photo`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+  getSixSPhotoUrl: (auditId: number, itemId: number) =>
+    `${api.defaults.baseURL}/lean-advanced/6s/audits/${auditId}/items/${itemId}/photo`,
 };
 
 // AI APIs - fully enabled
@@ -241,7 +299,7 @@ export const authApi = {
   verifyTotp: (code: string) => api.post("/auth/totp/verify", { code }),
   disableTotp: (password: string, code: string) =>
     api.post("/auth/totp/disable", { password, code }),
-  validateTotp: (code: string) => api.post("/auth/totp/validate", { code }),
+  validateTotp: (temp_token: string, code: string) => api.post("/auth/totp/validate", { temp_token, code }),
 };
 
 export const adminApi = {
@@ -252,7 +310,7 @@ export const adminApi = {
   getAuditLogs: (params?: { action?: string; limit?: number; offset?: number }) =>
     api.get("/admin/audit-logs", { params }),
   getPermissions: () => api.get("/admin/permissions"),
-  updatePermissions: (data: Record<string, Record<string, string>>) => api.put("/admin/permissions", data),
+  updatePermissions: (data: Record<string, Record<string, string>>) => api.put("/admin/permissions", { permissions: data }),
   getMyPermissions: () => api.get("/admin/my-permissions"),
   getFactory: () => api.get("/admin/factory"),
   exportData: () =>
@@ -275,6 +333,16 @@ export const adminApi = {
     });
   },
   deleteLogo: () => api.delete("/admin/company-logo"),
+  // Company settings (audit label, email reports, etc.)
+  getCompanySettings: () => api.get("/company/settings"),
+  updateCompanySettings: (data: Record<string, unknown>) => api.put("/admin/company-settings", data),
+  // ERP integrations
+  listERPIntegrations: () => api.get("/erp/integrations"),
+  createERPIntegration: (data: Record<string, unknown>) => api.post("/erp/integrations", data),
+  updateERPIntegration: (id: number, data: Record<string, unknown>) => api.put(`/erp/integrations/${id}`, data),
+  deleteERPIntegration: (id: number) => api.delete(`/erp/integrations/${id}`),
+  testERPConnection: (id: number) => api.post(`/erp/integrations/${id}/test`),
+  triggerERPSync: (id: number) => api.post(`/erp/integrations/${id}/sync`),
 };
 
 // Manufacturing APIs
@@ -385,6 +453,26 @@ export const qcApi = {
   downloadPolicy: (id: number) =>
     api.get(`/qc/policies/${id}/download`, { responseType: "blob" }),
   deletePolicy: (id: number) => api.delete(`/qc/policies/${id}`),
+  // NCR Photo
+  uploadNCRPhoto: (id: number, file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return api.post(`/qc/ncr/${id}/photo`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+  getNCRPhotoUrl: (id: number) =>
+    `${api.defaults.baseURL}/qc/ncr/${id}/photo`,
+  // CAPA Photo
+  uploadCAPAPhoto: (id: number, file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return api.post(`/qc/capa/${id}/photo`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+  getCAPAPhotoUrl: (id: number) =>
+    `${api.defaults.baseURL}/qc/capa/${id}/photo`,
 };
 
 // Groups / Policies APIs
@@ -394,7 +482,7 @@ export const groupsApi = {
   update: (id: number, data: GroupUpdate) => api.patch(`/admin/groups/${id}`, data),
   remove: (id: number) => api.delete(`/admin/groups/${id}`),
   setPolicies: (id: number, policies: GroupPolicyItem[]) =>
-    api.put(`/admin/groups/${id}/policies`, policies),
+    api.put(`/admin/groups/${id}/policies`, { policies }),
   addMembers: (id: number, userIds: number[]) =>
     api.post(`/admin/groups/${id}/members`, { user_ids: userIds }),
   removeMembers: (id: number, userIds: number[]) =>
@@ -518,10 +606,81 @@ export const safetyApi = {
   updateIncident: (id: number, data: SafetyIncidentUpdate) => api.patch(`/safety/incidents/${id}`, data),
   deleteIncident: (id: number) => api.delete(`/safety/incidents/${id}`),
   getStats: (params?: { line_id?: number }) => api.get("/safety/stats", { params }),
+  // Safety Documents (server-side storage)
+  listDocuments: (params?: { category?: string }) => api.get("/safety/documents", { params }),
+  uploadDocument: (file: File, title: string, description: string, category: string) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("category", category);
+    return api.post("/safety/documents", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+  downloadDocument: (id: number) =>
+    api.get(`/safety/documents/${id}/download`, { responseType: "blob" }),
+  deleteDocument: (id: number) => api.delete(`/safety/documents/${id}`),
+  // Incident Photo
+  uploadIncidentPhoto: (id: number, file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return api.post(`/safety/incidents/${id}/photo`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+  getIncidentPhotoUrl: (id: number) =>
+    `${api.defaults.baseURL}/safety/incidents/${id}/photo`,
+};
+
+// Organization / Multi-Site APIs
+export const organizationApi = {
+  getMyOrg: () => api.get("/organizations/me"),
+  getSites: (orgId: number) => api.get(`/organizations/${orgId}/sites`),
+  getDashboard: (orgId: number) => api.get(`/organizations/${orgId}/dashboard`),
+  getUserRoles: (userId: number) => api.get(`/users/${userId}/roles`),
+  assignRole: (userId: number, data: { organization_id: number; site_id?: number | null; role: string; scope_line_ids?: number[] | null }) =>
+    api.post(`/users/${userId}/roles`, data),
+  removeRole: (userId: number, roleId: number) => api.delete(`/users/${userId}/roles/${roleId}`),
+};
+
+// SPC Cross-Tool APIs
+export const spcApi = {
+  triggerNCR: (data: {
+    production_line_id: number;
+    rule_violated: string;
+    sample_number?: number;
+    measured_value?: number;
+    ucl?: number;
+    lcl?: number;
+    chart_type?: string;
+  }) => api.post("/spc/trigger-ncr", data),
 };
 
 export const featuresApi = {
   get: () => api.get("/features"),
+};
+
+// FMEA APIs
+export const fmeaApi = {
+  create: (data: any) => api.post("/fmea/", data),
+  list: (params?: { skip?: number; limit?: number }) => api.get("/fmea/", { params }),
+  get: (id: number) => api.get(`/fmea/${id}`),
+  update: (id: number, data: any) => api.patch(`/fmea/${id}`, data),
+  delete: (id: number) => api.delete(`/fmea/${id}`),
+  addItem: (id: number, data: any) => api.post(`/fmea/${id}/items`, data),
+  updateItem: (id: number, itemId: number, data: any) => api.patch(`/fmea/${id}/items/${itemId}`, data),
+  deleteItem: (id: number, itemId: number) => api.delete(`/fmea/${id}/items/${itemId}`),
+};
+
+export const portalApi = {
+  listClients: () => api.get("/portal/clients"),
+  getClient: (orgId: number) => api.get(`/portal/clients/${orgId}`),
+  createClient: (data: PortalClientCreate) => api.post("/portal/clients", data),
+  toggleStatus: (orgId: number, isActive: boolean) => api.patch(`/portal/clients/${orgId}/status`, { is_active: isActive }),
+  getHealth: (orgId: number) => api.get(`/portal/clients/${orgId}/health`),
+  gdprExport: (orgId: number) => api.get(`/portal/clients/${orgId}/gdpr-export`),
+  gdprErase: (orgId: number) => api.delete(`/portal/clients/${orgId}/gdpr-erase`),
 };
 
 export default api;

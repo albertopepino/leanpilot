@@ -88,27 +88,16 @@ async def notify_qc_fail(
     title = f"QC Check Failed: {check_type} on {line_name}"
     message = f"A {check_type} check has failed on {line_name}. Andon and NCR have been auto-created."
 
-    await notify_factory_role(
-        db,
-        factory_id=factory_id,
-        role="manager",
-        notification_type="qc_fail",
-        title=title,
-        message=message,
-        priority="high",
-        link=f"/measure/qc",
-        source_type="qc_record",
-        source_id=qc_record_id,
-    )
-    await notify_factory_role(
-        db,
-        factory_id=factory_id,
-        role="supervisor",
-        notification_type="qc_fail",
-        title=title,
-        message=message,
-        priority="high",
-        link=f"/measure/qc",
-        source_type="qc_record",
-        source_id=qc_record_id,
-    )
+    for role in ("quality_manager", "plant_manager", "production_manager", "line_supervisor", "quality_supervisor"):
+        await notify_factory_role(
+            db,
+            factory_id=factory_id,
+            role=role,
+            notification_type="qc_fail",
+            title=title,
+            message=message,
+            priority="high",
+            link="/measure/qc",
+            source_type="qc_record",
+            source_id=qc_record_id,
+        )

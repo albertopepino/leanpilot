@@ -1,0 +1,18 @@
+{
+  "title": "My Area Today",
+  "andonAlerts": "Andon",
+  "openNCRs": "Open NCRs",
+  "actionItems": "Action Items",
+  "dailyRoutine": "Daily Routine",
+  "completed": "completed",
+  "checkHandover": "Review shift handover",
+  "checkSQCDP": "Update SQCDP board",
+  "checkGemba": "Gemba walk",
+  "checkLSW": "Leader standard work checks",
+  "checkKaizen": "Kaizen follow-up",
+  "escalations": "Escalations",
+  "andonActive": "active Andon alerts",
+  "capaOverdue": "overdue CAPA actions",
+  "ncrOpen": "open NCRs need attention",
+  "noEscalations": "No escalations — all areas within targets"
+}

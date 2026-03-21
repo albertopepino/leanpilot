@@ -1,0 +1,23 @@
+{
+  "myShift": "My Shift",
+  "shiftProgress": "Shift progress",
+  "remaining": "remaining",
+  "noActiveShift": "No active shift detected",
+  "quickActions": "Quick Actions",
+  "logOutput": "Log Output",
+  "flagIssue": "Flag Issue",
+  "safetyCheck": "Safety Check",
+  "suggestImprovement": "Suggest Improvement",
+  "alerts": "alerts",
+  "activeAlerts": "active alerts",
+  "tapToView": "Tap to view Andon board",
+  "handoverPending": "Shift handover pending",
+  "reviewAndAcknowledge": "Review and acknowledge",
+  "allClear": "All clear — no alerts or pending actions",
+  "noLines": "No production lines configured",
+  "statusRunning": "Running",
+  "statusChangeover": "Changeover",
+  "statusStopped": "Stopped",
+  "statusBreakdown": "Breakdown",
+  "statusIdle": "Idle"
+}

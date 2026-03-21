@@ -60,5 +60,7 @@
   "cardAge": "Age",
   "days": "days",
 
-  "exportTitle": "Kanban Board Export"
+  "exportTitle": "Kanban Board Export",
+
+  "metricsView": "Metrics"
 }

@@ -99,6 +99,14 @@
   "groupPoliciesSaved": "Policy salvate",
   "groupPoliciesNote": "Quando un utente appartiene a più gruppi, si applica il livello più permissivo per ogni strumento.",
   "groupFallbackNote": "Gli utenti senza alcun gruppo usano i permessi predefiniti basati sul ruolo.",
+  "failedLoadGroups": "Impossibile caricare i gruppi",
+  "failedSaveGroup": "Impossibile salvare il gruppo",
+  "failedDeleteGroup": "Impossibile eliminare il gruppo",
+  "failedSavePolicies": "Impossibile salvare le policy",
+  "failedAddMember": "Impossibile aggiungere il membro",
+  "failedRemoveMember": "Impossibile rimuovere il membro",
+  "selectGroupPrompt": "Seleziona un gruppo per modificare le sue policy e i membri",
+  "noUsersAvailable": "Nessun utente disponibile",
   "permFullAccess": "Accesso Completo",
   "permModifyAccess": "Modifica",
   "permViewOnly": "Solo Lettura",
@@ -173,5 +181,10 @@
   "downloadTemplatesDesc": "Scarica modelli CSV precompilati con intestazioni e dati di esempio.",
   "uploadImport": "Carica e Importa",
   "uploadImportDesc": "Seleziona un tipo di dati, carica il tuo CSV, valida e importa.",
-  "importResults": "Risultati Importazione"
+  "importResults": "Risultati Importazione",
+
+  "organizationSettings": "Impostazioni Organizzazione",
+  "siteCode": "Codice Stabilimento",
+  "maxSites": "Stabilimenti Massimi",
+  "subscriptionTier": "Piano di Abbonamento"
 }

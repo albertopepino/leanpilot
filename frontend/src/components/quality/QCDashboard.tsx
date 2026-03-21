@@ -346,9 +346,9 @@ export default function QCDashboard() {
     { key: "capa", label: t("quality.tabCAPA"), icon: <Wrench className="w-4 h-4" /> },
     { key: "defect_catalog", label: t("quality.tabDefectCatalog"), icon: <List className="w-4 h-4" /> },
     { key: "inspections", label: t("quality.tabInspections"), icon: <ClipboardCheck className="w-4 h-4" /> },
-    { key: "spc", label: "SPC Charts", icon: <Activity className="w-4 h-4" /> },
-    { key: "poka_yoke", label: "Poka-Yoke", icon: <ShieldCheck className="w-4 h-4" /> },
-    { key: "qc_policies", label: "QC Policies", icon: <BookOpen className="w-4 h-4" /> },
+    { key: "spc", label: t("common.tabSPCCharts"), icon: <Activity className="w-4 h-4" /> },
+    { key: "poka_yoke", label: t("common.tabPokaYoke"), icon: <ShieldCheck className="w-4 h-4" /> },
+    { key: "qc_policies", label: t("common.tabQCPolicies"), icon: <BookOpen className="w-4 h-4" /> },
   ];
 
   const chartTooltipStyle = {
@@ -521,7 +521,7 @@ function OverviewView({
   passRateTrend: { date: string; rate: number }[];
   defectsByCategory: { name: string; value: number }[];
   ncrBySeverity: { name: string; value: number }[];
-  chartTooltipStyle: any;
+  chartTooltipStyle: { contentStyle: React.CSSProperties };
   t: (key: string, r?: Record<string, string | number>) => string;
 }) {
   return (

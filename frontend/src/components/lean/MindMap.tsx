@@ -2,6 +2,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { advancedLeanApi } from "@/lib/api";
+import { getErrorMessage } from "@/lib/formatters";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
@@ -213,8 +214,8 @@ export default function MindMap() {
       const payload = {
         title: data.title,
         description: data.description,
-        nodes: data.nodes,
-        connectors: data.connectors,
+        nodes: data.nodes as unknown as Record<string, unknown>[],
+        connectors: data.connectors as unknown as Record<string, unknown>[],
       };
       if (activeId) {
         await advancedLeanApi.updateMindMap?.(activeId, payload);
@@ -224,8 +225,8 @@ export default function MindMap() {
       }
       flash("ok", t("improvement.mindmapSaved") || "Mind map saved");
       loadList();
-    } catch (err: any) {
-      flash("err", err?.response?.data?.detail || t("improvement.mindmapSaveError") || "Save failed");
+    } catch (err: unknown) {
+      flash("err", getErrorMessage(err, t("improvement.mindmapSaveError") || "Save failed"));
     } finally {
       setSaving(false);
     }

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/stores/useI18n";
 import { authApi } from "@/lib/api";
+import { getErrorMessage } from "@/lib/formatters";
 import { ShieldCheck } from "lucide-react";
 
 type Step = "idle" | "setup" | "verify" | "disable";
@@ -28,8 +29,8 @@ export default function TwoFactorSetup() {
       setQrCode(res.data.qr_code);
       setSecret(res.data.secret);
       setStep("verify");
-    } catch (e: any) {
-      setMsg({ type: "err", text: e?.response?.data?.detail || "Setup failed" });
+    } catch (e: unknown) {
+      setMsg({ type: "err", text: getErrorMessage(e, "Setup failed") });
     }
     setLoading(false);
   };
@@ -46,8 +47,8 @@ export default function TwoFactorSetup() {
       setQrCode("");
       setSecret("");
       setMsg({ type: "ok", text: t("settings.2faEnabled") });
-    } catch (e: any) {
-      setMsg({ type: "err", text: e?.response?.data?.detail || "Invalid code" });
+    } catch (e: unknown) {
+      setMsg({ type: "err", text: getErrorMessage(e, "Invalid code") });
     }
     setLoading(false);
   };
@@ -63,8 +64,8 @@ export default function TwoFactorSetup() {
       setCode("");
       setPassword("");
       setMsg({ type: "ok", text: t("settings.2faDisabled") });
-    } catch (e: any) {
-      setMsg({ type: "err", text: e?.response?.data?.detail || "Failed to disable" });
+    } catch (e: unknown) {
+      setMsg({ type: "err", text: getErrorMessage(e, "Failed to disable") });
     }
     setLoading(false);
   };

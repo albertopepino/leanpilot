@@ -10,7 +10,12 @@ from app.models.base import Base, TimestampMixin
 class UserRole(str, enum.Enum):
     ADMIN = "admin"
     PLANT_MANAGER = "plant_manager"
+    PRODUCTION_MANAGER = "production_manager"
+    QUALITY_MANAGER = "quality_manager"
+    QUALITY_SUPERVISOR = "quality_supervisor"
     LINE_SUPERVISOR = "line_supervisor"
+    QUALITY_INSPECTOR = "quality_inspector"
+    MAINTENANCE = "maintenance"
     OPERATOR = "operator"
     VIEWER = "viewer"
 
@@ -32,6 +37,9 @@ class User(TimestampMixin, Base):
     is_active = Column(Boolean, default=True, server_default=text("true"))
     factory_id = Column(Integer, ForeignKey("factories.id"), nullable=True)
     language = Column(String(5), default="en", server_default=text("'en'"))
+
+    # Platform superadmin (consultant portal access)
+    is_superadmin = Column(Boolean, default=False, server_default=text("false"))
 
     # GDPR Consent fields (Art. 6, 7)
     privacy_policy_accepted_at = Column(DateTime(timezone=True), nullable=True)

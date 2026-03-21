@@ -2,14 +2,19 @@
 import { useState, useEffect, useCallback, useRef, type DragEvent } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { useCurrency } from "@/stores/useCurrency";
-import { leanApi } from "@/lib/api";
+import { useSearchParams } from "next/navigation";
+import { leanApi, lswApi, advancedLeanApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
 import LinkedItemBadge from "@/components/ui/LinkedItemBadge";
 import CreateLinkedAction from "@/components/ui/CreateLinkedAction";
+import PhotoUpload from "@/components/ui/PhotoUpload";
+import ToolInfoCard from "@/components/ui/ToolInfoCard";
+import FlowBreadcrumb from "@/components/ui/FlowBreadcrumb";
+import { TOOL_INFO } from "@/lib/toolInfo";
 import { useLinkedItems } from "@/hooks/useLinkedItems";
 import { viewToRoute } from "@/lib/routes";
-import { Lightbulb, ClipboardList, Wrench, CheckCircle, Trophy, Sparkles, Zap, ShieldCheck, Coins, XCircle, BookCheck, type LucideIcon } from "lucide-react";
+import { Lightbulb, ClipboardList, Wrench, CheckCircle, Trophy, Sparkles, Zap, ShieldCheck, Coins, XCircle, BookCheck, BarChart3, type LucideIcon } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -48,6 +53,15 @@ interface KaizenItem {
   is_blitz?: boolean;
   standardized?: boolean;
   source_type?: string;
+  lsw_id?: number;
+  pareto_rank?: number;
+  countermeasure?: string;
+}
+
+interface LSWTemplate {
+  id: number;
+  title: string;
+  role: string;
 }
 
 type BoardViewMode = "kanban" | "matrix";
@@ -446,6 +460,8 @@ interface CreateFormData {
   effort_level: string;
   impact_level: string;
   is_blitz: boolean;
+  lsw_id: string;
+  countermeasure: string;
 }
 
 const EMPTY_FORM: CreateFormData = {
@@ -463,6 +479,8 @@ const EMPTY_FORM: CreateFormData = {
   effort_level: "",
   impact_level: "",
   is_blitz: false,
+  lsw_id: "",
+  countermeasure: "",
 };
 
 function CreateKaizenModal({
@@ -479,8 +497,28 @@ function CreateKaizenModal({
   sym: string;
 }) {
   const [form, setForm] = useState<CreateFormData>({ ...EMPTY_FORM });
+  const [lswTemplates, setLswTemplates] = useState<LSWTemplate[]>([]);
   const set = (field: Exclude<keyof CreateFormData, "is_blitz">, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
+
+  // Load LSW templates for the dropdown
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await lswApi.list({ active_only: true });
+        const data = res.data ?? res;
+        if (Array.isArray(data)) {
+          setLswTemplates(data.map((d: Record<string, unknown>) => ({
+            id: d.id as number,
+            title: d.title as string,
+            role: d.role as string,
+          })));
+        }
+      } catch {
+        // LSW not available — dropdown will be empty
+      }
+    })();
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -718,6 +756,46 @@ function CreateKaizenModal({
             {t("improvement.isBlitz") || "Kaizen Blitz (rapid event)"}
           </span>
         </label>
+
+        {/* Countermeasure */}
+        <div>
+          <label htmlFor="kaizen-countermeasure" className="block text-xs font-medium text-th-text-3 mb-1.5 uppercase tracking-wider">
+            {t("improvement.countermeasure") || "Countermeasure"}
+          </label>
+          <textarea
+            id="kaizen-countermeasure"
+            value={form.countermeasure}
+            onChange={(e) => set("countermeasure", e.target.value)}
+            rows={2}
+            className={`${inputCls} resize-none`}
+            placeholder={t("improvement.countermeasurePlaceholder") || "Describe the standard countermeasure..."}
+          />
+        </div>
+
+        {/* Link to LSW */}
+        {lswTemplates.length > 0 && (
+          <div>
+            <label htmlFor="kaizen-lsw" className="block text-xs font-medium text-th-text-3 mb-1.5 uppercase tracking-wider">
+              {t("improvement.linkToLSW") || "Link to LSW"}
+            </label>
+            <select
+              id="kaizen-lsw"
+              value={form.lsw_id}
+              onChange={(e) => set("lsw_id", e.target.value)}
+              className={inputCls}
+            >
+              <option value="">{t("common.none") || "None"}</option>
+              {lswTemplates.map((lsw) => (
+                <option key={lsw.id} value={String(lsw.id)}>
+                  {lsw.title} ({lsw.role})
+                </option>
+              ))}
+            </select>
+            <p className="text-[10px] text-th-text-3 mt-1">
+              {t("improvement.linkToLSWHint") || "When verified, the countermeasure will be added to this LSW template."}
+            </p>
+          </div>
+        )}
 
         {/* Before/After photo URLs */}
         <div className="grid grid-cols-2 gap-3">
@@ -1008,6 +1086,35 @@ function CardDetailModal({
           )}
         </div>
 
+        {/* Before / After Photos */}
+        <div className="border-t border-th-border/50 pt-4">
+          <p className="text-xs font-medium text-th-text-3 mb-3 uppercase tracking-wider">
+            {t("improvement.beforeAfterPhotos") || "Before / After Photos"}
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-xs text-th-text-3 mb-1">{t("improvement.beforePhoto") || "Before"}</p>
+              <PhotoUpload
+                currentUrl={item.before_photo_url ? leanApi.getKaizenPhotoUrl(item.id, "before") : null}
+                onUpload={async (file) => {
+                  await leanApi.uploadKaizenPhoto(item.id, "before", file);
+                }}
+                compact
+              />
+            </div>
+            <div>
+              <p className="text-xs text-th-text-3 mb-1">{t("improvement.afterPhoto") || "After"}</p>
+              <PhotoUpload
+                currentUrl={item.after_photo_url ? leanApi.getKaizenPhotoUrl(item.id, "after") : null}
+                onUpload={async (file) => {
+                  await leanApi.uploadKaizenPhoto(item.id, "after", file);
+                }}
+                compact
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Status change section */}
         {nextStatuses.length > 0 && !confirmTarget && (
           <div className="border-t border-th-border/50 pt-4">
@@ -1015,19 +1122,29 @@ function CardDetailModal({
               {t("improvement.updateStatus")}
             </p>
             <div className="flex flex-wrap gap-2">
-              {nextStatuses.map((ns) => (
+              {nextStatuses.map((ns) => {
+                const isBlockedStandardize = ns === "standardized" && !item.lsw_id;
+                return (
                 <button
                   key={ns}
-                  onClick={() => setConfirmTarget(ns)}
+                  onClick={() => {
+                    if (isBlockedStandardize) return;
+                    setConfirmTarget(ns);
+                  }}
+                  disabled={isBlockedStandardize}
+                  title={isBlockedStandardize ? (t("improvement.lswRequiredForStandardize") || "Link an LSW template before standardizing") : undefined}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                    ns === "rejected"
+                    isBlockedStandardize
+                      ? "bg-th-bg-3 text-th-text-3 border border-th-border cursor-not-allowed opacity-50"
+                      : ns === "rejected"
                       ? "bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/20 hover:bg-red-500/20"
                       : "bg-brand-500/10 text-brand-700 dark:text-brand-400 border border-brand-500/20 hover:bg-brand-500/20"
                   }`}
                 >
                   {t(`improvement.${NEXT_STATUS_LABEL[ns] ?? ns}`)}
                 </button>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -1148,6 +1265,7 @@ export default function KaizenBoard() {
   const { t } = useI18n();
   const sym = useCurrency((s) => s.currency.symbol);
   const { printView, exportToExcel } = useExport();
+  const searchParams = useSearchParams();
 
   const [items, setItems] = useState<KaizenItem[]>([]);
   const [savings, setSavings] = useState<KaizenSavings>(EMPTY_SAVINGS);
@@ -1224,6 +1342,13 @@ export default function KaizenBoard() {
     refreshAll().finally(() => setLoading(false));
   }, [refreshAll]);
 
+  // Auto-open create form when navigating from another module (e.g. Gemba → Kaizen)
+  useEffect(() => {
+    if (searchParams.get("linkBack") === "true" && searchParams.get("from")) {
+      setShowForm(true);
+    }
+  }, [searchParams]);
+
   /* ---- Create ---- */
 
   const handleCreate = async (form: CreateFormData) => {
@@ -1246,6 +1371,8 @@ export default function KaizenBoard() {
         effort_level: form.effort_level || undefined,
         impact_level: form.impact_level || undefined,
         is_blitz: form.is_blitz || undefined,
+        lsw_id: form.lsw_id ? Number(form.lsw_id) : undefined,
+        countermeasure: form.countermeasure.trim() || undefined,
       };
       const res = await leanApi.createKaizen(payload);
       const created: KaizenItem = res.data ?? {
@@ -1256,6 +1383,13 @@ export default function KaizenBoard() {
       setItems((prev) => [...prev, created]);
       setShowForm(false);
       fetchSavings();
+
+      // Gemba→Kaizen link-back: if created from a gemba observation, link them
+      const fromModule = searchParams.get("from");
+      const fromId = searchParams.get("fromId");
+      if (fromModule === "gemba" && fromId && created.id) {
+        advancedLeanApi.linkGembaKaizen(Number(fromId), created.id).catch(() => {});
+      }
     } catch {
       const local: KaizenItem = {
         id: Date.now(),
@@ -1419,11 +1553,20 @@ export default function KaizenBoard() {
 
   /* ---- Derived / filtered ---- */
 
-  const filteredItems = items.filter((i) => {
-    if (filterCategory && i.category !== filterCategory) return false;
-    if (filterPriority && i.priority !== filterPriority) return false;
-    return true;
-  });
+  const filteredItems = items
+    .filter((i) => {
+      if (filterCategory && i.category !== filterCategory) return false;
+      if (filterPriority && i.priority !== filterPriority) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      // Sort by pareto_rank first (items with rank come first), then by priority
+      const aRank = a.pareto_rank ?? 999;
+      const bRank = b.pareto_rank ?? 999;
+      if (aRank !== bRank) return aRank - bRank;
+      const priOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+      return (priOrder[a.priority] ?? 2) - (priOrder[b.priority] ?? 2);
+    });
 
   const completedCount = items.filter(
     (i) => i.status === "completed" || i.status === "verified"
@@ -1440,6 +1583,12 @@ export default function KaizenBoard() {
 
   return (
     <div className="space-y-5" data-print-area="true" role="region" aria-label="Kaizen Board">
+      {/* Flow breadcrumb when navigated from another tool */}
+      <FlowBreadcrumb currentLabel={t("common.titleKaizen") || "Kaizen Board"} />
+
+      {/* Tool info card */}
+      <ToolInfoCard info={TOOL_INFO.kaizen} />
+
       {/* ---- Empty state message ---- */}
       {!loading && items.length === 0 && (
         <div className="px-4 py-6 bg-th-bg-2 border border-th-border rounded-xl text-center text-sm text-th-text-2">
@@ -1531,6 +1680,26 @@ export default function KaizenBoard() {
             </span>{" "}
             <span className="font-bold text-th-text text-lg">{items.length}</span>
           </div>
+
+          {/* Pareto sync button */}
+          <button
+            onClick={async () => {
+              try {
+                const res = await leanApi.syncParetoPriorities();
+                const data = res.data;
+                if (data?.updated_count != null) {
+                  await fetchBoard();
+                }
+              } catch {
+                // silently fail
+              }
+            }}
+            className="px-3 py-1.5 rounded-lg border border-rose-300 dark:border-rose-700 bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 text-xs font-medium hover:bg-rose-100 dark:hover:bg-rose-950/40 transition-colors flex items-center gap-1.5"
+            title={t("improvement.syncFromPareto") || "Sync priorities from Pareto analysis"}
+          >
+            <BarChart3 className="w-3.5 h-3.5" />
+            {t("improvement.syncFromPareto") || "Sync from Pareto"}
+          </button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -1572,11 +1741,11 @@ export default function KaizenBoard() {
                   t("improvement.actualSavings") || "Actual Savings (EUR)",
                 ],
                 rows: filteredItems.map((item) => [
-                  item.title,
-                  item.status,
-                  item.priority,
-                  item.category,
-                  item.owner,
+                  item.title ?? "",
+                  item.status ?? "",
+                  item.priority ?? "",
+                  item.category ?? "",
+                  item.owner ?? "",
                   String(item.expected_savings_eur ?? ""),
                   String(item.actual_savings_eur ?? ""),
                 ]),
@@ -1805,10 +1974,28 @@ export default function KaizenBoard() {
                         {item.title}
                       </p>
 
-                      {/* Priority + Category */}
+                      {/* Priority + Category + Pareto */}
                       <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
                         <PriorityBadge priority={item.priority} t={t} />
                         <CategoryBadge category={item.category} t={t} />
+                        {item.pareto_rank != null && (
+                          <span
+                            className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20"
+                            title={`${t("improvement.paretoPriority") || "Pareto Priority"} #${item.pareto_rank}`}
+                          >
+                            <BarChart3 className="w-3 h-3" />
+                            #{item.pareto_rank}
+                          </span>
+                        )}
+                        {item.lsw_id != null && (
+                          <span
+                            className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium bg-violet-500/10 text-violet-700 dark:text-violet-400 border border-violet-500/20"
+                            title={t("improvement.linkedToLSW") || "Linked to LSW"}
+                          >
+                            <ClipboardList className="w-3 h-3" />
+                            LSW
+                          </span>
+                        )}
                       </div>
 
                       {/* Savings */}

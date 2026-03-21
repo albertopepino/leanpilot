@@ -61,5 +61,11 @@
 
   "outOfControl": "Tačke van kontrole",
   "rule": "Pravilo",
-  "ruleDescription": "Opis"
+  "ruleDescription": "Opis",
+
+  "createNCR": "Kreiraj NCR",
+  "ncrCreatedFromSPC": "NCR kreiran iz SPC prekrsaja",
+  "ncrCreateFailed": "Greska pri kreiranju NCR-a",
+  "selectLineForNCR": "Izaberite proizvodnu liniju za kreiranje NCR-a",
+  "investigate": "Istrazi"
 }

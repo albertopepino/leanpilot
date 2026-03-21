@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useI18n } from '@/stores/useI18n';
 import { Bell, Check, CheckCheck, X, AlertTriangle, Shield, Wrench, Zap, FileText, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { notificationApi } from '@/lib/api';
 
 interface Notification {
   id: number;
@@ -16,7 +17,7 @@ interface Notification {
   created_at: string;
 }
 
-const TYPE_ICONS: Record<string, any> = {
+const TYPE_ICONS: Record<string, React.ElementType> = {
   qc_fail: AlertTriangle,
   andon_triggered: Zap,
   ncr_created: FileText,
@@ -46,10 +47,9 @@ export default function NotificationPanel() {
 
   const fetchNotifications = useCallback(async () => {
     try {
-      const { default: api } = await import('@/lib/api');
       const [listRes, countRes] = await Promise.all([
-        api.get('/notifications/', { params: { limit: 20 } }),
-        api.get('/notifications/count'),
+        notificationApi.list({ limit: 20 }),
+        notificationApi.getCount(),
       ]);
       setNotifications(listRes.data);
       setUnreadCount(countRes.data.unread);
@@ -64,16 +64,14 @@ export default function NotificationPanel() {
 
   async function markRead(id: number) {
     try {
-      const { default: api } = await import('@/lib/api');
-      await api.post(`/notifications/${id}/read`);
+      await notificationApi.markRead(id);
       fetchNotifications();
     } catch {}
   }
 
   async function markAllRead() {
     try {
-      const { default: api } = await import('@/lib/api');
-      await api.post('/notifications/read-all');
+      await notificationApi.markAllRead();
       fetchNotifications();
     } catch {}
   }

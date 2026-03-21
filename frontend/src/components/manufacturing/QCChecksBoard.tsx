@@ -202,7 +202,7 @@ export default function QCChecksBoard() {
     setActiveRecord(record);
     setActiveTemplate(tpl!);
     // Pre-fill existing results
-    const existing: Record<number, any> = {};
+    const existing: Record<number, { result: string; measured_value?: number; text_value?: string; notes?: string }> = {};
     record.results?.forEach((r) => {
       existing[r.template_item_id] = {
         result: r.result,

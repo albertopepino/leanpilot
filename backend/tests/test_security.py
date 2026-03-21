@@ -125,31 +125,35 @@ class TestTokens:
         assert payload["type"] == "refresh"
         assert "jti" in payload
 
-    def test_decode_access_token(self):
+    @pytest.mark.asyncio
+    async def test_decode_access_token(self):
         token = create_access_token(data={"sub": "42", "role": "admin", "fid": 1})
-        payload = decode_token(token, expected_type="access")
+        payload = await decode_token(token, expected_type="access")
         assert payload["sub"] == "42"
 
-    def test_decode_refresh_token(self):
+    @pytest.mark.asyncio
+    async def test_decode_refresh_token(self):
         token = create_refresh_token(data={"sub": "42"})
-        payload = decode_token(token, expected_type="refresh")
+        payload = await decode_token(token, expected_type="refresh")
         assert payload["sub"] == "42"
 
-    def test_decode_access_as_refresh_fails(self):
+    @pytest.mark.asyncio
+    async def test_decode_access_as_refresh_fails(self):
         """Using an access token where a refresh is expected should raise."""
         from fastapi import HTTPException
 
         token = create_access_token(data={"sub": "42", "role": "admin", "fid": 1})
         with pytest.raises(HTTPException) as exc_info:
-            decode_token(token, expected_type="refresh")
+            await decode_token(token, expected_type="refresh")
         assert exc_info.value.status_code == 401
 
-    def test_decode_refresh_as_access_fails(self):
+    @pytest.mark.asyncio
+    async def test_decode_refresh_as_access_fails(self):
         from fastapi import HTTPException
 
         token = create_refresh_token(data={"sub": "42"})
         with pytest.raises(HTTPException) as exc_info:
-            decode_token(token, expected_type="access")
+            await decode_token(token, expected_type="access")
         assert exc_info.value.status_code == 401
 
 
@@ -157,7 +161,8 @@ class TestTokens:
 # Expired token
 # ---------------------------------------------------------------------------
 class TestExpiredToken:
-    def test_expired_access_token_rejected(self):
+    @pytest.mark.asyncio
+    async def test_expired_access_token_rejected(self):
         """A token with exp in the past should be rejected."""
         from fastapi import HTTPException
 
@@ -166,10 +171,11 @@ class TestExpiredToken:
             expires_delta=timedelta(seconds=-10),  # Already expired
         )
         with pytest.raises(HTTPException) as exc_info:
-            decode_token(token, expected_type="access")
+            await decode_token(token, expected_type="access")
         assert exc_info.value.status_code == 401
 
-    def test_tampered_token_rejected(self):
+    @pytest.mark.asyncio
+    async def test_tampered_token_rejected(self):
         """A token signed with a different key should be rejected."""
         from fastapi import HTTPException
 
@@ -179,40 +185,43 @@ class TestExpiredToken:
             algorithm="HS256",
         )
         with pytest.raises(HTTPException):
-            decode_token(fake_token, expected_type="access")
+            await decode_token(fake_token, expected_type="access")
 
 
 # ---------------------------------------------------------------------------
 # Revoked token
 # ---------------------------------------------------------------------------
 class TestRevokedToken:
-    def test_revoke_then_decode_fails(self):
+    @pytest.mark.asyncio
+    async def test_revoke_then_decode_fails(self):
         """A revoked token (JTI in blacklist) should be rejected on decode."""
         from fastapi import HTTPException
 
         token = create_access_token(data={"sub": "42", "role": "admin", "fid": 1})
 
         # Revoke it
-        revoke_token(token)
+        await revoke_token(token)
 
         # Now decoding should fail
         with pytest.raises(HTTPException) as exc_info:
-            decode_token(token, expected_type="access")
+            await decode_token(token, expected_type="access")
         assert exc_info.value.status_code == 401
         assert "revoked" in exc_info.value.detail.lower()
 
-    def test_is_token_revoked_after_revocation(self):
+    @pytest.mark.asyncio
+    async def test_is_token_revoked_after_revocation(self):
         token = create_access_token(data={"sub": "42", "role": "admin", "fid": 1})
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         jti = payload["jti"]
 
-        assert _is_token_revoked(jti) is False
-        revoke_token(token)
-        assert _is_token_revoked(jti) is True
+        assert await _is_token_revoked(jti) is False
+        await revoke_token(token)
+        assert await _is_token_revoked(jti) is True
 
-    def test_non_revoked_token_passes(self):
+    @pytest.mark.asyncio
+    async def test_non_revoked_token_passes(self):
         token = create_access_token(data={"sub": "42", "role": "admin", "fid": 1})
-        payload = decode_token(token, expected_type="access")
+        payload = await decode_token(token, expected_type="access")
         assert payload["sub"] == "42"
 
 

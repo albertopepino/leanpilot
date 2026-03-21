@@ -164,6 +164,14 @@
   "groupPoliciesSaved": "Policies saved",
   "groupPoliciesNote": "When a user belongs to multiple groups, the most permissive level per tool applies.",
   "groupFallbackNote": "Users without any group use role-based default permissions.",
+  "failedLoadGroups": "Failed to load groups",
+  "failedSaveGroup": "Failed to save group",
+  "failedDeleteGroup": "Failed to delete group",
+  "failedSavePolicies": "Failed to save policies",
+  "failedAddMember": "Failed to add member",
+  "failedRemoveMember": "Failed to remove member",
+  "selectGroupPrompt": "Select a group to edit its policies and members",
+  "noUsersAvailable": "No users available",
   "permFullAccess": "Full Access",
   "permModifyAccess": "Modify",
   "permViewOnly": "View Only",
@@ -173,5 +181,10 @@
   "downloadTemplatesDesc": "Download CSV templates pre-filled with headers and sample data. Fill in your data, then upload below.",
   "uploadImport": "Upload & Import",
   "uploadImportDesc": "Select a data type, upload your CSV, validate, and import.",
-  "importResults": "Import Results"
+  "importResults": "Import Results",
+
+  "organizationSettings": "Organization Settings",
+  "siteCode": "Site Code",
+  "maxSites": "Max Sites",
+  "subscriptionTier": "Subscription Tier"
 }

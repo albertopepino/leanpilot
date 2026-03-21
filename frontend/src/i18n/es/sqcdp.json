@@ -29,5 +29,15 @@
   "autoEscalatedT2": "Auto-escalado a T2",
   "loadFailed": "Error al cargar datos SQCDP",
   "saveFailed": "Error al guardar entrada SQCDP",
-  "meetingSaveFailed": "Error al registrar reunion"
+  "meetingSaveFailed": "Error al registrar reunion",
+
+  "openNCR": "Abrir NCR",
+  "viewSPC": "Ver SPC",
+  "startFiveWhy": "Iniciar 5-Por Que",
+  "createKaizen": "Crear Kaizen",
+  "viewOEE": "Ver OEE",
+  "openSafety": "Abrir Seguridad",
+  "viewWaste": "Ver Desperdicios",
+  "viewProduction": "Ver Producción",
+  "viewHandover": "Ver Traspaso de Turno"
 }

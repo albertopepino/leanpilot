@@ -1,5 +1,6 @@
 """SQCDP Board & Tier Meetings — Daily visual management."""
-from datetime import date, datetime, timezone
+import logging
+from datetime import date, datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
@@ -11,6 +12,9 @@ from app.schemas.sqcdp import (
     SQCDPEntryCreate, SQCDPEntryUpdate, SQCDPEntryResponse,
     SQCDPMeetingCreate, SQCDPMeetingResponse, SQCDPBoardResponse,
 )
+from app.services.notification_service import notify_factory_role
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/sqcdp", tags=["SQCDP"])
 
@@ -21,14 +25,20 @@ async def create_entry(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    fid = require_factory(current_user)
     entry = SQCDPEntry(
-        factory_id=require_factory(current_user),
+        factory_id=fid,
         created_by_id=current_user.id,
         **data.model_dump(),
     )
     db.add(entry)
     await db.commit()
     await db.refresh(entry)
+
+    # Auto-escalation: T1 RED entries that have been RED for >48h → escalate to T2
+    if data.tier_level == 1 and data.status == "red":
+        await _check_auto_escalation(db, fid, entry)
+
     return entry
 
 
@@ -93,10 +103,11 @@ async def update_entry(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    fid = require_factory(current_user)
     result = await db.execute(
         select(SQCDPEntry).where(
             SQCDPEntry.id == entry_id,
-            SQCDPEntry.factory_id == require_factory(current_user),
+            SQCDPEntry.factory_id == fid,
         )
     )
     entry = result.scalar_one_or_none()
@@ -106,6 +117,11 @@ async def update_entry(
         setattr(entry, k, v)
     await db.commit()
     await db.refresh(entry)
+
+    # Auto-escalation: T1 RED entries that have been RED for >48h → escalate to T2
+    if entry.tier_level == 1 and entry.status == "red":
+        await _check_auto_escalation(db, fid, entry)
+
     return entry
 
 
@@ -162,3 +178,40 @@ async def list_meetings(
     q = q.order_by(SQCDPMeeting.date.desc()).offset(skip).limit(limit)
     result = await db.execute(q)
     return result.scalars().all()
+
+
+# ─── Auto-Escalation Helper ─────────────────────────────────────────────────
+
+
+async def _check_auto_escalation(
+    db: AsyncSession,
+    factory_id: int,
+    entry: SQCDPEntry,
+) -> None:
+    """
+    Check if a RED T1 entry should be auto-escalated to T2.
+    If the same category+line has been RED for >48 hours (based on created_at),
+    notify T2 managers.
+    """
+    try:
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=48)
+        # Check if this entry was created more than 48h ago and is still RED
+        if entry.created_at.replace(tzinfo=timezone.utc) <= cutoff:
+            await notify_factory_role(
+                db,
+                factory_id=factory_id,
+                role="manager",
+                notification_type="escalation",
+                title=f"SQCDP Auto-Escalation: {entry.category.upper()} RED >48h",
+                message=(
+                    f"SQCDP {entry.category} has been RED for over 48 hours "
+                    f"(since {entry.date}). Auto-escalated from T1 to T2."
+                ),
+                priority="high",
+                link="/operations/sqcdp",
+                source_type="sqcdp_entry",
+                source_id=entry.id,
+            )
+            await db.commit()
+    except Exception as e:
+        logger.error(f"SQCDP escalation notification failed: {e}")

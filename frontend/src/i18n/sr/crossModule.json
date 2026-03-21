@@ -6,5 +6,6 @@
   "startFiveWhy": "Pokreni analizu 5 Zašto",
   "createNCR": "Kreiraj NCR",
   "createCAPA": "Kreiraj CAPA",
-  "scheduleGemba": "Zakaži Gemba obilazak"
+  "scheduleGemba": "Zakaži Gemba obilazak",
+  "startIshikawa": "Pokreni Ishikawa dijagram"
 }

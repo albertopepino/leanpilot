@@ -29,5 +29,15 @@
   "autoEscalatedT2": "Auto-eskalacja do T2",
   "loadFailed": "Nie udalo sie zaladowac danych SQCDP",
   "saveFailed": "Nie udalo sie zapisac wpisu SQCDP",
-  "meetingSaveFailed": "Nie udalo sie zapisac spotkania"
+  "meetingSaveFailed": "Nie udalo sie zapisac spotkania",
+
+  "openNCR": "Otworz NCR",
+  "viewSPC": "Zobacz SPC",
+  "startFiveWhy": "Rozpocznij 5-Dlaczego",
+  "createKaizen": "Utworz Kaizen",
+  "viewOEE": "Zobacz OEE",
+  "openSafety": "Otwórz BHP",
+  "viewWaste": "Zobacz Marnotrawstwo",
+  "viewProduction": "Zobacz Produkcję",
+  "viewHandover": "Zobacz Przekazanie Zmiany"
 }

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { useAuth } from "@/hooks/useAuth";
 import { adminApi, manufacturingApi, productionApi, oeeApi } from "@/lib/api";
+import { getErrorMessage } from "@/lib/formatters";
 import {
   Factory,
   Package,
@@ -239,12 +240,12 @@ export default function SetupWizard({ onComplete, onNavigate }: SetupWizardProps
       try {
         const linesRes = await adminApi.listProductionLines();
         if (Array.isArray(linesRes.data) && linesRes.data.length > 0) {
-          setCreatedLines(linesRes.data.map((l: any) => ({ id: l.id, name: l.name })));
+          setCreatedLines(linesRes.data.map((l: { id: number; name: string }) => ({ id: l.id, name: l.name })));
           setLinesCreated(true);
 
           const productsRes = await manufacturingApi.listProducts();
           if (Array.isArray(productsRes.data) && productsRes.data.length > 0) {
-            setCreatedProducts(productsRes.data.map((p: any) => ({ id: p.id, name: p.name })));
+            setCreatedProducts(productsRes.data.map((p: { id: number; name: string }) => ({ id: p.id, name: p.name })));
             setProductsCreated(true);
             // Set defaults for entry
             setEntry((prev) => ({
@@ -361,8 +362,8 @@ export default function SetupWizard({ onComplete, onNavigate }: SetupWizardProps
       setLinesCreated(true);
       // Set default line for production entry
       setEntry((prev) => ({ ...prev, line_id: created[0].id }));
-    } catch (err: any) {
-      setLinesError(err?.response?.data?.detail || t("wizard.errorCreateLines"));
+    } catch (err: unknown) {
+      setLinesError(getErrorMessage(err, t("wizard.errorCreateLines")));
     } finally {
       setLinesLoading(false);
     }
@@ -390,8 +391,8 @@ export default function SetupWizard({ onComplete, onNavigate }: SetupWizardProps
       setProductsCreated(true);
       // Set default product for production entry
       setEntry((prev) => ({ ...prev, product_id: created[0].id }));
-    } catch (err: any) {
-      setProductsError(err?.response?.data?.detail || t("wizard.errorCreateProducts"));
+    } catch (err: unknown) {
+      setProductsError(getErrorMessage(err, t("wizard.errorCreateProducts")));
     } finally {
       setProductsLoading(false);
     }
@@ -436,8 +437,8 @@ export default function SetupWizard({ onComplete, onNavigate }: SetupWizardProps
       setEntryCreated(true);
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 4000);
-    } catch (err: any) {
-      setEntryError(err?.response?.data?.detail || t("wizard.errorCreateEntry"));
+    } catch (err: unknown) {
+      setEntryError(getErrorMessage(err, t("wizard.errorCreateEntry")));
     } finally {
       setEntryLoading(false);
     }

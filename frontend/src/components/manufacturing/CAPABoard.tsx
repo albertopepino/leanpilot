@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/stores/useI18n";
-import { qcApi } from "@/lib/api";
+import { qcApi, leanApi } from "@/lib/api";
+import PhotoUpload from "@/components/ui/PhotoUpload";
 import {
   Wrench,
   Shield,
@@ -12,6 +13,8 @@ import {
   Search,
   Plus,
   X,
+  Lightbulb,
+  Link2,
 } from "lucide-react";
 
 interface CAPA {
@@ -30,6 +33,7 @@ interface CAPA {
   verified_at: string | null;
   effectiveness_result: string | null;
   created_at: string;
+  photo_url?: string | null;
 }
 
 const STATUS_ORDER = ["open", "in_progress", "implemented", "verified", "closed", "cancelled"];
@@ -69,6 +73,10 @@ export default function CAPABoard() {
   const [showCreate, setShowCreate] = useState(false);
   const [showDetail, setShowDetail] = useState<CAPA | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const [kaizenItems, setKaizenItems] = useState<{ id: number; title: string }[]>([]);
+  const [selectedKaizenId, setSelectedKaizenId] = useState<number>(0);
+  const [linkingKaizen, setLinkingKaizen] = useState(false);
 
   const [form, setForm] = useState({
     capa_type: "corrective", title: "", description: "",
@@ -120,10 +128,10 @@ export default function CAPABoard() {
     if (!showDetail) return;
     setSubmitting(true);
     try {
-      const payload: any = {};
+      const payload: Record<string, string> = {};
       if (updateForm.status && updateForm.status !== showDetail.status) payload.status = updateForm.status;
       if (updateForm.priority && updateForm.priority !== showDetail.priority) payload.priority = updateForm.priority;
-      if (updateForm.root_cause !== (showDetail.root_cause || "")) payload.root_cause = updateForm.root_cause || null;
+      if (updateForm.root_cause !== (showDetail.root_cause || "")) payload.root_cause = updateForm.root_cause || "";
       if (updateForm.due_date) payload.due_date = new Date(updateForm.due_date).toISOString();
       if (updateForm.effectiveness_result) payload.effectiveness_result = updateForm.effectiveness_result;
       await qcApi.updateCAPA(showDetail.id, payload);
@@ -149,6 +157,7 @@ export default function CAPABoard() {
 
   const openDetail = (capa: CAPA) => {
     setShowDetail(capa);
+    setSelectedKaizenId(0);
     setUpdateForm({
       status: capa.status,
       priority: capa.priority,
@@ -156,6 +165,25 @@ export default function CAPABoard() {
       due_date: capa.due_date ? capa.due_date.split("T")[0] : "",
       effectiveness_result: capa.effectiveness_result || "",
     });
+    // Fetch kaizen items for linking
+    leanApi.getKaizenBoard().then((res) => {
+      const items = res.data ?? res;
+      setKaizenItems(Array.isArray(items) ? items.map((k: { id: number; title: string }) => ({ id: k.id, title: k.title })) : []);
+    }).catch(() => setKaizenItems([]));
+  };
+
+  const handleLinkKaizen = async () => {
+    if (!showDetail || !selectedKaizenId) return;
+    setLinkingKaizen(true);
+    try {
+      await qcApi.linkKaizen(showDetail.id, selectedKaizenId);
+      setSuccess(t("manufacturing.kaizenLinked"));
+      setSelectedKaizenId(0);
+    } catch {
+      setError(t("manufacturing.failedLinkKaizen"));
+    } finally {
+      setLinkingKaizen(false);
+    }
   };
 
   const filteredCAPAs = capas.filter((c) => {
@@ -549,6 +577,44 @@ export default function CAPABoard() {
                   className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text resize-none"
                   placeholder={t("manufacturing.effectivenessHint")}
                 />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-th-text-2 mb-1">{t("common.uploadPhoto") || "Photo Evidence"}</label>
+                <PhotoUpload
+                  currentUrl={showDetail?.photo_url ? qcApi.getCAPAPhotoUrl(showDetail.id) : null}
+                  onUpload={async (file) => {
+                    if (showDetail) await qcApi.uploadCAPAPhoto(showDetail.id, file);
+                  }}
+                  compact
+                />
+              </div>
+
+              {/* CAPA → Kaizen link */}
+              <div className="border border-violet-300 dark:border-violet-700 bg-violet-50 dark:bg-violet-900/20 rounded-lg p-3">
+                <p className="text-xs font-semibold text-violet-800 dark:text-violet-300 mb-2 flex items-center gap-1.5">
+                  <Link2 className="w-3.5 h-3.5" />
+                  {t("manufacturing.linkKaizenToCAPA")}
+                </p>
+                <div className="flex gap-2">
+                  <select
+                    value={selectedKaizenId}
+                    onChange={(e) => setSelectedKaizenId(Number(e.target.value))}
+                    className="flex-1 border border-th-border rounded-lg px-2 py-1.5 text-xs bg-th-bg text-th-text"
+                  >
+                    <option value={0}>{t("manufacturing.selectKaizen")}</option>
+                    {kaizenItems.map((k) => (
+                      <option key={k.id} value={k.id}>{k.title}</option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={handleLinkKaizen}
+                    disabled={!selectedKaizenId || linkingKaizen}
+                    className="px-3 py-1.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold flex items-center gap-1"
+                  >
+                    {linkingKaizen ? <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Lightbulb className="w-3 h-3" />}
+                    {t("manufacturing.link")}
+                  </button>
+                </div>
               </div>
             </div>
             <div className="p-5 border-t border-th-border flex gap-3 justify-end">

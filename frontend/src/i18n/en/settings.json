@@ -82,5 +82,23 @@
 
   "tutorial": "Tutorial",
   "tutorialDesc": "Replay the onboarding tutorial to learn about all available tools.",
-  "replayTutorial": "Replay Tutorial"
+  "replayTutorial": "Replay Tutorial",
+
+  "beginnerMode": "Beginner Mode",
+  "beginnerModeDesc": "When enabled, every tool page shows a description of what it does, when to use it, and how it connects to other tools. The problem-solving flow guide (Identify → Analyze → Root Cause → Action) is also always visible.",
+  "beginnerModeOn": "On — tool descriptions always visible",
+  "beginnerModeOff": "Off — tool descriptions dismissable",
+
+  "auditLabel": "Audit Program Label",
+  "auditLabelHint": "Choose whether your factory uses 5S or 6S methodology",
+
+  "tabGeneral": "General Settings",
+  "tabAssessment": "Lean Assessment",
+  "tabCalendar": "Master Calendar",
+  "tabCopilot": "Factory Copilot",
+  "tabResources": "Lean Resources",
+  "tabAuditScheduler": "Audit Scheduler",
+  "tabExtraTools": "Extra Tools",
+  "tabDataImport": "Import / Export",
+  "tabERP": "ERP Integration"
 }

@@ -67,5 +67,12 @@
   "areaMaintenance": "Wartungsbereich",
 
   "deleteConfirm": "Diesen Vorfall löschen?",
-  "deleted": "Vorfall gelöscht"
+  "deleted": "Vorfall gelöscht",
+
+  "andonSafetyHoldTriggered": "Andon-Sicherheitsstopp auf {line} ausgelöst",
+  "andonSafetyHoldDesc": "Produktion gestoppt. Ein kritischer Sicherheitsvorfall erfordert sofortige Aufmerksamkeit.",
+  "goToAndonBoard": "Zum Andon-Board",
+
+  "reportSafetyIncident": "Sicherheitsvorfall melden",
+  "andonIncidentPrefix": "Andon-Ereignis"
 }

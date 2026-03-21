@@ -29,5 +29,15 @@
   "autoEscalatedT2": "Automatisch auf T2 eskaliert",
   "loadFailed": "SQCDP-Eintraege konnten nicht geladen werden",
   "saveFailed": "SQCDP-Eintrag konnte nicht gespeichert werden",
-  "meetingSaveFailed": "Besprechung konnte nicht protokolliert werden"
+  "meetingSaveFailed": "Besprechung konnte nicht protokolliert werden",
+
+  "openNCR": "NCR oeffnen",
+  "viewSPC": "SPC anzeigen",
+  "startFiveWhy": "5-Warum starten",
+  "createKaizen": "Kaizen erstellen",
+  "viewOEE": "OEE anzeigen",
+  "openSafety": "Sicherheit öffnen",
+  "viewWaste": "Verschwendung anzeigen",
+  "viewProduction": "Produktion anzeigen",
+  "viewHandover": "Schichtübergabe anzeigen"
 }

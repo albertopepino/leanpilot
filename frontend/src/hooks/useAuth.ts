@@ -15,6 +15,7 @@ interface User {
   ai_consent?: boolean;
   marketing_consent?: boolean;
   totp_enabled?: boolean;
+  is_superadmin?: boolean;
 }
 
 interface AuthStore {

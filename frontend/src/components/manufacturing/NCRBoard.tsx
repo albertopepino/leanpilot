@@ -2,6 +2,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { qcApi, manufacturingApi, adminApi } from "@/lib/api";
+import PhotoUpload from "@/components/ui/PhotoUpload";
+import ToolInfoCard from "@/components/ui/ToolInfoCard";
+import { TOOL_INFO } from "@/lib/toolInfo";
 import {
   AlertTriangle,
   Search,
@@ -11,6 +14,7 @@ import {
   Calendar,
   Plus,
   X,
+  Shield,
 } from "lucide-react";
 
 interface NCR {
@@ -30,6 +34,7 @@ interface NCR {
   detected_at: string;
   closed_at: string | null;
   created_at: string;
+  photo_url?: string | null;
 }
 
 interface Line { id: number; name: string; }
@@ -104,9 +109,9 @@ export default function NCRBoard() {
       setNCRs(ncrRes.data ?? ncrRes);
       const factory = factRes.data ?? factRes;
       setLines(factory?.production_lines || []);
-      setProducts((prodRes.data ?? prodRes).map((p: any) => ({ id: p.id, code: p.code, name: p.name })));
+      setProducts((prodRes.data ?? prodRes).map((p: { id: number; code: string; name: string }) => ({ id: p.id, code: p.code, name: p.name })));
       const rawOrders = ordRes.data ?? ordRes;
-      setOrders(Array.isArray(rawOrders) ? rawOrders.map((o: any) => ({ id: o.id, order_number: o.order_number, batch_lot_number: o.batch_lot_number })) : []);
+      setOrders(Array.isArray(rawOrders) ? rawOrders.map((o: { id: number; order_number: string; batch_lot_number?: string }) => ({ id: o.id, order_number: o.order_number, batch_lot_number: o.batch_lot_number })) : []);
     } catch {
       setError(t("manufacturing.failedLoadNCR"));
     } finally {
@@ -145,7 +150,7 @@ export default function NCRBoard() {
     if (!showDetail) return;
     setSubmitting(true);
     try {
-      const payload: any = {};
+      const payload: Record<string, string> = {};
       if (updateForm.status) payload.status = updateForm.status;
       if (updateForm.disposition) payload.disposition = updateForm.disposition;
       if (updateForm.disposition_notes) payload.disposition_notes = updateForm.disposition_notes;
@@ -195,6 +200,7 @@ export default function NCRBoard() {
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6" id="ncr-view">
+      <ToolInfoCard info={TOOL_INFO.quality} />
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -546,6 +552,48 @@ export default function NCRBoard() {
                   placeholder={t("manufacturing.actionsTaken")}
                 />
               </div>
+              <div>
+                <label className="block text-xs font-semibold text-th-text-2 mb-1">{t("common.uploadPhoto") || "Photo Evidence"}</label>
+                <PhotoUpload
+                  currentUrl={showDetail?.photo_url ? qcApi.getNCRPhotoUrl(showDetail.id) : null}
+                  onUpload={async (file) => {
+                    if (showDetail) await qcApi.uploadNCRPhoto(showDetail.id, file);
+                  }}
+                  compact
+                />
+              </div>
+
+              {/* NCR → CAPA link */}
+              {showDetail.status !== "closed" && showDetail.status !== "rejected" && (
+                <div className="border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3">
+                  <p className="text-xs font-semibold text-amber-800 dark:text-amber-300 mb-2 flex items-center gap-1.5">
+                    <Shield className="w-3.5 h-3.5" />
+                    {t("manufacturing.createCAPAFromNCR")}
+                  </p>
+                  <button
+                    onClick={async () => {
+                      try {
+                        await qcApi.createCAPA({
+                          ncr_id: showDetail.id,
+                          capa_type: "corrective",
+                          title: `CAPA: ${showDetail.title}`,
+                          description: showDetail.description,
+                          root_cause: showDetail.root_cause || "",
+                          priority: showDetail.severity === "critical" ? "critical" : showDetail.severity === "major" ? "high" : "medium",
+                        });
+                        setSuccess(t("manufacturing.capaCreatedFromNCR"));
+                        setShowDetail(null);
+                      } catch {
+                        setError(t("manufacturing.failedCreateCAPA"));
+                      }
+                    }}
+                    className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5"
+                  >
+                    <Shield className="w-3.5 h-3.5" />
+                    {t("manufacturing.createCAPA")}
+                  </button>
+                </div>
+              )}
             </div>
             <div className="p-5 border-t border-th-border flex gap-3 justify-end">
               <button onClick={() => setShowDetail(null)} className="px-4 py-2 rounded-lg text-sm font-semibold text-th-text-2 hover:bg-th-bg-3">

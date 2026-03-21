@@ -250,6 +250,7 @@ class NCRResponse(BaseModel):
     disposition: str | None
     disposition_notes: str | None
     root_cause: str | None
+    photo_url: str | None = None
     detected_at: datetime
     closed_at: datetime | None
     created_at: datetime
@@ -303,6 +304,7 @@ class CAPAResponse(BaseModel):
     implemented_at: datetime | None
     verified_at: datetime | None
     effectiveness_result: str | None
+    photo_url: str | None = None
     created_at: datetime
 
     @field_validator("capa_type", "status", "priority", mode="before")

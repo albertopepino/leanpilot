@@ -1,9 +1,15 @@
 "use client";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useI18n } from "@/stores/useI18n";
-import { productionApi, advancedLeanApi } from "@/lib/api";
+import { productionApi, advancedLeanApi, leanApi } from "@/lib/api";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
+import FlowBreadcrumb from "@/components/ui/FlowBreadcrumb";
+import ToolInfoCard from "@/components/ui/ToolInfoCard";
+import { TOOL_INFO } from "@/lib/toolInfo";
+import { useToast } from "@/hooks/useToast";
+import ToastContainer from "@/components/ui/ToastContainer";
 import {
   BarChart3,
   TrendingUp,
@@ -20,6 +26,11 @@ import {
   Target,
   Trophy,
   CircleDot,
+  Lightbulb,
+  HelpCircle,
+  GitBranch,
+  Search,
+  ChevronDown,
 } from "lucide-react";
 import {
   Bar,
@@ -136,28 +147,33 @@ function buildCsvString(computed: ComputedItem[], t: (k: string) => string): str
 // Custom Recharts Tooltip
 // ---------------------------------------------------------------------------
 
-function CustomTooltip({ active, payload, t }: any) {
+function CustomTooltip({ active, payload, t }: { active?: boolean; payload?: { payload: Record<string, unknown> }[]; t: (key: string) => string }) {
   if (!active || !payload?.length) return null;
-  const data = payload[0]?.payload;
-  if (!data) return null;
+  const raw = payload[0]?.payload;
+  if (!raw) return null;
+  const categoryKey = String(raw.categoryKey ?? "");
+  const count = Number(raw.count ?? 0);
+  const pct = Number(raw.pct ?? 0);
+  const cumPct = Number(raw.cumPct ?? 0);
+  const cost = Number(raw.cost ?? 0);
   return (
     <div className="rounded-xl border border-th-border bg-th-bg-2 px-4 py-3 shadow-sm text-sm">
       <p className="font-bold text-th-text mb-1.5">
-        {t(`problem-solving.${data.categoryKey}`) || data.categoryKey}
+        {t(`problem-solving.${categoryKey}`) || categoryKey}
       </p>
       <div className="space-y-1">
         <p className="text-th-text-2">
-          <span className="text-th-text font-semibold">{data.count}</span> {t("problem-solving.occurrences")}
+          <span className="text-th-text font-semibold">{count}</span> {t("problem-solving.occurrences")}
         </p>
         <p className="text-th-text-2">
-          {t("problem-solving.percentage")}: <span className="text-th-text font-semibold">{data.pct.toFixed(1)}%</span>
+          {t("problem-solving.percentage")}: <span className="text-th-text font-semibold">{pct.toFixed(1)}%</span>
         </p>
         <p className="text-th-text-2">
-          {t("problem-solving.cumulative")}: <span className={`font-semibold ${data.cumPct <= 80 ? "text-rose-500" : "text-th-text-3"}`}>{data.cumPct.toFixed(1)}%</span>
+          {t("problem-solving.cumulative")}: <span className={`font-semibold ${cumPct <= 80 ? "text-rose-500" : "text-th-text-3"}`}>{cumPct.toFixed(1)}%</span>
         </p>
-        {data.cost > 0 && (
+        {cost > 0 && (
           <p className="text-purple-500 font-medium mt-1">
-            {fmtCurrency(data.cost)}
+            {fmtCurrency(cost)}
           </p>
         )}
       </div>
@@ -171,7 +187,9 @@ function CustomTooltip({ active, payload, t }: any) {
 
 export default function ParetoChart() {
   const { t } = useI18n();
+  const router = useRouter();
   const { printView, exportToExcel } = useExport();
+  const { toasts, addToast, removeToast } = useToast();
 
   // State
   const [dataSource, setDataSource] = useState<DataSource>("downtime");
@@ -219,7 +237,8 @@ export default function ParetoChart() {
     const startDate = daysAgo(datePreset);
 
     try {
-      let rawRecords: any[] = [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let rawRecords: Record<string, any>[] = [];
 
       if (dataSource === "andon") {
         const res = await advancedLeanApi.getAndonStatus();
@@ -237,7 +256,7 @@ export default function ParetoChart() {
       const end = new Date();
       end.setHours(23, 59, 59, 999);
 
-      const filtered = rawRecords.filter((r: any) => {
+      const filtered = rawRecords.filter((r) => {
         const d = new Date(r.created_at || r.date || r.timestamp || r.started_at);
         return d >= start && d <= end;
       });
@@ -302,7 +321,8 @@ export default function ParetoChart() {
         try {
           if (!isDemo) {
             const res = await productionApi.listRecords();
-            const records: any[] = res.data?.records ?? res.data ?? res;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const records: Record<string, any>[] = res.data?.records ?? res.data ?? res;
             if (Array.isArray(records) && records.length > 0) {
               const fieldMap: Record<DataSource, string> = {
                 downtime: "downtime_reason",
@@ -312,9 +332,9 @@ export default function ParetoChart() {
               };
               const field = fieldMap[dataSource];
               const details = records
-                .filter((r: any) => (r[field] || r.reason || r.type || r.category || "other") === item.categoryKey)
+                .filter((r) => (r[field] || r.reason || r.type || r.category || "other") === item.categoryKey)
                 .slice(0, 20)
-                .map((r: any) => ({
+                .map((r) => ({
                   date: (r.created_at || r.date || r.timestamp || "").slice(0, 10),
                   line: r.line_name || r.line || r.area || "-",
                   duration: Number(r.duration_minutes || r.minutes || r.duration || 0),
@@ -357,6 +377,12 @@ export default function ParetoChart() {
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6" data-print-area="true">
+      {/* Flow breadcrumb when navigated from another tool */}
+      <FlowBreadcrumb currentLabel={t("common.titlePareto") || "Pareto Analysis"} />
+
+      {/* Tool info card */}
+      <ToolInfoCard info={TOOL_INFO.pareto} />
+
       {/* ---- Empty state ---- */}
       {!loading && items.length === 0 && (
         <div className="px-4 py-6 bg-th-bg-2 border border-th-border rounded-xl text-center text-sm text-th-text-2">
@@ -529,7 +555,7 @@ export default function ParetoChart() {
               <ComposedChart
                 data={chartData}
                 margin={{ top: 20, right: 40, bottom: 20, left: 10 }}
-                onClick={(state: any) => {
+                onClick={(state: { activePayload?: { payload: ComputedItem }[] }) => {
                   if (state?.activePayload?.[0]?.payload) {
                     handleBarClick(state.activePayload[0].payload);
                   }
@@ -673,6 +699,9 @@ export default function ParetoChart() {
                   <th className="text-right py-3 px-4 font-semibold text-th-text-3 text-xs uppercase tracking-wider">
                     {t("problem-solving.cost") || "Cost"}
                   </th>
+                  <th className="text-center py-3 px-4 font-semibold text-th-text-3 text-xs uppercase tracking-wider">
+                    {t("common.actions") || "Actions"}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -712,6 +741,14 @@ export default function ParetoChart() {
                     </td>
                     <td className="py-3 px-4 text-right tabular-nums text-purple-500 font-medium">
                       {fmtCurrency(item.cost)}
+                    </td>
+                    <td className="py-3 px-4">
+                      <InvestigateMenu
+                        item={item}
+                        t={t}
+                        router={router}
+                        onKaizenCreated={() => addToast(t("problem-solving.kaizenCreatedToast") || "Improvement action created", "success")}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -796,6 +833,14 @@ export default function ParetoChart() {
             </div>
           )}
 
+          {/* Root Cause Analysis actions */}
+          <ParetoRCAActions
+            categoryKey={selectedItem.categoryKey}
+            count={selectedItem.count}
+            pct={selectedItem.pct}
+            t={t}
+          />
+
           {isDemo && drillDownData.length > 0 && (
             <p className="mt-2 text-xs text-th-text-3 italic">
               {t("problem-solving.demoData")}
@@ -803,6 +848,173 @@ export default function ParetoChart() {
           )}
         </div>
       )}
+
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
+    </div>
+  );
+}
+
+/* ── Investigate Menu (dropdown per row) ─────────────────────────── */
+function InvestigateMenu({ item, t, router, onKaizenCreated }: {
+  item: ComputedItem;
+  t: (key: string, vars?: Record<string, string>) => string;
+  router: ReturnType<typeof useRouter>;
+  onKaizenCreated: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+
+  useEffect(() => {
+    if (open && btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      const dropW = 256; // w-64 = 16rem = 256px
+      let left = r.right - dropW;
+      if (left < 8) left = 8;
+      setPos({ top: r.bottom + 4, left });
+    }
+  }, [open]);
+
+  const label = t(`problem-solving.${item.categoryKey}`) || item.categoryKey;
+  const fromLabel = `${label} (${item.count}x, ${item.pct.toFixed(1)}%)`;
+
+  const actions = [
+    {
+      icon: HelpCircle,
+      title: t("problem-solving.askFiveWhys") || "Ask 5 Whys",
+      desc: t("problem-solving.askFiveWhysDesc") || "Find the root cause step by step",
+      color: "text-blue-600 dark:text-blue-400",
+      bg: "hover:bg-blue-50 dark:hover:bg-blue-950/30",
+      onClick: () => {
+        const params = new URLSearchParams({ from: "pareto", fromLabel, tool: "five-why" });
+        router.push(`/improvement/root-cause?${params.toString()}`);
+      },
+    },
+    {
+      icon: GitBranch,
+      title: t("problem-solving.drawFishbone") || "Draw Fishbone Diagram",
+      desc: t("problem-solving.drawFishboneDesc") || "Map all possible causes visually",
+      color: "text-amber-600 dark:text-amber-400",
+      bg: "hover:bg-amber-50 dark:hover:bg-amber-950/30",
+      onClick: () => {
+        const params = new URLSearchParams({ from: "pareto", fromLabel, tool: "ishikawa" });
+        router.push(`/improvement/root-cause?${params.toString()}`);
+      },
+    },
+    {
+      icon: Lightbulb,
+      title: t("problem-solving.createImprovement") || "Create Improvement",
+      desc: t("problem-solving.createImprovementDesc") || "Track the fix as a Kaizen action",
+      color: "text-emerald-600 dark:text-emerald-400",
+      bg: "hover:bg-emerald-50 dark:hover:bg-emerald-950/30",
+      onClick: async () => {
+        try {
+          await leanApi.createKaizen({
+            title: `${t("problem-solving.createKaizenFromPareto") || "Pareto"}: ${label}`,
+            description: `${t("problem-solving.topDefect") || "Top defect"} — ${item.count} ${t("problem-solving.occurrences") || "occurrences"} (${item.pct.toFixed(1)}%)`,
+            category: "quality",
+            priority: item.isVital ? "high" : "medium",
+          });
+          onKaizenCreated();
+        } catch {
+          // silent
+        }
+      },
+    },
+  ];
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shadow-sm ${
+          item.isVital
+            ? "bg-rose-600 text-white hover:bg-rose-700"
+            : "bg-brand-600 text-white hover:bg-brand-700"
+        }`}
+      >
+        <Search className="w-3.5 h-3.5" />
+        {t("problem-solving.investigate") || "Investigate"}
+        <ChevronDown className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open && (
+        <>
+          {/* Backdrop */}
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          {/* Dropdown — fixed so it escapes overflow-hidden/auto ancestors */}
+          <div
+            className="fixed z-50 w-64 rounded-xl border border-th-border bg-th-bg-1 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
+            style={{ top: pos.top, left: pos.left }}
+          >
+            {actions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <button
+                  key={action.title}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setOpen(false);
+                    action.onClick();
+                  }}
+                  className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-colors ${action.bg}`}
+                >
+                  <Icon className={`w-4.5 h-4.5 mt-0.5 shrink-0 ${action.color}`} />
+                  <div>
+                    <div className={`text-sm font-semibold ${action.color}`}>{action.title}</div>
+                    <div className="text-xs text-th-text-3 mt-0.5">{action.desc}</div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </>
+  );
+}
+
+/* ── Pareto → RCA Actions ──────────────────────────────────────────── */
+function ParetoRCAActions({ categoryKey, count, pct, t }: {
+  categoryKey: string;
+  count: number;
+  pct: number;
+  t: (key: string, vars?: Record<string, string>) => string;
+}) {
+  const router = useRouter();
+  const label = t(`problem-solving.${categoryKey}`) || categoryKey;
+
+  const navigateToRCA = (tool: "five-why" | "ishikawa") => {
+    const params = new URLSearchParams({
+      from: "pareto",
+      fromLabel: `${label} (${count}x, ${pct.toFixed(1)}%)`,
+      tool,
+    });
+    router.push(`/improvement/root-cause?${params.toString()}`);
+  };
+
+  return (
+    <div className="mt-4 pt-4 border-t border-th-border">
+      <p className="text-xs font-semibold text-th-text-2 mb-2 uppercase tracking-wider">
+        {t("problem-solving.investigateRootCause") || "Investigate Root Cause"}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() => navigateToRCA("five-why")}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
+        >
+          <HelpCircle className="w-3.5 h-3.5" />
+          {t("problem-solving.startFiveWhy") || "Start 5-Why Analysis"}
+        </button>
+        <button
+          onClick={() => navigateToRCA("ishikawa")}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
+        >
+          <GitBranch className="w-3.5 h-3.5" />
+          {t("problem-solving.startIshikawa") || "Start Ishikawa Diagram"}
+        </button>
+      </div>
     </div>
   );
 }

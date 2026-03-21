@@ -17,5 +17,11 @@
   "downtime": "Downtime (min)",
   "manual": "Manual Entry",
   "scrap": "Scrap",
-  "recent": "Recent Handovers"
+  "recent": "Recent Handovers",
+  "dueBy": "Due",
+  "safety": "Safety",
+  "quality": "Quality",
+  "equipment": "Equipment",
+  "material": "Material",
+  "good": "Good"
 }

@@ -281,5 +281,16 @@
   "newProduct": "Novi Proizvod",
   "noProducts": "Nema proizvoda. Dodajte rucno ili otpremite Excel fajl.",
   "productFamily": "Porodica Proizvoda",
-  "laborMin": "Rad (min)"
+  "laborMin": "Rad (min)",
+  "operation": "Operacija",
+  "machine": "Masina",
+  "cycleTime": "Vreme Ciklusa",
+  "basis": "Osnova",
+  "createCAPAFromNCR": "Kreiraj korektivnu meru (CAPA) iz ove NCR",
+  "capaCreatedFromNCR": "CAPA uspešno kreirana iz NCR",
+  "linkKaizenToCAPA": "Poveži Kaizen poboljšanje sa ovom CAPA",
+  "selectKaizen": "Izaberite Kaizen stavku...",
+  "kaizenLinked": "Kaizen uspešno povezan sa CAPA",
+  "failedLinkKaizen": "Povezivanje Kaizen sa CAPA nije uspelo",
+  "link": "Poveži"
 }

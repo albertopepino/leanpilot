@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
 from app.core.security import (
-    get_current_user, log_audit, get_client_ip, verify_password,
+    get_current_user, log_audit, get_client_ip, verify_password, verify_password_async,
     decode_token, create_access_token, create_refresh_token,
     check_rate_limit, set_auth_cookies,
 )
@@ -127,7 +127,7 @@ async def disable_totp(
     if not current_user.totp_enabled:
         raise HTTPException(status_code=400, detail="2FA is not enabled")
 
-    if not verify_password(data.password, current_user.hashed_password):
+    if not await verify_password_async(data.password, current_user.hashed_password):
         raise HTTPException(status_code=400, detail="Invalid password")
 
     totp = pyotp.TOTP(decrypt_field(current_user.totp_secret))
@@ -162,14 +162,14 @@ async def validate_totp_code(
     from sqlalchemy import select as sa_select
 
     # Rate limit TOTP validation to prevent brute-force (6-digit = 1M possibilities)
-    check_rate_limit(
+    await check_rate_limit(
         key=f"totp_validate:{get_client_ip(request)}",
         max_requests=10,
         window_seconds=60,
     )
 
     # Decode the 2FA pending token (will raise 401 if expired or invalid)
-    payload = decode_token(data.temp_token, expected_type="2fa_pending")
+    payload = await decode_token(data.temp_token, expected_type="2fa_pending")
     user_id = payload["sub"]
 
     result = await db.execute(sa_select(User).where(User.id == int(user_id)))

@@ -65,5 +65,22 @@
   "logoErrorSize": "Le fichier est trop volumineux. Maximum 2 Mo.",
   "tutorial": "Tutoriel",
   "tutorialDesc": "Rejouez le tutoriel d'intégration pour découvrir tous les outils disponibles.",
-  "replayTutorial": "Rejouer le Tutoriel"
+  "replayTutorial": "Rejouer le Tutoriel",
+  "beginnerMode": "Mode Débutant",
+  "beginnerModeDesc": "Lorsqu'il est activé, chaque page d'outil affiche une description de ce qu'il fait, quand l'utiliser et comment il se connecte aux autres outils. Le guide de résolution de problèmes (Identifier → Analyser → Cause Racine → Action) est toujours visible.",
+  "beginnerModeOn": "Activé — descriptions des outils toujours visibles",
+  "beginnerModeOff": "Désactivé — descriptions des outils masquables",
+
+  "auditLabel": "Label du Programme Audit",
+  "auditLabelHint": "Choisissez si votre usine utilise la methodologie 5S ou 6S",
+
+  "tabGeneral": "Parametres Generaux",
+  "tabAssessment": "Evaluation Lean",
+  "tabCalendar": "Calendrier Principal",
+  "tabCopilot": "Factory Copilot",
+  "tabResources": "Ressources Lean",
+  "tabAuditScheduler": "Planificateur d'Audits",
+  "tabExtraTools": "Outils Supplementaires",
+  "tabDataImport": "Import / Export",
+  "tabERP": "Integration ERP"
 }

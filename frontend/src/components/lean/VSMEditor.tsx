@@ -1,7 +1,8 @@
 "use client";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useI18n } from "@/stores/useI18n";
-import { advancedLeanApi } from "@/lib/api";
+import { advancedLeanApi, leanApi } from "@/lib/api";
+import { useRouter } from "next/navigation";
 import { useExport } from "@/hooks/useExport";
 import { useAutoSave, AutoSaveIndicator } from "@/hooks/useAutoSave";
 import ExportToolbar from "@/components/ui/ExportToolbar";
@@ -24,6 +25,9 @@ import {
   Activity,
   Gauge,
   Package,
+  Radio,
+  ExternalLink,
+  Wrench,
 } from "lucide-react";
 
 /* ──────────────────────────── Types ──────────────────────────── */
@@ -56,6 +60,15 @@ interface SavedVSM extends VSMMap {
   id: number;
   created_at?: string;
   future_steps?: VSMStep[];
+}
+
+interface LiveStepData {
+  step_id: number;
+  process_name: string;
+  live_oee: number | null;
+  live_cycle_time: number | null;
+  live_wip: number | null;
+  live_uptime: number | null;
 }
 
 /* ──────────────────────────── Constants ──────────────────────── */
@@ -178,6 +191,37 @@ export default function VSMEditor() {
   const [showLoadPanel, setShowLoadPanel] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
+  /* ── Live Data overlay ── */
+  const [liveDataEnabled, setLiveDataEnabled] = useState(false);
+  const [liveData, setLiveData] = useState<LiveStepData[]>([]);
+  const [activeVsmId, setActiveVsmId] = useState<number | null>(null);
+  const liveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const fetchLiveData = useCallback(async (vsmId: number) => {
+    try {
+      const res = await advancedLeanApi.getVSMLiveData(vsmId);
+      if (res.data?.steps) setLiveData(res.data.steps);
+    } catch {
+      // Silently handle — live data is best-effort
+    }
+  }, []);
+
+  useEffect(() => {
+    if (liveDataEnabled && activeVsmId) {
+      fetchLiveData(activeVsmId);
+      liveIntervalRef.current = setInterval(() => fetchLiveData(activeVsmId), 30000);
+    }
+    return () => {
+      if (liveIntervalRef.current) clearInterval(liveIntervalRef.current);
+    };
+  }, [liveDataEnabled, activeVsmId, fetchLiveData]);
+
+  const getLiveForStep = useCallback((processName: string) => {
+    return liveData.find(
+      (d) => d.process_name?.toLowerCase().trim() === processName?.toLowerCase().trim()
+    ) || null;
+  }, [liveData]);
+
   /* ── Active steps accessor ── */
   const steps = mapState === "current" ? currentSteps : futureSteps;
   const setSteps = mapState === "current" ? setCurrentSteps : setFutureSteps;
@@ -256,7 +300,8 @@ export default function VSMEditor() {
         steps: currentSteps,
         future_steps: futureSteps,
       };
-      await advancedLeanApi.createVSM(payload);
+      const res = await advancedLeanApi.createVSM(payload);
+      if (res.data?.id) setActiveVsmId(res.data.id);
       toast(t("improvement.vsmSaved"));
     } catch {
       toast(t("improvement.vsmSaveError"));
@@ -289,6 +334,7 @@ export default function VSMEditor() {
       setFutureSteps(map.future_steps ?? []);
       setShowLoadPanel(false);
       setMapState("current");
+      setActiveVsmId(map.id);
       toast(t("improvement.vsmLoaded"));
     },
     [t, toast],
@@ -378,9 +424,22 @@ export default function VSMEditor() {
               })}
             />
             <button
+              onClick={() => setLiveDataEnabled((v) => !v)}
+              disabled={!activeVsmId}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50 border ${
+                liveDataEnabled
+                  ? "bg-emerald-600 text-white border-emerald-700 hover:bg-emerald-700"
+                  : "bg-th-bg-3 hover:bg-th-bg-hover border-th-border text-th-text"
+              }`}
+              title={t("improvement.vsmLiveData")}
+            >
+              <Radio className={`w-4 h-4 ${liveDataEnabled ? "animate-pulse" : ""}`} />
+              {t("improvement.vsmLiveData")}
+            </button>
+            <button
               onClick={handleLoadList}
               disabled={loadingList}
-              className="flex items-center gap-1.5 px-3 py-2 bg-th-bg-3 hover:bg-th-bg-4 rounded-lg text-sm font-medium transition disabled:opacity-50 border border-th-border text-th-text"
+              className="flex items-center gap-1.5 px-3 py-2 bg-th-bg-3 hover:bg-th-bg-hover rounded-lg text-sm font-medium transition disabled:opacity-50 border border-th-border text-th-text"
             >
               <FolderOpen className="w-4 h-4" />
               {loadingList ? "..." : t("improvement.load")}
@@ -675,6 +734,80 @@ export default function VSMEditor() {
                       {t("improvement.kaizen")}
                     </label>
                   </div>
+
+                  {/* ── Live Data Overlay ── */}
+                  {liveDataEnabled && (() => {
+                    const live = getLiveForStep(step.process_name);
+                    if (!live) return null;
+                    const hasAnyData = live.live_oee !== null || live.live_wip !== null || live.live_uptime !== null;
+                    if (!hasAnyData) return null;
+                    return (
+                      <div className="mt-2 pt-1.5 border-t border-dashed border-emerald-300/50 space-y-1">
+                        <div className="flex items-center gap-1 mb-1">
+                          <Radio className="w-3 h-3 text-emerald-500 animate-pulse" />
+                          <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider">{t("improvement.vsmLive")}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {live.live_oee !== null && (
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                              live.live_oee >= 85 ? "bg-emerald-100 text-emerald-700" :
+                              live.live_oee >= 65 ? "bg-amber-100 text-amber-700" :
+                              "bg-red-100 text-red-700"
+                            }`}>
+                              OEE {live.live_oee}%
+                            </span>
+                          )}
+                          {live.live_wip !== null && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
+                              WIP {live.live_wip}
+                            </span>
+                          )}
+                          {live.live_uptime !== null && (
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                              live.live_uptime >= 90 ? "bg-emerald-100 text-emerald-700" :
+                              live.live_uptime >= 70 ? "bg-amber-100 text-amber-700" :
+                              "bg-red-100 text-red-700"
+                            }`}>
+                              Up {live.live_uptime}%
+                            </span>
+                          )}
+                        </div>
+                        {/* Bottleneck action buttons */}
+                        {step.is_bottleneck && taktTime > 0 && step.cycle_time_sec > taktTime && (
+                          <div className="flex gap-1 mt-1">
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                const gap = step.cycle_time_sec - taktTime;
+                                try {
+                                  await leanApi.createKaizen({
+                                    title: `${step.process_name} — ${t("improvement.vsmReduceCycleTime") || "Reduce Cycle Time"}`,
+                                    description: `${t("improvement.vsmBottleneckDesc") || "Bottleneck"}: ${step.cycle_time_sec}s vs takt ${taktTime}s (${gap}s ${t("improvement.vsmGap") || "gap"}). ${step.operators} ${t("improvement.vsmOperators") || "operators"}, WIP ${step.wip_before}.`,
+                                    category: "productivity",
+                                    priority: gap > taktTime * 0.3 ? "critical" : "high",
+                                    source_type: "vsm",
+                                  });
+                                  // Navigate to kaizen board
+                                  window.location.href = "/improvement/kaizen";
+                                } catch {}
+                              }}
+                              className="flex items-center gap-0.5 text-[9px] font-medium text-brand-600 hover:text-brand-700"
+                            >
+                              <Zap className="w-2.5 h-2.5" />
+                              {t("improvement.vsmCreateKaizen")}
+                            </button>
+                            <a
+                              href="/improvement/lean-tools?tool=smed"
+                              className="flex items-center gap-0.5 text-[9px] font-medium text-th-text-2 hover:text-th-text"
+                            >
+                              <Wrench className="w-2.5 h-2.5" />
+                              {t("improvement.vsmViewSMED")}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             </div>

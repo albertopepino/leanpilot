@@ -67,5 +67,12 @@
   "areaMaintenance": "Zona održavanja",
 
   "deleteConfirm": "Obrisati ovaj incident?",
-  "deleted": "Incident obrisan"
+  "deleted": "Incident obrisan",
+
+  "andonSafetyHoldTriggered": "Andon bezbednosni zastoj aktiviran na {line}",
+  "andonSafetyHoldDesc": "Proizvodnja zaustavljena. Kritičan bezbednosni incident zahteva hitnu pažnju.",
+  "goToAndonBoard": "Idi na Andon tablu",
+
+  "reportSafetyIncident": "Prijavi bezbednosni incident",
+  "andonIncidentPrefix": "Andon dogadjaj"
 }

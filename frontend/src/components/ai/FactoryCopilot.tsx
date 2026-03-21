@@ -66,10 +66,11 @@ function loadMessages(): Message[] | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed) || parsed.length === 0) return null;
-    return parsed.map((m: any) => ({
+    return parsed.map((m: { id?: string; role?: string; content?: string; timestamp?: string }) => ({
       ...m,
-      timestamp: new Date(m.timestamp),
-    }));
+      id: m.id || uid(),
+      timestamp: new Date(m.timestamp || Date.now()),
+    })) as Message[];
   } catch {
     return null;
   }
@@ -543,11 +544,11 @@ export default function FactoryCopilot() {
           newCtx.kaizenOpen = kb.open_count;
         } else if (Array.isArray(kb.items)) {
           newCtx.kaizenOpen = kb.items.filter(
-            (it: any) => it.status !== "completed" && it.status !== "closed",
+            (it: { status: string }) => it.status !== "completed" && it.status !== "closed",
           ).length;
         } else if (Array.isArray(kb)) {
           newCtx.kaizenOpen = kb.filter(
-            (it: any) => it.status !== "completed" && it.status !== "closed",
+            (it: { status: string }) => it.status !== "completed" && it.status !== "closed",
           ).length;
         }
         if (newCtx.kaizenOpen != null) hasLiveData = true;

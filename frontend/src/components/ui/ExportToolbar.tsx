@@ -6,10 +6,11 @@ interface Props {
   onPrint: () => void;
   onExportExcel?: () => void;
   onExportCSV?: () => void;
+  onExportPDF?: () => void;
   className?: string;
 }
 
-export default function ExportToolbar({ onPrint, onExportExcel, onExportCSV, className = "" }: Props) {
+export default function ExportToolbar({ onPrint, onExportExcel, onExportCSV, onExportPDF, className = "" }: Props) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
 
@@ -28,7 +29,7 @@ export default function ExportToolbar({ onPrint, onExportExcel, onExportCSV, cla
       </button>
 
       {/* Export dropdown */}
-      {(onExportExcel || onExportCSV) && (
+      {(onExportExcel || onExportCSV || onExportPDF) && (
         <div className="relative">
           <button
             onClick={() => setOpen(!open)}
@@ -63,6 +64,15 @@ export default function ExportToolbar({ onPrint, onExportExcel, onExportCSV, cla
                   >
                     <span className="w-5 h-5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-[10px] font-bold">CSV</span>
                     CSV (.csv)
+                  </button>
+                )}
+                {onExportPDF && (
+                  <button
+                    onClick={() => { onExportPDF(); setOpen(false); }}
+                    className="w-full text-left px-3 py-2 text-xs hover:bg-th-bg-3 text-th-text flex items-center gap-2 transition"
+                  >
+                    <span className="w-5 h-5 rounded bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center text-[10px] font-bold">PDF</span>
+                    PDF (.pdf)
                   </button>
                 )}
               </div>

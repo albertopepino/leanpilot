@@ -27,19 +27,19 @@ settings = get_settings()
 _redis_client = None
 
 
-def _get_redis():
-    """Lazy-init Redis connection. Falls back to in-memory if unavailable."""
+async def _get_redis():
+    """Lazy-init async Redis connection. Falls back to in-memory if unavailable."""
     global _redis_client
     if _redis_client is not None:
         return _redis_client
     try:
-        import redis as redis_lib
-        _redis_client = redis_lib.Redis.from_url(
+        import redis.asyncio as aioredis
+        _redis_client = aioredis.Redis.from_url(
             settings.redis_url,
             decode_responses=True,
             socket_connect_timeout=2,
         )
-        _redis_client.ping()
+        await _redis_client.ping()
         logger.info("Redis connected for token blacklist & rate limiting")
     except Exception as e:
         logger.warning(f"Redis unavailable ({e}), falling back to in-memory stores")
@@ -55,8 +55,31 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
 
 
+async def verify_password_async(plain_password: str, hashed_password: str) -> bool:
+    """Non-blocking password verification — runs bcrypt in a thread pool."""
+    import asyncio
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(
+        None, bcrypt.checkpw,
+        plain_password.encode("utf-8"),
+        hashed_password.encode("utf-8"),
+    )
+
+
 def get_password_hash(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+async def get_password_hash_async(password: str) -> str:
+    """Non-blocking password hashing — runs bcrypt in a thread pool."""
+    import asyncio
+    loop = asyncio.get_running_loop()
+    hashed = await loop.run_in_executor(
+        None, bcrypt.hashpw,
+        password.encode("utf-8"),
+        bcrypt.gensalt(),
+    )
+    return hashed.decode("utf-8")
 
 
 def validate_password_strength(password: str) -> list[str]:
@@ -99,9 +122,9 @@ def _prune_fallback_attempts() -> None:
             del _fallback_attempts[k]
 
 
-def check_rate_limit(key: str, max_requests: int, window_seconds: int = 60):
-    """Sliding-window rate limiter backed by Redis. Falls back to in-memory."""
-    r = _get_redis()
+async def check_rate_limit(key: str, max_requests: int, window_seconds: int = 60):
+    """Sliding-window rate limiter backed by async Redis. Falls back to in-memory."""
+    r = await _get_redis()
     if r:
         try:
             redis_key = f"rl:{key}"
@@ -111,7 +134,7 @@ def check_rate_limit(key: str, max_requests: int, window_seconds: int = 60):
             pipe.zcard(redis_key)
             pipe.zadd(redis_key, {str(now): now})
             pipe.expire(redis_key, window_seconds)
-            results = pipe.execute()
+            results = await pipe.execute()
             count = results[1]
             if count >= max_requests:
                 raise HTTPException(
@@ -198,7 +221,7 @@ def _prune_fallback_blacklist() -> None:
         del _fallback_blacklist[jti]
 
 
-def revoke_token(token: str):
+async def revoke_token(token: str):
     """Add a token's JTI to the blacklist (logout / forced invalidation)."""
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
@@ -208,10 +231,10 @@ def revoke_token(token: str):
         # Calculate remaining TTL so Redis auto-expires the entry
         exp = payload.get("exp", 0)
         ttl = max(int(exp - time.time()), 60)
-        r = _get_redis()
+        r = await _get_redis()
         if r:
             try:
-                r.setex(f"bl:{jti}", ttl, "1")
+                await r.setex(f"bl:{jti}", ttl, "1")
                 return
             except Exception:
                 pass
@@ -221,12 +244,12 @@ def revoke_token(token: str):
         pass  # Token already expired or invalid — no-op
 
 
-def _is_token_revoked(jti: str) -> bool:
+async def _is_token_revoked(jti: str) -> bool:
     """Check if a JTI is in the blacklist (Redis or fallback)."""
-    r = _get_redis()
+    r = await _get_redis()
     if r:
         try:
-            return r.exists(f"bl:{jti}") > 0
+            return await r.exists(f"bl:{jti}") > 0
         except Exception:
             pass
     exp = _fallback_blacklist.get(jti)
@@ -238,7 +261,7 @@ def _is_token_revoked(jti: str) -> bool:
     return True
 
 
-def decode_token(token: str, expected_type: str = "access") -> dict:
+async def decode_token(token: str, expected_type: str = "access") -> dict:
     """Decode and validate a JWT token. Raises HTTPException on failure."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -254,7 +277,7 @@ def decode_token(token: str, expected_type: str = "access") -> dict:
             raise credentials_exception
         # Check token blacklist (revoked tokens)
         jti = payload.get("jti")
-        if jti and _is_token_revoked(jti):
+        if jti and await _is_token_revoked(jti):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token has been revoked",
@@ -288,7 +311,7 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    payload = decode_token(resolved_token, expected_type="access")
+    payload = await decode_token(resolved_token, expected_type="access")
     user_id = payload["sub"]
 
     result = await db.execute(select(User).where(User.id == int(user_id)))
@@ -303,6 +326,17 @@ async def get_current_user(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account disabled")
     if user.is_deleted:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account has been deleted")
+
+    # Multi-site: attach active site context from X-Site-Id header (if present)
+    x_site_id = request.headers.get("X-Site-Id")
+    if x_site_id:
+        try:
+            user._active_site_id = int(x_site_id)
+        except (ValueError, TypeError):
+            user._active_site_id = None
+    else:
+        user._active_site_id = None
+
     return user
 
 
@@ -328,6 +362,25 @@ async def get_current_active_admin(
     return user
 
 
+async def get_current_superadmin(
+    request: Request,
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Dependency that requires the current user to be a platform superadmin."""
+    if not getattr(user, "is_superadmin", False):
+        await log_audit(
+            db, action="superadmin_check_failed", resource_type="auth",
+            user_id=user.id, user_email=user.email,
+            factory_id=user.factory_id,
+            ip_address=get_client_ip(request),
+            detail="Superadmin access denied",
+        )
+        await db.commit()
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Superadmin access required")
+    return user
+
+
 # ---------------------------------------------------------------------------
 # RBAC — Role-based access control
 # ---------------------------------------------------------------------------
@@ -336,8 +389,13 @@ async def get_current_active_admin(
 _ROLE_LEVELS = {
     "admin": 50,
     "plant_manager": 40,
+    "production_manager": 35,
+    "quality_manager": 35,
     "line_supervisor": 30,
+    "quality_supervisor": 30,
     "operator": 20,
+    "quality_inspector": 20,
+    "maintenance": 20,
     "viewer": 10,
 }
 
@@ -510,7 +568,7 @@ async def log_audit(
         resource_type=resource_type,
         resource_id=str(resource_id) if resource_id else None,
         user_id=user_id,
-        user_email=_mask_email(user_email) if user_email else None,
+        user_email=mask_email(user_email) if user_email else None,
         factory_id=factory_id,
         detail=detail,
         ip_address=ip_address,
@@ -521,7 +579,7 @@ async def log_audit(
     db.add(entry)
 
 
-def _mask_email(email: str) -> str:
+def mask_email(email: str) -> str:
     """Mask email for audit logs: j***n@example.com"""
     if not email or "@" not in email:
         return "***"
@@ -590,3 +648,73 @@ def clear_auth_cookies(response) -> None:
     response.delete_cookie(key="access_token", path="/")
     response.delete_cookie(key="refresh_token", path="/api/v1/auth")
     response.delete_cookie(key="logged_in", path="/")
+
+
+# ---------------------------------------------------------------------------
+# Multi-site helpers
+# ---------------------------------------------------------------------------
+
+def get_user_sites(user) -> list[int]:
+    """Return list of site_ids (factory IDs) the user can access.
+
+    Checks the new site_roles relationship first, then falls back to
+    the legacy factory_id for backwards compatibility.
+    """
+    site_ids: set[int] = set()
+
+    # New multi-site roles
+    if hasattr(user, "site_roles") and user.site_roles:
+        for role in user.site_roles:
+            if role.site_id is not None:
+                site_ids.add(role.site_id)
+
+    # Backwards compat: include the legacy factory_id
+    if user.factory_id:
+        site_ids.add(user.factory_id)
+
+    return sorted(site_ids)
+
+
+def get_user_roles_for_site(user, site_id: int) -> list[str]:
+    """Return list of role strings the user has for a specific site.
+
+    Includes org-level roles (site_id=NULL) as they apply everywhere,
+    plus the legacy user.role if the site matches user.factory_id.
+    """
+    roles: set[str] = set()
+
+    if hasattr(user, "site_roles") and user.site_roles:
+        for sr in user.site_roles:
+            # Org-level roles (site_id is None) apply to all sites
+            if sr.site_id is None or sr.site_id == site_id:
+                roles.add(sr.role)
+
+    # Backwards compat: if legacy factory_id matches, include legacy role
+    if user.factory_id == site_id and user.role:
+        role_str = user.role.value if hasattr(user.role, "value") else str(user.role)
+        roles.add(role_str.lower())
+
+    return sorted(roles)
+
+
+def get_active_site_id(user) -> int | None:
+    """Get the active site ID for the current request.
+
+    Priority:
+    1. X-Site-Id header (set by frontend when user switches site)
+    2. Legacy factory_id (backwards compatible)
+    """
+    active = getattr(user, "_active_site_id", None)
+    if active is not None:
+        # Verify user actually has access to this site
+        if active in get_user_sites(user):
+            return active
+    # Fallback to legacy factory_id
+    return user.factory_id
+
+
+def get_user_organization_id(user) -> int | None:
+    """Get the organization_id from the user's site_roles."""
+    if hasattr(user, "site_roles") and user.site_roles:
+        return user.site_roles[0].organization_id
+    return None

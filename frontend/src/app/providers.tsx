@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useTheme } from "@/stores/useTheme";
 import { useI18n } from "@/stores/useI18n";
 import { useCurrency } from "@/stores/useCurrency";
+import { useBeginnerMode } from "@/stores/useBeginnerMode";
 import "@/lib/sentry"; // Initialize Sentry error tracking (no-op if DSN not set)
 import { Sentry } from "@/lib/sentry";
 
@@ -23,11 +24,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const locale = useI18n((s) => s.locale);
   const direction = useI18n((s) => s.direction);
   const initCurrency = useCurrency((s) => s.initCurrency);
+  const initBeginnerMode = useBeginnerMode((s) => s.initBeginnerMode);
 
   useEffect(() => {
     initTheme();
     initLocale();
     initCurrency();
+    initBeginnerMode();
 
     // Register PWA service worker for offline tablet support
     if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
@@ -35,7 +38,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         // SW registration failed — not critical
       });
     }
-  }, [initTheme, initLocale, initCurrency]);
+  }, [initTheme, initLocale, initCurrency, initBeginnerMode]);
 
   // Sync <html lang> and dir attributes with current locale (WCAG 3.1.1)
   useEffect(() => {

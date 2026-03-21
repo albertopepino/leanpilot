@@ -92,7 +92,6 @@ export interface FactoryResponse {
   production_lines?: { id: number; name: string; description?: string; is_active?: boolean }[];
   user_count?: number;
   data_controller?: string;
-  [key: string]: unknown;
 }
 
 // ─── Production ──────────────────────────────────────────────────────────────
@@ -747,8 +746,8 @@ export interface SQCDPMeetingCreate {
   duration_min?: number | null;
   attendee_count?: number | null;
   notes?: string | null;
-  action_items?: any[];
-  escalated_items?: any[];
+  action_items?: { description: string; assignee?: string; due_date?: string; status?: string }[];
+  escalated_items?: { description: string; escalated_to?: string; reason?: string }[];
 }
 
 // ─── Shift Handover ────────────────────────────────────────────────────────
@@ -762,7 +761,7 @@ export interface ShiftHandoverCreate {
   quality_issues?: string | null;
   equipment_issues?: string | null;
   material_issues?: string | null;
-  pending_actions?: any[];
+  pending_actions?: { description?: string; priority?: string; owner?: string; status?: string; due_date?: string }[];
   notes?: string | null;
 }
 
@@ -771,7 +770,7 @@ export interface ShiftHandoverUpdate {
   quality_issues?: string | null;
   equipment_issues?: string | null;
   material_issues?: string | null;
-  pending_actions?: any[];
+  pending_actions?: { description?: string; priority?: string; owner?: string; status?: string; due_date?: string }[];
   notes?: string | null;
   status?: string | null;
 }
@@ -799,7 +798,7 @@ export interface LSWCreate {
   role: string;
   frequency?: string;
   estimated_time_min?: number | null;
-  tasks?: any[];
+  tasks?: { title: string; description?: string; estimated_time_min?: number; order?: number }[];
 }
 
 export interface LSWUpdate {
@@ -808,13 +807,13 @@ export interface LSWUpdate {
   frequency?: string | null;
   estimated_time_min?: number | null;
   is_active?: boolean | null;
-  tasks?: any[] | null;
+  tasks?: { title: string; description?: string; estimated_time_min?: number; order?: number }[] | null;
 }
 
 export interface LSWCompletionCreate {
   lsw_id: number;
   date: string;
-  completed_tasks?: any[];
+  completed_tasks?: { task_id: number; completed: boolean; notes?: string }[];
   completion_pct?: number | null;
   notes?: string | null;
 }
@@ -921,6 +920,7 @@ export interface SafetyIncidentResponse {
   reported_by: string | null;
   status: string;
   corrective_action: string | null;
+  andon_event_id: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -931,6 +931,18 @@ export interface SafetyStats {
   open_count: number;
   by_type: Record<string, number>;
   by_severity: Record<string, number>;
+}
+
+export interface SafetyDocumentResponse {
+  id: number;
+  title: string;
+  description: string | null;
+  category: string | null;
+  filename: string;
+  file_size: number;
+  mime_type: string;
+  created_at: string;
+  updated_at: string;
 }
 
 // ─── Horizontal Deployment ──────────────────────────────────────────────────
@@ -960,6 +972,65 @@ export interface HorizontalDeployResponse {
   verified_by?: string | null;
   standardization_status?: StandardizationStatus | null;
   deployment_locations?: string[] | null;
+}
+
+// ─── Multi-Site / Organization ───────────────────────────────────────────────
+
+export type UserRole =
+  | "operator"
+  | "quality_inspector"
+  | "maintenance"
+  | "line_supervisor"
+  | "quality_supervisor"
+  | "production_manager"
+  | "quality_manager"
+  | "plant_manager"
+  | "admin"
+  | "viewer";
+
+export interface UserSiteRole {
+  id: number;
+  user_id: number;
+  site_id: number | null;
+  organization_id: number;
+  role: UserRole;
+  scope_line_ids: number[] | null;
+  is_primary: boolean;
+  created_at?: string | null;
+}
+
+export interface Organization {
+  id: number;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  subscription_tier: "starter" | "professional" | "enterprise";
+  max_sites: number;
+  max_users: number;
+  is_active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+  sites: SiteResponse[];
+}
+
+export interface SiteResponse {
+  id: number;
+  name: string;
+  site_code: string | null;
+  location: string | null;
+  country: string | null;
+}
+
+/** Matches backend SiteSummary schema */
+export interface SiteDashboardSummary {
+  id: number;
+  name: string;
+  site_code: string | null;
+  location: string | null;
+  country: string | null;
+  oee: number | null;
+  safety_days: number | null;
+  open_ncrs: number | null;
 }
 
 // ─── Reports ────────────────────────────────────────────────────────────────
@@ -1002,4 +1073,122 @@ export interface KaizenSavingsReport {
   completed_count: number;
   total_savings: number;
   top_contributors: { responsible: string; count: number; savings: number }[];
+}
+
+// ─── Portal (Superadmin) ──────────────────────────────────────────────────
+
+export interface PortalClientSummary {
+  id: number;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  subscription_tier: string;
+  max_sites: number;
+  max_users: number;
+  is_active: boolean;
+  created_at: string | null;
+  site_count: number;
+  user_count: number;
+}
+
+export interface PortalClientSite {
+  id: number;
+  name: string;
+  site_code: string | null;
+  location: string | null;
+  country: string | null;
+}
+
+export interface PortalClientUser {
+  id: number;
+  email: string;
+  full_name: string;
+  role: string;
+  is_active: boolean;
+  last_login_at: string | null;
+}
+
+export interface PortalClientDetail {
+  id: number;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  subscription_tier: string;
+  max_sites: number;
+  max_users: number;
+  is_active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+  sites: PortalClientSite[];
+  users: PortalClientUser[];
+}
+
+export interface PortalClientCreate {
+  organization_name: string;
+  slug: string;
+  subscription_tier?: string;
+  max_sites?: number;
+  max_users?: number;
+  site_name: string;
+  site_location?: string;
+  site_country?: string;
+  admin_email: string;
+  admin_full_name: string;
+  admin_password: string;
+  admin_language?: string;
+}
+
+export interface PortalClientHealth {
+  org_id: number;
+  org_name: string;
+  total_users: number;
+  active_users_30d: number;
+  total_sites: number;
+  latest_oee: number | null;
+  open_kaizen: number;
+  open_ncrs: number;
+}
+
+export interface PortalGDPRExport {
+  org_id: number;
+  org_name: string;
+  export_date: string;
+  data: Record<string, unknown>;
+}
+
+// ─── FMEA ─────────────────────────────────────────────────────────────────
+
+export interface FMEAItemData {
+  id?: number;
+  process_step?: string;
+  failure_mode: string;
+  failure_effect?: string;
+  failure_cause?: string;
+  severity: number;
+  occurrence: number;
+  detection: number;
+  rpn?: number;
+  current_controls?: string;
+  recommended_action?: string;
+  responsible?: string;
+  target_date?: string;
+  action_taken?: string;
+  new_severity?: number;
+  new_occurrence?: number;
+  new_detection?: number;
+  new_rpn?: number;
+  status?: string;
+}
+
+export interface FMEAAnalysisData {
+  id?: number;
+  title: string;
+  fmea_type: string;
+  product_name?: string;
+  process_name?: string;
+  team_members?: string;
+  status?: string;
+  items: FMEAItemData[];
+  created_at?: string;
+  updated_at?: string;
 }

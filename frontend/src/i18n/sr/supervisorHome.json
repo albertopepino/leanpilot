@@ -1,0 +1,18 @@
+{
+  "title": "Moj Sektor Danas",
+  "andonAlerts": "Andon",
+  "openNCRs": "Otvoreni NCR",
+  "actionItems": "Otvorene Akcije",
+  "dailyRoutine": "Dnevna Rutina",
+  "completed": "završeno",
+  "checkHandover": "Pregled primopredaje smene",
+  "checkSQCDP": "Ažuriraj SQCDP tablu",
+  "checkGemba": "Gemba obilazak",
+  "checkLSW": "Provere standardnog rada lidera",
+  "checkKaizen": "Praćenje kaizen-a",
+  "escalations": "Eskalacije",
+  "andonActive": "aktivna Andon upozorenja",
+  "capaOverdue": "zakasnele CAPA akcije",
+  "ncrOpen": "otvoreni NCR zahtevaju pažnju",
+  "noEscalations": "Nema eskalacija — svi sektori u okviru ciljeva"
+}

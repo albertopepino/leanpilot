@@ -1,6 +1,7 @@
 "use client";
-import { useState, useEffect, useCallback, useMemo, useRef, type DragEvent } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef, Suspense, type DragEvent } from "react";
 import { useI18n } from "@/stores/useI18n";
+import DisplayModeWrapper from "@/components/ui/DisplayModeWrapper";
 import { useAuth } from "@/hooks/useAuth";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
@@ -33,7 +34,7 @@ import {
 /* ------------------------------------------------------------------ */
 
 type Priority = "low" | "medium" | "high" | "urgent";
-type ViewMode = "board" | "form" | "settings";
+type ViewMode = "board" | "form" | "settings" | "metrics";
 
 interface KanbanCardData {
   id: number;
@@ -133,6 +134,14 @@ const COLUMN_COLORS: Record<string, string> = {
   shipped:     "border-t-purple-400",
 };
 
+const CFD_COLORS: Record<string, { fill: string; stroke: string; label: string }> = {
+  backlog:     { fill: "rgba(148,163,184,0.35)", stroke: "rgb(148,163,184)", label: "Backlog" },
+  in_queue:    { fill: "rgba(96,165,250,0.35)",  stroke: "rgb(96,165,250)",  label: "In Queue" },
+  in_progress: { fill: "rgba(251,191,36,0.35)",  stroke: "rgb(251,191,36)",  label: "In Progress" },
+  done:        { fill: "rgba(74,222,128,0.35)",   stroke: "rgb(74,222,128)",  label: "Done" },
+  shipped:     { fill: "rgba(192,132,252,0.35)",  stroke: "rgb(192,132,252)", label: "Shipped" },
+};
+
 const DEFAULT_COLUMNS = ["backlog", "in_queue", "in_progress", "done", "shipped"];
 const DEFAULT_WIP_LIMITS: Record<string, number> = {
   backlog: 0, in_queue: 5, in_progress: 3, done: 10, shipped: 0,
@@ -142,23 +151,17 @@ const DEFAULT_WIP_LIMITS: Record<string, number> = {
 /*  API helper                                                         */
 /* ------------------------------------------------------------------ */
 
-const API_BASE = "/api/v1";
-
-function getHeaders(): HeadersInit {
-  const token = typeof window !== "undefined" ? localStorage.getItem("leanpilot_token") : null;
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
+// Use shared axios instance for interceptors (X-Site-Id, token refresh, cookies)
+import apiClient from "@/lib/api";
 
 async function apiFetch<T>(url: string, opts?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${url}`, { headers: getHeaders(), ...opts });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `API error ${res.status}`);
-  }
-  return res.json();
+  const method = (opts?.method ?? "GET").toUpperCase();
+  const body = opts?.body ? JSON.parse(opts.body as string) : undefined;
+  const res = method === "POST" ? await apiClient.post<T>(url, body)
+    : method === "PATCH" ? await apiClient.patch<T>(url, body)
+    : method === "DELETE" ? await apiClient.delete<T>(url)
+    : await apiClient.get<T>(url);
+  return res.data;
 }
 
 /* ------------------------------------------------------------------ */
@@ -166,6 +169,17 @@ async function apiFetch<T>(url: string, opts?: RequestInit): Promise<T> {
 /* ------------------------------------------------------------------ */
 
 export default function KanbanBoard() {
+  const { t: tWrap } = useI18n();
+  return (
+    <Suspense fallback={null}>
+      <DisplayModeWrapper title={tWrap("kanban.title") || "Kanban Board"} refreshInterval={30}>
+        <KanbanBoardInner />
+      </DisplayModeWrapper>
+    </Suspense>
+  );
+}
+
+function KanbanBoardInner() {
   const { t } = useI18n();
   const { user } = useAuth();
   const { printView, exportToExcel, exportToCSV } = useExport();
@@ -227,9 +241,12 @@ export default function KanbanBoard() {
       setBoards(Array.isArray(data) ? data : []);
       if (data.length > 0 && !activeBoardId) {
         setActiveBoardId(data[0].id);
+      } else if (!data.length) {
+        setLoading(false);
       }
     } catch (err) {
       console.error("Failed to fetch boards", err);
+      setLoading(false);
     }
   }, [activeBoardId]);
 
@@ -257,6 +274,16 @@ export default function KanbanBoard() {
   useEffect(() => {
     if (activeBoardId) fetchBoard(activeBoardId);
   }, [activeBoardId, fetchBoard]);
+
+  // Listen for display-mode-refresh events to re-fetch data
+  useEffect(() => {
+    const handler = () => {
+      fetchBoards();
+      if (activeBoardId) fetchBoard(activeBoardId);
+    };
+    window.addEventListener("display-mode-refresh", handler);
+    return () => window.removeEventListener("display-mode-refresh", handler);
+  }, [fetchBoards, fetchBoard, activeBoardId]);
 
   /* ---- Cards by column ---- */
 
@@ -529,6 +556,354 @@ export default function KanbanBoard() {
             <p className="text-2xl font-bold text-th-text">{kpi.value}</p>
           </div>
         ))}
+      </div>
+    );
+  };
+
+  /* ---- CFD: Cumulative Flow Diagram data & rendering ---- */
+
+  const cfdData = useMemo(() => {
+    if (!board || !board.cards || board.cards.length === 0) return null;
+
+    const columns = board.columns || DEFAULT_COLUMNS;
+    const now = new Date();
+    const days = 30;
+    const dates: string[] = [];
+
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      dates.push(d.toISOString().slice(0, 10));
+    }
+
+    // For each date, compute how many cards were in each column on that day.
+    // We approximate by looking at card timestamps:
+    // - created_at: card entered backlog
+    // - started_at: card moved to in_progress (if available)
+    // - completed_at: card moved to done/shipped
+    // - Cards without transitions: assume they were in their current column for the whole period after creation.
+
+    const snapshots: Record<string, Record<string, number>>[] = [];
+
+    for (const dateStr of dates) {
+      const dayEnd = new Date(dateStr + "T23:59:59Z");
+      const counts: Record<string, number> = {};
+      for (const col of columns) counts[col] = 0;
+
+      for (const card of board.cards) {
+        const createdAt = new Date(card.created_at);
+        // Card didn't exist yet on this day
+        if (createdAt > dayEnd) continue;
+
+        const startedAt = card.started_at ? new Date(card.started_at) : null;
+        const completedAt = card.completed_at ? new Date(card.completed_at) : null;
+
+        let col: string;
+        if (completedAt && completedAt <= dayEnd) {
+          // Card was completed by this date
+          col = card.column_name === "shipped" ? "shipped" : "done";
+        } else if (startedAt && startedAt <= dayEnd) {
+          col = "in_progress";
+        } else {
+          // Card existed but hadn't started yet
+          // Check if it was in queue (heuristic: if current column is in_queue or further)
+          const currentIdx = columns.indexOf(card.column_name);
+          const queueIdx = columns.indexOf("in_queue");
+          if (currentIdx >= queueIdx && queueIdx >= 0 && !startedAt) {
+            col = "in_queue";
+          } else {
+            col = "backlog";
+          }
+        }
+
+        if (counts[col] !== undefined) {
+          counts[col]++;
+        } else {
+          counts["backlog"]++;
+        }
+      }
+      snapshots.push(counts as unknown as Record<string, Record<string, number>>);
+    }
+
+    return { dates, snapshots: snapshots as unknown as Record<string, number>[], columns };
+  }, [board]);
+
+  const [cfdTooltip, setCfdTooltip] = useState<{
+    x: number; y: number; date: string; counts: Record<string, number>;
+  } | null>(null);
+
+  const renderCFD = () => {
+    if (!cfdData) {
+      return (
+        <div className="flex items-center justify-center py-16 text-th-text-3 text-sm italic">
+          {t("kanban.noDataForCFD") || "Not enough card data to render the Cumulative Flow Diagram."}
+        </div>
+      );
+    }
+
+    const { dates, snapshots, columns } = cfdData;
+    const typedSnapshots = snapshots as Record<string, number>[];
+
+    // Compute stacked values
+    const maxY = Math.max(
+      ...typedSnapshots.map((s) => columns.reduce((sum, col) => sum + (s[col] || 0), 0)),
+      1
+    );
+
+    const W = 800;
+    const H = 320;
+    const padL = 50;
+    const padR = 20;
+    const padT = 20;
+    const padB = 50;
+    const chartW = W - padL - padR;
+    const chartH = H - padT - padB;
+
+    const xStep = chartW / Math.max(dates.length - 1, 1);
+
+    // Build stacked area paths (bottom-up)
+    const areas: { col: string; path: string }[] = [];
+    const baseLine = new Array(dates.length).fill(0);
+
+    for (const col of columns) {
+      const topLine = baseLine.map((base, i) => base + (typedSnapshots[i][col] || 0));
+      // Build path: forward along top, back along bottom
+      let path = "";
+      for (let i = 0; i < dates.length; i++) {
+        const x = padL + i * xStep;
+        const y = padT + chartH - (topLine[i] / maxY) * chartH;
+        path += `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)} `;
+      }
+      for (let i = dates.length - 1; i >= 0; i--) {
+        const x = padL + i * xStep;
+        const y = padT + chartH - (baseLine[i] / maxY) * chartH;
+        path += `L${x.toFixed(1)},${y.toFixed(1)} `;
+      }
+      path += "Z";
+      areas.push({ col, path });
+
+      // Update baseline for next stacked column
+      for (let i = 0; i < dates.length; i++) {
+        baseLine[i] = topLine[i];
+      }
+    }
+
+    // Y-axis ticks
+    const yTicks: number[] = [];
+    const yTickCount = 5;
+    for (let i = 0; i <= yTickCount; i++) {
+      yTicks.push(Math.round((maxY / yTickCount) * i));
+    }
+
+    // X-axis labels (show every ~5th date)
+    const xLabelInterval = Math.max(Math.floor(dates.length / 6), 1);
+
+    return (
+      <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5">
+        <h3 className="text-base font-bold text-th-text mb-4">
+          {t("kanban.cumulativeFlowDiagram") || "Cumulative Flow Diagram"}
+        </h3>
+
+        {/* Legend */}
+        <div className="flex flex-wrap gap-4 mb-4">
+          {[...columns].reverse().map((col) => {
+            const cfg = CFD_COLORS[col] || CFD_COLORS.backlog;
+            return (
+              <div key={col} className="flex items-center gap-1.5 text-xs text-th-text-2">
+                <span
+                  className="inline-block w-3 h-3 rounded-sm border"
+                  style={{ backgroundColor: cfg.fill, borderColor: cfg.stroke }}
+                />
+                {t(`kanban.col_${col}`) || cfg.label}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="relative overflow-x-auto">
+          <svg
+            viewBox={`0 0 ${W} ${H}`}
+            className="w-full max-w-[800px]"
+            style={{ minWidth: 500 }}
+            onMouseLeave={() => setCfdTooltip(null)}
+          >
+            {/* Grid lines */}
+            {yTicks.map((v) => {
+              const y = padT + chartH - (v / maxY) * chartH;
+              return (
+                <g key={`ygrid-${v}`}>
+                  <line x1={padL} x2={W - padR} y1={y} y2={y} stroke="currentColor" className="text-th-border" strokeWidth={0.5} strokeDasharray="4 3" />
+                  <text x={padL - 6} y={y + 3} textAnchor="end" className="fill-current text-th-text-3" fontSize={10}>
+                    {v}
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* Stacked areas (render in order so first column is at the bottom) */}
+            {areas.map(({ col, path }) => {
+              const cfg = CFD_COLORS[col] || CFD_COLORS.backlog;
+              return (
+                <path
+                  key={col}
+                  d={path}
+                  fill={cfg.fill}
+                  stroke={cfg.stroke}
+                  strokeWidth={1.5}
+                />
+              );
+            })}
+
+            {/* Hover columns for tooltip */}
+            {dates.map((dateStr, i) => {
+              const x = padL + i * xStep;
+              return (
+                <rect
+                  key={dateStr}
+                  x={x - xStep / 2}
+                  y={padT}
+                  width={xStep}
+                  height={chartH}
+                  fill="transparent"
+                  onMouseEnter={(e) => {
+                    const svgEl = (e.target as SVGElement).closest("svg");
+                    const rect = svgEl?.getBoundingClientRect();
+                    setCfdTooltip({
+                      x: rect ? e.clientX - rect.left : x,
+                      y: padT,
+                      date: dateStr,
+                      counts: typedSnapshots[i],
+                    });
+                  }}
+                />
+              );
+            })}
+
+            {/* Tooltip guide line */}
+            {cfdTooltip && (() => {
+              const idx = dates.indexOf(cfdTooltip.date);
+              if (idx < 0) return null;
+              const x = padL + idx * xStep;
+              return (
+                <line x1={x} x2={x} y1={padT} y2={padT + chartH} stroke="currentColor" className="text-th-text-3" strokeWidth={1} strokeDasharray="3 2" />
+              );
+            })()}
+
+            {/* X-axis labels */}
+            {dates.map((dateStr, i) => {
+              if (i % xLabelInterval !== 0 && i !== dates.length - 1) return null;
+              const x = padL + i * xStep;
+              const label = dateStr.slice(5); // MM-DD
+              return (
+                <text key={`xlabel-${i}`} x={x} y={H - padB + 16} textAnchor="middle" className="fill-current text-th-text-3" fontSize={10}>
+                  {label}
+                </text>
+              );
+            })}
+
+            {/* Axes */}
+            <line x1={padL} x2={padL} y1={padT} y2={padT + chartH} stroke="currentColor" className="text-th-border" strokeWidth={1} />
+            <line x1={padL} x2={W - padR} y1={padT + chartH} y2={padT + chartH} stroke="currentColor" className="text-th-border" strokeWidth={1} />
+          </svg>
+
+          {/* Tooltip overlay */}
+          {cfdTooltip && (
+            <div
+              className="absolute z-10 pointer-events-none rounded-lg border border-th-border bg-th-bg-2 shadow-lg px-3 py-2 text-xs"
+              style={{
+                left: Math.min(cfdTooltip.x + 12, 600),
+                top: cfdTooltip.y + 8,
+              }}
+            >
+              <p className="font-bold text-th-text mb-1">{cfdTooltip.date}</p>
+              {[...columns].reverse().map((col) => {
+                const cfg = CFD_COLORS[col] || CFD_COLORS.backlog;
+                return (
+                  <div key={col} className="flex items-center gap-2 text-th-text-2">
+                    <span
+                      className="inline-block w-2.5 h-2.5 rounded-sm"
+                      style={{ backgroundColor: cfg.stroke }}
+                    />
+                    <span>{t(`kanban.col_${col}`) || cfg.label}:</span>
+                    <span className="font-semibold">{cfdTooltip.counts[col] || 0}</span>
+                  </div>
+                );
+              })}
+              <div className="mt-1 pt-1 border-t border-th-border text-th-text-3 font-semibold">
+                {t("kanban.total") || "Total"}: {columns.reduce((s, c) => s + (cfdTooltip.counts[c] || 0), 0)}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  /* ---- Render: Metrics view ---- */
+
+  const renderMetricsView = () => {
+    if (!board) {
+      return (
+        <div className="text-center py-20">
+          <BarChart3 className="w-12 h-12 mx-auto text-th-text-3 mb-4" />
+          <p className="text-th-text-3 mb-4">{t("kanban.noBoards")}</p>
+          <button
+            onClick={() => setView("settings")}
+            className="bg-brand-600 hover:bg-brand-500 text-white rounded-lg font-semibold px-6 py-2.5 transition"
+          >
+            {t("kanban.createBoard")}
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {renderKPIs()}
+
+        {/* WIP by column breakdown */}
+        {metrics && metrics.wip_by_column && (
+          <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-5">
+            <h3 className="text-base font-bold text-th-text mb-3">
+              {t("kanban.wipByColumn") || "WIP by Column"}
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {(board.columns || DEFAULT_COLUMNS).map((col) => {
+                const count = metrics.wip_by_column[col] || 0;
+                const limit = board.wip_limits[col] || 0;
+                const pct = limit > 0 ? Math.min((count / limit) * 100, 100) : 0;
+                const cfg = CFD_COLORS[col] || CFD_COLORS.backlog;
+                return (
+                  <div key={col} className="rounded-lg border border-th-border bg-th-card p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: cfg.stroke }} />
+                      <span className="text-xs font-medium text-th-text-3">
+                        {t(`kanban.col_${col}`) || col.replace(/_/g, " ")}
+                      </span>
+                    </div>
+                    <p className="text-xl font-bold text-th-text">
+                      {count}
+                      {limit > 0 && <span className="text-sm font-normal text-th-text-3">/{limit}</span>}
+                    </p>
+                    {limit > 0 && (
+                      <div className="mt-1.5 h-1.5 rounded-full bg-th-bg-3 overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{
+                            width: `${pct}%`,
+                            backgroundColor: pct >= 90 ? "rgb(239,68,68)" : pct >= 70 ? "rgb(251,191,36)" : cfg.stroke,
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {renderCFD()}
       </div>
     );
   };
@@ -1035,6 +1410,7 @@ export default function KanbanBoard() {
           <div className="flex bg-th-bg-3 rounded-xl p-1 gap-1">
             {([
               { key: "board" as ViewMode, label: t("kanban.boardView"), icon: Columns3 },
+              { key: "metrics" as ViewMode, label: t("kanban.metricsView") || "Metrics", icon: BarChart3 },
               { key: "settings" as ViewMode, label: t("kanban.newBoard"), icon: PlusCircle },
             ]).map((tab) => (
               <button
@@ -1062,6 +1438,7 @@ export default function KanbanBoard() {
       ) : (
         <>
           {view === "board" && renderBoard()}
+          {view === "metrics" && renderMetricsView()}
           {view === "settings" && renderBoardForm()}
         </>
       )}

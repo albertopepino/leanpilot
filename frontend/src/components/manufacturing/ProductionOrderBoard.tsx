@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { useAuth } from "@/hooks/useAuth";
 import { manufacturingApi, adminApi } from "@/lib/api";
+import { getErrorMessage } from "@/lib/formatters";
 import {
   ClipboardList,
   Factory,
@@ -297,9 +298,8 @@ export default function ProductionOrderBoard() {
           break;
       }
       await fetchData();
-    } catch (err: any) {
-      const msg = err?.response?.data?.detail?.message || err?.response?.data?.detail || "Action failed";
-      setError(typeof msg === "string" ? msg : JSON.stringify(msg));
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Action failed"));
       setTimeout(() => setError(null), 5000);
     } finally {
       setActionLoading(null);

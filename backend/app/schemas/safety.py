@@ -43,6 +43,29 @@ class SafetyIncidentResponse(BaseModel):
     reported_by: Optional[str]
     status: str
     corrective_action: Optional[str]
+    andon_event_id: Optional[int] = None
+    photo_url: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ─── Safety Documents ────────────────────────────────────────────────────────
+
+
+class SafetyDocumentResponse(BaseModel):
+    id: int
+    factory_id: int
+    uploaded_by_id: int
+    title: str
+    description: Optional[str] = None
+    category: Optional[str] = None
+    filename: str
+    file_size: int
+    mime_type: str
+    is_active: bool = True
     created_at: datetime
     updated_at: datetime
 

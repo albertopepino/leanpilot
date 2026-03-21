@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useI18n } from '@/stores/useI18n';
 import { ClipboardList, Plus, Check, Filter, ChevronDown, ChevronUp, Trash2, ArrowUp, ArrowDown, BarChart3 } from 'lucide-react';
 import PageHeader from '@/components/ui/PageHeader';
+import { lswApi } from '@/lib/api';
 
 type LSWFrequency = "daily" | "weekly" | "monthly";
 
@@ -64,10 +65,9 @@ export default function LeaderStandardWork() {
   async function fetchData() {
     setLoading(true);
     try {
-      const { default: api } = await import('@/lib/api');
       const [tRes, cRes] = await Promise.all([
-        api.get('/lsw/templates'),
-        api.get('/lsw/completions', { params: { date: new Date().toISOString().split('T')[0] } }),
+        lswApi.list(),
+        lswApi.listCompletions({ target_date: new Date().toISOString().split('T')[0] }),
       ]);
       setTemplates(tRes.data);
       setCompletions(cRes.data);
@@ -77,45 +77,42 @@ export default function LeaderStandardWork() {
 
   async function saveTemplate() {
     try {
-      const { default: api } = await import('@/lib/api');
-      await api.post('/lsw/templates', {
+      await lswApi.create({
         title: formTitle,
         role: formRole,
         frequency: formFrequency,
         tasks: formTasks.filter(t => t.description).map((t, i) => ({ order: i + 1, description: t.description, duration_min: t.duration_min })),
-      });
+      } as any);
       setCreateMode(false);
       setFormTitle('');
       setFormFrequency('daily');
       setFormTasks([{ description: '', duration_min: 5 }]);
       fetchData();
-    } catch {}
+    } catch { console.error("Failed to save LSW template"); }
   }
 
   async function saveCompletion(templateId: number) {
     const tmpl = templates.find(t => t.id === templateId);
     if (!tmpl) return;
     try {
-      const { default: api } = await import('@/lib/api');
-      await api.post('/lsw/completions', {
-        template_id: templateId,
-        date: new Date().toISOString().split('T')[0],
+      await lswApi.logCompletion({
+        lsw_id: templateId,
+        target_date: new Date().toISOString().split('T')[0],
         completed_tasks: checkedTasks,
         total_tasks: tmpl.tasks.length,
         completion_pct: Math.round((checkedTasks.length / tmpl.tasks.length) * 100),
-      });
+      } as any);
       setSelectedTemplate(null);
       setCheckedTasks([]);
       fetchData();
-    } catch {}
+    } catch { console.error("Failed to save LSW completion"); }
   }
 
   async function deleteTemplate(id: number) {
     try {
-      const { default: api } = await import('@/lib/api');
-      await api.delete(`/lsw/templates/${id}`);
+      await lswApi.remove(id);
       fetchData();
-    } catch {}
+    } catch { console.error("Failed to delete LSW template"); }
   }
 
   function moveTask(index: number, direction: -1 | 1) {
@@ -283,7 +280,7 @@ export default function LeaderStandardWork() {
             <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="text-xs text-th-text-3 block mb-1">{t('common.title') || 'Title'}</label>
-                <input value={formTitle} onChange={e => setFormTitle(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm" />
+                <input value={formTitle} onChange={e => setFormTitle(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-bg text-th-text text-sm" />
               </div>
               <div>
                 <label className="text-xs text-th-text-3 block mb-1">{t('common.role') || 'Role'}</label>
@@ -293,13 +290,13 @@ export default function LeaderStandardWork() {
                   // Auto-set recommended frequency for the role
                   const recommended = ROLE_FREQUENCY_MAP[newRole];
                   if (recommended) setFormFrequency(recommended);
-                }} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm">
+                }} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-bg text-th-text text-sm">
                   {ROLES.map(r => <option key={r} value={r}>{t(`lsw.${r}`) || r}</option>)}
                 </select>
               </div>
               <div>
                 <label className="text-xs text-th-text-3 block mb-1">{t('lsw.frequency') || 'Frequency'}</label>
-                <select value={formFrequency} onChange={e => setFormFrequency(e.target.value as LSWFrequency)} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm">
+                <select value={formFrequency} onChange={e => setFormFrequency(e.target.value as LSWFrequency)} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-bg text-th-text text-sm">
                   {FREQUENCY_OPTIONS.map(f => <option key={f} value={f}>{t(`lsw.${f}`) || f}</option>)}
                 </select>
                 <p className="text-[10px] text-th-text-3 mt-1">
@@ -313,8 +310,8 @@ export default function LeaderStandardWork() {
                 {formTasks.map((task, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <span className="text-xs text-th-text-3 w-5">{i + 1}.</span>
-                    <input value={task.description} onChange={e => { const n = [...formTasks]; n[i].description = e.target.value; setFormTasks(n); }} placeholder="Task description" className="flex-1 px-3 py-1.5 rounded-lg border border-th-border bg-th-background text-th-text text-sm" />
-                    <input type="number" value={task.duration_min} onChange={e => { const n = [...formTasks]; n[i].duration_min = parseInt(e.target.value) || 0; setFormTasks(n); }} className="w-16 px-2 py-1.5 rounded-lg border border-th-border bg-th-background text-th-text text-sm text-center" />
+                    <input value={task.description} onChange={e => { const n = [...formTasks]; n[i].description = e.target.value; setFormTasks(n); }} placeholder="Task description" className="flex-1 px-3 py-1.5 rounded-lg border border-th-border bg-th-bg text-th-text text-sm" />
+                    <input type="number" value={task.duration_min} onChange={e => { const n = [...formTasks]; n[i].duration_min = parseInt(e.target.value) || 0; setFormTasks(n); }} className="w-16 px-2 py-1.5 rounded-lg border border-th-border bg-th-bg text-th-text text-sm text-center" />
                     <button onClick={() => moveTask(i, -1)} className="p-1 text-th-text-3 hover:text-th-text"><ArrowUp size={12} /></button>
                     <button onClick={() => moveTask(i, 1)} className="p-1 text-th-text-3 hover:text-th-text"><ArrowDown size={12} /></button>
                     <button onClick={() => setFormTasks(formTasks.filter((_, j) => j !== i))} className="p-1 text-th-text-3 hover:text-rose-500"><Trash2 size={12} /></button>

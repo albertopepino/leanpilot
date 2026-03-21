@@ -1,7 +1,10 @@
 "use client";
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import { useI18n } from "@/stores/useI18n";
+import DisplayModeWrapper from "@/components/ui/DisplayModeWrapper";
 import { oeeApi, adminApi } from "@/lib/api";
+import { getErrorMessage } from "@/lib/formatters";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
 import {
@@ -23,6 +26,10 @@ import {
   ComposedChart,
 } from "recharts";
 import MetricExplainer from "@/components/shared/MetricExplainer";
+import ToolInfoCard from "@/components/ui/ToolInfoCard";
+import FlowBreadcrumb from "@/components/ui/FlowBreadcrumb";
+import { TOOL_INFO } from "@/lib/toolInfo";
+import { AlertTriangle, BarChart3, ExternalLink } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -240,12 +247,8 @@ function useOEEData(lineId: number, days: number) {
         setSummary(summaryRes.data ?? EMPTY_SUMMARY);
         setTrend(Array.isArray(trendRes.data) ? trendRes.data : []);
         setUsingFallback(false);
-      } catch (err: any) {
-        const msg =
-          err?.response?.data?.detail ??
-          err?.message ??
-          "Failed to load OEE data";
-        setError(msg);
+      } catch (err: unknown) {
+        setError(getErrorMessage(err, "Failed to load OEE data"));
         setSummary(EMPTY_SUMMARY);
         setTrend([]);
         setUsingFallback(true);
@@ -355,14 +358,23 @@ function RadialGauge({
 /*  Custom Recharts Tooltip                                            */
 /* ================================================================== */
 
-function DarkTooltip({ active, payload, label }: any) {
+interface TooltipPayloadEntry {
+  dataKey: string;
+  value?: number;
+  name?: string;
+  color?: string;
+  fill?: string;
+  payload?: Record<string, unknown>;
+}
+
+function DarkTooltip({ active, payload, label }: { active?: boolean; payload?: TooltipPayloadEntry[]; label?: string }) {
   if (!active || !payload?.length) return null;
 
   // Extract A, P, Q values for OEE calculation display
-  const avail = payload.find((p: any) => p.dataKey === "availability");
-  const perf = payload.find((p: any) => p.dataKey === "performance");
-  const qual = payload.find((p: any) => p.dataKey === "quality");
-  const oee = payload.find((p: any) => p.dataKey === "oee");
+  const avail = payload.find((p) => p.dataKey === "availability");
+  const perf = payload.find((p) => p.dataKey === "performance");
+  const qual = payload.find((p) => p.dataKey === "quality");
+  const oee = payload.find((p) => p.dataKey === "oee");
   const oeeValue = oee?.value ?? 0;
 
   // Color-code the OEE value in tooltip
@@ -371,7 +383,7 @@ function DarkTooltip({ active, payload, label }: any) {
   return (
     <div className="bg-th-bg-3 backdrop-blur-sm border border-th-border rounded-lg px-4 py-3 shadow-xl min-w-[200px]">
       <p className="text-xs text-th-text-2 mb-2 font-medium">{label}</p>
-      {payload.map((entry: any, i: number) => {
+      {payload.map((entry, i: number) => {
         const val = entry.value ?? 0;
         const entryColor = entry.dataKey === "oee"
           ? oeeColor
@@ -539,12 +551,26 @@ function SkeletonChart() {
 /* ================================================================== */
 
 export default function OEEDashboard({ onNavigate }: { onNavigate?: (view: string) => void }) {
+  const { t: tWrap } = useI18n();
+  return (
+    <Suspense fallback={null}>
+      <DisplayModeWrapper title={tWrap("common.titleDashboard") || "OEE Dashboard"} refreshInterval={60}>
+        <OEEDashboardInner onNavigate={onNavigate} />
+      </DisplayModeWrapper>
+    </Suspense>
+  );
+}
+
+function OEEDashboardInner({ onNavigate }: { onNavigate?: (view: string) => void }) {
   const { t } = useI18n();
   const { printView, exportToExcel } = useExport();
   const { lines, loading: linesLoading } = useProductionLines();
   const [selectedLine, setSelectedLine] = useState<number>(0);
   const [days, setDays] = useState(30);
   const [activeTab, setActiveTab] = useState<"overview" | "lossAnalysis">("overview");
+  const [oeeAlerts, setOeeAlerts] = useState<Array<{ type: string; severity: string; message: string; current_oee: number; threshold?: number; consecutive_count?: number; suggest_ncr?: boolean }>>([]);
+  const [ncrCreating, setNcrCreating] = useState(false);
+  const [ncrResult, setNcrResult] = useState<{ ncr_number: string } | null>(null);
 
   useEffect(() => {
     if (lines.length > 0 && selectedLine === 0) {
@@ -553,8 +579,26 @@ export default function OEEDashboard({ onNavigate }: { onNavigate?: (view: strin
   }, [lines, selectedLine]);
 
   const effectiveLineId = selectedLine || (lines.length > 0 ? lines[0].id : 0);
+
+  // Fetch OEE threshold alerts when line changes
+  useEffect(() => {
+    if (!effectiveLineId) return;
+    oeeApi.getAlerts(effectiveLineId)
+      .then((res) => {
+        setOeeAlerts(res.data?.alerts ?? []);
+        setNcrResult(null);
+      })
+      .catch(() => setOeeAlerts([]));
+  }, [effectiveLineId, days]);
   const { summary, trend, loading, error, usingFallback, retry } =
     useOEEData(effectiveLineId, days);
+
+  // Listen for display-mode-refresh events to re-fetch data
+  useEffect(() => {
+    const handler = () => { retry(); };
+    window.addEventListener("display-mode-refresh", handler);
+    return () => window.removeEventListener("display-mode-refresh", handler);
+  }, [retry]);
 
   const sixLosses = computeSixBigLosses(summary);
   const totalLossPct = sixLosses.reduce((s, l) => s + l.pct, 0);
@@ -604,6 +648,23 @@ export default function OEEDashboard({ onNavigate }: { onNavigate?: (view: strin
 
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto" data-print-area="true" role="region" aria-label="OEE Dashboard">
+      {/* Flow breadcrumb / PDCA stepper in beginner mode */}
+      <FlowBreadcrumb currentLabel={t("common.titleDashboard") || "OEE Dashboard"} />
+
+      {/* Tool info card */}
+      <ToolInfoCard info={TOOL_INFO.oee} />
+
+      {/* Hidden Factory Warning */}
+      {summary.avg_quality >= 99.5 && summary.record_count > 0 && (
+        <div className="flex items-start gap-3 px-4 py-3 rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300">
+          <AlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="text-sm font-semibold">{t("dashboard.hiddenFactoryTitle")}</p>
+            <p className="text-xs mt-0.5">{t("dashboard.hiddenFactoryWarning")}</p>
+          </div>
+        </div>
+      )}
+
       {/* -------- Header Controls -------- */}
       <div className="flex flex-wrap gap-3 items-center">
         {/* Line selector */}
@@ -699,6 +760,66 @@ export default function OEEDashboard({ onNavigate }: { onNavigate?: (view: strin
           }
         />
       </div>
+
+      {/* -------- OEE Threshold Alert Banners -------- */}
+      {oeeAlerts.filter(a => a.type === "oee_below_threshold").map((alert, i) => {
+        const isCritical = alert.severity === "critical";
+        return (
+          <div
+            key={`oee-alert-${i}`}
+            className={`rounded-xl border-2 p-4 flex flex-wrap items-center justify-between gap-3 ${
+              isCritical
+                ? "border-red-500 bg-red-500/10"
+                : "border-amber-500 bg-amber-500/10"
+            }`}
+            role="alert"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-xl" role="img" aria-label="warning">
+                {isCritical ? "\u26A0\uFE0F" : "\u26A0\uFE0F"}
+              </span>
+              <div>
+                <p className={`font-bold text-sm ${isCritical ? "text-red-600" : "text-amber-600"}`}>
+                  {t("dashboard.oeeAlertTitle", { oee: String(alert.current_oee), count: String(alert.consecutive_count ?? 3) })}
+                </p>
+                <p className="text-xs text-th-text-3 mt-0.5">{alert.message}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {alert.suggest_ncr && !ncrResult && (
+                <button
+                  onClick={async () => {
+                    setNcrCreating(true);
+                    try {
+                      const res = await oeeApi.triggerNCR({
+                        production_line_id: effectiveLineId,
+                        oee_value: alert.current_oee,
+                        threshold: alert.threshold ?? 75,
+                        consecutive_days: alert.consecutive_count ?? 3,
+                      });
+                      setNcrResult(res.data);
+                    } catch { /* ignore */ }
+                    setNcrCreating(false);
+                  }}
+                  disabled={ncrCreating}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    isCritical
+                      ? "bg-red-600 text-white hover:bg-red-700"
+                      : "bg-amber-600 text-white hover:bg-amber-700"
+                  } disabled:opacity-50`}
+                >
+                  {ncrCreating ? t("common.saving") : t("dashboard.createNcrForInvestigation")}
+                </button>
+              )}
+              {ncrResult && (
+                <span className="text-xs font-medium text-emerald-600">
+                  {t("dashboard.ncrCreated", { number: ncrResult.ncr_number })}
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })}
 
       {/* -------- View Tabs -------- */}
       <div className="flex rounded-lg border border-th-border overflow-hidden w-fit" role="tablist" aria-label="Dashboard views">
@@ -902,6 +1023,16 @@ function OverviewTabContent({
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Hidden Factory Warning — Quality at 100% */}
+        {!loading && summary.avg_quality >= 99.5 && (
+          <div className="mt-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-lg p-3 flex items-start gap-2 text-sm text-amber-800 dark:text-amber-300">
+            <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+            <span>{t("dashboard.hiddenFactoryWarning") || "Quality at 100% may indicate untracked scrap or rework. Verify data accuracy."}</span>
           </div>
         )}
       </div>
@@ -1336,6 +1467,7 @@ function SixBigLossesWaterfall({
   days: number;
 }) {
   const { t } = useI18n();
+  const router = useRouter();
   const [lossData, setLossData] = useState<{ key: string; minutes: number; color: string; label: string }[] | null>(null);
 
   // Try to fetch real loss data, fall back to calculated from OEE gaps
@@ -1523,19 +1655,22 @@ function SixBigLossesWaterfall({
                   return (
                     <div className="bg-th-bg-3 backdrop-blur-sm border border-th-border rounded-lg px-4 py-3 shadow-xl">
                       <p className="text-xs text-th-text-2 mb-1 font-medium">{label}</p>
-                      {payload.map((entry: any, i: number) => (
-                        <div key={i} className="text-sm text-th-text">
-                          {entry.dataKey === "loss" && entry.value > 0 && (
-                            <span className="font-semibold text-rose-400">{entry.value.toLocaleString()} min lost</span>
-                          )}
-                          {entry.dataKey === "remaining" && entry.value > 0 && (
-                            <span className="font-semibold" style={{ color: COLOR.emerald }}>{entry.value.toLocaleString()} min</span>
-                          )}
-                          {entry.dataKey === "cumLine" && (
-                            <div className="text-xs text-th-text-3 mt-1">Cumulative: {entry.value.toLocaleString()} min</div>
-                          )}
-                        </div>
-                      ))}
+                      {payload.map((entry, i: number) => {
+                        const val = Number(entry.value ?? 0);
+                        return (
+                          <div key={i} className="text-sm text-th-text">
+                            {entry.dataKey === "loss" && val > 0 && (
+                              <span className="font-semibold text-rose-400">{val.toLocaleString()} min lost</span>
+                            )}
+                            {entry.dataKey === "remaining" && val > 0 && (
+                              <span className="font-semibold" style={{ color: COLOR.emerald }}>{val.toLocaleString()} min</span>
+                            )}
+                            {entry.dataKey === "cumLine" && (
+                              <div className="text-xs text-th-text-3 mt-1">Cumulative: {val.toLocaleString()} min</div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   );
                 }}
@@ -1567,9 +1702,23 @@ function SixBigLossesWaterfall({
 
       {/* Individual Loss Bars */}
       <div className="oee-dashboard-card rounded-xl border border-th-card-border p-6">
-        <h3 className="text-lg font-semibold text-th-text mb-4">
-          {t("dashboard.lossBreakdown") || "Loss Breakdown"}
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-th-text">
+            {t("dashboard.lossBreakdown") || "Loss Breakdown"}
+          </h3>
+          <button
+            onClick={() => router.push("/improvement/pareto?source=downtime&from=oee&fromLabel=OEE+Dashboard")}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-brand-600 text-white hover:bg-brand-700 transition-colors shadow-sm group relative"
+            title={t("dashboard.paretoTooltip") || "Find the top causes of losses — focus on the vital few"}
+          >
+            <BarChart3 className="w-4 h-4" />
+            <span className="flex flex-col items-start leading-tight">
+              <span>{t("dashboard.deepDivePareto") || "Analyze in Pareto"}</span>
+              <span className="text-[10px] font-normal opacity-80">{t("dashboard.paretoSubtitle") || "Find the vital few causes"}</span>
+            </span>
+            <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+          </button>
+        </div>
         <div className="space-y-3">
           {lossData.map((loss) => {
             const pct = maxMin > 0 ? (loss.minutes / maxMin) * 100 : 0;
@@ -1594,6 +1743,7 @@ function SixBigLossesWaterfall({
           })}
         </div>
       </div>
+
     </div>
   );
 }

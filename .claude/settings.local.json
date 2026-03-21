@@ -58,7 +58,12 @@
       "Bash(ssh -i \"C:/Users/grass/Downloads/leansuite1.pem\" ubuntu@ec2-13-63-80-166.eu-north-1.compute.amazonaws.com \"cd /home/ubuntu/lean-os && docker exec lean-os-backend-1 grep ''timezone=True'' /app/app/models/audit.py\")",
       "Bash(C:/Windows/System32/OpenSSH/ssh.exe -i \"C:/Users/grass/Downloads/leansuite1.pem\" ubuntu@ec2-13-63-80-166.eu-north-1.compute.amazonaws.com \"cd /home/ubuntu/lean-os && docker exec lean-os-backend-1 grep ''timezone'' /app/app/models/audit.py\")",
       "Bash(cmd /c \"ssh -i C:\\\\Users\\\\grass\\\\Downloads\\\\leansuite1.pem ubuntu@ec2-13-63-80-166.eu-north-1.compute.amazonaws.com \"\"cd /home/ubuntu/lean-os && docker exec lean-os-backend-1 grep timezone /app/app/models/audit.py\"\"\")",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(find 'C:\\\\Users\\\\grass\\\\Nextcloud4\\\\Centro Studi Grassi\\\\AI\\\\Lean OS\\\\frontend\\\\src\\\\hooks' -name *Link* -o -name *linked*)",
+      "Bash(xxd \"c:/Users/grass/Nextcloud4/Centro Studi Grassi/AI/Lean OS/frontend/src/i18n/pl/assessment.json\")",
+      "Bash(python3 -c \":*)",
+      "Bash(python -c \"f = open\\(r''c:\\\\Users\\\\grass\\\\Nextcloud4\\\\Centro Studi Grassi\\\\AI\\\\Lean OS\\\\frontend\\\\src\\\\i18n\\\\pl\\\\assessment.json'', ''r'', encoding=''utf-8''\\); lines = f.readlines\\(\\); f.close\\(\\); [print\\(repr\\(l\\)\\) for l in lines[-5:]]\")",
+      "Bash(node -e \"const fs=require\\(''fs''\\); const c=fs.readFileSync\\(''c:/Users/grass/Nextcloud4/Centro Studi Grassi/AI/Lean OS/frontend/src/i18n/pl/assessment.json'',''utf8''\\); const lines=c.split\\(''\\\\n''\\); lines.slice\\(-5\\).forEach\\(\\(l,i\\)=>console.log\\(JSON.stringify\\(l\\)\\)\\)\")"
     ]
   }
 }

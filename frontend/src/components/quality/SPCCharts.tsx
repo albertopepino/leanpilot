@@ -1,9 +1,16 @@
 "use client";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, Suspense } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { useAuth } from "@/hooks/useAuth";
 import { useExport } from "@/hooks/useExport";
+import DisplayModeWrapper from "@/components/ui/DisplayModeWrapper";
 import ExportToolbar from "@/components/ui/ExportToolbar";
+import apiClient, { spcApi } from "@/lib/api";
+import { getErrorMessage } from "@/lib/formatters";
+import ToolInfoCard from "@/components/ui/ToolInfoCard";
+import { TOOL_INFO } from "@/lib/toolInfo";
+import { useToast } from "@/stores/useToast";
+import { useRouter } from "next/navigation";
 import {
   Activity,
   BarChart3,
@@ -112,9 +119,22 @@ const RULE_DESCRIPTIONS: Record<number, string> = {
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export default function SPCCharts() {
+  const { t: tWrap } = useI18n();
+  return (
+    <Suspense fallback={null}>
+      <DisplayModeWrapper title={tWrap("common.titleSPC") || "SPC Charts"} refreshInterval={60}>
+        <SPCChartsInner />
+      </DisplayModeWrapper>
+    </Suspense>
+  );
+}
+
+function SPCChartsInner() {
   const { t } = useI18n();
   const { user } = useAuth();
   const { printView, exportToExcel } = useExport();
+  const toast = useToast();
+  const router = useRouter();
 
   // Configuration
   const [chartType, setChartType] = useState<ChartType>("xbar_r");
@@ -139,14 +159,8 @@ export default function SPCCharts() {
   useEffect(() => {
     (async () => {
       try {
-        const token = localStorage.getItem("leanpilot_token");
-        const res = await fetch("/api/v1/admin/factory", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setProductionLines(data?.production_lines ?? []);
-        }
+        const res = await apiClient.get("/admin/factory");
+        setProductionLines(res.data?.production_lines ?? []);
       } catch { /* ignore */ }
     })();
   }, []);
@@ -190,7 +204,6 @@ export default function SPCCharts() {
     setSpcResult(null);
 
     try {
-      const token = localStorage.getItem("leanpilot_token");
       let measurements: number[][] = [];
       let sampleSizes: number[] | undefined;
       let labels: string[] = [];
@@ -207,17 +220,14 @@ export default function SPCCharts() {
         labels = measurements.map((_, i) => `SG ${i + 1}`);
       } else {
         // Fetch from API
-        const params = new URLSearchParams();
-        if (apiLineId) params.set("line_id", apiLineId);
-        if (apiDateFrom) params.set("date_from", apiDateFrom);
-        if (apiDateTo) params.set("date_to", apiDateTo);
-        params.set("subgroup_size", String(subgroupSize));
+        const params: Record<string, string> = {};
+        if (apiLineId) params.line_id = apiLineId;
+        if (apiDateFrom) params.date_from = apiDateFrom;
+        if (apiDateTo) params.date_to = apiDateTo;
+        params.subgroup_size = String(subgroupSize);
 
-        const dataRes = await fetch(`/api/v1/spc/data?${params}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!dataRes.ok) throw new Error("Failed to fetch SPC data");
-        const apiData = await dataRes.json();
+        const dataRes = await apiClient.get("/spc/data", { params });
+        const apiData = dataRes.data;
 
         if (!apiData.measurements || apiData.measurements.length < 2) {
           setError(t("spc.needMoreData"));
@@ -229,7 +239,7 @@ export default function SPCCharts() {
       }
 
       // Call calculate endpoint
-      const body: any = {
+      const body: Record<string, unknown> = {
         chart_type: chartType,
         measurements,
         subgroup_size: subgroupSize,
@@ -238,29 +248,23 @@ export default function SPCCharts() {
       if (lsl) body.lsl = parseFloat(lsl);
       if (sampleSizes && sampleSizes.length > 0) body.sample_sizes = sampleSizes;
 
-      const calcRes = await fetch("/api/v1/spc/calculate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!calcRes.ok) {
-        const errData = await calcRes.json().catch(() => ({}));
-        throw new Error(errData.detail || "Calculation failed");
-      }
-
-      const result: SPCResult = await calcRes.json();
+      const calcRes = await apiClient.post("/spc/calculate", body);
+      const result: SPCResult = calcRes.data;
       result.subgroup_labels = labels;
       setSpcResult(result);
-    } catch (err: any) {
-      setError(err.message || t("spc.calculationError"));
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, t("spc.calculationError")));
     } finally {
       setLoading(false);
     }
   }, [dataSource, parseManualData, chartType, subgroupSize, usl, lsl, apiLineId, apiDateFrom, apiDateTo, t]);
+
+  // Listen for display-mode-refresh events to re-calculate if data exists
+  useEffect(() => {
+    const handler = () => { if (spcResult) handleCalculate(); };
+    window.addEventListener("display-mode-refresh", handler);
+    return () => window.removeEventListener("display-mode-refresh", handler);
+  }, [spcResult, handleCalculate]);
 
   // ─── KPI values ─────────────────────────────────────────────────────
 
@@ -287,20 +291,11 @@ export default function SPCCharts() {
     return viols;
   }, [spcResult]);
 
-  const chartTooltipStyle = {
-    contentStyle: {
-      backgroundColor: "var(--color-th-bg-2, rgba(17,17,27,0.95))",
-      border: "1px solid var(--color-th-border, rgba(255,255,255,0.1))",
-      borderRadius: 12,
-      color: "var(--color-th-text, #e0e0e0)",
-      fontSize: 12,
-    },
-  };
-
   const isVariableChart = chartType === "xbar_r" || chartType === "xbar_s";
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6" data-print-area="true">
+      <ToolInfoCard info={TOOL_INFO.spc} />
       {/* Header */}
       <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
         <div className="flex items-center gap-4 mb-5">
@@ -487,7 +482,6 @@ export default function SPCCharts() {
               key={idx}
               chart={chart}
               labels={spcResult.subgroup_labels}
-              chartTooltipStyle={chartTooltipStyle}
               t={t}
             />
           ))}
@@ -499,7 +493,49 @@ export default function SPCCharts() {
 
           {/* Violations Table */}
           {allViolations.length > 0 && (
-            <ViolationsTable violations={allViolations} labels={spcResult.subgroup_labels} t={t} />
+            <ViolationsTable
+              violations={allViolations}
+              labels={spcResult.subgroup_labels}
+              t={t}
+              chartType={chartType}
+              lineId={apiLineId ? parseInt(apiLineId) : undefined}
+              charts={spcResult.charts}
+              onCreateNCR={async (violation) => {
+                const lineId = apiLineId ? parseInt(apiLineId) : undefined;
+                if (!lineId) {
+                  toast.error(t("spc.selectLineForNCR"));
+                  return;
+                }
+                // Find the chart that contains this violation to get UCL/LCL
+                let ucl: number | undefined;
+                let lcl: number | undefined;
+                for (const chart of spcResult.charts) {
+                  const found = chart.violations.find(
+                    (v) => v.point_index === violation.point_index && v.rule === violation.rule
+                  );
+                  if (found) {
+                    ucl = chart.control_limits.ucl;
+                    lcl = chart.control_limits.lcl;
+                    break;
+                  }
+                }
+                try {
+                  await spcApi.triggerNCR({
+                    production_line_id: lineId,
+                    rule_violated: violation.rule_name,
+                    sample_number: violation.subgroup_index,
+                    measured_value: violation.value,
+                    ucl,
+                    lcl,
+                    chart_type: chartType,
+                  });
+                  toast.success(t("spc.ncrCreatedFromSPC"));
+                  router.push("/quality");
+                } catch {
+                  toast.error(t("spc.ncrCreateFailed"));
+                }
+              }}
+            />
           )}
         </>
       )}
@@ -524,11 +560,10 @@ function KPICard({ icon, label, value, color }: { icon: React.ReactNode; label: 
 // ─── SPC Chart Panel ────────────────────────────────────────────────────────
 
 function SPCChartPanel({
-  chart, labels, chartTooltipStyle, t,
+  chart, labels, t,
 }: {
   chart: ChartData;
   labels: string[];
-  chartTooltipStyle: any;
   t: (key: string) => string;
 }) {
   const violationIndices = useMemo(() => {
@@ -577,7 +612,7 @@ function SPCChartPanel({
 
       <ResponsiveContainer width="100%" height={320}>
         <LineChart data={data} margin={{ top: 20, right: 40, bottom: 20, left: 10 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-th-border, rgba(255,255,255,0.06))" />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-primary, rgba(255,255,255,0.06))" />
           <XAxis
             dataKey="name"
             tick={{ fontSize: 10, fill: "var(--text-tertiary)" }}
@@ -593,9 +628,12 @@ function SPCChartPanel({
             tickFormatter={(v: number) => v.toFixed(2)}
           />
           <Tooltip
-            content={({ active, payload }: any) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            content={((props: any) => {
+              const { active, payload } = props || {};
               if (!active || !payload?.length) return null;
-              const d = payload[0]?.payload;
+              const d = payload[0]?.payload as { name: string; value: number; isViolation: boolean; rules: number[] } | undefined;
+              if (!d) return null;
               return (
                 <div className="rounded-xl border border-th-border bg-th-bg-2 px-4 py-3 shadow-sm text-sm">
                   <p className="font-bold text-th-text mb-1">{d.name}</p>
@@ -607,7 +645,7 @@ function SPCChartPanel({
                   )}
                 </div>
               );
-            }}
+            })}
           />
           {/* Control limit lines */}
           <ReferenceLine y={ucl} stroke="#ef4444" strokeDasharray="8 4" strokeWidth={2}
@@ -623,7 +661,7 @@ function SPCChartPanel({
             dataKey="value"
             stroke="#6366f1"
             strokeWidth={2}
-            dot={(props: any) => {
+            dot={(props: { cx: number; cy: number; index: number; payload: { isViolation: boolean; rules: number[] } }) => {
               const { cx, cy, payload } = props;
               if (payload.isViolation) {
                 const ruleColor = payload.rules.length > 0 ? RULE_COLORS[payload.rules[0]] || "#ef4444" : "#ef4444";
@@ -729,7 +767,17 @@ function CapabilityPanel({ capability, t }: { capability: ProcessCapability; t: 
 
 // ─── Violations Table ───────────────────────────────────────────────────────
 
-function ViolationsTable({ violations, labels, t }: { violations: Violation[]; labels: string[]; t: (key: string) => string }) {
+function ViolationsTable({
+  violations, labels, t, chartType, lineId, charts, onCreateNCR,
+}: {
+  violations: Violation[];
+  labels: string[];
+  t: (key: string) => string;
+  chartType?: string;
+  lineId?: number;
+  charts?: ChartData[];
+  onCreateNCR?: (violation: Violation) => void;
+}) {
   return (
     <div className="rounded-xl border border-th-border border-l-4 border-l-red-500 bg-th-bg-2 shadow-sm p-5">
       <div className="flex items-center gap-2 mb-4">
@@ -746,6 +794,7 @@ function ViolationsTable({ violations, labels, t }: { violations: Violation[]; l
               <th className="text-left px-4 py-2 text-th-text-2 font-semibold">{t("spc.ruleDescription")}</th>
               <th className="text-left px-4 py-2 text-th-text-2 font-semibold">{t("spc.subgroup")}</th>
               <th className="text-right px-4 py-2 text-th-text-2 font-semibold">{t("spc.value")}</th>
+              {onCreateNCR && <th className="text-center px-4 py-2 text-th-text-2 font-semibold">{t("common.actions")}</th>}
             </tr>
           </thead>
           <tbody>
@@ -760,6 +809,18 @@ function ViolationsTable({ violations, labels, t }: { violations: Violation[]; l
                 <td className="px-4 py-2 text-th-text">{t(`spc.rule${v.rule}Desc`)}</td>
                 <td className="px-4 py-2 text-th-text">{labels[v.point_index] || `SG ${v.point_index + 1}`}</td>
                 <td className="px-4 py-2 text-right text-th-text font-mono tabular-nums">{v.value.toFixed(4)}</td>
+                {onCreateNCR && (
+                  <td className="px-4 py-2 text-center">
+                    <button
+                      onClick={() => onCreateNCR(v)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 transition-all"
+                      title={t("spc.createNCR")}
+                    >
+                      <AlertTriangle className="w-3 h-3" />
+                      {t("spc.createNCR")}
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

@@ -362,13 +362,14 @@ export default function ProductionInput() {
       setToast({ type: "success", message: t("dashboard.saveSuccess") });
       handleReset();
       fetchRecords();
-    } catch (err: any) {
+    } catch (err: unknown) {
       let message: string;
-      const detail = err?.response?.data?.detail;
+      const axiosErr = err as { response?: { data?: { detail?: unknown } }; message?: string };
+      const detail = axiosErr?.response?.data?.detail;
       if (Array.isArray(detail)) {
-        message = detail.map((e: any) => e.msg || e).join("; ");
+        message = detail.map((e: Record<string, string>) => e.msg || String(e)).join("; ");
       } else {
-        message = detail ?? err?.message ?? t("dashboard.saveError");
+        message = (typeof detail === 'string' ? detail : null) ?? axiosErr?.message ?? t("dashboard.saveError");
       }
       setToast({ type: "error", message });
     } finally {
@@ -479,7 +480,7 @@ export default function ProductionInput() {
                 { key: "runMin", header: t("dashboard.actualRunTime") || "Run (min)", width: 12 },
                 { key: "totalPcs", header: t("dashboard.totalPieces") || "Total Pieces", width: 12 },
                 { key: "goodPcs", header: t("dashboard.goodPieces") || "Good Pieces", width: 12 },
-                { key: "oeeVal", header: "OEE %", width: 10, format: (v: number) => v > 0 ? `${v.toFixed(1)}%` : "" },
+                { key: "oeeVal", header: "OEE %", width: 10, format: (v: unknown) => { const n = Number(v); return n > 0 ? `${n.toFixed(1)}%` : ""; } },
               ],
               rows: recentRecords.map((r) => ({
                 date: r.date,

@@ -257,6 +257,7 @@ class NonConformanceReport(TimestampMixin, Base):
     disposition_notes = Column(Text, nullable=True)
     root_cause = Column(Text, nullable=True)
     closed_at = Column(DateTime(timezone=True), nullable=True)
+    photo_url = Column(String, nullable=True)
 
 
 # ─── CAPA ─────────────────────────────────────────────────────────────────────
@@ -292,6 +293,7 @@ class CAPAAction(TimestampMixin, Base):
 
     effectiveness_check_date = Column(DateTime(timezone=True), nullable=True)
     effectiveness_result = Column(Text, nullable=True)
+    photo_url = Column(String, nullable=True)
 
 
 # ─── QC Policy Documents ────────────────────────────────────────────────────

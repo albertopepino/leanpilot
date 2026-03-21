@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Text
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Text, Boolean
 from app.models.base import Base, TimestampMixin
 
 
@@ -19,3 +19,25 @@ class SafetyIncident(TimestampMixin, Base):
     reported_by = Column(String, nullable=True)
     status = Column(String(20), nullable=False, server_default="open")  # open, investigating, resolved, closed
     corrective_action = Column(Text, nullable=True)
+    andon_event_id = Column(Integer, ForeignKey("andon_events.id"), nullable=True)
+    photo_url = Column(String, nullable=True)
+
+
+class SafetyDocument(TimestampMixin, Base):
+    """
+    Safety document repository (SOP, MSDS, Risk Assessments, etc.).
+    Stores file metadata; actual files stored on disk under uploads/safety/.
+    """
+    __tablename__ = "safety_documents"
+
+    factory_id = Column(Integer, ForeignKey("factories.id"), nullable=False, index=True)
+    uploaded_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    category = Column(String, nullable=True)  # SOP, MSDS, Risk Assessment, Emergency Plan, Training Material, Inspection Checklist, Other
+    filename = Column(String, nullable=False)
+    file_path = Column(String, nullable=False)  # relative path on disk
+    file_size = Column(Integer, nullable=False)  # bytes
+    mime_type = Column(String, nullable=False)
+    is_active = Column(Boolean, default=True)

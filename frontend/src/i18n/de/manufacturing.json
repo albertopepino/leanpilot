@@ -281,5 +281,16 @@
   "newProduct": "Neues Produkt",
   "noProducts": "Noch keine Produkte. Manuell hinzufugen oder Excel-Datei hochladen.",
   "productFamily": "Produktfamilie",
-  "laborMin": "Arbeit (min)"
+  "laborMin": "Arbeit (min)",
+  "operation": "Arbeitsgang",
+  "machine": "Maschine",
+  "cycleTime": "Taktzeit",
+  "basis": "Basis",
+  "createCAPAFromNCR": "Korrekturmaßnahme (CAPA) aus dieser NCR erstellen",
+  "capaCreatedFromNCR": "CAPA erfolgreich aus NCR erstellt",
+  "linkKaizenToCAPA": "Kaizen-Verbesserung mit dieser CAPA verknüpfen",
+  "selectKaizen": "Kaizen-Element auswählen...",
+  "kaizenLinked": "Kaizen erfolgreich mit CAPA verknüpft",
+  "failedLinkKaizen": "Kaizen konnte nicht mit CAPA verknüpft werden",
+  "link": "Verknüpfen"
 }

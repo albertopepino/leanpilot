@@ -1,11 +1,14 @@
 import structlog
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.db.session import get_db
 from app.core.security import get_current_user, require_factory
 from app.models.user import User
+from app.services.upload_service import save_upload, resolve_upload_path, IMAGE_TYPES
 from app.schemas.lean import (
     FiveWhyCreate, FiveWhyResponse, IshikawaCreate, IshikawaResponse,
     KaizenCreate, KaizenResponse, SMEDCreate, SMEDResponse,
@@ -191,6 +194,127 @@ async def update_kaizen_status(
     }
 
 
+@router.post("/kaizen/sync-pareto-priorities")
+async def sync_pareto_priorities(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Sync kaizen items with Pareto analysis: assign pareto_rank based on top defects."""
+    from sqlalchemy import select, func, update
+    from app.models.lean import KaizenItem
+    from app.models.production import ScrapRecord
+    from app.models.factory import ProductionLine
+    from app.models.qc import NonConformanceReport
+    from app.models.waste import WasteEvent
+
+    fid = require_factory(user)
+
+    try:
+        # Reset all existing pareto ranks for this factory
+        await db.execute(
+            update(KaizenItem)
+            .where(KaizenItem.factory_id == fid)
+            .values(pareto_rank=None)
+        )
+
+        # Aggregate top defect categories from NCRs
+        ncr_cats = await db.execute(
+            select(
+                NonConformanceReport.title,
+                func.count(NonConformanceReport.id).label("cnt"),
+            )
+            .where(NonConformanceReport.factory_id == fid)
+            .group_by(NonConformanceReport.title)
+            .order_by(func.count(NonConformanceReport.id).desc())
+            .limit(10)
+        )
+        top_defects_ncr = ncr_cats.all()
+
+        # Aggregate top scrap categories (join through production_line for factory scoping)
+        scrap_cats = await db.execute(
+            select(
+                ScrapRecord.defect_type,
+                func.count(ScrapRecord.id).label("cnt"),
+            )
+            .join(ProductionLine, ScrapRecord.production_line_id == ProductionLine.id)
+            .where(ProductionLine.factory_id == fid)
+            .group_by(ScrapRecord.defect_type)
+            .order_by(func.count(ScrapRecord.id).desc())
+            .limit(10)
+        )
+        top_defects_scrap = scrap_cats.all()
+
+        # Aggregate top waste categories
+        waste_cats = await db.execute(
+            select(
+                WasteEvent.waste_type,
+                func.count(WasteEvent.id).label("cnt"),
+            )
+            .where(WasteEvent.factory_id == fid)
+            .group_by(WasteEvent.waste_type)
+            .order_by(func.count(WasteEvent.id).desc())
+            .limit(10)
+        )
+        top_defects_waste = waste_cats.all()
+
+        # Combine and rank top 3
+        combined = {}
+        for row in top_defects_ncr:
+            key = (row[0] or "").lower().strip()
+            if key:
+                combined[key] = combined.get(key, 0) + row[1]
+        for row in top_defects_scrap:
+            key = (row[0] or "").lower().strip()
+            if key:
+                combined[key] = combined.get(key, 0) + row[1]
+        for row in top_defects_waste:
+            key = (row[0] or "").lower().strip()
+            if key:
+                combined[key] = combined.get(key, 0) + row[1]
+
+        # Sort by count descending and pick top 3
+        sorted_defects = sorted(combined.items(), key=lambda x: x[1], reverse=True)[:3]
+
+        if not sorted_defects:
+            await db.commit()
+            return {"updated_count": 0, "top_defects": []}
+
+        # For each top defect, find matching kaizen items by title/description/category
+        updated_count = 0
+        top_defect_info = []
+        for rank, (defect_key, defect_count) in enumerate(sorted_defects, 1):
+            top_defect_info.append({"rank": rank, "defect": defect_key, "count": defect_count})
+
+            # Find kaizen items whose title, description, or category matches the defect key
+            kaizen_result = await db.execute(
+                select(KaizenItem)
+                .where(
+                    KaizenItem.factory_id == fid,
+                    func.lower(KaizenItem.status).notin_(["rejected", "standardized"]),
+                )
+                .where(
+                    func.lower(KaizenItem.title).contains(defect_key)
+                    | func.lower(KaizenItem.description).contains(defect_key)
+                    | func.lower(KaizenItem.category).contains(defect_key)
+                )
+            )
+            matching_items = kaizen_result.scalars().all()
+            for item in matching_items:
+                if item.pareto_rank is None or item.pareto_rank > rank:
+                    item.pareto_rank = rank
+                    updated_count += 1
+
+        await db.flush()
+        await db.commit()
+        return {"updated_count": updated_count, "top_defects": top_defect_info}
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        structlog.get_logger().error("pareto_sync_failed", error=str(e), factory_id=fid)
+        raise HTTPException(status_code=500, detail="Failed to sync Pareto priorities")
+
+
 @router.get("/kaizen/savings")
 async def get_kaizen_savings(
     db: AsyncSession = Depends(get_db),
@@ -365,6 +489,28 @@ async def list_lean_assessments(
         raise HTTPException(status_code=500, detail="Failed to list assessments")
 
 
+@router.get("/assessment/auto-score")
+async def get_auto_score(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Compute lean maturity auto-score from actual tool usage in the last 90 days.
+
+    Uses LeanMaturityCalculator to evaluate 12 categories with quality-aware scoring.
+    """
+    from app.services.lean_maturity import LeanMaturityCalculator
+
+    fid = require_factory(user)
+    try:
+        calculator = LeanMaturityCalculator(db, fid, period_days=90)
+        return await calculator.compute()
+    except HTTPException:
+        raise
+    except Exception as e:
+        structlog.get_logger().error("auto_score_failed", error=str(e), factory_id=fid)
+        raise HTTPException(status_code=500, detail="Failed to compute auto-score")
+
+
 @router.get("/assessment/latest")
 async def get_latest_assessment(
     db: AsyncSession = Depends(get_db),
@@ -409,3 +555,70 @@ async def get_latest_assessment(
     except Exception as e:
         structlog.get_logger().error("assessment_load_failed", error=str(e), factory_id=fid)
         raise HTTPException(status_code=500, detail="Failed to load assessment")
+
+
+# --- KAIZEN PHOTO UPLOAD ---
+
+@router.post("/kaizen/{kaizen_id}/photo/{photo_type}")
+async def upload_kaizen_photo(
+    kaizen_id: int,
+    photo_type: str,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Upload a before or after photo for a kaizen item."""
+    if photo_type not in ("before", "after"):
+        raise HTTPException(400, "photo_type must be 'before' or 'after'")
+
+    from app.models.lean import KaizenItem
+    fid = require_factory(user)
+
+    result = await db.execute(
+        select(KaizenItem).where(KaizenItem.id == kaizen_id, KaizenItem.factory_id == fid)
+    )
+    item = result.scalar_one_or_none()
+    if not item:
+        raise HTTPException(404, "Kaizen item not found")
+
+    relative_path, file_size = await save_upload(file, "kaizen", fid, IMAGE_TYPES, 10 * 1024 * 1024)
+
+    if photo_type == "before":
+        item.before_photo_url = relative_path
+    else:
+        item.after_photo_url = relative_path
+
+    await db.commit()
+    return {"photo_url": f"/api/v1/lean/kaizen/{kaizen_id}/photo/{photo_type}", "file_size": file_size}
+
+
+@router.get("/kaizen/{kaizen_id}/photo/{photo_type}")
+async def get_kaizen_photo(
+    kaizen_id: int,
+    photo_type: str,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Serve a kaizen before/after photo."""
+    if photo_type not in ("before", "after"):
+        raise HTTPException(400, "photo_type must be 'before' or 'after'")
+
+    from app.models.lean import KaizenItem
+    fid = require_factory(user)
+
+    result = await db.execute(
+        select(KaizenItem).where(KaizenItem.id == kaizen_id, KaizenItem.factory_id == fid)
+    )
+    item = result.scalar_one_or_none()
+    if not item:
+        raise HTTPException(404, "Kaizen item not found")
+
+    photo_url = item.before_photo_url if photo_type == "before" else item.after_photo_url
+    if not photo_url:
+        raise HTTPException(404, "No photo uploaded")
+
+    disk_path = resolve_upload_path("kaizen", photo_url)
+    import os
+    ext = os.path.splitext(disk_path)[1].lower()
+    mime = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png"}.get(ext, "application/octet-stream")
+    return FileResponse(disk_path, media_type=mime)

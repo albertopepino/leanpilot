@@ -1,6 +1,13 @@
-from fastapi import APIRouter, Body, Depends, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, UploadFile, File
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime
+from sqlalchemy.orm.attributes import flag_modified
+from sqlalchemy import select
+from datetime import datetime, timezone
+import os
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 from app.db.session import get_db
 from app.core.security import get_current_user, require_factory
@@ -128,12 +135,13 @@ async def create_gemba_walk(
     try:
         walk = await GembaService.create_walk(db, fid, user.id, data.model_dump())
         await db.commit()
-        return {"id": walk.id}
+        await db.refresh(walk, ["observations"])
+        obs_ids = [obs.id for obs in (walk.observations or [])]
+        return {"id": walk.id, "observation_ids": obs_ids}
     except Exception as e:
         await db.rollback()
-        import structlog
-        structlog.get_logger().error("gemba_walk_create_failed", error=str(e), factory_id=fid)
-        raise HTTPException(status_code=500, detail=f"Failed to save Gemba Walk: {str(e)}")
+        logger.error("gemba_walk_create_failed", error=str(e), factory_id=fid)
+        raise HTTPException(status_code=500, detail="Failed to save Gemba Walk")
 
 
 @router.get("/gemba")
@@ -143,7 +151,6 @@ async def list_gemba_walks(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    import structlog
     fid = require_factory(user)
     try:
         walks = await GembaService.list_walks(db, fid, skip=skip, limit=limit)
@@ -161,6 +168,7 @@ async def list_gemba_walks(
                     "assigned_to": obs.assigned_to,
                     "due_date": obs.due_date.isoformat() if obs.due_date else None,
                     "priority": obs.priority or "medium",
+                    "photo_url": obs.photo_url,
                 })
             result.append({
                 "id": w.id,
@@ -176,8 +184,8 @@ async def list_gemba_walks(
     except HTTPException:
         raise
     except Exception as e:
-        structlog.get_logger().error("gemba_list_failed", error=str(e), factory_id=fid)
-        raise HTTPException(status_code=500, detail=f"Failed to list Gemba walks: {str(e)}")
+        logger.error("gemba_list_failed", error=str(e), factory_id=fid)
+        raise HTTPException(status_code=500, detail="Failed to list Gemba walks")
 
 
 # ---- TPM ----
@@ -274,7 +282,8 @@ async def get_equipment_metrics(
         eq_r = await db.execute(eq_q)
         equipment = eq_r.scalar_one_or_none()
     except Exception as e:
-        raise HTTPException(500, f"Failed to load equipment: {str(e)}")
+        logger.error("tpm_equipment_load_failed", error=str(e), equipment_id=equipment_id)
+        raise HTTPException(500, "Failed to load equipment")
     if not equipment:
         raise HTTPException(404, "Equipment not found")
 
@@ -406,7 +415,6 @@ async def andon_current_status(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    import structlog
     fid = require_factory(user)
     try:
         events = await AndonService.get_current_status(db, fid)
@@ -434,8 +442,8 @@ async def andon_current_status(
     except HTTPException:
         raise
     except Exception as e:
-        structlog.get_logger().error("andon_status_failed", error=str(e), factory_id=fid)
-        raise HTTPException(status_code=500, detail=f"Failed to fetch Andon status: {str(e)}")
+        logger.error("andon_status_failed", error=str(e), factory_id=fid)
+        raise HTTPException(status_code=500, detail="Failed to fetch Andon status")
 
 
 @router.get("/andon/check-escalation")
@@ -450,6 +458,26 @@ async def check_andon_escalation(
     fid = require_factory(user)
     escalated = await AndonService.check_escalation(db, fid)
     return {"escalated_count": len(escalated), "escalated_events": escalated}
+
+
+@router.post("/andon/detect-patterns")
+async def detect_andon_patterns(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Detect recurring Andon patterns (same reason 3+ times in 7 days on a line)
+    and auto-create Kaizen items for each pattern found."""
+    fid = require_factory(user)
+    try:
+        result = await AndonService.detect_patterns(db, fid, user.id)
+        await db.commit()
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        logger.error("andon_pattern_detection_failed", error=str(e), factory_id=fid)
+        raise HTTPException(status_code=500, detail="Failed to detect Andon patterns")
 
 
 # ---- AUDIT SCHEDULE AUTO-RECURRENCE ----
@@ -507,6 +535,118 @@ async def get_hourly_view(
     return await HourlyProductionService.get_day_view(db, line_id, dt, factory_id=fid)
 
 
+# ---- VSM LIVE DATA ----
+
+@router.get("/vsm/{vsm_id}/live-data")
+async def vsm_live_data(
+    vsm_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Get live OEE, cycle time, WIP, and uptime overlay data for each VSM step."""
+    from sqlalchemy import select, func, and_, cast
+    from sqlalchemy import Date
+    from app.models.lean_advanced import VSMMap, VSMStep
+    from app.models.lean import OEERecord
+    from app.models.production import ProductionRecord, DowntimeEvent
+    from app.models.factory import ProductionLine
+
+    fid = require_factory(user)
+
+    # Load VSM map with factory scoping
+    result = await db.execute(
+        select(VSMMap).where(VSMMap.id == vsm_id, VSMMap.factory_id == fid)
+    )
+    vsm_map = result.scalar_one_or_none()
+    if not vsm_map:
+        raise HTTPException(404, "VSM map not found")
+
+    # Load steps
+    steps_result = await db.execute(
+        select(VSMStep).where(VSMStep.vsm_map_id == vsm_id).order_by(VSMStep.step_order)
+    )
+    steps = steps_result.scalars().all()
+
+    # Load all production lines for matching by name
+    lines_result = await db.execute(
+        select(ProductionLine).where(ProductionLine.factory_id == fid)
+    )
+    lines = lines_result.scalars().all()
+    line_name_map = {l.name.lower().strip(): l for l in lines}
+
+    today = datetime.now(timezone.utc).date()
+    step_data = []
+
+    for step in steps:
+        live = {
+            "step_id": step.id,
+            "process_name": step.process_name,
+            "live_oee": None,
+            "live_cycle_time": None,
+            "live_wip": None,
+            "live_uptime": None,
+        }
+
+        # Try to match step to a production line by process_name
+        matched_line = line_name_map.get((step.process_name or "").lower().strip())
+        if matched_line:
+            line_id = matched_line.id
+
+            # Latest OEE record
+            try:
+                oee_q = (
+                    select(OEERecord)
+                    .where(OEERecord.production_line_id == line_id)
+                    .order_by(OEERecord.date.desc())
+                    .limit(1)
+                )
+                oee_r = await db.execute(oee_q)
+                oee_rec = oee_r.scalar_one_or_none()
+                if oee_rec:
+                    live["live_oee"] = round(oee_rec.oee, 1) if oee_rec.oee else None
+            except Exception as e:
+                logger.warning(f"VSM live data query failed for step {step.id}: {e}")
+
+            # Latest production record -> actual cycle time, WIP proxy
+            try:
+                prod_q = (
+                    select(ProductionRecord)
+                    .where(ProductionRecord.production_line_id == line_id)
+                    .order_by(ProductionRecord.date.desc())
+                    .limit(1)
+                )
+                prod_r = await db.execute(prod_q)
+                prod_rec = prod_r.scalar_one_or_none()
+                if prod_rec and prod_rec.total_pieces and prod_rec.actual_run_time_min:
+                    live["live_cycle_time"] = round(
+                        (prod_rec.actual_run_time_min * 60) / max(prod_rec.total_pieces, 1), 1
+                    )
+                    # WIP approximation: total - good pieces
+                    live["live_wip"] = max(0, (prod_rec.total_pieces or 0) - (prod_rec.good_pieces or 0))
+            except Exception as e:
+                logger.warning(f"VSM live data query failed for step {step.id}: {e}")
+
+            # Today's uptime: 100% minus downtime percentage
+            try:
+                dt_q = select(func.sum(DowntimeEvent.duration_minutes)).where(
+                    and_(
+                        DowntimeEvent.production_line_id == line_id,
+                        cast(DowntimeEvent.start_time, Date) == today,
+                    )
+                )
+                dt_r = await db.execute(dt_q)
+                total_downtime = dt_r.scalar() or 0
+                # Assume 480 min shift as baseline
+                uptime_pct = max(0, round((1 - total_downtime / 480) * 100, 1))
+                live["live_uptime"] = uptime_pct
+            except Exception as e:
+                logger.warning(f"VSM live data query failed for step {step.id}: {e}")
+
+        step_data.append(live)
+
+    return {"steps": step_data}
+
+
 # ---- MIND MAP ----
 
 from pydantic import BaseModel as PydanticBaseModel
@@ -550,7 +690,8 @@ async def create_mind_map(
         return {"id": mind_map.id, "title": mind_map.title}
     except Exception as e:
         await db.rollback()
-        raise HTTPException(status_code=500, detail=f"Failed to create mind map: {str(e)}")
+        logger.error("mindmap_create_failed", error=str(e), factory_id=fid)
+        raise HTTPException(status_code=500, detail="Failed to create mind map")
 
 
 @router.get("/mindmap")
@@ -629,8 +770,10 @@ async def update_mind_map(
         mind_map.description = data.description
     if data.nodes is not None:
         mind_map.nodes = data.nodes
+        flag_modified(mind_map, "nodes")
     if data.connectors is not None:
         mind_map.connectors = data.connectors
+        flag_modified(mind_map, "connectors")
     await db.commit()
     return {"id": mind_map.id, "title": mind_map.title}
 
@@ -653,3 +796,170 @@ async def delete_mind_map(
     await db.delete(mind_map)
     await db.commit()
     return {"status": "deleted"}
+
+
+# ---- GEMBA OBSERVATION PHOTO ----
+
+from app.services.upload_service import save_upload, resolve_upload_path, IMAGE_TYPES
+
+
+@router.post("/gemba/observations/{observation_id}/photo")
+async def upload_gemba_photo(
+    observation_id: int,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Upload a photo for a Gemba walk observation."""
+    from app.models.lean_advanced import GembaObservation
+    fid = require_factory(user)
+
+    result = await db.execute(
+        select(GembaObservation).where(GembaObservation.id == observation_id)
+    )
+    obs = result.scalar_one_or_none()
+    if not obs:
+        raise HTTPException(404, "Observation not found")
+
+    # Verify factory scope via the parent walk
+    from app.models.lean_advanced import GembaWalk
+    walk_result = await db.execute(
+        select(GembaWalk).where(GembaWalk.id == obs.walk_id, GembaWalk.factory_id == fid)
+    )
+    if not walk_result.scalar_one_or_none():
+        raise HTTPException(403, "Observation does not belong to your factory")
+
+    relative_path, file_size = await save_upload(file, "gemba", fid, IMAGE_TYPES)
+    obs.photo_url = relative_path
+    await db.commit()
+    return {"photo_url": f"/api/v1/lean-advanced/gemba/observations/{observation_id}/photo", "file_size": file_size}
+
+
+@router.get("/gemba/observations/{observation_id}/photo")
+async def get_gemba_photo(
+    observation_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Serve a Gemba observation photo."""
+    from app.models.lean_advanced import GembaObservation, GembaWalk
+    fid = require_factory(user)
+
+    result = await db.execute(
+        select(GembaObservation).where(GembaObservation.id == observation_id)
+    )
+    obs = result.scalar_one_or_none()
+    if not obs or not obs.photo_url:
+        raise HTTPException(404, "Photo not found")
+
+    walk_result = await db.execute(
+        select(GembaWalk).where(GembaWalk.id == obs.walk_id, GembaWalk.factory_id == fid)
+    )
+    if not walk_result.scalar_one_or_none():
+        raise HTTPException(403, "Observation does not belong to your factory")
+
+    disk_path = resolve_upload_path("gemba", obs.photo_url)
+    ext = os.path.splitext(disk_path)[1].lower()
+    mime = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png"}.get(ext, "application/octet-stream")
+    return FileResponse(disk_path, media_type=mime)
+
+
+# ---- GEMBA OBSERVATION → KAIZEN LINK ----
+
+@router.post("/gemba/observations/{observation_id}/link-kaizen/{kaizen_id}")
+async def link_gemba_kaizen(
+    observation_id: int,
+    kaizen_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Link a gemba observation to a kaizen item (set linked_kaizen_id)."""
+    fid = require_factory(user)
+    from app.models.lean_advanced import GembaObservation, GembaWalk
+    from app.models.lean import KaizenItem
+
+    obs_result = await db.execute(
+        select(GembaObservation).where(GembaObservation.id == observation_id)
+    )
+    obs = obs_result.scalar_one_or_none()
+    if not obs:
+        raise HTTPException(404, "Observation not found")
+
+    walk_result = await db.execute(
+        select(GembaWalk).where(GembaWalk.id == obs.walk_id, GembaWalk.factory_id == fid)
+    )
+    if not walk_result.scalar_one_or_none():
+        raise HTTPException(403, "Observation does not belong to your factory")
+
+    kaizen_result = await db.execute(
+        select(KaizenItem).where(KaizenItem.id == kaizen_id, KaizenItem.factory_id == fid)
+    )
+    if not kaizen_result.scalar_one_or_none():
+        raise HTTPException(404, "Kaizen item not found in your factory")
+
+    obs.linked_kaizen_id = kaizen_id
+    await db.commit()
+    return {"status": "linked", "observation_id": observation_id, "kaizen_id": kaizen_id}
+
+
+# ---- 6S AUDIT ITEM PHOTO ----
+
+@router.post("/6s/audits/{audit_id}/items/{item_id}/photo")
+async def upload_sixs_photo(
+    audit_id: int,
+    item_id: int,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Upload evidence photo for a 6S audit item."""
+    from app.models.lean_advanced import SixSAudit, SixSAuditItem
+    fid = require_factory(user)
+
+    audit_result = await db.execute(
+        select(SixSAudit).where(SixSAudit.id == audit_id, SixSAudit.factory_id == fid)
+    )
+    if not audit_result.scalar_one_or_none():
+        raise HTTPException(404, "Audit not found")
+
+    item_result = await db.execute(
+        select(SixSAuditItem).where(SixSAuditItem.id == item_id, SixSAuditItem.audit_id == audit_id)
+    )
+    item = item_result.scalar_one_or_none()
+    if not item:
+        raise HTTPException(404, "Audit item not found")
+
+    relative_path, file_size = await save_upload(file, "sixs", fid, IMAGE_TYPES)
+    item.photo_url = relative_path
+    await db.commit()
+    return {"photo_url": f"/api/v1/lean-advanced/6s/audits/{audit_id}/items/{item_id}/photo", "file_size": file_size}
+
+
+@router.get("/6s/audits/{audit_id}/items/{item_id}/photo")
+async def get_sixs_photo(
+    audit_id: int,
+    item_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Serve a 6S audit item evidence photo."""
+    from app.models.lean_advanced import SixSAudit, SixSAuditItem
+    fid = require_factory(user)
+
+    audit_result = await db.execute(
+        select(SixSAudit).where(SixSAudit.id == audit_id, SixSAudit.factory_id == fid)
+    )
+    if not audit_result.scalar_one_or_none():
+        raise HTTPException(404, "Audit not found")
+
+    item_result = await db.execute(
+        select(SixSAuditItem).where(SixSAuditItem.id == item_id, SixSAuditItem.audit_id == audit_id)
+    )
+    item = item_result.scalar_one_or_none()
+    if not item or not item.photo_url:
+        raise HTTPException(404, "Photo not found")
+
+    disk_path = resolve_upload_path("sixs", item.photo_url)
+    ext = os.path.splitext(disk_path)[1].lower()
+    mime = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png"}.get(ext, "application/octet-stream")
+    return FileResponse(disk_path, media_type=mime)

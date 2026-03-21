@@ -39,6 +39,7 @@ class SixSAuditItemResponse(BaseModel):
     corrective_action: str | None = None
     responsible: str | None = None
     due_date: datetime | None = None
+    photo_url: str | None = None
 
     class Config:
         from_attributes = True
@@ -198,6 +199,7 @@ class GembaObservationResponse(BaseModel):
     assigned_to: str | None = None
     due_date: datetime | None = None
     priority: str = "medium"
+    photo_url: str | None = None
 
     class Config:
         from_attributes = True

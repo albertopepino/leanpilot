@@ -95,7 +95,7 @@ const PERM_COLORS: Record<string, string> = {
   full: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
   modify: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
   view: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  hidden: "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600",
+  hidden: "bg-th-bg-3 text-th-text-3",
 };
 
 const PERM_LABEL_KEYS: Record<string, string> = {
@@ -158,7 +158,7 @@ export default function GroupPoliciesPanel() {
       const res = await groupsApi.list();
       setGroups(res.data);
     } catch {
-      setError("Failed to load groups");
+      setError(t("admin.failedLoadGroups"));
     }
   }, []);
 
@@ -220,7 +220,7 @@ export default function GroupPoliciesPanel() {
       setShowGroupForm(false);
       await loadGroups();
     } catch {
-      setError("Failed to save group");
+      setError(t("admin.failedSaveGroup"));
     }
   };
 
@@ -232,7 +232,7 @@ export default function GroupPoliciesPanel() {
       setSuccess(t("admin.groupDeleted"));
       await loadGroups();
     } catch {
-      setError("Failed to delete group");
+      setError(t("admin.failedDeleteGroup"));
     }
   };
 
@@ -262,7 +262,7 @@ export default function GroupPoliciesPanel() {
       setSuccess(t("admin.groupPoliciesSaved"));
       await loadGroups();
     } catch {
-      setError("Failed to save policies");
+      setError(t("admin.failedSavePolicies"));
     }
   };
 
@@ -275,7 +275,7 @@ export default function GroupPoliciesPanel() {
       await groupsApi.addMembers(selectedGroup.id, [userId]);
       await loadGroups();
     } catch {
-      setError("Failed to add member");
+      setError(t("admin.failedAddMember"));
     }
   };
 
@@ -286,7 +286,7 @@ export default function GroupPoliciesPanel() {
       await groupsApi.removeMembers(selectedGroup.id, [userId]);
       await loadGroups();
     } catch {
-      setError("Failed to remove member");
+      setError(t("admin.failedRemoveMember"));
     }
   };
 
@@ -378,7 +378,7 @@ export default function GroupPoliciesPanel() {
                       className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
                         group.is_active
                           ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                          : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500"
+                          : "bg-th-bg-3 text-th-text-3"
                       }`}
                     >
                       {group.is_active ? t("admin.groupActive") : t("admin.groupInactive")}
@@ -421,7 +421,7 @@ export default function GroupPoliciesPanel() {
           {!selectedGroup ? (
             <div className="text-center py-16 text-th-text-2 text-sm">
               {groups.length > 0
-                ? "Select a group to edit its policies and members"
+                ? t("admin.selectGroupPrompt")
                 : t("admin.noGroups")}
             </div>
           ) : (
@@ -523,7 +523,7 @@ export default function GroupPoliciesPanel() {
                     />
                     <div className="max-h-40 overflow-y-auto space-y-1">
                       {filteredAvailable.length === 0 && (
-                        <p className="text-xs text-th-text-2 text-center py-2">No users available</p>
+                        <p className="text-xs text-th-text-2 text-center py-2">{t("admin.noUsersAvailable")}</p>
                       )}
                       {filteredAvailable.map((u) => (
                         <button
@@ -564,7 +564,7 @@ export default function GroupPoliciesPanel() {
                           <button
                             onClick={() => removeMember(u.id)}
                             className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/20 text-th-text-2 hover:text-red-600 transition"
-                            title="Remove"
+                            title={t("common.remove")}
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

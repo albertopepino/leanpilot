@@ -44,6 +44,8 @@ import {
   BarChart3,
   Target,
 } from "lucide-react";
+import ToolInfoCard from "@/components/ui/ToolInfoCard";
+import { TOOL_INFO } from "@/lib/toolInfo";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -136,23 +138,17 @@ const FREQUENCY_MS: Record<VerificationFrequency, number> = {
 /*  API helper                                                         */
 /* ------------------------------------------------------------------ */
 
-const API_BASE = "/api/v1";
-
-function getHeaders(): HeadersInit {
-  const token = typeof window !== "undefined" ? localStorage.getItem("leanpilot_token") : null;
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
+// Use shared axios instance for interceptors (X-Site-Id, token refresh, cookies)
+import apiClient from "@/lib/api";
 
 async function apiFetch<T>(url: string, opts?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${url}`, { headers: getHeaders(), ...opts });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `API error ${res.status}`);
-  }
-  return res.json();
+  const method = (opts?.method ?? "GET").toUpperCase();
+  const body = opts?.body ? JSON.parse(opts.body as string) : undefined;
+  const res = method === "POST" ? await apiClient.post<T>(url, body)
+    : method === "PATCH" ? await apiClient.patch<T>(url, body)
+    : method === "DELETE" ? await apiClient.delete<T>(url)
+    : await apiClient.get<T>(url);
+  return res.data;
 }
 
 /* ------------------------------------------------------------------ */
@@ -214,11 +210,11 @@ export default function PokaYoke() {
       const [devRes, statsRes, lineRes] = await Promise.all([
         apiFetch<PokaYokeDevice[]>(`/pokayoke/devices?${params.toString()}`),
         apiFetch<Stats>("/pokayoke/stats"),
-        apiFetch<any>("/admin/production-lines").catch(() => []),
+        apiFetch<{ id: number; name: string }[]>("/admin/production-lines").catch(() => []),
       ]);
       setDevices(Array.isArray(devRes) ? devRes : []);
       setStats(statsRes ?? null);
-      setLines(Array.isArray(lineRes) ? lineRes : lineRes?.lines || []);
+      setLines(Array.isArray(lineRes) ? lineRes : []);
     } catch (err) {
       console.error("Failed to fetch pokayoke data", err);
     } finally {
@@ -308,8 +304,8 @@ export default function PokaYoke() {
       resetForm();
       setView("registry");
       fetchData();
-    } catch (err: any) {
-      setError(err.message || "Failed to save device");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to save device");
     } finally {
       setSaving(false);
     }
@@ -341,8 +337,8 @@ export default function PokaYoke() {
       setVerifyingDevice(null);
       setVerifyForm({ result: "PASS", notes: "" });
       fetchData();
-    } catch (err: any) {
-      setError(err.message || "Verification failed");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Verification failed");
     } finally {
       setSaving(false);
     }
@@ -1035,6 +1031,7 @@ export default function PokaYoke() {
 
   return (
     <div className="min-h-screen p-4 md:p-6 lg:p-8 max-w-[1400px] mx-auto">
+      <ToolInfoCard info={TOOL_INFO["poka-yoke"]} />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>

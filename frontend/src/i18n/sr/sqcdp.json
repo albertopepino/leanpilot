@@ -29,5 +29,15 @@
   "autoEscalatedT2": "Auto-eskalacija na T2",
   "loadFailed": "Ucitavanje SQCDP podataka neuspesno",
   "saveFailed": "Cuvanje SQCDP unosa neuspesno",
-  "meetingSaveFailed": "Evidencija sastanka neuspesna"
+  "meetingSaveFailed": "Evidencija sastanka neuspesna",
+
+  "openNCR": "Otvori NCR",
+  "viewSPC": "Pregledaj SPC",
+  "startFiveWhy": "Pokreni 5-Zasto",
+  "createKaizen": "Kreiraj Kaizen",
+  "viewOEE": "Pregledaj OEE",
+  "openSafety": "Otvori Bezbednost",
+  "viewWaste": "Pregledaj Rasipanje",
+  "viewProduction": "Pregledaj Proizvodnju",
+  "viewHandover": "Pregledaj Primopredaju Smene"
 }

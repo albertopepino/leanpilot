@@ -60,5 +60,7 @@
   "cardAge": "Wiek",
   "days": "dni",
 
-  "exportTitle": "Eksport Tablicy Kanban"
+  "exportTitle": "Eksport Tablicy Kanban",
+
+  "metricsView": "Wskazniki"
 }

@@ -15,10 +15,12 @@ from sqlalchemy import select
 from app.db.session import get_db
 from app.core.config import get_settings
 from app.core.security import (
-    verify_password, get_password_hash, create_access_token, create_refresh_token,
+    verify_password, verify_password_async,
+    get_password_hash, get_password_hash_async,
+    create_access_token, create_refresh_token,
     create_2fa_pending_token, decode_token, get_current_user, get_current_active_admin,
     require_factory, check_rate_limit, revoke_token, log_audit, get_client_ip,
-    validate_password_strength, _mask_email, set_auth_cookies, clear_auth_cookies,
+    validate_password_strength, mask_email, set_auth_cookies, clear_auth_cookies,
 )
 from app.models.user import User, UserRole
 from app.models.factory import Factory
@@ -51,7 +53,7 @@ async def login(
     client_ip = get_client_ip(request)
 
     # Rate limit by IP
-    check_rate_limit(
+    await check_rate_limit(
         key=f"login:{client_ip}",
         max_requests=settings.rate_limit_login_per_minute,
         window_seconds=60,
@@ -60,7 +62,21 @@ async def login(
     result = await db.execute(select(User).where(User.email == form.username))
     user = result.scalar_one_or_none()
 
-    if not user or not verify_password(form.password, user.hashed_password):
+    # Check account lockout BEFORE password verification to prevent bypass
+    if user and user.locked_until and user.locked_until > datetime.now(timezone.utc):
+        remaining = int((user.locked_until - datetime.now(timezone.utc)).total_seconds() / 60) + 1
+        await log_audit(
+            db, action="login_failed", resource_type="auth",
+            user_email=form.username, ip_address=client_ip,
+            detail="Account locked",
+        )
+        await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_423_LOCKED,
+            detail=f"Account locked. Try again in {remaining} minutes.",
+        )
+
+    if not user or not await verify_password_async(form.password, user.hashed_password):
         # Track failed attempts for account lockout
         if user:
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
@@ -69,7 +85,7 @@ async def login(
                 user.locked_until = datetime.now(timezone.utc) + timedelta(
                     minutes=settings.account_lockout_minutes
                 )
-                logger.warning(f"Account locked: {_mask_email(user.email)} after {user.failed_login_attempts} failed attempts")
+                logger.warning(f"Account locked: {mask_email(user.email)} after {user.failed_login_attempts} failed attempts")
             await db.flush()
 
         await log_audit(
@@ -79,14 +95,6 @@ async def login(
         )
         await db.commit()
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-
-    # Check account lockout
-    if user.locked_until and user.locked_until > datetime.now(timezone.utc):
-        remaining = int((user.locked_until - datetime.now(timezone.utc)).total_seconds() / 60) + 1
-        raise HTTPException(
-            status_code=status.HTTP_423_LOCKED,
-            detail=f"Account locked. Try again in {remaining} minutes.",
-        )
 
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account disabled")
@@ -151,14 +159,14 @@ async def logout(
     # Revoke token from Authorization header if present
     auth_header = request.headers.get("Authorization", "")
     if auth_header.startswith("Bearer "):
-        revoke_token(auth_header[7:])
+        await revoke_token(auth_header[7:])
     # Also revoke token from cookie if present
     cookie_access = request.cookies.get("access_token")
     if cookie_access:
-        revoke_token(cookie_access)
+        await revoke_token(cookie_access)
     cookie_refresh = request.cookies.get("refresh_token")
     if cookie_refresh:
-        revoke_token(cookie_refresh)
+        await revoke_token(cookie_refresh)
 
     await log_audit(
         db, action="logout", resource_type="auth",
@@ -197,7 +205,7 @@ async def refresh_token_endpoint(
             detail="Missing refresh token",
         )
 
-    payload = decode_token(resolved_token, expected_type="refresh")
+    payload = await decode_token(resolved_token, expected_type="refresh")
     user_id = payload["sub"]
 
     result = await db.execute(select(User).where(User.id == int(user_id)))
@@ -206,7 +214,7 @@ async def refresh_token_endpoint(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
 
     # Revoke old refresh token (rotation)
-    revoke_token(resolved_token)
+    await revoke_token(resolved_token)
 
     token_data = {
         "sub": str(user.id),
@@ -251,7 +259,7 @@ async def register(
 
     user = User(
         email=data.email,
-        hashed_password=get_password_hash(data.password),
+        hashed_password=await get_password_hash_async(data.password),
         full_name=data.full_name,
         role=data.role,
         language=data.language,
@@ -321,7 +329,7 @@ async def landing_page_signup(
 
     user = User(
         email=data.email,
-        hashed_password=get_password_hash(temp_password),
+        hashed_password=await get_password_hash_async(temp_password),
         full_name=name_guess,
         role=UserRole.ADMIN,
         is_active=True,
@@ -600,7 +608,7 @@ async def change_password(
     current_user: User = Depends(get_current_user),
 ):
     """Change password. Requires current password verification."""
-    if not verify_password(data.current_password, current_user.hashed_password):
+    if not await verify_password_async(data.current_password, current_user.hashed_password):
         await log_audit(
             db, action="password_change_failed", resource_type="auth",
             user_id=current_user.id, user_email=current_user.email,
@@ -617,7 +625,7 @@ async def change_password(
     if pwd_errors:
         raise HTTPException(status_code=400, detail=pwd_errors)
 
-    current_user.hashed_password = get_password_hash(data.new_password)
+    current_user.hashed_password = await get_password_hash_async(data.new_password)
     current_user.password_changed_at = datetime.now(timezone.utc)
 
     await log_audit(
@@ -705,7 +713,7 @@ async def forgot_password(
     client_ip = get_client_ip(request)
 
     # Rate limit to prevent abuse
-    check_rate_limit(
+    await check_rate_limit(
         key=f"forgot:{client_ip}",
         max_requests=3,
         window_seconds=300,
@@ -742,17 +750,14 @@ async def forgot_password(
     )
     await db.commit()
 
-    # In production, send email. In dev mode (no SMTP), log the token.
-    if settings.smtp_host:
-        logger.info("password_reset.email_queued", email=_mask_email(data.email))
-        # TODO: integrate with EmailService to send reset link
-    else:
-        logger.warning(
-            "password_reset.dev_mode",
-            email=_mask_email(data.email),
-            token=reset_token,
-            note="SMTP not configured — token logged for dev use",
-        )
+    # Send reset email via EmailService (falls back to console log in dev)
+    reset_url = f"{settings.app_url}/reset-password?token={reset_token}"
+    await EmailService._send(
+        data.email,
+        "LeanPilot — Password Reset",
+        _password_reset_email(user.full_name or data.email, reset_url),
+    )
+    logger.info("password_reset.email_sent", email=mask_email(data.email))
 
     response = generic_response
     # In debug/dev mode, include the token for testing
@@ -800,7 +805,7 @@ async def reset_password(
         raise HTTPException(status_code=400, detail=pwd_errors)
 
     # Update password and clear reset token
-    user.hashed_password = get_password_hash(data.new_password)
+    user.hashed_password = await get_password_hash_async(data.new_password)
     user.password_changed_at = datetime.now(timezone.utc)
     user.reset_token = None
     user.reset_token_expires_at = None
@@ -819,3 +824,30 @@ async def reset_password(
     await db.commit()
 
     return {"detail": "Password has been reset successfully. You can now log in with your new password."}
+
+
+def _password_reset_email(name: str, reset_url: str) -> str:
+    """HTML template for password reset email."""
+    return f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f9fafb; padding: 40px 20px;">
+  <div style="max-width: 560px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
+    <div style="background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 32px; text-align: center;">
+      <h1 style="color: white; margin: 0; font-size: 24px;">Password Reset</h1>
+    </div>
+    <div style="padding: 32px;">
+      <p style="color: #374151; font-size: 16px;">Hi <strong>{name}</strong>,</p>
+      <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">
+        We received a request to reset your LeanPilot password. Click the button below to set a new password.
+        This link expires in 1 hour.
+      </p>
+      <div style="text-align: center; margin: 28px 0;">
+        <a href="{reset_url}"
+           style="display: inline-block; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 15px;">
+          Reset Password
+        </a>
+      </div>
+      <p style="color: #9ca3af; font-size: 13px;">If you didn't request this, you can safely ignore this email.</p>
+    </div>
+  </div>
+</body></html>"""

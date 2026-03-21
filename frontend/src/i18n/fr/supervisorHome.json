@@ -1,0 +1,18 @@
+{
+  "title": "Mon Secteur Aujourd'hui",
+  "andonAlerts": "Andon",
+  "openNCRs": "NC Ouvertes",
+  "actionItems": "Actions en Cours",
+  "dailyRoutine": "Routine Quotidienne",
+  "completed": "terminées",
+  "checkHandover": "Revoir le passage de poste",
+  "checkSQCDP": "Mettre à jour le tableau SQCDP",
+  "checkGemba": "Tour Gemba",
+  "checkLSW": "Vérifications travail standard",
+  "checkKaizen": "Suivi kaizen",
+  "escalations": "Escalades",
+  "andonActive": "alertes Andon actives",
+  "capaOverdue": "actions CAPA en retard",
+  "ncrOpen": "NC ouvertes à traiter",
+  "noEscalations": "Aucune escalade — tous les secteurs dans les objectifs"
+}

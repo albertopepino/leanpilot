@@ -31,6 +31,23 @@ class OEEResponse(BaseModel):
         from_attributes = True
 
 
+class OEECalculateRequest(BaseModel):
+    """Request body for manual OEE calculation (what-if scenarios)."""
+    planned_time_min: float
+    run_time_min: float
+    total_pieces: int
+    good_pieces: int
+    ideal_cycle_time_sec: float
+
+
+class OEECalculateResponse(BaseModel):
+    """Result of a manual OEE calculation."""
+    availability: float
+    performance: float
+    quality: float
+    oee: float
+
+
 class OEESummary(BaseModel):
     line_id: int
     line_name: str
@@ -147,6 +164,8 @@ class KaizenCreate(BaseModel):
     expected_savings_eur: float | None = None
     target_date: datetime | None = None
     assigned_to_id: int | None = None
+    lsw_id: int | None = None
+    countermeasure: str | None = None
 
 
 class KaizenResponse(BaseModel):
@@ -161,6 +180,11 @@ class KaizenResponse(BaseModel):
     actual_savings_eur: float | None
     ai_generated: bool | None = False
     ai_confidence: float | None
+    lsw_id: int | None = None
+    pareto_rank: int | None = None
+    countermeasure: str | None = None
+    before_photo_url: str | None = None
+    after_photo_url: str | None = None
     created_at: datetime
 
     @field_validator("status", "priority", mode="before")

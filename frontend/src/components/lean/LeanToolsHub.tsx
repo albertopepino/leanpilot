@@ -127,7 +127,7 @@ function NewDropdown({ onSelect }: { onSelect: (v: View) => void }) {
             <button
               key={it.view}
               onClick={() => { setOpen(false); onSelect(it.view); }}
-              className="w-full text-left px-4 py-2 text-sm text-th-text hover:bg-th-bg-secondary transition-colors"
+              className="w-full text-left px-4 py-2 text-sm text-th-text hover:bg-th-bg-2 transition-colors"
             >
               {it.label}
             </button>
@@ -224,11 +224,11 @@ function ToolList({
     <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h2 className="text-xl font-bold text-th-text">Lean Tools</h2>
+        <h2 className="text-xl font-bold text-th-text">{t("common.leanToolsHeading")}</h2>
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={onYamazumi}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-th-border text-sm font-medium text-th-text hover:bg-th-bg-secondary transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-th-border text-sm font-medium text-th-text hover:bg-th-bg-2 transition-colors"
           >
             <BarChart3 className="w-4 h-4" />
             {t("improvement.openYamazumi") || "Open Yamazumi"}
@@ -240,13 +240,13 @@ function ToolList({
       {/* Search */}
       {entries.length > 0 && (
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-th-text-secondary" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-th-text-3" />
           <input
             type="text"
             placeholder={t("common.search") + "..."}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-lg border border-th-border bg-th-bg text-sm text-th-text placeholder:text-th-text-secondary focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full pl-9 pr-4 py-2 rounded-lg border border-th-border bg-th-bg text-sm text-th-text placeholder:text-th-text-3 focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
       )}
@@ -258,8 +258,8 @@ function ToolList({
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-th-border rounded-xl">
-          <Map className="w-10 h-10 text-th-text-secondary mx-auto mb-3 opacity-40" />
-          <p className="text-sm text-th-text-secondary">
+          <Map className="w-10 h-10 text-th-text-3 mx-auto mb-3 opacity-40" />
+          <p className="text-sm text-th-text-3">
             {search
               ? (t("improvement.noToolsMatch") || "No tools match your search.")
               : (t("improvement.noToolsYet") || "No lean tool records yet. Create a VSM map, SMED analysis, or waste event to get started.")}
@@ -268,12 +268,12 @@ function ToolList({
       ) : (
         <div className="border border-th-border rounded-xl overflow-hidden">
           {/* Desktop header */}
-          <div className="hidden sm:grid sm:grid-cols-[3rem_1fr_6rem_7rem_6rem] gap-2 px-4 py-2.5 bg-th-bg-secondary/60 text-xs font-semibold text-th-text-secondary uppercase tracking-wide">
-            <span>ID</span>
-            <span>Title</span>
-            <span>Tool</span>
-            <span>Date</span>
-            <span>Status</span>
+          <div className="hidden sm:grid sm:grid-cols-[3rem_1fr_6rem_7rem_6rem] gap-2 px-4 py-2.5 bg-th-bg-2/60 text-xs font-semibold text-th-text-3 uppercase tracking-wide">
+            <span>{t("common.id")}</span>
+            <span>{t("common.title")}</span>
+            <span>{t("common.tool")}</span>
+            <span>{t("common.date")}</span>
+            <span>{t("common.status")}</span>
           </div>
 
           <div className="divide-y divide-th-border">
@@ -281,12 +281,12 @@ function ToolList({
               <button
                 key={`${e.tool}-${e.id}`}
                 onClick={() => onOpen(e)}
-                className="w-full text-left sm:grid sm:grid-cols-[3rem_1fr_6rem_7rem_6rem] gap-2 px-4 py-3 hover:bg-th-bg-secondary/50 transition-colors flex flex-col sm:flex-row sm:items-center"
+                className="w-full text-left sm:grid sm:grid-cols-[3rem_1fr_6rem_7rem_6rem] gap-2 px-4 py-3 hover:bg-th-bg-2/50 transition-colors flex flex-col sm:flex-row sm:items-center"
               >
-                <span className="text-xs text-th-text-secondary font-mono">#{e.id}</span>
+                <span className="text-xs text-th-text-3 font-mono">#{e.id}</span>
                 <span className="text-sm font-medium text-th-text truncate">{e.title}</span>
                 <ToolBadge tool={e.tool} />
-                <span className="text-xs text-th-text-secondary">
+                <span className="text-xs text-th-text-3">
                   {e.date ? new Date(e.date).toLocaleDateString() : '-'}
                 </span>
                 <span

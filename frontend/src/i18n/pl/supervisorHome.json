@@ -1,0 +1,18 @@
+{
+  "title": "Mój Obszar Dzisiaj",
+  "andonAlerts": "Andon",
+  "openNCRs": "Otwarte NCR",
+  "actionItems": "Otwarte Akcje",
+  "dailyRoutine": "Codzienna Rutyna",
+  "completed": "ukończone",
+  "checkHandover": "Sprawdź przekazanie zmiany",
+  "checkSQCDP": "Zaktualizuj tablicę SQCDP",
+  "checkGemba": "Spacer Gemba",
+  "checkLSW": "Kontrole pracy standardowej lidera",
+  "checkKaizen": "Kontynuacja kaizen",
+  "escalations": "Eskalacje",
+  "andonActive": "aktywne alerty Andon",
+  "capaOverdue": "zaległe działania CAPA",
+  "ncrOpen": "otwarte NCR wymagają uwagi",
+  "noEscalations": "Brak eskalacji — wszystkie obszary w normie"
+}

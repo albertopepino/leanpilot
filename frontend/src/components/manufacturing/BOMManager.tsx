@@ -93,10 +93,10 @@ export default function BOMManager() {
         manufacturingApi.listWorkCenters(),
       ]);
       setBOMs(bomRes.data ?? bomRes);
-      setProducts((prodRes.data ?? prodRes).map((p: any) => ({ id: p.id, code: p.code, name: p.name })));
+      setProducts((prodRes.data ?? prodRes).map((p: { id: number; code: string; name: string }) => ({ id: p.id, code: p.code, name: p.name })));
       const factory = factRes.data ?? factRes;
       setLines(factory?.production_lines || []);
-      setWorkCenters((wcRes.data ?? wcRes).map((wc: any) => ({
+      setWorkCenters((wcRes.data ?? wcRes).map((wc: { id: number; name: string; machine_type?: string; production_line_id?: number }) => ({
         id: wc.id, name: wc.name, machine_type: wc.machine_type, production_line_id: wc.production_line_id,
       })));
     } catch {
@@ -440,10 +440,10 @@ export default function BOMManager() {
                           <thead>
                             <tr className="bg-th-bg-3/30 text-th-text-2 text-xs uppercase">
                               <th className="text-left px-4 py-2">#</th>
-                              <th className="text-left px-4 py-2">Operation</th>
-                              <th className="text-left px-4 py-2">Machine</th>
-                              <th className="text-right px-4 py-2">Cycle Time</th>
-                              <th className="text-left px-4 py-2">Basis</th>
+                              <th className="text-left px-4 py-2">{t("manufacturing.operation")}</th>
+                              <th className="text-left px-4 py-2">{t("manufacturing.machine")}</th>
+                              <th className="text-right px-4 py-2">{t("manufacturing.cycleTime")}</th>
+                              <th className="text-left px-4 py-2">{t("manufacturing.basis")}</th>
                               <th className="text-right px-4 py-2">Labor (min)</th>
                             </tr>
                           </thead>

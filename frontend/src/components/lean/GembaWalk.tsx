@@ -2,9 +2,13 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useI18n } from "@/stores/useI18n";
 import { advancedLeanApi, adminApi } from "@/lib/api";
+import { getErrorMessage } from "@/lib/formatters";
 import { useExport } from "@/hooks/useExport";
 import ExportToolbar from "@/components/ui/ExportToolbar";
 import CreateLinkedAction from "@/components/ui/CreateLinkedAction";
+import PhotoUpload from "@/components/ui/PhotoUpload";
+import ToolInfoCard from "@/components/ui/ToolInfoCard";
+import { TOOL_INFO } from "@/lib/toolInfo";
 import {
   Footprints,
   Eye,
@@ -54,6 +58,7 @@ interface Observation {
   category: ObservationCategory;
   severity: Severity;
   photoPlaceholder: string;
+  pendingPhoto?: File;
   actions: ActionItem[];
 }
 
@@ -137,7 +142,7 @@ export default function GembaWalk() {
         const res = await adminApi.getFactory();
         const f = res.data;
         if (f?.lines && Array.isArray(f.lines) && f.lines.length > 0) {
-          const lineNames = f.lines.map((l: any) => l.name);
+          const lineNames = f.lines.map((l: { name: string }) => l.name);
           const merged = [...lineNames, ...DEFAULT_AREAS];
           setAreas(merged);
           setWalkArea((prev) => prev || merged[0]);
@@ -161,6 +166,7 @@ export default function GembaWalk() {
   const [obsCategory, setObsCategory] = useState<ObservationCategory>("Safety");
   const [obsSeverity, setObsSeverity] = useState<Severity>("info");
   const [obsPhoto, setObsPhoto] = useState("");
+  const [obsPendingFile, setObsPendingFile] = useState<File | null>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
   const newWalkRef = useRef<HTMLDivElement>(null);
 
@@ -227,7 +233,9 @@ export default function GembaWalk() {
     setHistoryError("");
     try {
       const res = await advancedLeanApi.listGembaWalks();
-      const items: any[] = Array.isArray(res.data) ? res.data : [];
+      type RawObs = { id?: string; description?: string; category?: string; observation_type?: string; severity?: string; priority?: string; photo_url?: string; actions?: { status: string; description: string; who?: string; when?: string }[] };
+      type RawWalk = { id?: string; area?: string; date?: string; created_at?: string; observations?: RawObs[] };
+      const items: RawWalk[] = Array.isArray(res.data) ? res.data : [];
       // Map observation_type from backend to frontend category
       const typeToCategory: Record<string, ObservationCategory> = {
         safety: "Safety", quality: "Quality", productivity: "Productivity",
@@ -235,15 +243,15 @@ export default function GembaWalk() {
         concern: "Quality", idea: "Productivity",
       };
       setHistory(
-        items.map((w: any) => {
+        items.map((w) => {
           const rawObs = w.observations ?? [];
-          const obs: Observation[] = rawObs.map((o: any) => ({
+          const obs: Observation[] = rawObs.map((o) => ({
             id: o.id ?? uid(),
             description: o.description ?? "",
             category: typeToCategory[(o.category || o.observation_type || "").toLowerCase()] ?? "Quality",
-            severity: o.severity ?? (o.priority === "high" ? "critical" : o.priority === "medium" ? "warning" : "info"),
+            severity: (o.severity ?? (o.priority === "high" ? "critical" : o.priority === "medium" ? "warning" : "info")) as Severity,
             photoPlaceholder: o.photo_url ?? "",
-            actions: o.actions ?? [],
+            actions: (o.actions ?? []).map((a) => ({ id: uid(), what: a.description ?? "", who: a.who ?? "", when: a.when ?? "", status: (a.status ?? "open") as ActionStatus })),
           }));
           let openCount = 0;
           let totalAct = 0;
@@ -260,12 +268,12 @@ export default function GembaWalk() {
             observationCount: obs.length,
             openActions: openCount,
             totalActions: totalAct,
-            raw: { ...w, observations: obs },
+            raw: { id: w.id, area: w.area ?? "-", date: w.date ?? w.created_at?.slice(0, 10) ?? "-", observations: obs, created_at: w.created_at },
           };
         })
       );
-    } catch (err: any) {
-      setHistoryError(err?.message ?? t("improvement.gembaLoadError"));
+    } catch (err: unknown) {
+      setHistoryError(getErrorMessage(err, t("improvement.gembaLoadError")));
     } finally {
       setLoadingHistory(false);
     }
@@ -282,7 +290,7 @@ export default function GembaWalk() {
     setSaveError("");
     setSaveSuccess(false);
     try {
-      await advancedLeanApi.createGembaWalk({
+      const res = await advancedLeanApi.createGembaWalk({
         area: walkArea,
         duration_min: null,
         theme: null,
@@ -297,18 +305,33 @@ export default function GembaWalk() {
           priority: o.severity === "critical" ? "high" : o.severity === "warning" ? "medium" : "low",
         })),
       });
+
+      // Upload pending photos using the returned observation IDs
+      const obsIds: number[] = res.data?.observation_ids ?? [];
+      for (let i = 0; i < observations.length; i++) {
+        const obs = observations[i];
+        if (obs.pendingPhoto && obsIds[i]) {
+          try {
+            await advancedLeanApi.uploadGembaPhoto(obsIds[i], obs.pendingPhoto);
+          } catch (photoErr) {
+            console.warn("Photo upload failed for obs", obsIds[i], photoErr);
+          }
+        }
+      }
+
       setSaveSuccess(true);
       setObservations([]);
       setObsDescription("");
       setObsCategory("Safety");
       setObsSeverity("info");
       setObsPhoto("");
+      setObsPendingFile(null);
       setWalkArea(areas[0] || "");
       setWalkDate(todayISO());
       loadHistory();
       setTimeout(() => setSaveSuccess(false), 4000);
-    } catch (err: any) {
-      setSaveError(err?.message ?? t("improvement.gembaSaveError"));
+    } catch (err: unknown) {
+      setSaveError(getErrorMessage(err, t("improvement.gembaSaveError")));
     } finally {
       setSaving(false);
     }
@@ -322,13 +345,15 @@ export default function GembaWalk() {
       description: obsDescription.trim(),
       category: obsCategory,
       severity: obsSeverity,
-      photoPlaceholder: obsPhoto.trim(),
+      photoPlaceholder: obsPendingFile ? obsPendingFile.name : obsPhoto.trim(),
+      pendingPhoto: obsPendingFile || undefined,
       actions: [],
     };
     setObservations((prev) => [...prev, obs]);
     setObsDescription("");
     setObsSeverity("info");
     setObsPhoto("");
+    setObsPendingFile(null);
     descRef.current?.focus();
   };
 
@@ -407,6 +432,7 @@ export default function GembaWalk() {
   // ─── Render
   return (
     <div className="max-w-[1400px] mx-auto space-y-6" data-print-area="true">
+      <ToolInfoCard info={TOOL_INFO.gemba} />
       {/* ═══════════════ Header ═══════════════════════════════════════════ */}
       <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6">
         <div className="flex items-center gap-3 mb-4">
@@ -592,17 +618,14 @@ export default function GembaWalk() {
             {/* Photo placeholder + Severity */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-th-text-2 mb-1.5 block font-medium">{t("improvement.gembaPhotoPlaceholder")}</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={obsPhoto}
-                    onChange={(e) => setObsPhoto(e.target.value)}
-                    placeholder={t("improvement.gembaPhotoHint")}
-                    className="w-full px-3 py-2 pl-9 text-sm border border-th-border rounded-lg bg-th-bg text-th-text focus:ring-2 focus:ring-teal-500 outline-none transition"
-                  />
-                  <Camera className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-th-text-3" />
-                </div>
+                <label className="text-xs text-th-text-2 mb-1.5 block font-medium">{t("improvement.gembaPhoto") || "Observation photo"}</label>
+                <PhotoUpload
+                  currentUrl={obsPendingFile ? URL.createObjectURL(obsPendingFile) : null}
+                  onUpload={async (file) => { setObsPendingFile(file); }}
+                  onRemove={() => setObsPendingFile(null)}
+                  compact
+                  label={t("improvement.gembaPhotoHint") || "Attach photo"}
+                />
               </div>
               <div>
                 <label className="text-xs text-th-text-2 mb-1.5 block font-medium">{t("improvement.gembaSeverity")}</label>
@@ -671,7 +694,13 @@ export default function GembaWalk() {
                         </span>
                       </div>
                       <p className="text-sm text-th-text leading-relaxed">{obs.description}</p>
-                      {obs.photoPlaceholder && (
+                      {obs.pendingPhoto && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <img src={URL.createObjectURL(obs.pendingPhoto)} alt="" className="w-16 h-16 rounded-lg object-cover border border-th-border" />
+                          <span className="text-xs text-th-text-2">{obs.pendingPhoto.name}</span>
+                        </div>
+                      )}
+                      {!obs.pendingPhoto && obs.photoPlaceholder && (
                         <div className="mt-2 p-2.5 rounded-lg bg-th-bg border border-th-border flex items-center gap-2">
                           <Camera className="w-4 h-4 text-th-text-3 flex-shrink-0" />
                           <span className="text-xs text-th-text-2">{obs.photoPlaceholder}</span>
@@ -872,7 +901,20 @@ export default function GembaWalk() {
                           </span>
                         </div>
                         <p className="text-sm text-th-text">{obs.description}</p>
-                        {obs.photoPlaceholder && (
+                        {obs.id && (
+                          <div className="mt-2">
+                            <PhotoUpload
+                              currentUrl={obs.photoPlaceholder ? advancedLeanApi.getGembaPhotoUrl(Number(obs.id)) : null}
+                              onUpload={async (file) => {
+                                await advancedLeanApi.uploadGembaPhoto(Number(obs.id), file);
+                                loadHistory();
+                              }}
+                              compact
+                              label={t("improvement.gembaPhoto") || "Observation photo"}
+                            />
+                          </div>
+                        )}
+                        {!obs.id && obs.photoPlaceholder && (
                           <p className="text-xs text-th-text-3 mt-1 flex items-center gap-1">
                             <Camera className="w-3 h-3" /> {obs.photoPlaceholder}
                           </p>

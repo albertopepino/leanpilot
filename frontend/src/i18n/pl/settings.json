@@ -65,5 +65,22 @@
   "logoErrorSize": "Plik jest za duży. Maksymalnie 2 MB.",
   "tutorial": "Samouczek",
   "tutorialDesc": "Powtórz samouczek wprowadzający, aby poznać wszystkie dostępne narzędzia.",
-  "replayTutorial": "Powtórz samouczek"
+  "replayTutorial": "Powtórz samouczek",
+  "beginnerMode": "Tryb Początkującego",
+  "beginnerModeDesc": "Gdy włączony, każda strona narzędzia pokazuje opis tego co robi, kiedy go używać i jak łączy się z innymi narzędziami. Przewodnik rozwiązywania problemów (Identyfikuj → Analizuj → Przyczyna Źródłowa → Akcja) jest zawsze widoczny.",
+  "beginnerModeOn": "Włączony — opisy narzędzi zawsze widoczne",
+  "beginnerModeOff": "Wyłączony — opisy narzędzi można zamknąć",
+
+  "auditLabel": "Etykieta Programu Audytu",
+  "auditLabelHint": "Wybierz czy Twoja fabryka stosuje metodologie 5S czy 6S",
+
+  "tabGeneral": "Ustawienia Ogolne",
+  "tabAssessment": "Ocena Lean",
+  "tabCalendar": "Kalendarz Glowny",
+  "tabCopilot": "Factory Copilot",
+  "tabResources": "Zasoby Lean",
+  "tabAuditScheduler": "Planowanie Audytow",
+  "tabExtraTools": "Dodatkowe Narzedzia",
+  "tabDataImport": "Import / Eksport",
+  "tabERP": "Integracja ERP"
 }

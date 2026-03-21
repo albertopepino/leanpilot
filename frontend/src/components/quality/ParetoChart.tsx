@@ -51,12 +51,14 @@ const COLOR = {
 /*  Custom Tooltip                                                     */
 /* ------------------------------------------------------------------ */
 
-function ParetoTooltip({ active, payload, label }: any) {
+interface ParetoPayloadEntry { dataKey: string; value?: number; color?: string }
+
+function ParetoTooltip({ active, payload, label }: { active?: boolean; payload?: ParetoPayloadEntry[]; label?: string }) {
   const { t } = useI18n();
   if (!active || !payload?.length) return null;
 
-  const barPayload = payload.find((p: any) => p.dataKey === "count");
-  const linePayload = payload.find((p: any) => p.dataKey === "cumulativePct");
+  const barPayload = payload.find((p) => p.dataKey === "count");
+  const linePayload = payload.find((p) => p.dataKey === "cumulativePct");
 
   return (
     <div className="bg-th-bg-3 backdrop-blur-sm border border-th-border rounded-lg px-4 py-3 shadow-xl">

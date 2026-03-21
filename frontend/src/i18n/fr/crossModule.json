@@ -6,5 +6,6 @@
   "startFiveWhy": "Démarrer une analyse 5 Pourquoi",
   "createNCR": "Créer un NCR",
   "createCAPA": "Créer un CAPA",
-  "scheduleGemba": "Planifier un parcours Gemba"
+  "scheduleGemba": "Planifier un parcours Gemba",
+  "startIshikawa": "Démarrer Diagramme Ishikawa"
 }

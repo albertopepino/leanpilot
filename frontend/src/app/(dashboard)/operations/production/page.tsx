@@ -1,6 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
-const ProductionTracking = dynamic(() => import("@/components/lean/ProductionTracking"), { ssr: false });
-export default function ProductionTrackingRoute() {
-  return <ProductionTracking />;
+const ProductionMonitor = dynamic(() => import("@/components/lean/ProductionMonitor"), { ssr: false });
+export default function ProductionRoute() {
+  return <ProductionMonitor />;
 }

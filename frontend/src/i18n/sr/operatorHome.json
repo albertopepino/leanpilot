@@ -1,0 +1,23 @@
+{
+  "myShift": "Moja Smena",
+  "shiftProgress": "Napredak smene",
+  "remaining": "preostalo",
+  "noActiveShift": "Nije detektovana aktivna smena",
+  "quickActions": "Brze Akcije",
+  "logOutput": "Zabeleži Proizvodnju",
+  "flagIssue": "Prijavi Problem",
+  "safetyCheck": "Provera Bezbednosti",
+  "suggestImprovement": "Predloži Unapređenje",
+  "alerts": "upozorenja",
+  "activeAlerts": "aktivna upozorenja",
+  "tapToView": "Dodirnite za prikaz Andon table",
+  "handoverPending": "Primopredaja smene na čekanju",
+  "reviewAndAcknowledge": "Pregledajte i potvrdite",
+  "allClear": "Sve u redu — nema upozorenja ni čekajućih akcija",
+  "noLines": "Nema konfigurisanih proizvodnih linija",
+  "statusRunning": "Radi",
+  "statusChangeover": "Promena alata",
+  "statusStopped": "Zaustavljena",
+  "statusBreakdown": "Kvar",
+  "statusIdle": "Neaktivna"
+}

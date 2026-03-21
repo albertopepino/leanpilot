@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useI18n } from '@/stores/useI18n';
 import { CalendarCheck, Plus, Filter, CheckCircle, AlertTriangle, Clock, User, Trash2 } from 'lucide-react';
 import PageHeader from '@/components/ui/PageHeader';
+import { auditScheduleApi } from '@/lib/api';
 
 interface AuditSchedule {
   id: number;
@@ -11,7 +12,7 @@ interface AuditSchedule {
   title: string;
   frequency: string;
   next_due_date: string;
-  assigned_to: string | null;
+  assigned_to_id: number | null;
   last_completed: string | null;
   status: string;
   created_at: string;
@@ -34,15 +35,14 @@ export default function AuditScheduler() {
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState('all');
   const [createMode, setCreateMode] = useState(false);
-  const [form, setForm] = useState({ audit_type: 'six_s', title: '', frequency: 'monthly', next_due_date: '', assigned_to: '' });
+  const [form, setForm] = useState({ audit_type: 'six_s', title: '', frequency: 'monthly', next_due_date: '', assigned_to_id: '' });
 
   useEffect(() => { fetchSchedules(); }, []);
 
   async function fetchSchedules() {
     setLoading(true);
     try {
-      const { default: api } = await import('@/lib/api');
-      const res = await api.get('/audit-scheduler/schedules');
+      const res = await auditScheduleApi.list();
       setSchedules(res.data);
     } catch { setSchedules([]); }
     setLoading(false);
@@ -50,32 +50,29 @@ export default function AuditScheduler() {
 
   async function saveSchedule() {
     try {
-      const { default: api } = await import('@/lib/api');
-      await api.post('/audit-scheduler/schedules', {
+      await auditScheduleApi.create({
         audit_type: form.audit_type,
         title: form.title,
         frequency: form.frequency,
         next_due_date: form.next_due_date,
-        assigned_to: form.assigned_to || null,
+        assigned_to_id: form.assigned_to_id ? parseInt(form.assigned_to_id) : null,
       });
       setCreateMode(false);
-      setForm({ audit_type: 'six_s', title: '', frequency: 'monthly', next_due_date: '', assigned_to: '' });
+      setForm({ audit_type: 'six_s', title: '', frequency: 'monthly', next_due_date: '', assigned_to_id: '' });
       fetchSchedules();
     } catch {}
   }
 
   async function markComplete(id: number) {
     try {
-      const { default: api } = await import('@/lib/api');
-      await api.patch(`/audit-scheduler/schedules/${id}/complete`);
+      await auditScheduleApi.markComplete(id);
       fetchSchedules();
     } catch {}
   }
 
   async function deleteSchedule(id: number) {
     try {
-      const { default: api } = await import('@/lib/api');
-      await api.delete(`/audit-scheduler/schedules/${id}`);
+      await auditScheduleApi.remove(id);
       fetchSchedules();
     } catch {}
   }
@@ -148,29 +145,29 @@ export default function AuditScheduler() {
             <h3 className="text-lg font-bold text-th-text">{t('scheduling.newSchedule') || 'New Audit Schedule'}</h3>
             <div>
               <label className="text-xs text-th-text-3 block mb-1">{t('scheduling.auditType') || 'Audit Type'}</label>
-              <select value={form.audit_type} onChange={e => setForm(p => ({ ...p, audit_type: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm">
+              <select value={form.audit_type} onChange={e => setForm(p => ({ ...p, audit_type: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-bg text-th-text text-sm">
                 {AUDIT_TYPES.map(at => <option key={at} value={at}>{at.replace('_', ' ').toUpperCase()}</option>)}
               </select>
             </div>
             <div>
               <label className="text-xs text-th-text-3 block mb-1">{t('common.title') || 'Title'}</label>
-              <input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm" />
+              <input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-bg text-th-text text-sm" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-th-text-3 block mb-1">{t('scheduling.frequency') || 'Frequency'}</label>
-                <select value={form.frequency} onChange={e => setForm(p => ({ ...p, frequency: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm">
+                <select value={form.frequency} onChange={e => setForm(p => ({ ...p, frequency: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-bg text-th-text text-sm">
                   {FREQUENCIES.map(f => <option key={f} value={f}>{f}</option>)}
                 </select>
               </div>
               <div>
                 <label className="text-xs text-th-text-3 block mb-1">{t('scheduling.nextDue') || 'Next Due Date'}</label>
-                <input type="date" value={form.next_due_date} onChange={e => setForm(p => ({ ...p, next_due_date: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm" />
+                <input type="date" value={form.next_due_date} onChange={e => setForm(p => ({ ...p, next_due_date: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-bg text-th-text text-sm" />
               </div>
             </div>
             <div>
               <label className="text-xs text-th-text-3 block mb-1">{t('scheduling.assignedTo') || 'Assigned To'}</label>
-              <input value={form.assigned_to} onChange={e => setForm(p => ({ ...p, assigned_to: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-background text-th-text text-sm" />
+              <input type="number" value={form.assigned_to_id} onChange={e => setForm(p => ({ ...p, assigned_to_id: e.target.value }))} placeholder="User ID" className="w-full px-3 py-2 rounded-lg border border-th-border bg-th-bg text-th-text text-sm" />
             </div>
             <div className="flex gap-2 pt-2">
               <button onClick={() => setCreateMode(false)} className="flex-1 py-2 rounded-lg border border-th-border text-th-text text-sm hover:bg-th-bg-hover">{t('common.cancel') || 'Cancel'}</button>
@@ -198,7 +195,7 @@ function AuditCard({ schedule, overdue, dueSoon, onComplete, onDelete, t }: {
           <div className="flex items-center gap-3 text-xs text-th-text-3 mt-0.5">
             <span className="capitalize">{schedule.frequency}</span>
             <span className={overdue ? 'text-rose-600 font-semibold' : ''}>{schedule.next_due_date}</span>
-            {schedule.assigned_to && <span className="flex items-center gap-1"><User size={10} /> {schedule.assigned_to}</span>}
+            {schedule.assigned_to_id && <span className="flex items-center gap-1"><User size={10} /> ID: {schedule.assigned_to_id}</span>}
           </div>
         </div>
       </div>

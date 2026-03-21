@@ -1,6 +1,7 @@
 """SPC API routes — Statistical Process Control charts and calculations."""
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from datetime import datetime
@@ -12,8 +13,82 @@ from app.schemas.spc import (
     SPCCalculateRequest, SPCCalculateResponse, SPCLineConfig,
 )
 from app.services.spc_service import calculate_spc
+from app.services.qc_service import NCRService
 
 router = APIRouter(prefix="/spc", tags=["spc"])
+
+
+# ─── SPC → NCR Trigger ──────────────────────────────────────────────────────
+
+
+class SPCTriggerNCRRequest(BaseModel):
+    """Request to create an NCR from an SPC out-of-control signal."""
+    production_line_id: int
+    rule_violated: str  # e.g. "Rule 1: Beyond 3-sigma"
+    sample_number: int | None = None
+    measured_value: float | None = None
+    ucl: float | None = None
+    lcl: float | None = None
+    chart_type: str = "xbar_r"
+
+
+@router.post("/trigger-ncr")
+async def trigger_ncr_from_spc(
+    data: SPCTriggerNCRRequest,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Create an NCR from an SPC out-of-control signal."""
+    from app.models.factory import ProductionLine
+
+    fid = require_factory(user)
+
+    # Verify production line belongs to factory
+    line_q = select(ProductionLine).where(
+        ProductionLine.id == data.production_line_id,
+        ProductionLine.factory_id == fid,
+    )
+    line_result = await db.execute(line_q)
+    line = line_result.scalar_one_or_none()
+    if not line:
+        raise HTTPException(404, "Production line not found")
+
+    # Determine severity: Rule 1 (beyond 3-sigma) = major, others = minor
+    rule_lower = data.rule_violated.lower()
+    severity = "major" if "rule 1" in rule_lower or "beyond 3" in rule_lower else "minor"
+
+    # Build description with SPC data details
+    desc_parts = [
+        f"Auto-generated NCR from SPC out-of-control signal.",
+        f"Production Line: {line.name}",
+        f"Chart Type: {data.chart_type}",
+        f"Rule Violated: {data.rule_violated}",
+    ]
+    if data.measured_value is not None:
+        desc_parts.append(f"Measured Value: {data.measured_value}")
+    if data.ucl is not None:
+        desc_parts.append(f"UCL: {data.ucl}")
+    if data.lcl is not None:
+        desc_parts.append(f"LCL: {data.lcl}")
+    if data.sample_number is not None:
+        desc_parts.append(f"Sample/Subgroup: {data.sample_number}")
+
+    ncr_data = {
+        "production_line_id": data.production_line_id,
+        "title": f"SPC Out-of-Control: {data.rule_violated} on {data.chart_type}",
+        "description": "\n".join(desc_parts),
+        "severity": severity,
+    }
+
+    ncr = await NCRService.create(db, fid, user.id, ncr_data)
+
+    return {
+        "id": ncr.id,
+        "ncr_number": ncr.ncr_number,
+        "title": ncr.title,
+        "severity": ncr.severity,
+        "status": ncr.status,
+    }
 
 
 @router.get("/data")
@@ -103,8 +178,8 @@ async def calculate_spc_charts(
             lsl=data.lsl,
             sample_sizes=data.sample_sizes,
         )
-    except ValueError as e:
-        raise HTTPException(400, str(e))
+    except ValueError:
+        raise HTTPException(400, "SPC calculation error: invalid input data")
 
     return SPCCalculateResponse(
         chart_type=result["chart_type"],

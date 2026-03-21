@@ -4,6 +4,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Suspense, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { viewToRoute } from '@/lib/routes';
+import { useI18n } from '@/stores/useI18n';
 import {
   Settings,
   ClipboardList,
@@ -14,6 +15,7 @@ import {
   Puzzle,
   Upload,
   Loader2,
+  Link2,
 } from 'lucide-react';
 
 const SettingsPage = dynamic(() => import('@/components/settings/SettingsPage'), {
@@ -40,18 +42,22 @@ const MindMap = dynamic(() => import('@/components/lean/MindMap'), {
 const DataImport = dynamic(() => import('@/components/admin/DataImport'), {
   loading: () => <TabLoader />,
 });
+const ERPSettings = dynamic(() => import('@/components/settings/ERPSettings'), {
+  loading: () => <TabLoader />,
+});
 
-type TabKey = 'general' | 'assessment' | 'calendar' | 'copilot' | 'resources' | 'audit-scheduler' | 'extra-tools' | 'data-import';
+type TabKey = 'general' | 'assessment' | 'calendar' | 'copilot' | 'resources' | 'audit-scheduler' | 'extra-tools' | 'data-import' | 'erp';
 
-const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
-  { key: 'general', label: 'General Settings', icon: <Settings className="w-4 h-4" /> },
-  { key: 'assessment', label: 'Lean Assessment', icon: <ClipboardList className="w-4 h-4" /> },
-  { key: 'calendar', label: 'Master Calendar', icon: <Calendar className="w-4 h-4" /> },
-  { key: 'copilot', label: 'Factory Copilot', icon: <Bot className="w-4 h-4" /> },
-  { key: 'resources', label: 'Lean Resources', icon: <BookOpen className="w-4 h-4" /> },
-  { key: 'audit-scheduler', label: 'Audit Scheduler', icon: <CalendarCheck className="w-4 h-4" /> },
-  { key: 'extra-tools', label: 'Extra Tools', icon: <Puzzle className="w-4 h-4" /> },
-  { key: 'data-import', label: 'Import / Export', icon: <Upload className="w-4 h-4" /> },
+const TAB_DEFS: { key: TabKey; labelKey: string; fallback: string; icon: React.ReactNode }[] = [
+  { key: 'general', labelKey: 'settings.tabGeneral', fallback: 'General Settings', icon: <Settings className="w-4 h-4" /> },
+  { key: 'assessment', labelKey: 'settings.tabAssessment', fallback: 'Lean Assessment', icon: <ClipboardList className="w-4 h-4" /> },
+  { key: 'calendar', labelKey: 'settings.tabCalendar', fallback: 'Master Calendar', icon: <Calendar className="w-4 h-4" /> },
+  { key: 'copilot', labelKey: 'settings.tabCopilot', fallback: 'Factory Copilot', icon: <Bot className="w-4 h-4" /> },
+  { key: 'resources', labelKey: 'settings.tabResources', fallback: 'Lean Resources', icon: <BookOpen className="w-4 h-4" /> },
+  { key: 'audit-scheduler', labelKey: 'settings.tabAuditScheduler', fallback: 'Audit Scheduler', icon: <CalendarCheck className="w-4 h-4" /> },
+  { key: 'extra-tools', labelKey: 'settings.tabExtraTools', fallback: 'Extra Tools', icon: <Puzzle className="w-4 h-4" /> },
+  { key: 'data-import', labelKey: 'settings.tabDataImport', fallback: 'Import / Export', icon: <Upload className="w-4 h-4" /> },
+  { key: 'erp', labelKey: 'settings.tabERP', fallback: 'ERP Integration', icon: <Link2 className="w-4 h-4" /> },
 ];
 
 function TabLoader() {
@@ -63,6 +69,7 @@ function TabLoader() {
 }
 
 function LeanResourcesView() {
+  const { t } = useI18n();
   const resources = [
     { title: 'Lean Enterprise Institute', url: 'https://www.lean.org', desc: 'The original source for lean thinking and practice.' },
     { title: 'Toyota Production System', url: 'https://global.toyota/en/company/vision-and-philosophy/production-system/', desc: 'Learn about TPS directly from Toyota.' },
@@ -74,7 +81,7 @@ function LeanResourcesView() {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-bold text-th-text">Lean Resources</h3>
+      <h3 className="text-lg font-bold text-th-text">{t('common.settingsLeanResources')}</h3>
       <p className="text-sm text-th-text-3">Curated links to lean manufacturing knowledge bases and training materials.</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {resources.map((r) => (
@@ -96,18 +103,19 @@ function LeanResourcesView() {
 }
 
 function ExtraToolsView() {
+  const { t } = useI18n();
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-bold text-th-text">Extra Tools</h3>
+      <h3 className="text-lg font-bold text-th-text">{t('common.settingsExtraTools')}</h3>
       <p className="text-sm text-th-text-3">Additional lean tools available in your workspace.</p>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-4">
-          <h4 className="text-sm font-semibold text-th-text-2 uppercase tracking-wide">Kanban Board</h4>
+          <h4 className="text-sm font-semibold text-th-text-2 uppercase tracking-wide">{t('common.navKanban')}</h4>
           <KanbanBoard />
         </div>
         <div className="space-y-4">
-          <h4 className="text-sm font-semibold text-th-text-2 uppercase tracking-wide">Mind Map</h4>
+          <h4 className="text-sm font-semibold text-th-text-2 uppercase tracking-wide">{t('common.navMindMap')}</h4>
           <MindMap />
         </div>
       </div>
@@ -119,7 +127,10 @@ function SettingsHubInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useI18n();
   const activeTab = (searchParams.get('tab') as TabKey) || 'general';
+
+  const tabs = TAB_DEFS.map((td) => ({ ...td, label: t(td.labelKey) || td.fallback }));
 
   const setTab = useCallback((key: TabKey) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -137,7 +148,7 @@ function SettingsHubInner() {
       <nav className="md:w-56 flex-shrink-0">
         {/* Mobile: horizontal scrollable */}
         <div className="md:hidden flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
-          {TABS.map((t) => (
+          {tabs.map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
@@ -155,7 +166,7 @@ function SettingsHubInner() {
 
         {/* Desktop: vertical sidebar */}
         <div className="hidden md:flex flex-col gap-1 sticky top-24">
-          {TABS.map((t) => (
+          {tabs.map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
@@ -182,6 +193,7 @@ function SettingsHubInner() {
         {activeTab === 'audit-scheduler' && <AuditScheduler />}
         {activeTab === 'extra-tools' && <ExtraToolsView />}
         {activeTab === 'data-import' && <DataImport />}
+        {activeTab === 'erp' && <ERPSettings />}
       </div>
     </div>
   );

@@ -1,0 +1,23 @@
+{
+  "myShift": "Meine Schicht",
+  "shiftProgress": "Schichtfortschritt",
+  "remaining": "verbleibend",
+  "noActiveShift": "Keine aktive Schicht erkannt",
+  "quickActions": "Schnellaktionen",
+  "logOutput": "Produktion erfassen",
+  "flagIssue": "Problem melden",
+  "safetyCheck": "Sicherheitskontrolle",
+  "suggestImprovement": "Verbesserung vorschlagen",
+  "alerts": "Alarme",
+  "activeAlerts": "aktive Alarme",
+  "tapToView": "Tippen um Andon-Tafel anzuzeigen",
+  "handoverPending": "Schichtübergabe ausstehend",
+  "reviewAndAcknowledge": "Prüfen und bestätigen",
+  "allClear": "Alles in Ordnung — keine Alarme oder offene Aktionen",
+  "noLines": "Keine Produktionslinien konfiguriert",
+  "statusRunning": "Läuft",
+  "statusChangeover": "Rüstvorgang",
+  "statusStopped": "Gestoppt",
+  "statusBreakdown": "Störung",
+  "statusIdle": "Leerlauf"
+}

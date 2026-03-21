@@ -65,5 +65,22 @@
   "logoErrorSize": "Fajl je prevelik. Maksimalno 2 MB.",
   "tutorial": "Vodič",
   "tutorialDesc": "Ponovite uputstvo za upoznavanje sa svim dostupnim alatima.",
-  "replayTutorial": "Ponovi vodič"
+  "replayTutorial": "Ponovi vodič",
+  "beginnerMode": "Režim za početnike",
+  "beginnerModeDesc": "Kada je uključen, svaka stranica alata prikazuje opis šta radi, kada ga koristiti i kako se povezuje sa drugim alatima. Vodič za rešavanje problema (Identifikuj → Analiziraj → Osnovni uzrok → Akcija) je uvek vidljiv.",
+  "beginnerModeOn": "Uključen — opisi alata uvek vidljivi",
+  "beginnerModeOff": "Isključen — opisi alata mogu se zatvoriti",
+
+  "auditLabel": "Oznaka programa revizije",
+  "auditLabelHint": "Izaberite da li vasa fabrika koristi 5S ili 6S metodologiju",
+
+  "tabGeneral": "Opsta Podesavanja",
+  "tabAssessment": "Lean Procena",
+  "tabCalendar": "Glavni Kalendar",
+  "tabCopilot": "Factory Copilot",
+  "tabResources": "Lean Resursi",
+  "tabAuditScheduler": "Planer Revizija",
+  "tabExtraTools": "Dodatni Alati",
+  "tabDataImport": "Uvoz / Izvoz",
+  "tabERP": "ERP Integracija"
 }

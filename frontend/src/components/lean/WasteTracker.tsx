@@ -373,7 +373,11 @@ export default function WasteTracker() {
                     <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: number, name: string, props: any) => [`${value} events (${currencySymbol}${props.payload.cost.toLocaleString()})`, name]} />
+                <Tooltip formatter={(value: unknown, name: unknown, props: unknown) => {
+                  const v = Number(value);
+                  const p = props as { payload?: { cost?: number } };
+                  return [`${v} events (${currencySymbol}${(p?.payload?.cost ?? 0).toLocaleString()})`, String(name)];
+                }} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>

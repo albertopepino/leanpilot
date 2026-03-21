@@ -32,7 +32,8 @@ from app.models.lean_advanced import (
     HourlyProduction,
 )
 from app.models.manufacturing import (
-    WorkCenter, Product, BOMHeader, BOMComponent, ProductionOrder,
+    WorkCenter, Product, BOMHeader, BOMComponent, BOMOperation,
+    ProductionOrder, ProductionOrderLine,
 )
 from app.models.qc import (
     DefectCatalog, QCTemplate, QCTemplateItem, QCRecord, QCCheckResultRecord,
@@ -49,9 +50,11 @@ from app.models.notification import Notification
 from app.models.leader_standard_work import LeaderStandardWork, LSWCompletion
 from app.models.audit_schedule import AuditSchedule
 from app.models.horizontal_deploy import HorizontalDeployment
-from app.models.safety import SafetyIncident
+from app.models.safety import SafetyIncident, SafetyDocument
 from app.models.kanban import KanbanBoard, KanbanCard
 from app.models.pokayoke import PokaYokeDevice, PokaYokeVerification
+from app.models.erp import ERPIntegration
+from app.models.fmea import FMEAAnalysis, FMEAItem  # noqa
 
 __all__ = [
     "User",
@@ -93,7 +96,9 @@ __all__ = [
     "Product",
     "BOMHeader",
     "BOMComponent",
+    "BOMOperation",
     "ProductionOrder",
+    "ProductionOrderLine",
     "DefectCatalog",
     "QCTemplate",
     "QCTemplateItem",
@@ -118,10 +123,14 @@ __all__ = [
     "AuditSchedule",
     "HorizontalDeployment",
     "SafetyIncident",
+    "SafetyDocument",
     "KanbanBoard",
     "KanbanCard",
     "PokaYokeDevice",
     "PokaYokeVerification",
     "LeanAssessment",
     "MindMap",
+    "ERPIntegration",
+    "FMEAAnalysis",
+    "FMEAItem",
 ]

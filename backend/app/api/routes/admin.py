@@ -17,7 +17,7 @@ from sqlalchemy.orm import selectinload
 from app.db.session import get_db
 from app.core.config import get_settings
 from app.core.security import (
-    get_current_active_admin, get_current_user, get_password_hash,
+    get_current_active_admin, get_current_user, get_password_hash, get_password_hash_async,
     require_factory, log_audit, get_client_ip,
 )
 from app.models.user import User, UserRole
@@ -113,7 +113,7 @@ async def create_user(
 
     user = User(
         email=data.email,
-        hashed_password=get_password_hash(password),
+        hashed_password=await get_password_hash_async(password),
         full_name=data.full_name,
         role=data.role,
         language=data.language,
@@ -210,7 +210,7 @@ async def reset_user_password(
         raise HTTPException(status_code=404, detail="User not found in your factory")
 
     temp_password = secrets.token_urlsafe(12)
-    user.hashed_password = get_password_hash(temp_password)
+    user.hashed_password = await get_password_hash_async(temp_password)
     user.password_changed_at = datetime.now(timezone.utc)
     # Unlock if locked
     user.failed_login_attempts = 0
@@ -340,6 +340,7 @@ async def get_my_permissions(
         .where(
             user_groups.c.user_id == user.id,
             Group.is_active == True,
+            Group.factory_id == user.factory_id,
         )
     )
     group_policies = group_result.scalars().all()

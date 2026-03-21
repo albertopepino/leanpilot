@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Text, Boolean, JSON, Date
+from sqlalchemy.ext.mutable import MutableList, MutableDict
 from sqlalchemy.orm import relationship
 import enum
 from datetime import datetime, timezone
@@ -53,5 +54,5 @@ class SQCDPMeeting(TimestampMixin, Base):
     duration_min = Column(Integer, nullable=True)
     attendee_count = Column(Integer, nullable=True)
     notes = Column(Text, nullable=True)
-    action_items = Column(JSON, default=list)  # [{description, owner, due_date, status}]
-    escalated_items = Column(JSON, default=list)  # items escalated to next tier
+    action_items = Column(MutableList.as_mutable(JSON), default=list)  # [{description, owner, due_date, status}]
+    escalated_items = Column(MutableList.as_mutable(JSON), default=list)  # items escalated to next tier

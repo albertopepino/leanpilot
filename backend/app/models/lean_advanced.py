@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Text, Enum as SAEnum, Boolean, JSON
+from sqlalchemy.ext.mutable import MutableList, MutableDict
 from sqlalchemy.orm import relationship
 import enum
 from datetime import datetime, timezone
@@ -31,7 +32,7 @@ class SixSAudit(TimestampMixin, Base):
     overall_score = Column(Float)  # 0-100, auto-calculated
     maturity_level = Column(Integer)  # 1-5 maturity scale
     notes = Column(Text)
-    photo_urls = Column(JSON, default=list)  # Evidence photos
+    photo_urls = Column(MutableList.as_mutable(JSON), default=list)  # Evidence photos
 
     items = relationship("SixSAuditItem", back_populates="audit", cascade="all, delete-orphan")
 
@@ -240,7 +241,7 @@ class TPMMaintenanceRecord(TimestampMixin, Base):
     description = Column(Text, nullable=False)
     duration_min = Column(Integer)
     date_performed = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    parts_replaced = Column(JSON, default=list)
+    parts_replaced = Column(MutableList.as_mutable(JSON), default=list)
     cost_eur = Column(Float)
     findings = Column(Text)
     next_action = Column(Text)
@@ -360,9 +361,12 @@ class AndonEvent(TimestampMixin, Base):
     escalation_count = Column(Integer, default=0)
 
     # QC integration (Phase 1)
-    source = Column(String, nullable=True)  # "manual", "qc_check", "auto"
+    source = Column(String, nullable=True)  # "manual", "qc_check", "auto", "safety"
     qc_record_id = Column(Integer, ForeignKey("qc_records.id"), nullable=True)
-    trigger_type = Column(String, nullable=True)  # "line_clearance_fail", "fga_fail", etc.
+    trigger_type = Column(String, nullable=True)  # "line_clearance_fail", "fga_fail", "safety_critical", etc.
+
+    # Safety integration (Phase 1B)
+    safety_incident_id = Column(Integer, ForeignKey("safety_incidents.id"), nullable=True)
 
 
 # =========================================================================

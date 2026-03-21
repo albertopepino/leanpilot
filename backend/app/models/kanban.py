@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text, DateTime, JSON
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text, DateTime, JSON, Boolean
 from app.models.base import Base, TimestampMixin
 
 
@@ -46,5 +46,7 @@ class KanbanCard(TimestampMixin, Base):
     cycle_time_hours = Column(Float, nullable=True)
 
     status = Column(String(20), nullable=False, default="active")  # active, archived
+    blocked = Column(Boolean, nullable=False, default=False)
+    blocked_reason = Column(Text, nullable=True)
     created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     assigned_to_id = Column(Integer, ForeignKey("users.id"), nullable=True)

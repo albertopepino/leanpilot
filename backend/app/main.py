@@ -34,10 +34,15 @@ from app.services.data_retention import (
     stop_retention_scheduler,
     run_data_retention_purge,
 )
+from app.services.scheduler_service import (
+    start_email_scheduler,
+    stop_email_scheduler,
+)
 from app.api.routes import auth, production, oee, lean, ai, lean_advanced
 from app.api.routes import privacy, admin, manufacturing, qc, totp, groups, calendar, waste
 from app.api.routes import sqcdp, shift_handover, notifications, lsw, audit_schedule, reports
 from app.api.routes import ws, horizontal_deploy, safety, kanban, pokayoke, spc
+from app.api.routes import organization, erp, portal, fmea
 from app.api.routes.company_settings import (
     admin_router as company_admin_router,
     public_router as company_public_router,
@@ -56,10 +61,12 @@ logger = structlog.get_logger()
 async def lifespan(app: FastAPI):
     """Manage application startup and shutdown lifecycle."""
     start_retention_scheduler()
-    logger.info("lifespan.startup", detail="Data retention scheduler started")
+    start_email_scheduler()
+    logger.info("lifespan.startup", detail="Background schedulers started")
     yield
+    stop_email_scheduler()
     stop_retention_scheduler()
-    logger.info("lifespan.shutdown", detail="Data retention scheduler stopped")
+    logger.info("lifespan.shutdown", detail="Background schedulers stopped")
 
 
 app = FastAPI(
@@ -129,8 +136,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[o.strip() for o in settings.cors_origins.split(",") if o.strip()],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Site-Id", "X-Requested-With"],
 )
 
 # ---------------------------------------------------------------------------
@@ -164,6 +171,11 @@ v1_router.include_router(safety.router)
 v1_router.include_router(kanban.router)
 v1_router.include_router(pokayoke.router)
 v1_router.include_router(spc.router)
+v1_router.include_router(organization.router)
+v1_router.include_router(organization.user_roles_router)
+v1_router.include_router(erp.router)
+v1_router.include_router(portal.router)
+v1_router.include_router(fmea.router)
 
 # Mount under /api/v1 (canonical) and /api (backwards-compatible alias)
 app.include_router(v1_router, prefix="/api/v1")
@@ -198,6 +210,8 @@ async def health():
 # ---------------------------------------------------------------------------
 _request_count: dict[str, int] = {}
 _error_count: dict[str, int] = {}
+import re as _re
+_PATH_NORMALIZE = _re.compile(r"/\d+")
 
 
 @app.middleware("http")
@@ -206,9 +220,11 @@ async def metrics_middleware(request: Request, call_next):
     response = await call_next(request)
     path = request.url.path
     if not path.startswith("/api/metrics") and not path.startswith("/api/health"):
-        _request_count[path] = _request_count.get(path, 0) + 1
+        # Normalize path IDs to prevent unbounded dict growth (e.g. /users/123 -> /users/:id)
+        normalized = _PATH_NORMALIZE.sub("/:id", path)
+        _request_count[normalized] = _request_count.get(normalized, 0) + 1
         if response.status_code >= 400:
-            key = f"{response.status_code}:{path}"
+            key = f"{response.status_code}:{normalized}"
             _error_count[key] = _error_count.get(key, 0) + 1
     return response
 

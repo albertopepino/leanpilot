@@ -29,5 +29,15 @@
   "autoEscalatedT2": "Auto-escalation a T2",
   "loadFailed": "Caricamento dati SQCDP fallito",
   "saveFailed": "Salvataggio voce SQCDP fallito",
-  "meetingSaveFailed": "Registrazione riunione fallita"
+  "meetingSaveFailed": "Registrazione riunione fallita",
+
+  "openNCR": "Apri NCR",
+  "viewSPC": "Vedi SPC",
+  "startFiveWhy": "Avvia 5-Perche'",
+  "createKaizen": "Crea Kaizen",
+  "viewOEE": "Vedi OEE",
+  "openSafety": "Apri Sicurezza",
+  "viewWaste": "Vedi Sprechi",
+  "viewProduction": "Vedi Produzione",
+  "viewHandover": "Vedi Passaggio Consegne"
 }

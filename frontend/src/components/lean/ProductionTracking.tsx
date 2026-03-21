@@ -6,6 +6,8 @@ import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useI18n } from '@/stores/useI18n';
 import { adminApi, manufacturingApi, productionApi } from '@/lib/api';
 import type { ProductionRecordCreate } from '@/lib/types';
+import ToolInfoCard from "@/components/ui/ToolInfoCard";
+import { TOOL_INFO } from "@/lib/toolInfo";
 
 const HourlyProductionBoard = dynamic(
   () => import('@/components/lean/HourlyProductionBoard'),
@@ -106,10 +108,10 @@ function useDropdownData() {
         if (cancelled) return;
         const rawLines = linesRes.data ?? [];
         setLines(
-          rawLines.map((l: any) => ({
+          rawLines.map((l: { id: number; name: string; shifts?: { id: number; name: string; planned_minutes?: number }[] }) => ({
             id: l.id,
             name: l.name,
-            shifts: (l.shifts ?? []).map((s: any) => ({
+            shifts: (l.shifts ?? []).map((s) => ({
               id: s.id,
               name: s.name,
               planned_minutes: s.planned_minutes ?? undefined,
@@ -117,7 +119,7 @@ function useDropdownData() {
           }))
         );
         setProducts(
-          (productsRes.data ?? []).map((p: any) => ({
+          (productsRes.data ?? []).map((p: { id: number; name: string; code: string }) => ({
             id: p.id,
             name: p.name,
             code: p.code,
@@ -161,12 +163,13 @@ function emptyShiftRow(): ShiftRow {
 }
 
 function ShiftForm() {
+  const { t } = useI18n();
   const { lines, products, loading: ddLoading } = useDropdownData();
   const [date, setDate] = useState(todayISO());
   const [rows, setRows] = useState<ShiftRow[]>([emptyShiftRow()]);
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<FeedbackMsg | null>(null);
-  const [records, setRecords] = useState<any[]>([]);
+  const [records, setRecords] = useState<ProductionRecord[]>([]);
 
   const updateRow = (idx: number, patch: Partial<ShiftRow>) => {
     setRows(prev => prev.map((r, i) => i === idx ? { ...r, ...patch } : r));
@@ -188,7 +191,7 @@ function ShiftForm() {
     e.preventDefault();
     const valid = rows.filter(r => r.lineId && r.totalPieces && r.goodPieces && r.cycleTime);
     if (valid.length === 0) {
-      setFeedback({ type: 'error', text: 'At least one complete row is required.' });
+      setFeedback({ type: 'error', text: t("dashboard.rowRequired") || 'At least one complete row is required.' });
       return;
     }
     setSubmitting(true);
@@ -211,7 +214,10 @@ function ShiftForm() {
         ok++;
       } catch { fail++; }
     }
-    setFeedback({ type: fail === 0 ? 'success' : 'error', text: `${ok} record(s) saved${fail > 0 ? `, ${fail} failed` : ''}.` });
+    const savedMsg = fail === 0
+      ? (t("dashboard.recordsSaved") || "{ok} record(s) saved").replace("{ok}", String(ok))
+      : (t("dashboard.recordsSavedWithErrors") || "{ok} record(s) saved, {fail} failed").replace("{ok}", String(ok)).replace("{fail}", String(fail));
+    setFeedback({ type: fail === 0 ? 'success' : 'error', text: savedMsg });
     if (ok > 0) { setRows([emptyShiftRow()]); fetchRecords(); }
     setSubmitting(false);
   }
@@ -224,27 +230,27 @@ function ShiftForm() {
     <div className="space-y-6">
       <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6 space-y-5">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-th-text">Per-Shift Production Entry</h3>
+          <h3 className="text-lg font-bold text-th-text">{t("dashboard.shiftEntryTitle") || "Per-Shift Production Entry"}</h3>
           <div className="flex items-center gap-3">
-            <Label htmlFor="sf-date">Date</Label>
+            <Label htmlFor="sf-date">{t("common.date") || "Date"}</Label>
             <input id="sf-date" type="date" className={cls + " w-40"} value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
         </div>
 
         <FeedbackBanner msg={feedback} />
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto mobile-scroll-table">
+          <table className="w-full text-sm min-w-[600px]">
             <thead>
               <tr className="border-b border-th-border text-left text-xs uppercase text-th-text-3">
-                <th className="px-2 py-2">Line *</th>
-                <th className="px-2 py-2">Shift</th>
-                <th className="px-2 py-2">Product</th>
-                <th className="px-2 py-2 w-20">Total *</th>
-                <th className="px-2 py-2 w-20">Good *</th>
-                <th className="px-2 py-2 w-20">Plan (min)</th>
-                <th className="px-2 py-2 w-20">Down (min)</th>
-                <th className="px-2 py-2 w-20">Cycle (s) *</th>
+                <th className="px-2 py-2">{t("dashboard.colLine") || "Line"} *</th>
+                <th className="px-2 py-2">{t("dashboard.colShift") || "Shift"}</th>
+                <th className="px-2 py-2">{t("dashboard.colProduct") || "Product"}</th>
+                <th className="px-2 py-2 w-20">{t("dashboard.colTotal") || "Total"} *</th>
+                <th className="px-2 py-2 w-20">{t("dashboard.colGood") || "Good"} *</th>
+                <th className="px-2 py-2 w-20">{t("dashboard.colPlanMin") || "Plan (min)"}</th>
+                <th className="px-2 py-2 w-20">{t("dashboard.colDownMin") || "Down (min)"}</th>
+                <th className="px-2 py-2 w-20">{t("dashboard.colCycleSec") || "Cycle (s)"} *</th>
                 <th className="px-2 py-2 w-8"></th>
               </tr>
             </thead>
@@ -290,14 +296,14 @@ function ShiftForm() {
         </div>
 
         <div className="flex items-center justify-between">
-          <button type="button" onClick={addRow} className="text-sm text-brand-600 hover:text-brand-700 font-semibold">+ Add Row</button>
+          <button type="button" onClick={addRow} className="text-sm text-brand-600 hover:text-brand-700 font-semibold">{t("dashboard.addRow") || "+ Add Row"}</button>
           <button
             onClick={handleSubmit}
             disabled={submitting}
             className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50 transition-colors"
           >
             {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-            Submit All ({rows.filter(r => r.lineId && r.totalPieces && r.goodPieces && r.cycleTime).length})
+            {t("dashboard.submitAll") || "Submit All"} ({rows.filter(r => r.lineId && r.totalPieces && r.goodPieces && r.cycleTime).length})
           </button>
         </div>
       </div>
@@ -326,12 +332,13 @@ function emptyDailyRow(): DailyRow {
 }
 
 function DailyForm() {
+  const { t } = useI18n();
   const { lines, products, loading: ddLoading } = useDropdownData();
   const [date, setDate] = useState(todayISO());
   const [rows, setRows] = useState<DailyRow[]>([emptyDailyRow()]);
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<FeedbackMsg | null>(null);
-  const [records, setRecords] = useState<any[]>([]);
+  const [records, setRecords] = useState<ProductionRecord[]>([]);
 
   const updateRow = (idx: number, patch: Partial<DailyRow>) => {
     setRows(prev => prev.map((r, i) => i === idx ? { ...r, ...patch } : r));
@@ -353,7 +360,7 @@ function DailyForm() {
     e.preventDefault();
     const valid = rows.filter(r => r.lineId && r.totalPieces && r.goodPieces && r.availableTime);
     if (valid.length === 0) {
-      setFeedback({ type: 'error', text: 'At least one complete row is required.' });
+      setFeedback({ type: 'error', text: t("dashboard.rowRequired") || 'At least one complete row is required.' });
       return;
     }
     setSubmitting(true);
@@ -379,7 +386,10 @@ function DailyForm() {
         ok++;
       } catch { fail++; }
     }
-    setFeedback({ type: fail === 0 ? 'success' : 'error', text: `${ok} record(s) saved${fail > 0 ? `, ${fail} failed` : ''}.` });
+    const savedMsg = fail === 0
+      ? (t("dashboard.recordsSaved") || "{ok} record(s) saved").replace("{ok}", String(ok))
+      : (t("dashboard.recordsSavedWithErrors") || "{ok} record(s) saved, {fail} failed").replace("{ok}", String(ok)).replace("{fail}", String(fail));
+    setFeedback({ type: fail === 0 ? 'success' : 'error', text: savedMsg });
     if (ok > 0) { setRows([emptyDailyRow()]); fetchRecords(); }
     setSubmitting(false);
   }
@@ -392,25 +402,25 @@ function DailyForm() {
     <div className="space-y-6">
       <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-sm p-6 space-y-5">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-th-text">Daily Production Entry</h3>
+          <h3 className="text-lg font-bold text-th-text">{t("dashboard.dailyEntryTitle") || "Daily Production Entry"}</h3>
           <div className="flex items-center gap-3">
-            <Label htmlFor="df-date">Date</Label>
+            <Label htmlFor="df-date">{t("common.date") || "Date"}</Label>
             <input id="df-date" type="date" className={cls + " w-40"} value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
         </div>
 
         <FeedbackBanner msg={feedback} />
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto mobile-scroll-table">
+          <table className="w-full text-sm min-w-[600px]">
             <thead>
               <tr className="border-b border-th-border text-left text-xs uppercase text-th-text-3">
-                <th className="px-2 py-2">Line *</th>
-                <th className="px-2 py-2">Product</th>
-                <th className="px-2 py-2 w-20">Total *</th>
-                <th className="px-2 py-2 w-20">Good *</th>
-                <th className="px-2 py-2 w-24">Avail (min) *</th>
-                <th className="px-2 py-2 w-20">Down (min)</th>
+                <th className="px-2 py-2">{t("dashboard.colLine") || "Line"} *</th>
+                <th className="px-2 py-2">{t("dashboard.colProduct") || "Product"}</th>
+                <th className="px-2 py-2 w-20">{t("dashboard.colTotal") || "Total"} *</th>
+                <th className="px-2 py-2 w-20">{t("dashboard.colGood") || "Good"} *</th>
+                <th className="px-2 py-2 w-24">{t("dashboard.colAvailMin") || "Avail (min)"} *</th>
+                <th className="px-2 py-2 w-20">{t("dashboard.colDownMin") || "Down (min)"}</th>
                 <th className="px-2 py-2 w-8"></th>
               </tr>
             </thead>
@@ -445,14 +455,14 @@ function DailyForm() {
         </div>
 
         <div className="flex items-center justify-between">
-          <button type="button" onClick={addRow} className="text-sm text-brand-600 hover:text-brand-700 font-semibold">+ Add Row</button>
+          <button type="button" onClick={addRow} className="text-sm text-brand-600 hover:text-brand-700 font-semibold">{t("dashboard.addRow") || "+ Add Row"}</button>
           <button
             onClick={handleSubmit}
             disabled={submitting}
             className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50 transition-colors"
           >
             {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-            Submit All ({rows.filter(r => r.lineId && r.totalPieces && r.goodPieces && r.availableTime).length})
+            {t("dashboard.submitAll") || "Submit All"} ({rows.filter(r => r.lineId && r.totalPieces && r.goodPieces && r.availableTime).length})
           </button>
         </div>
       </div>
@@ -466,7 +476,9 @@ function DailyForm() {
 // Recent records table (shared)
 // ---------------------------------------------------------------------------
 
-function RecentRecords({ records }: { records: any[] }) {
+interface ProductionRecord { id: number; date: string; production_line_name?: string; production_line_id?: number; total_pieces: number; good_pieces: number; actual_run_time_min: number; notes?: string }
+
+function RecentRecords({ records }: { records: ProductionRecord[] }) {
   const { t } = useI18n();
   if (records.length === 0) {
     return (
@@ -481,8 +493,8 @@ function RecentRecords({ records }: { records: any[] }) {
       <div className="px-6 py-3 border-b border-th-border">
         <h4 className="text-sm font-semibold text-th-text">{t("dashboard.recentRecords") || "Recent Records"}</h4>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+      <div className="overflow-x-auto mobile-scroll-table">
+        <table className="w-full text-sm min-w-[600px]">
           <thead>
             <tr className="border-b border-th-border bg-th-bg-1">
               <th className="text-left px-4 py-2 font-medium text-th-text-2">{t("common.date")}</th>
@@ -494,7 +506,7 @@ function RecentRecords({ records }: { records: any[] }) {
             </tr>
           </thead>
           <tbody>
-            {records.map((r: any) => (
+            {records.map((r) => (
               <tr key={r.id} className="border-b border-th-border last:border-0 hover:bg-th-bg-1/50">
                 <td className="px-4 py-2 text-th-text">{r.date}</td>
                 <td className="px-4 py-2 text-th-text">{r.production_line_name ?? r.production_line_id}</td>
@@ -541,6 +553,7 @@ export default function ProductionTracking() {
 
   return (
     <div className="space-y-6">
+      <ToolInfoCard info={TOOL_INFO.production} />
       {/* Mode selector — pill buttons */}
       <div className="flex flex-wrap gap-2">
         {MODE_KEYS.map((m) => {

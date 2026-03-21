@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm.attributes import flag_modified
 
 from app.db.session import get_db
 from app.core.security import get_current_user, require_factory
@@ -153,6 +154,7 @@ async def complete_line(
         "notes": data.notes,
     })
     deployment.completed_lines = completed
+    flag_modified(deployment, "completed_lines")
 
     # Auto-close if all target lines are completed
     target_set = set(deployment.target_lines or [])

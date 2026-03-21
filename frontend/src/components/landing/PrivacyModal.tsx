@@ -67,7 +67,7 @@ export default function PrivacyModal({ t, onClose, lang }: Props) {
 
 const privacyEN = `
 <h3>1. Data Controller</h3>
-<p>Centro Studi Grassi S.r.l., Via Roma 15, 20121 Milano, Italy<br/>
+<p>Centro Studi Grassi DOO, Belgrade, Serbia<br/>
 Email: privacy@autopilot.rs<br/>
 Data Protection Officer: dpo@autopilot.rs</p>
 
@@ -146,7 +146,7 @@ Data Protection Officer: dpo@autopilot.rs</p>
 
 const privacyIT = `
 <h3>1. Titolare del Trattamento</h3>
-<p>Centro Studi Grassi S.r.l., Via Roma 15, 20121 Milano, Italia<br/>
+<p>Centro Studi Grassi DOO, Beograd, Srbija<br/>
 Email: privacy@autopilot.rs<br/>
 Responsabile Protezione Dati: dpo@autopilot.rs</p>
 
@@ -225,7 +225,7 @@ Responsabile Protezione Dati: dpo@autopilot.rs</p>
 
 const privacySR = `
 <h3>1. Ko smo mi</h3>
-<p>Centro Studi Grassi S.r.l., Via Roma 15, 20121 Milano, Italija<br/>
+<p>Centro Studi Grassi DOO, Beograd, Srbija<br/>
 Email: privacy@autopilot.rs<br/>
 Lice za zaštitu podataka o ličnosti (DPO): dpo@autopilot.rs</p>
 
@@ -295,8 +295,8 @@ Lice za zaštitu podataka o ličnosti (DPO): dpo@autopilot.rs</p>
 
 <h3>13. Kontakt</h3>
 <p>Za sva pitanja u vezi sa ovom politikom privatnosti ili obradom vaših podataka o ličnosti:<br/>
-Centro Studi Grassi S.r.l.<br/>
-Via Roma 15, 20121 Milano, Italija<br/>
+Centro Studi Grassi DOO<br/>
+Beograd, Srbija<br/>
 Email: privacy@autopilot.rs<br/>
 DPO: dpo@autopilot.rs</p>
 
