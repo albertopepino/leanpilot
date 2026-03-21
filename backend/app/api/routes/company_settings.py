@@ -7,7 +7,7 @@ import os
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -20,6 +20,7 @@ from app.core.security import (
 )
 from app.models.user import User
 from app.models.company_settings import CompanySettings
+from app.services import storage as storage_svc
 
 # ---------------------------------------------------------------------------
 # Config
@@ -66,11 +67,8 @@ async def upload_company_logo(
     if file.content_type == "image/jpeg" and not contents[:2] == b"\xff\xd8":
         raise HTTPException(400, "Invalid JPEG file.")
 
-    await asyncio.to_thread(os.makedirs, LOGO_UPLOAD_DIR, exist_ok=True)
-
     ext = ALLOWED_LOGO_TYPES[file.content_type]
     safe_name = f"factory_{fid}_{uuid.uuid4().hex}{ext}"
-    file_path = os.path.join(LOGO_UPLOAD_DIR, safe_name)
 
     # Look up existing settings
     result = await db.execute(
@@ -80,16 +78,12 @@ async def upload_company_logo(
 
     # Delete old file if exists
     if settings and settings.logo_filename:
-        old_path = os.path.join(LOGO_UPLOAD_DIR, settings.logo_filename)
-        if os.path.exists(old_path):
-            await asyncio.to_thread(os.remove, old_path)
+        old_key = storage_svc.build_key(fid, "branding", settings.logo_filename)
+        await storage_svc.delete_file(old_key)
 
-    # Write new file
-    def _write_file():
-        with open(file_path, "wb") as f:
-            f.write(contents)
-
-    await asyncio.to_thread(_write_file)
+    # Write new file via storage service
+    storage_key = storage_svc.build_key(fid, "branding", safe_name)
+    await storage_svc.upload_file(contents, storage_key, file.content_type)
 
     # Upsert
     if settings:
@@ -127,10 +121,9 @@ async def delete_company_logo(
     if not settings or not settings.logo_filename:
         raise HTTPException(404, "No logo configured.")
 
-    # Delete file
-    file_path = os.path.join(LOGO_UPLOAD_DIR, settings.logo_filename)
-    if os.path.exists(file_path):
-        await asyncio.to_thread(os.remove, file_path)
+    # Delete file from storage
+    old_key = storage_svc.build_key(fid, "branding", settings.logo_filename)
+    await storage_svc.delete_file(old_key)
 
     settings.logo_filename = None
 
@@ -234,20 +227,26 @@ async def get_company_logo(
     if not settings or not settings.logo_filename:
         raise HTTPException(404, "No logo configured.")
 
-    # Prevent path traversal — use only the basename of the stored filename
+    # Build storage key
     safe_filename = os.path.basename(settings.logo_filename)
-    file_path = os.path.join(LOGO_UPLOAD_DIR, safe_filename)
-    resolved = os.path.realpath(file_path)
-    if not resolved.startswith(os.path.realpath(LOGO_UPLOAD_DIR)):
-        raise HTTPException(403, "Invalid file path")
-    if not os.path.exists(file_path):
-        raise HTTPException(404, "Logo file not found.")
+    storage_key = storage_svc.build_key(fid, "branding", safe_filename)
 
     # Detect MIME from extension
     ext = os.path.splitext(settings.logo_filename)[1].lower()
     mime_type = MIME_BY_EXT.get(ext, "application/octet-stream")
 
-    response = FileResponse(file_path, media_type=mime_type)
+    # Try S3 presigned URL first
+    presigned = await storage_svc.generate_presigned_url(storage_key)
+    if presigned:
+        return RedirectResponse(url=presigned, status_code=302)
+
+    # Local fallback
+    try:
+        file_bytes = await storage_svc.get_file_bytes(storage_key)
+    except (FileNotFoundError, PermissionError):
+        raise HTTPException(404, "Logo file not found.")
+
+    response = Response(content=file_bytes, media_type=mime_type)
     # Override SecurityHeadersMiddleware no-store for this static asset
     response.headers["Cache-Control"] = "public, max-age=3600"
     return response

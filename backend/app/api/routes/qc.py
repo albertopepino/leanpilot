@@ -4,7 +4,7 @@ import asyncio
 import os
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -412,16 +412,10 @@ async def upload_policy_document(
     if len(contents) > MAX_FILE_SIZE:
         raise HTTPException(400, "File too large. Maximum 20 MB.")
 
-    await asyncio.to_thread(os.makedirs, UPLOAD_DIR, exist_ok=True)
     ext = ALLOWED_TYPES[file.content_type]
     safe_name = f"{uuid.uuid4().hex}{ext}"
-    file_path = os.path.join(UPLOAD_DIR, safe_name)
-
-    def _write_file():
-        with open(file_path, "wb") as f:
-            f.write(contents)
-
-    await asyncio.to_thread(_write_file)
+    storage_key = storage_svc.build_key(fid, "qc_policies", safe_name)
+    await storage_svc.upload_file(contents, storage_key, file.content_type)
 
     doc = QCPolicyDocument(
         factory_id=fid,
@@ -507,17 +501,23 @@ async def download_policy_document(
     if not doc:
         raise HTTPException(404, "Document not found")
 
-    file_path = os.path.join(UPLOAD_DIR, doc.file_path)
-    resolved = os.path.realpath(file_path)
-    if not resolved.startswith(os.path.realpath(UPLOAD_DIR)):
-        raise HTTPException(403, "Invalid file path")
-    if not os.path.exists(resolved):
-        raise HTTPException(404, "File not found on disk")
+    # Build storage key: QC policies store just the filename in file_path
+    storage_key = storage_svc.build_key(fid, "qc_policies", doc.file_path)
 
-    return FileResponse(
-        resolved,
+    # Try S3 presigned download URL (with Content-Disposition: attachment)
+    presigned = await storage_svc.generate_presigned_download_url(storage_key, doc.filename)
+    if presigned:
+        return RedirectResponse(url=presigned, status_code=302)
+
+    # Local fallback
+    try:
+        file_bytes = await storage_svc.get_file_bytes(storage_key)
+    except (FileNotFoundError, PermissionError):
+        raise HTTPException(404, "File not found on disk")
+    return Response(
+        content=file_bytes,
         media_type=doc.mime_type,
-        filename=doc.filename,
+        headers={"Content-Disposition": f'attachment; filename="{doc.filename}"'},
     )
 
 
@@ -549,6 +549,7 @@ async def delete_policy_document(
 # ─── NCR / CAPA Photo Uploads ───────────────────────────────────────────────
 
 from app.services.upload_service import save_upload, resolve_upload_path, IMAGE_TYPES
+from app.services import storage as storage_svc
 
 
 @router.post("/ncr/{ncr_id}/photo")
@@ -598,10 +599,18 @@ async def get_ncr_photo(
     if not ncr or not ncr.photo_url:
         raise HTTPException(404, "Photo not found")
 
-    disk_path = resolve_upload_path("ncr", ncr.photo_url)
-    ext = os.path.splitext(disk_path)[1].lower()
+    safe = os.path.basename(ncr.photo_url.split("/")[-1])
+    factory_id_str = ncr.photo_url.split("/")[0]
+    storage_key = f"{factory_id_str}/ncr/{safe}"
+
+    presigned = await storage_svc.generate_presigned_url(storage_key)
+    if presigned:
+        return RedirectResponse(url=presigned, status_code=302)
+
+    file_bytes = await storage_svc.get_file_bytes(storage_key)
+    ext = os.path.splitext(safe)[1].lower()
     mime = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png"}.get(ext, "application/octet-stream")
-    return FileResponse(disk_path, media_type=mime)
+    return Response(content=file_bytes, media_type=mime)
 
 
 @router.post("/capa/{capa_id}/photo")
@@ -651,7 +660,15 @@ async def get_capa_photo(
     if not capa or not capa.photo_url:
         raise HTTPException(404, "Photo not found")
 
-    disk_path = resolve_upload_path("capa", capa.photo_url)
-    ext = os.path.splitext(disk_path)[1].lower()
+    safe = os.path.basename(capa.photo_url.split("/")[-1])
+    factory_id_str = capa.photo_url.split("/")[0]
+    storage_key = f"{factory_id_str}/capa/{safe}"
+
+    presigned = await storage_svc.generate_presigned_url(storage_key)
+    if presigned:
+        return RedirectResponse(url=presigned, status_code=302)
+
+    file_bytes = await storage_svc.get_file_bytes(storage_key)
+    ext = os.path.splitext(safe)[1].lower()
     mime = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png"}.get(ext, "application/octet-stream")
-    return FileResponse(disk_path, media_type=mime)
+    return Response(content=file_bytes, media_type=mime)

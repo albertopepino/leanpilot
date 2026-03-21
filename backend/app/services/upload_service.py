@@ -1,18 +1,17 @@
 """
 Generic factory-scoped file upload service.
 
-Folder layout:  {UPLOAD_BASE_DIR}/{module}/{factory_id}/{uuid}{ext}
+Storage key layout:  {factory_id}/{module}/{uuid}{ext}
 
-Extracts common patterns from safety document and logo upload routes
-into a reusable service with MIME validation, magic-byte checks, UUID
-filenames, and asyncio.to_thread() for blocking I/O.
+Delegates to storage.py for S3 or local-disk persistence.
 """
-import asyncio
 import os
 import uuid
 from typing import Optional
 
 from fastapi import HTTPException, UploadFile
+
+from app.services import storage as storage_svc
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -60,10 +59,10 @@ async def save_upload(
     max_size: int = DEFAULT_MAX_SIZE,
 ) -> tuple[str, int]:
     """
-    Validate and persist an uploaded file.
+    Validate and persist an uploaded file via storage service (S3 or local).
 
-    Returns (relative_path, file_size) where relative_path is
-    ``{factory_id}/{uuid}{ext}`` within the module directory.
+    Returns (storage_key, file_size) where storage_key is
+    ``{factory_id}/{module}/{uuid}{ext}``.
     """
     types = allowed_types or IMAGE_TYPES
 
@@ -85,20 +84,16 @@ async def save_upload(
         if contents[:length] != expected_bytes:
             raise HTTPException(400, f"Invalid {file.content_type} file (magic bytes mismatch).")
 
-    # Build paths
+    # Build storage key
     ext = types[file.content_type]
     safe_name = f"{uuid.uuid4().hex}{ext}"
-    factory_dir = os.path.join(UPLOAD_BASE_DIR, module, str(factory_id))
-    file_path = os.path.join(factory_dir, safe_name)
+    storage_key = storage_svc.build_key(factory_id, module, safe_name)
 
-    # Write (offload blocking I/O)
-    def _write():
-        os.makedirs(factory_dir, exist_ok=True)
-        with open(file_path, "wb") as f:
-            f.write(contents)
+    # Persist via storage service (S3 or local disk)
+    await storage_svc.upload_file(contents, storage_key, file.content_type)
 
-    await asyncio.to_thread(_write)
-
+    # Return a backward-compatible relative_path format: {factory_id}/{safe_name}
+    # This is what gets stored in DB columns (e.g. photo_url, file_path)
     relative_path = f"{factory_id}/{safe_name}"
     return relative_path, len(contents)
 
@@ -108,6 +103,8 @@ def resolve_upload_path(module: str, relative_path: str) -> str:
     Turn a stored relative_path back into an absolute disk path.
 
     Validates against path-traversal attacks.
+    Only works in local-disk mode. For S3 mode, use storage.get_file_bytes()
+    or storage.generate_presigned_url() instead.
     """
     base = os.path.join(UPLOAD_BASE_DIR, module)
     safe = os.path.basename(relative_path.split("/")[-1])
@@ -124,18 +121,14 @@ def resolve_upload_path(module: str, relative_path: str) -> str:
     return resolved
 
 
-async def delete_upload(module: str, relative_path: str) -> bool:
-    """Delete an uploaded file. Returns True if the file was removed."""
-    base = os.path.join(UPLOAD_BASE_DIR, module)
+def _build_storage_key_from_relative(module: str, relative_path: str) -> str:
+    """Convert a DB-stored relative_path (e.g. '35/abc123.jpg') to a storage key."""
     safe = os.path.basename(relative_path.split("/")[-1])
     factory_id = relative_path.split("/")[0]
-    full_path = os.path.join(base, factory_id, safe)
+    return f"{factory_id}/{module}/{safe}"
 
-    resolved = os.path.realpath(full_path)
-    if not resolved.startswith(os.path.realpath(base)):
-        return False
 
-    if os.path.exists(resolved):
-        await asyncio.to_thread(os.remove, resolved)
-        return True
-    return False
+async def delete_upload(module: str, relative_path: str) -> bool:
+    """Delete an uploaded file from storage (S3 or local)."""
+    key = _build_storage_key_from_relative(module, relative_path)
+    return await storage_svc.delete_file(key)

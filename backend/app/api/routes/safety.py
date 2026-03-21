@@ -3,7 +3,7 @@ import os
 import uuid
 from datetime import date, datetime, timezone
 from fastapi import APIRouter, Depends, Query, HTTPException, UploadFile, File, Form
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 import structlog
@@ -16,6 +16,7 @@ from app.schemas.safety import (
     SafetyIncidentCreate, SafetyIncidentUpdate, SafetyIncidentResponse,
 )
 from app.services.upload_service import save_upload, resolve_upload_path, IMAGE_TYPES
+from app.services import storage as storage_svc
 
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/safety", tags=["Safety"])
@@ -262,18 +263,10 @@ async def upload_safety_document(
         raise HTTPException(400, "File too large. Maximum 20 MB.")
 
     ext = SAFETY_ALLOWED_TYPES[file.content_type]
-    import asyncio
 
     safe_name = f"{uuid.uuid4().hex}{ext}"
-    factory_dir = os.path.join(SAFETY_UPLOAD_DIR, str(fid))
-    file_path_on_disk = os.path.join(factory_dir, safe_name)
-
-    def _write():
-        os.makedirs(factory_dir, exist_ok=True)
-        with open(file_path_on_disk, "wb") as f:
-            f.write(contents)
-
-    await asyncio.to_thread(_write)
+    storage_key = storage_svc.build_key(fid, "safety", safe_name)
+    await storage_svc.upload_file(contents, storage_key, file.content_type)
 
     relative_path = f"{fid}/{safe_name}"
 
@@ -358,18 +351,25 @@ async def download_safety_document(
     if not doc:
         raise HTTPException(404, "Document not found")
 
-    # Prevent path traversal — normalize and verify the stored relative path
-    file_path = os.path.join(SAFETY_UPLOAD_DIR, doc.file_path)
-    resolved = os.path.realpath(file_path)
-    if not resolved.startswith(os.path.realpath(SAFETY_UPLOAD_DIR)):
-        raise HTTPException(403, "Invalid file path")
-    if not os.path.exists(resolved):
-        raise HTTPException(404, "File not found on disk")
+    # Build storage key from DB relative path
+    safe = os.path.basename(doc.file_path.split("/")[-1])
+    factory_id_str = doc.file_path.split("/")[0]
+    storage_key = f"{factory_id_str}/safety/{safe}"
 
-    return FileResponse(
-        resolved,
+    # Try S3 presigned download URL (with Content-Disposition: attachment)
+    presigned = await storage_svc.generate_presigned_download_url(storage_key, doc.filename)
+    if presigned:
+        return RedirectResponse(url=presigned, status_code=302)
+
+    # Local fallback
+    try:
+        file_bytes = await storage_svc.get_file_bytes(storage_key)
+    except (FileNotFoundError, PermissionError):
+        raise HTTPException(404, "File not found on disk")
+    return Response(
+        content=file_bytes,
         media_type=doc.mime_type,
-        filename=doc.filename,
+        headers={"Content-Disposition": f'attachment; filename="{doc.filename}"'},
     )
 
 
@@ -438,7 +438,16 @@ async def get_incident_photo(
     if not incident or not incident.photo_url:
         raise HTTPException(404, "Photo not found")
 
-    disk_path = resolve_upload_path("incidents", incident.photo_url)
-    ext = os.path.splitext(disk_path)[1].lower()
+    # Build storage key from DB relative path
+    safe = os.path.basename(incident.photo_url.split("/")[-1])
+    factory_id_str = incident.photo_url.split("/")[0]
+    storage_key = f"{factory_id_str}/incidents/{safe}"
+
+    presigned = await storage_svc.generate_presigned_url(storage_key)
+    if presigned:
+        return RedirectResponse(url=presigned, status_code=302)
+
+    file_bytes = await storage_svc.get_file_bytes(storage_key)
+    ext = os.path.splitext(safe)[1].lower()
     mime = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png"}.get(ext, "application/octet-stream")
-    return FileResponse(disk_path, media_type=mime)
+    return Response(content=file_bytes, media_type=mime)

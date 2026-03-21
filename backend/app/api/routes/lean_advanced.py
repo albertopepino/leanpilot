@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, UploadFile, File
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy import select
@@ -801,6 +801,7 @@ async def delete_mind_map(
 # ---- GEMBA OBSERVATION PHOTO ----
 
 from app.services.upload_service import save_upload, resolve_upload_path, IMAGE_TYPES
+from app.services import storage as storage_svc
 
 
 @router.post("/gemba/observations/{observation_id}/photo")
@@ -858,10 +859,19 @@ async def get_gemba_photo(
     if not walk_result.scalar_one_or_none():
         raise HTTPException(403, "Observation does not belong to your factory")
 
-    disk_path = resolve_upload_path("gemba", obs.photo_url)
-    ext = os.path.splitext(disk_path)[1].lower()
+    # Build storage key from DB relative path
+    safe = os.path.basename(obs.photo_url.split("/")[-1])
+    factory_id_str = obs.photo_url.split("/")[0]
+    storage_key = f"{factory_id_str}/gemba/{safe}"
+
+    presigned = await storage_svc.generate_presigned_url(storage_key)
+    if presigned:
+        return RedirectResponse(url=presigned, status_code=302)
+
+    file_bytes = await storage_svc.get_file_bytes(storage_key)
+    ext = os.path.splitext(safe)[1].lower()
     mime = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png"}.get(ext, "application/octet-stream")
-    return FileResponse(disk_path, media_type=mime)
+    return Response(content=file_bytes, media_type=mime)
 
 
 # ---- GEMBA OBSERVATION → KAIZEN LINK ----
@@ -959,7 +969,16 @@ async def get_sixs_photo(
     if not item or not item.photo_url:
         raise HTTPException(404, "Photo not found")
 
-    disk_path = resolve_upload_path("sixs", item.photo_url)
-    ext = os.path.splitext(disk_path)[1].lower()
+    # Build storage key from DB relative path
+    safe = os.path.basename(item.photo_url.split("/")[-1])
+    factory_id_str = item.photo_url.split("/")[0]
+    storage_key = f"{factory_id_str}/sixs/{safe}"
+
+    presigned = await storage_svc.generate_presigned_url(storage_key)
+    if presigned:
+        return RedirectResponse(url=presigned, status_code=302)
+
+    file_bytes = await storage_svc.get_file_bytes(storage_key)
+    ext = os.path.splitext(safe)[1].lower()
     mime = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png"}.get(ext, "application/octet-stream")
-    return FileResponse(disk_path, media_type=mime)
+    return Response(content=file_bytes, media_type=mime)

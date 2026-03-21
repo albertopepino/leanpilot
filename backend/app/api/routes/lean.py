@@ -1,6 +1,6 @@
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse, Response
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -9,6 +9,7 @@ from app.db.session import get_db
 from app.core.security import get_current_user, require_factory
 from app.models.user import User
 from app.services.upload_service import save_upload, resolve_upload_path, IMAGE_TYPES
+from app.services import storage as storage_svc
 from app.schemas.lean import (
     FiveWhyCreate, FiveWhyResponse, IshikawaCreate, IshikawaResponse,
     KaizenCreate, KaizenResponse, SMEDCreate, SMEDResponse,
@@ -617,8 +618,19 @@ async def get_kaizen_photo(
     if not photo_url:
         raise HTTPException(404, "No photo uploaded")
 
-    disk_path = resolve_upload_path("kaizen", photo_url)
+    # Build storage key from DB relative path
     import os
-    ext = os.path.splitext(disk_path)[1].lower()
+    safe = os.path.basename(photo_url.split("/")[-1])
+    factory_id_str = photo_url.split("/")[0]
+    storage_key = f"{factory_id_str}/kaizen/{safe}"
+
+    # Try S3 presigned URL first
+    presigned = await storage_svc.generate_presigned_url(storage_key)
+    if presigned:
+        return RedirectResponse(url=presigned, status_code=302)
+
+    # Local fallback
+    file_bytes = await storage_svc.get_file_bytes(storage_key)
+    ext = os.path.splitext(safe)[1].lower()
     mime = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png"}.get(ext, "application/octet-stream")
-    return FileResponse(disk_path, media_type=mime)
+    return Response(content=file_bytes, media_type=mime)

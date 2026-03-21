@@ -25,6 +25,7 @@
   "crossIncidentDays": "Incident Days",
 
   "logIncident": "Log Incident",
+  "uploadEvidencePhoto": "Upload evidence photo",
   "incidentDate": "Incident Date",
   "severity": "Severity",
   "severityGrave": "Serious",
