@@ -582,7 +582,9 @@ export default function HomePage({ onNavigate }: HomePageProps) {
       } catch { /* skip */ }
       try {
         const kaizenRes = await leanApi.getKaizenBoard();
-        const items = kaizenRes.data?.items || kaizenRes.data || [];
+        const raw = kaizenRes.data?.items || kaizenRes.data || [];
+        // Board endpoint returns {idea:[...], planned:[...], ...} — flatten all values into one array
+        const items = Array.isArray(raw) ? raw : Object.values(raw).flat();
         kaizenInProgress = items.filter((k: { status: string }) => ["idea", "planned", "in_progress", "doing"].includes(k.status)).length;
       } catch { /* skip */ }
       try {
