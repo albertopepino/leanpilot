@@ -176,7 +176,6 @@ const sections: NavSection[] = [
     defaultCollapsed: true,
     items: [
       { id: "orders", labelKey: "common.navOrders", icon: Package, href: "/planning/orders" },
-      { id: "products", labelKey: "common.navProducts", icon: Package, href: "/planning/products" },
       { id: "kanban", labelKey: "common.navKanban", icon: Kanban, href: "/planning/kanban" },
       { id: "admin", labelKey: "common.navAdmin", icon: Users, href: "/system/admin" },
       { id: "settings", labelKey: "common.navSettings", icon: Settings, href: "/system/settings" },

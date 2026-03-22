@@ -127,10 +127,9 @@ export default function ProductionOrderBoard() {
 
   // Create form
   const [newOrder, setNewOrder] = useState({
-    product_id: 0,
+    order_number: "",
     production_line_id: 0,
     planned_quantity: 0,
-    customer_ref: "",
     batch_lot_number: "",
     notes: "",
     additional_lines: [] as { production_line_id: number; planned_quantity: number }[],
@@ -250,7 +249,7 @@ export default function ProductionOrderBoard() {
   };
 
   const handleCreate = async () => {
-    if (!newOrder.product_id || !newOrder.production_line_id || !newOrder.planned_quantity) return;
+    if (!newOrder.order_number?.trim() || !newOrder.production_line_id || !newOrder.planned_quantity) return;
     try {
       // Build order_lines from additional lines
       const order_lines = newOrder.additional_lines
@@ -705,17 +704,15 @@ export default function ProductionOrderBoard() {
 
             <div className="p-5 space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-th-text-2 mb-1">{t("manufacturing.product")} *</label>
-                <select
-                  value={newOrder.product_id}
-                  onChange={(e) => setNewOrder({ ...newOrder, product_id: Number(e.target.value) })}
+                <label className="block text-xs font-semibold text-th-text-2 mb-1">{t("manufacturing.orderNumber") || "PO Number"} *</label>
+                <input
+                  type="text"
+                  value={newOrder.order_number || ""}
+                  onChange={(e) => setNewOrder({ ...newOrder, order_number: e.target.value })}
                   className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text"
-                >
-                  <option value={0}>{t("manufacturing.selectProduct")}</option>
-                  {products.map((p) => (
-                    <option key={p.id} value={p.id}>{p.code} - {p.name}</option>
-                  ))}
-                </select>
+                  placeholder="e.g. PO-2026-001"
+                  required
+                />
               </div>
 
               <div>
@@ -745,24 +742,13 @@ export default function ProductionOrderBoard() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-th-text-2 mb-1">{t("manufacturing.customerRef")}</label>
-                <input
-                  type="text"
-                  value={newOrder.customer_ref}
-                  onChange={(e) => setNewOrder({ ...newOrder, customer_ref: e.target.value })}
-                  className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text"
-                  placeholder={t("manufacturing.optional")}
-                />
-              </div>
-
-              <div>
                 <label className="block text-xs font-semibold text-th-text-2 mb-1">{t("manufacturing.batchLotNumber") || "Batch / Lot Number"}</label>
                 <input
                   type="text"
                   value={newOrder.batch_lot_number}
                   onChange={(e) => setNewOrder({ ...newOrder, batch_lot_number: e.target.value })}
                   className="w-full border border-th-border rounded-lg px-3 py-2 text-sm bg-th-bg text-th-text"
-                  placeholder="e.g. LOT-2026-0042"
+                  placeholder="e.g. LOT-2026-0042 (optional)"
                 />
               </div>
 
@@ -848,7 +834,7 @@ export default function ProductionOrderBoard() {
               </button>
               <button
                 onClick={handleCreate}
-                disabled={!newOrder.product_id || !newOrder.production_line_id || !newOrder.planned_quantity}
+                disabled={!newOrder.order_number?.trim() || !newOrder.production_line_id || !newOrder.planned_quantity}
                 className="px-5 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-lg text-sm font-bold"
               >
                 {t("common.create")}

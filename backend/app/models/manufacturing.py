@@ -148,7 +148,7 @@ class ProductionOrder(TimestampMixin, Base):
 
     factory_id = Column(Integer, ForeignKey("factories.id"), nullable=False)
     production_line_id = Column(Integer, ForeignKey("production_lines.id"), nullable=False)
-    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=True)
     bom_id = Column(Integer, ForeignKey("bom_headers.id"), nullable=True)
     created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     closed_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)

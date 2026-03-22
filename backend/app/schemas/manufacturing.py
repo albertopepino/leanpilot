@@ -204,17 +204,17 @@ class ProductionOrderLineResponse(BaseModel):
 
 
 class ProductionOrderCreate(BaseModel):
-    production_line_id: int  # primary line (kept for backward compat)
-    product_id: int
-    bom_id: int | None = None
-    order_number: str | None = None  # auto-generated if not provided
+    production_line_id: int
+    order_number: str  # PO number (required)
     planned_quantity: int
+    batch_lot_number: str | None = None  # optional batch, linked to PO
+    product_id: int | None = None  # optional — simplified flow doesn't require product
+    bom_id: int | None = None
     planned_start: datetime | None = None
     planned_end: datetime | None = None
     customer_ref: str | None = None
-    batch_lot_number: str | None = None
     notes: str | None = None
-    order_lines: list[ProductionOrderLineCreate] = []  # multi-line support
+    order_lines: list[ProductionOrderLineCreate] = []
 
     @field_validator("planned_start", "planned_end", mode="before")
     @classmethod
