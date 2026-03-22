@@ -260,16 +260,15 @@ export default function ProductionOrderBoard() {
         }));
 
       await manufacturingApi.createOrder({
-        product_id: newOrder.product_id,
+        order_number: newOrder.order_number,
         production_line_id: newOrder.production_line_id,
         planned_quantity: newOrder.planned_quantity,
-        customer_ref: newOrder.customer_ref || undefined,
         batch_lot_number: newOrder.batch_lot_number || undefined,
         notes: newOrder.notes || undefined,
         order_lines: order_lines.length > 0 ? order_lines : undefined,
       });
       setShowCreate(false);
-      setNewOrder({ product_id: 0, production_line_id: 0, planned_quantity: 0, customer_ref: "", batch_lot_number: "", notes: "", additional_lines: [] });
+      setNewOrder({ order_number: "", production_line_id: 0, planned_quantity: 0, batch_lot_number: "", notes: "", additional_lines: [] });
       await fetchData();
     } catch {
       setError(t("manufacturing.failedCreateOrder"));
