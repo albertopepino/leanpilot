@@ -541,14 +541,14 @@ export interface ProductionOrderLineCreate {
 
 export interface ProductionOrderCreate {
   production_line_id: number;
-  product_id: number;
-  bom_id?: number | null;
-  order_number?: string | null;
+  order_number: string;
   planned_quantity: number;
+  batch_lot_number?: string | null;
+  product_id?: number | null;
+  bom_id?: number | null;
   planned_start?: string | null;
   planned_end?: string | null;
   customer_ref?: string | null;
-  batch_lot_number?: string | null;
   notes?: string | null;
   order_lines?: ProductionOrderLineCreate[];
 }
