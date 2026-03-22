@@ -51,6 +51,7 @@
   "ordersTotal": "{count} orders total",
   "newOrder": "+ New Order",
   "newProductionOrder": "New Production Order",
+  "orderNumber": "PO Number",
   "plannedQuantity": "Planned Quantity",
   "customerRef": "Customer Reference",
   "noOrders": "No orders",
