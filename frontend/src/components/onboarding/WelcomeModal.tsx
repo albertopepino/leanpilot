@@ -147,10 +147,10 @@ export default function WelcomeModal({ onClose, onTour, onSetup }: WelcomeModalP
         {/* Close button */}
         <button
           onClick={handleDismiss}
-          className="absolute -top-10 right-0 text-white/60 hover:text-white text-xs font-medium flex items-center gap-1 transition"
+          className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center text-th-text-3 hover:text-th-text hover:bg-th-bg-hover transition"
           aria-label={t("common.close")}
         >
-          <X size={14} />
+          <X size={16} />
         </button>
 
         <div className="rounded-xl border border-th-border bg-th-bg-2 shadow-2xl overflow-hidden">

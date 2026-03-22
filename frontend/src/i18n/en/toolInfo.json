@@ -34,5 +34,9 @@
   "productionDesc": "Enter hourly production counts, downtime minutes, and cycle times. This data feeds directly into your OEE calculations. Accurate input = accurate insights.",
   "productionWhen": "Use this every hour or every shift to record what was actually produced.",
   "handoverDesc": "Write what happened on your shift — problems, pending work, safety notes. The next shift reads this first. Good handovers prevent repeated mistakes.",
-  "handoverWhen": "Use this at the end of every shift before you leave."
+  "handoverWhen": "Use this at the end of every shift before you leave.",
+  "ordersDesc": "Plan what to produce, how much, and when. Orders flow into Production Tracking where operators record actual output. Auto-completes when target is reached.",
+  "ordersWhen": "Create orders before each production run. Release them when materials and lines are ready.",
+  "productsDesc": "Define your product catalog with SKUs, cycle times, and Bills of Materials. BOM data auto-populates ideal cycle times in Production Tracking and OEE calculations.",
+  "productsWhen": "Set up products before creating production orders. Update cycle times when processes change."
 }

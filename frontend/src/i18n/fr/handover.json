@@ -17,5 +17,18 @@
   "downtime": "Temps d'arrêt (min)",
   "manual": "Saisie manuelle",
   "scrap": "Rebut",
-  "recent": "Dernières passations"
+  "recent": "Dernières passations",
+  "dueBy": "Échéance",
+  "safety": "Sécurité",
+  "quality": "Qualité",
+  "equipment": "Équipements",
+  "material": "Matériaux",
+  "good": "Conforme",
+
+  "status_acknowledged": "Accusé réception",
+  "status_submitted": "Soumis",
+  "status_draft": "Brouillon",
+  "priority_high": "Haute",
+  "priority_medium": "Moyenne",
+  "priority_low": "Basse"
 }

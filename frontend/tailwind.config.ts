@@ -28,6 +28,7 @@ const config: Config = {
           700: "#4338ca",
           800: "#3730a3",
           900: "#1e1b4b",
+          950: "#0f0a2e",
         },
         lean: {
           green: "#10b981",

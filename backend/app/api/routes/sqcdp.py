@@ -215,3 +215,134 @@ async def _check_auto_escalation(
             await db.commit()
     except Exception as e:
         logger.error(f"SQCDP escalation notification failed: {e}")
+
+
+# ─── Auto-Populate from Live Data ──────────────────────────────────────────
+
+
+@router.post("/auto-populate", response_model=SQCDPBoardResponse)
+async def auto_populate_board(
+    target_date: date = Query(None),
+    line_id: int = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    """Auto-populate SQCDP board from real Safety, Quality, OEE, Production data."""
+    from sqlalchemy import func
+    from app.models.safety import SafetyIncident
+    from app.models.lean import OEERecord
+    from app.models.production import ProductionRecord, ScrapRecord
+    from app.models.qc import NonConformanceReport
+
+    fid = require_factory(current_user)
+    d = target_date or date.today()
+
+    created = []
+
+    async def _upsert(category: str, status: str, metric: float | None, target: float | None, comment: str):
+        """Create or update SQCDP entry for the given category."""
+        q = select(SQCDPEntry).where(and_(
+            SQCDPEntry.factory_id == fid,
+            SQCDPEntry.date == d,
+            SQCDPEntry.category == category,
+            SQCDPEntry.tier_level == 1,
+        ))
+        if line_id:
+            q = q.where(SQCDPEntry.production_line_id == line_id)
+        result = await db.execute(q)
+        existing = result.scalar_one_or_none()
+        if existing:
+            existing.status = status
+            existing.metric_value = metric
+            existing.target_value = target
+            existing.comment = comment
+            created.append(existing)
+        else:
+            entry = SQCDPEntry(
+                factory_id=fid,
+                production_line_id=line_id,
+                created_by_id=current_user.id,
+                date=d,
+                category=category,
+                status=status,
+                metric_value=metric,
+                target_value=target,
+                comment=comment,
+                tier_level=1,
+            )
+            db.add(entry)
+            created.append(entry)
+
+    # SAFETY: count incidents today
+    try:
+        safety_q = select(func.count()).select_from(SafetyIncident).where(and_(
+            SafetyIncident.factory_id == fid,
+            func.date(SafetyIncident.date) == d,
+        ))
+        incident_count = (await db.execute(safety_q)).scalar() or 0
+        s_status = "red" if incident_count > 0 else "green"
+        await _upsert("safety", s_status, float(incident_count), 0.0, f"{incident_count} incident(s) today")
+    except Exception as e:
+        logger.error(f"SQCDP auto-populate safety failed: {e}")
+
+    # QUALITY: scrap rate today
+    try:
+        prod_q = select(
+            func.sum(ProductionRecord.total_pieces).label("total"),
+            func.sum(ProductionRecord.good_pieces).label("good"),
+        ).where(and_(
+            func.date(ProductionRecord.date) == d,
+        ))
+        if line_id:
+            prod_q = prod_q.where(ProductionRecord.production_line_id == line_id)
+        pr = (await db.execute(prod_q)).one_or_none()
+        total = pr.total or 0 if pr else 0
+        good = pr.good or 0 if pr else 0
+        scrap_pct = ((total - good) / total * 100) if total > 0 else 0.0
+        q_status = "green" if scrap_pct < 2 else ("amber" if scrap_pct < 5 else "red")
+        await _upsert("quality", q_status, round(scrap_pct, 1), 2.0, f"Scrap rate: {scrap_pct:.1f}%")
+    except Exception as e:
+        logger.error(f"SQCDP auto-populate quality failed: {e}")
+
+    # COST: OEE (cost of lost production)
+    try:
+        oee_q = select(func.avg(OEERecord.oee)).where(and_(
+            func.date(OEERecord.date) == d,
+        ))
+        if line_id:
+            oee_q = oee_q.where(OEERecord.production_line_id == line_id)
+        avg_oee = (await db.execute(oee_q)).scalar() or 0.0
+        c_status = "green" if avg_oee >= 85 else ("amber" if avg_oee >= 65 else "red")
+        await _upsert("cost", c_status, round(avg_oee, 1), 85.0, f"OEE: {avg_oee:.1f}%")
+    except Exception as e:
+        logger.error(f"SQCDP auto-populate cost failed: {e}")
+
+    # DELIVERY: actual vs planned
+    try:
+        total_actual = total if total else 0
+        # Use simple target for now
+        d_status = "green" if total_actual > 0 else "amber"
+        await _upsert("delivery", d_status, float(total_actual), None, f"Output: {total_actual} pcs")
+    except Exception as e:
+        logger.error(f"SQCDP auto-populate delivery failed: {e}")
+
+    # PEOPLE: default green (no auto source yet)
+    try:
+        await _upsert("people", "green", None, None, "No issues reported")
+    except Exception as e:
+        logger.error(f"SQCDP auto-populate people failed: {e}")
+
+    await db.commit()
+    for entry in created:
+        await db.refresh(entry)
+
+    by_cat = {e.category: e for e in created}
+    return SQCDPBoardResponse(
+        date=d,
+        entries=created,
+        safety=by_cat.get("safety"),
+        quality=by_cat.get("quality"),
+        cost=by_cat.get("cost"),
+        delivery=by_cat.get("delivery"),
+        people=by_cat.get("people"),
+    )

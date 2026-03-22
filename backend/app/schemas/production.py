@@ -14,6 +14,8 @@ def _lower(v):
 class ProductionRecordCreate(BaseModel):
     production_line_id: int
     shift_id: int | None = None
+    production_order_id: int | None = None
+    product_id: int | None = None
     date: datetime
 
     @field_validator("date", mode="before")

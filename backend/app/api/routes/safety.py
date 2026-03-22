@@ -85,10 +85,39 @@ async def create_incident(
             logger.error("safety_andon_integration_failed", error=str(e), incident_id=incident.id)
             # Don't fail the incident creation if integration fails
 
+    # Auto-create Kaizen item from every safety incident
+    kaizen_id = None
+    try:
+        from app.models.lean import KaizenItem
+        category_map = {
+            "near_miss": "safety",
+            "first_aid": "safety",
+            "recordable": "safety",
+            "critical": "safety",
+            "environmental": "environment",
+            "property_damage": "safety",
+        }
+        kaizen = KaizenItem(
+            factory_id=fid,
+            title=f"[Safety] {data.title}",
+            description=data.description or data.title,
+            category=category_map.get(data.incident_type, "safety"),
+            priority="high" if data.severity in ("critical", "high") else "medium",
+            status="idea",
+            created_by_id=current_user.id,
+            source_type="safety",
+            source_id=incident.id,
+        )
+        db.add(kaizen)
+        await db.flush()
+        kaizen_id = kaizen.id
+    except Exception as e:
+        logger.error("safety_kaizen_integration_failed", error=str(e), incident_id=incident.id)
+
     await db.commit()
     await db.refresh(incident)
 
-    # Attach andon_event_id as a transient attribute for the response
+    # Attach transient attributes for the response
     incident.andon_event_id = andon_event_id  # type: ignore[attr-defined]
     return incident
 

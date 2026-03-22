@@ -295,6 +295,8 @@ export default function ProductionMonitor() {
   const [products, setProducts] = useState<ProductOption[]>([]);
   const [selectedLineId, setSelectedLineId] = useState<number | null>(null);
   const [linesLoading, setLinesLoading] = useState(true);
+  const [activeOrders, setActiveOrders] = useState<{ id: number; order_number: string; product_name: string | null; planned_quantity: number; actual_quantity_good: number; ideal_cycle_time_sec: number | null }[]>([]);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
   // Hourly-specific state
   const [slots, setSlots] = useState<HourlySlot[]>(() => buildEmptySlots());
@@ -424,6 +426,14 @@ export default function ProductionMonitor() {
     },
     [t]
   );
+
+  // Fetch active production orders when line changes
+  useEffect(() => {
+    if (selectedLineId === null) { setActiveOrders([]); return; }
+    productionApi.activeOrders(selectedLineId)
+      .then((res) => setActiveOrders(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setActiveOrders([]));
+  }, [selectedLineId]);
 
   // Fetch hourly when line/date changes (only in hourly view)
   useEffect(() => {
@@ -739,6 +749,23 @@ export default function ProductionMonitor() {
             <span className="text-sm text-th-text-3">
               {t("production.monitorNoLines") || "No lines configured"}
             </span>
+          )}
+
+          {/* Production Order selector */}
+          {activeOrders.length > 0 && (
+            <select
+              value={selectedOrderId ?? ""}
+              onChange={(e) => setSelectedOrderId(e.target.value ? Number(e.target.value) : null)}
+              aria-label="Production Order"
+              className="text-sm border border-th-border rounded-lg px-3 py-2 bg-th-bg-2 text-th-text focus:ring-2 focus:ring-brand-500/50 outline-none"
+            >
+              <option value="">{t("production.noOrder") || "No order"}</option>
+              {activeOrders.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.order_number} — {o.product_name || "?"} ({o.actual_quantity_good}/{o.planned_quantity})
+                </option>
+              ))}
+            </select>
           )}
 
           {/* Date navigation */}

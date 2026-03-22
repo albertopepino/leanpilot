@@ -17,5 +17,18 @@
   "downtime": "Zastoj (min)",
   "manual": "Ručni unos",
   "scrap": "Škart",
-  "recent": "Nedavne primopredaje"
+  "recent": "Nedavne primopredaje",
+  "dueBy": "Rok",
+  "safety": "Bezbednost",
+  "quality": "Kvalitet",
+  "equipment": "Oprema",
+  "material": "Materijal",
+  "good": "Dobro",
+
+  "status_acknowledged": "Potvrđeno",
+  "status_submitted": "Poslato",
+  "status_draft": "Nacrt",
+  "priority_high": "Visok",
+  "priority_medium": "Srednji",
+  "priority_low": "Nizak"
 }

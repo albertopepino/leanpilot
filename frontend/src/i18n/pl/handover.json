@@ -17,5 +17,18 @@
   "downtime": "Przestój (min)",
   "manual": "Ręczne wprowadzenie",
   "scrap": "Brak",
-  "recent": "Ostatnie przekazania"
+  "recent": "Ostatnie przekazania",
+  "dueBy": "Termin",
+  "safety": "Bezpieczeństwo",
+  "quality": "Jakość",
+  "equipment": "Urządzenia",
+  "material": "Materiały",
+  "good": "Dobre",
+
+  "status_acknowledged": "Potwierdzone",
+  "status_submitted": "Wysłane",
+  "status_draft": "Szkic",
+  "priority_high": "Wysoki",
+  "priority_medium": "Średni",
+  "priority_low": "Niski"
 }

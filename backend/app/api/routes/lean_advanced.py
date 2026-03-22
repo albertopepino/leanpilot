@@ -39,6 +39,35 @@ async def create_six_s_audit(
 ):
     fid = require_factory(user)
     audit = await SixSService.create_audit(db, fid, user.id, data.model_dump())
+
+    # Auto-create Kaizen items for failed 6S audit items (score <= 2)
+    try:
+        from app.models.lean import KaizenItem
+        from app.models.lean_advanced import SixSAuditItem
+        failed_q = select(SixSAuditItem).where(
+            SixSAuditItem.audit_id == audit.id,
+            SixSAuditItem.score <= 2,
+        )
+        failed_items = (await db.execute(failed_q)).scalars().all()
+        for item in failed_items:
+            kaizen = KaizenItem(
+                factory_id=fid,
+                title=f"[6S] {item.pillar}: {item.finding or 'Low score'}",
+                description=item.finding or f"6S audit scored {item.score}/5 in {item.pillar}",
+                category="workplace",
+                priority="medium" if item.score == 2 else "high",
+                status="idea",
+                created_by_id=user.id,
+                source_type="six_s",
+                source_id=audit.id,
+            )
+            db.add(kaizen)
+        if failed_items:
+            await db.commit()
+    except Exception as e:
+        import structlog
+        structlog.get_logger().error("six_s_kaizen_failed", error=str(e))
+
     return {"id": audit.id, "overall_score": audit.overall_score, "maturity_level": audit.maturity_level}
 
 
@@ -136,6 +165,28 @@ async def create_gemba_walk(
         walk = await GembaService.create_walk(db, fid, user.id, data.model_dump())
         await db.commit()
         await db.refresh(walk, ["observations"])
+
+        # Auto-create Kaizen items for actionable Gemba observations
+        try:
+            from app.models.lean import KaizenItem
+            for obs in (walk.observations or []):
+                if obs.observation_type in ("safety", "problem", "waste") or (obs.priority and obs.priority in ("high", "critical")):
+                    kaizen = KaizenItem(
+                        factory_id=fid,
+                        title=f"[Gemba] {obs.description[:80] if obs.description else 'Observation'}",
+                        description=obs.description or "Gemba walk observation requiring action",
+                        category="safety" if obs.observation_type == "safety" else "productivity",
+                        priority=obs.priority or "medium",
+                        status="idea",
+                        created_by_id=user.id,
+                        source_type="gemba",
+                        source_id=obs.id,
+                    )
+                    db.add(kaizen)
+            await db.commit()
+        except Exception as e:
+            logger.error("gemba_kaizen_failed", error=str(e))
+
         obs_ids = [obs.id for obs in (walk.observations or [])]
         return {"id": walk.id, "observation_ids": obs_ids}
     except Exception as e:
@@ -394,6 +445,29 @@ async def create_andon_event(
 ):
     fid = require_factory(user)
     event = await AndonService.create_event(db, fid, user.id, data.model_dump())
+
+    # Auto-create Safety incident for RED Andon events with safety-related reasons
+    safety_reasons = {"safety_hold", "safety", "injury", "hazard", "spill", "fire"}
+    reason_lower = (data.reason or "").lower()
+    if str(event.status).lower() == "red" and any(r in reason_lower for r in safety_reasons):
+        try:
+            from app.models.safety import SafetyIncident
+            incident = SafetyIncident(
+                factory_id=fid,
+                created_by_id=user.id,
+                date=event.created_at or __import__("datetime").datetime.now(__import__("datetime").timezone.utc),
+                incident_type="near_miss",
+                severity="high",
+                title=f"[Andon] {data.description or data.reason or 'RED alert'}",
+                description=data.description or f"Andon RED triggered: {data.reason}",
+                location=f"Line {data.production_line_id}",
+                production_line_id=data.production_line_id,
+            )
+            db.add(incident)
+            await db.commit()
+        except Exception as e:
+            logger.error("andon_safety_failed", error=str(e))
+
     return {"id": event.id, "status": str(event.status).lower() if event.status else event.status}
 
 

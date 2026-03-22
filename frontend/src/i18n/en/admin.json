@@ -135,6 +135,12 @@
   "productFamily": "Product Family",
   "productUom": "Unit of Measure",
 
+  "loadUsersFailed": "Failed to load users",
+  "loadAuditFailed": "Failed to load audit logs",
+  "loadSetupFailed": "Failed to load factory setup data",
+  "confirmDeleteLineMsg": "This action cannot be undone.",
+  "confirmDeleteShiftMsg": "This action cannot be undone.",
+
   "savingDots": "Saving...",
   "saved": "Saved",
   "remove": "Remove",

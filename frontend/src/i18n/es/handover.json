@@ -17,5 +17,18 @@
   "downtime": "Tiempo de inactividad (min)",
   "manual": "Entrada manual",
   "scrap": "Desecho",
-  "recent": "Relevos recientes"
+  "recent": "Relevos recientes",
+  "dueBy": "Fecha límite",
+  "safety": "Seguridad",
+  "quality": "Calidad",
+  "equipment": "Equipos",
+  "material": "Materiales",
+  "good": "Conforme",
+
+  "status_acknowledged": "Confirmado",
+  "status_submitted": "Enviado",
+  "status_draft": "Borrador",
+  "priority_high": "Alta",
+  "priority_medium": "Media",
+  "priority_low": "Baja"
 }

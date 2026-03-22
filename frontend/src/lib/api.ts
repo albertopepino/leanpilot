@@ -126,6 +126,8 @@ export const productionApi = {
   createRecord: (data: ProductionRecordCreate) => api.post("/production/records", data),
   listRecords: (lineId?: number) =>
     api.get("/production/records", { params: { line_id: lineId } }),
+  activeOrders: (lineId: number) =>
+    api.get("/production/active-orders", { params: { line_id: lineId } }),
   createDowntime: (data: DowntimeEventCreate) => api.post("/production/downtime", data),
   createScrap: (data: ScrapRecordCreate) => api.post("/production/scrap", data),
 };

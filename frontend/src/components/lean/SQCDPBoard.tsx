@@ -477,12 +477,18 @@ function SQCDPBoardInner() {
                       </button>
                     </>
                   )}
-                  {/* Delivery → Production tracking */}
+                  {/* Delivery → Production tracking + Orders */}
                   {cat.key === 'delivery' && (
-                    <button onClick={() => router.push('/operations/production')}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition">
-                      <Truck className="w-2.5 h-2.5" /> {t('sqcdp.viewProduction')}
-                    </button>
+                    <>
+                      <button onClick={() => router.push('/operations/production')}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition">
+                        <Truck className="w-2.5 h-2.5" /> {t('sqcdp.viewProduction')}
+                      </button>
+                      <button onClick={() => router.push('/planning/orders')}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition">
+                        <Grid3X3 className="w-2.5 h-2.5" /> {t('sqcdp.viewOrders') || 'View Orders'}
+                      </button>
+                    </>
                   )}
                   {/* People → Shift handover */}
                   {cat.key === 'people' && (

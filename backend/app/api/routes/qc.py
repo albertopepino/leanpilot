@@ -224,7 +224,27 @@ async def create_ncr(
     user: User = Depends(get_current_user),
 ):
     fid = require_factory(user)
-    return await NCRService.create(db, fid, user.id, data.model_dump())
+    ncr = await NCRService.create(db, fid, user.id, data.model_dump())
+
+    # Auto-create CAPA for critical/major NCRs
+    if data.severity in ("critical", "major"):
+        try:
+            capa = await CAPAService.create(db, fid, user.id, {
+                "ncr_id": ncr.id,
+                "title": f"[CAPA] {data.title}",
+                "description": f"Auto-generated CAPA from NCR: {data.description or data.title}",
+                "capa_type": "corrective",
+                "priority": "high" if data.severity == "critical" else "medium",
+                "status": "open",
+                "owner_id": user.id,
+            })
+            import structlog
+            structlog.get_logger().info("ncr_capa_auto_created", ncr_id=ncr.id, capa_id=capa.id)
+        except Exception as e:
+            import structlog
+            structlog.get_logger().error("ncr_capa_auto_create_failed", error=str(e))
+
+    return ncr
 
 
 @router.get("/ncr")

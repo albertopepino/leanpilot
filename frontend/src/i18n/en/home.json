@@ -56,7 +56,7 @@
   "openActions": "Open Actions",
   "openActionsDesc": "Items requiring attention",
   "capaActions": "CAPA Actions",
-  "kaizenItems": "Kaizen In Progress",
+  "kaizenItems": "Open Kaizen",
   "ncrOpen": "Open NCRs",
   "gembaFindings": "Gemba Findings",
 

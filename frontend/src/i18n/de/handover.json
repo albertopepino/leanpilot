@@ -17,5 +17,18 @@
   "downtime": "Stillstandzeit (Min.)",
   "manual": "Manuelle Eingabe",
   "scrap": "Ausschuss",
-  "recent": "Letzte Schichtübergaben"
+  "recent": "Letzte Schichtübergaben",
+  "dueBy": "Fällig",
+  "safety": "Sicherheit",
+  "quality": "Qualität",
+  "equipment": "Anlagen",
+  "material": "Material",
+  "good": "Gut",
+
+  "status_acknowledged": "Bestätigt",
+  "status_submitted": "Eingereicht",
+  "status_draft": "Entwurf",
+  "priority_high": "Hoch",
+  "priority_medium": "Mittel",
+  "priority_low": "Niedrig"
 }

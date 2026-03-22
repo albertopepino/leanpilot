@@ -583,7 +583,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
       try {
         const kaizenRes = await leanApi.getKaizenBoard();
         const items = kaizenRes.data?.items || kaizenRes.data || [];
-        kaizenInProgress = items.filter((k: { status: string }) => k.status === "in_progress" || k.status === "doing").length;
+        kaizenInProgress = items.filter((k: { status: string }) => ["idea", "planned", "in_progress", "doing"].includes(k.status)).length;
       } catch { /* skip */ }
       try {
         const ncrRes = await qcApi.listNCRs({ status: "open" });

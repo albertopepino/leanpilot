@@ -43,7 +43,9 @@ export default function LoginPage() {
   useEffect(() => { loadUser(); }, [loadUser]);
 
   useEffect(() => {
-    if (!loading && user) router.replace("/home");
+    if (!loading && user) {
+      router.replace(user.is_superadmin ? "/portal" : "/operations/home");
+    }
   }, [loading, user, router]);
 
   useEffect(() => {
@@ -57,7 +59,7 @@ export default function LoginPage() {
     setError("");
     try {
       await login(email, password);
-      router.replace("/home");
+      // The useEffect watching `user` will handle the redirect based on role
     } catch {
       setError(t("login.invalidCredentials"));
     }

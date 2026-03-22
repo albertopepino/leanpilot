@@ -187,7 +187,7 @@ export default function ShiftHandover() {
                 <span className="text-sm font-medium text-th-text">{h.date}</span>
                 <span className="text-xs text-th-text-3">OEE: {h.oee_pct ?? '--'}%</span>
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium uppercase tracking-wide ${h.status === 'acknowledged' ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : h.status === 'submitted' ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400'}`}>
-                  {t(`handover.status_${h.status}`) || h.status}
+                  {(() => { const key = `handover.status_${h.status}`; const v = t(key); return v !== key ? v : h.status; })()}
                 </span>
               </div>
               {expandedId === h.id ? <ChevronUp size={14} className="text-th-text-3" /> : <ChevronDown size={14} className="text-th-text-3" />}
@@ -231,7 +231,7 @@ export default function ShiftHandover() {
                                 {action.owner && <span className="text-th-text-3">{action.owner}</span>}
                                 {action.priority && (
                                   <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${action.priority === 'high' ? 'bg-rose-100 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400' : action.priority === 'medium' ? 'bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>
-                                    {t(`handover.priority_${action.priority}`) || action.priority}
+                                    {(() => { const key = `handover.priority_${action.priority}`; const v = t(key); return v !== key ? v : action.priority; })()}
                                   </span>
                                 )}
                                 {action.due_date && <span className="text-th-text-3">{t('handover.dueBy') || 'Due'}: {action.due_date}</span>}

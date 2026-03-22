@@ -590,6 +590,8 @@ function LogForm({
     e.preventDefault();
     if (!date || !title.trim()) {
       setError(t("safety.fillRequired"));
+      // Scroll to top so user sees the error message
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
     setError("");

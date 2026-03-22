@@ -273,6 +273,9 @@ export const TOOL_INFO: Record<string, ToolInfo> = {
       "Enter hourly production counts, downtime minutes, and cycle times. This data feeds directly into your OEE calculations. Accurate input = accurate insights.",
     whenToUseKey: "toolInfo.productionWhen",
     whenToUseFallback: "Use this every hour or every shift to record what was actually produced.",
+    connectsFrom: [
+      { labelKey: "common.navProductionOrders", fallback: "Production Orders", href: "/planning/orders" },
+    ],
     connectsTo: [
       { labelKey: "common.navOEE", fallback: "OEE Dashboard", href: "/operations/oee" },
     ],
@@ -287,5 +290,38 @@ export const TOOL_INFO: Record<string, ToolInfo> = {
       "Write what happened on your shift \u2014 problems, pending work, safety notes. The next shift reads this first. Good handovers prevent repeated mistakes.",
     whenToUseKey: "toolInfo.handoverWhen",
     whenToUseFallback: "Use this at the end of every shift before you leave.",
+  },
+
+  productionOrders: {
+    id: "productionOrders",
+    titleKey: "common.navProductionOrders",
+    titleFallback: "Production Orders",
+    descriptionKey: "toolInfo.ordersDesc",
+    descriptionFallback:
+      "Plan what to produce, how much, and when. Orders flow into Production Tracking where operators record actual output. Auto-completes when target is reached.",
+    whenToUseKey: "toolInfo.ordersWhen",
+    whenToUseFallback: "Create orders before each production run. Release them when materials and lines are ready.",
+    connectsFrom: [
+      { labelKey: "common.navProducts", fallback: "Products & BOM", href: "/planning/products" },
+    ],
+    connectsTo: [
+      { labelKey: "common.navProductionTracking", fallback: "Production Tracking", href: "/operations/production" },
+      { labelKey: "common.navQualityDashboard", fallback: "Quality", href: "/quality" },
+    ],
+  },
+
+  products: {
+    id: "products",
+    titleKey: "common.navProducts",
+    titleFallback: "Products & BOM",
+    descriptionKey: "toolInfo.productsDesc",
+    descriptionFallback:
+      "Define your product catalog with SKUs, cycle times, and Bills of Materials. BOM data auto-populates ideal cycle times in Production Tracking and OEE calculations.",
+    whenToUseKey: "toolInfo.productsWhen",
+    whenToUseFallback: "Set up products before creating production orders. Update cycle times when processes change.",
+    connectsTo: [
+      { labelKey: "common.navProductionOrders", fallback: "Production Orders", href: "/planning/orders" },
+      { labelKey: "common.navProductionTracking", fallback: "Production Tracking", href: "/operations/production" },
+    ],
   },
 };

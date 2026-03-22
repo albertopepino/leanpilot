@@ -1,24 +1,43 @@
 # Python
 __pycache__/
 *.pyc
-.env
+*.pyo
 venv/
+.venv/
+
+# Environment (NEVER commit secrets)
+.env
+.env.local
+.env.production
+backend/.env
 
 # Node
 node_modules/
 .next/
+out/
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # OS
 .DS_Store
 Thumbs.db
+Desktop.ini
 
 # Build artifacts
 deploy.tar.gz
+*.tar.gz
 
 # Docker
 pgdata/
+
+# Nextcloud sync conflicts
+*conflicted copy*
+
+# Misc
 frontend/nul
+logonew.png
+*.log

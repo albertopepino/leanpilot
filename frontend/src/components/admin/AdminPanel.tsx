@@ -176,9 +176,8 @@ export default function AdminPanel() {
       setUsers(Array.isArray(res.data) ? res.data : []);
     } catch {
       console.error("[AdminPanel] Failed to load users");
-      toast.error(t("admin.loadUsersFailed") || "Failed to load users");
     }
-  }, [t, toast]);
+  }, []);
 
   const loadAuditLogs = useCallback(async () => {
     try {
@@ -186,9 +185,8 @@ export default function AdminPanel() {
       setAuditLogs(Array.isArray(res.data) ? res.data : []);
     } catch {
       console.error("[AdminPanel] Failed to load audit logs");
-      toast.error(t("admin.loadAuditFailed") || "Failed to load audit logs");
     }
-  }, [t, toast]);
+  }, []);
 
   const loadFactory = useCallback(async () => {
     try {
@@ -220,9 +218,8 @@ export default function AdminPanel() {
       setProducts(prodRes.data || []);
     } catch {
       console.error("[AdminPanel] Failed to load setup data");
-      toast.error(t("admin.loadSetupFailed") || "Failed to load factory setup data");
     }
-  }, [t, toast]);
+  }, []);
 
   const handleCreateLine = async () => {
     clearMessages(); setLoading(true);

@@ -43,12 +43,8 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     }
   }, [loading, user, router]);
 
-  // Redirect superadmin to portal on initial load
-  useEffect(() => {
-    if (!loading && user && user.is_superadmin && pathname === "/operations/home") {
-      router.replace("/portal");
-    }
-  }, [loading, user, pathname, router]);
+  // Superadmin initial redirect is handled by the login page — no redirect here
+  // to avoid bounce loops when superadmin intentionally visits /operations/home
 
   // Bootstrap multi-site: load organization sites after user is confirmed
   useEffect(() => {
