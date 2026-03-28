@@ -6,6 +6,12 @@
       "runtimeExecutable": "cmd",
       "runtimeArgs": ["/c", "cd frontend && npm run dev"],
       "port": 3000
+    },
+    {
+      "name": "landing",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "frontend/public", "-l", "8080", "--no-clipboard"],
+      "port": 8080
     }
   ]
 }

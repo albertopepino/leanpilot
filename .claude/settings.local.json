@@ -65,7 +65,10 @@
       "Bash(python -c \"f = open\\(r''c:\\\\Users\\\\grass\\\\Nextcloud4\\\\Centro Studi Grassi\\\\AI\\\\Lean OS\\\\frontend\\\\src\\\\i18n\\\\pl\\\\assessment.json'', ''r'', encoding=''utf-8''\\); lines = f.readlines\\(\\); f.close\\(\\); [print\\(repr\\(l\\)\\) for l in lines[-5:]]\")",
       "Bash(node -e \"const fs=require\\(''fs''\\); const c=fs.readFileSync\\(''c:/Users/grass/Nextcloud4/Centro Studi Grassi/AI/Lean OS/frontend/src/i18n/pl/assessment.json'',''utf8''\\); const lines=c.split\\(''\\\\n''\\); lines.slice\\(-5\\).forEach\\(\\(l,i\\)=>console.log\\(JSON.stringify\\(l\\)\\)\\)\")",
       "mcp__Claude_Preview__preview_start",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(npm install:*)",
+      "mcp__Desktop_Commander__kill_process",
+      "mcp__Desktop_Commander__list_sessions"
     ]
   }
 }

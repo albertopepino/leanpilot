@@ -7,7 +7,7 @@ const config: Config = {
     screens: {
       sm: "640px",
       md: "768px",
-      tablet: "900px",   // Tablet landscape breakpoint
+      tablet: "900px",
       lg: "1024px",
       xl: "1280px",
       "2xl": "1536px",
@@ -76,6 +76,10 @@ const config: Config = {
         "glow-red": "0 0 20px rgba(239, 68, 68, 0.2)",
         card: "0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06)",
         "card-hover": "0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04)",
+        "glass": "0 8px 32px rgba(0,0,0,0.12)",
+        "glass-lg": "0 16px 48px rgba(0,0,0,0.2)",
+        "neon-indigo": "0 0 30px rgba(99,102,241,0.3), 0 0 60px rgba(99,102,241,0.1)",
+        "neon-violet": "0 0 30px rgba(139,92,246,0.3), 0 0 60px rgba(139,92,246,0.1)",
       },
       keyframes: {
         "slide-in": {
@@ -102,6 +106,80 @@ const config: Config = {
           "0%": { strokeDashoffset: "var(--gauge-circumference)" },
           "100%": { strokeDashoffset: "var(--gauge-offset)" },
         },
+        fadeInUp: {
+          "0%": { opacity: "0", transform: "translateY(24px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        fadeInDown: {
+          "0%": { opacity: "0", transform: "translateY(-24px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        slideInRight: {
+          "0%": { opacity: "0", transform: "translateX(100%)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
+        },
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        "float-slow": {
+          "0%, 100%": { transform: "translateY(0) rotate(0deg)" },
+          "50%": { transform: "translateY(-20px) rotate(1deg)" },
+        },
+        "shimmer": {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
+        "border-glow": {
+          "0%, 100%": { borderColor: "rgba(99,102,241,0.2)" },
+          "50%": { borderColor: "rgba(99,102,241,0.5)" },
+        },
+        "scale-in": {
+          "0%": { opacity: "0", transform: "scale(0.95)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+        "draw-line": {
+          "0%": { strokeDashoffset: "100%" },
+          "100%": { strokeDashoffset: "0%" },
+        },
+        "pulse-ring": {
+          "0%": { transform: "scale(1)", opacity: "0.5" },
+          "100%": { transform: "scale(1.5)", opacity: "0" },
+        },
+        "blur-in": {
+          "0%": { opacity: "0", filter: "blur(12px)", transform: "translateY(20px)" },
+          "100%": { opacity: "1", filter: "blur(0)", transform: "translateY(0)" },
+        },
+        "slide-up-spring": {
+          "0%": { opacity: "0", transform: "translateY(40px) scale(0.96)" },
+          "60%": { opacity: "1", transform: "translateY(-4px) scale(1.01)" },
+          "100%": { opacity: "1", transform: "translateY(0) scale(1)" },
+        },
+        "text-reveal": {
+          "0%": { opacity: "0", transform: "translateY(100%)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "gradient-shift": {
+          "0%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+          "100%": { backgroundPosition: "0% 50%" },
+        },
+        "rotate-slow": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
+        "ticker": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-100%)" },
+        },
+        "morph": {
+          "0%, 100%": { borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%" },
+          "50%": { borderRadius: "30% 60% 70% 40% / 50% 60% 30% 60%" },
+        },
       },
       animation: {
         "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
@@ -112,6 +190,23 @@ const config: Config = {
         "glow-pulse-amber": "glow-pulse-amber 3s ease-in-out infinite",
         "glow-pulse-red": "glow-pulse-red 3s ease-in-out infinite",
         "gauge-appear": "gauge-appear 1.2s ease-out forwards",
+        "fade-in-up": "fadeInUp 0.7s ease-out both",
+        "fade-in-down": "fadeInDown 0.7s ease-out both",
+        "marquee": "marquee 30s linear infinite",
+        "marquee-slow": "marquee 60s linear infinite",
+        "float": "float 6s ease-in-out infinite",
+        "float-slow": "float-slow 8s ease-in-out infinite",
+        "shimmer": "shimmer 3s ease-in-out infinite",
+        "border-glow": "border-glow 3s ease-in-out infinite",
+        "scale-in": "scale-in 0.5s ease-out both",
+        "pulse-ring": "pulse-ring 2s ease-out infinite",
+        "blur-in": "blur-in 0.8s cubic-bezier(0.22,1,0.36,1) both",
+        "slide-up-spring": "slide-up-spring 0.8s cubic-bezier(0.22,1,0.36,1) both",
+        "text-reveal": "text-reveal 0.7s cubic-bezier(0.22,1,0.36,1) both",
+        "gradient-shift": "gradient-shift 6s ease-in-out infinite",
+        "rotate-slow": "rotate-slow 20s linear infinite",
+        "ticker": "ticker 25s linear infinite",
+        "morph": "morph 8s ease-in-out infinite",
       },
     },
   },

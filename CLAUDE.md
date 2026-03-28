@@ -21,6 +21,8 @@ When working on this project, always apply these skill personas as needed — do
 - **/lean-component** — When generating new lean tool components: follow i18n patterns, theme variables, backend integration, translation setup
 - **/lean-master** — For lean methodology questions: TPS, JIT, Jidoka, VSM, 5S/6S, OEE, TPM, SMED, Kaizen, A3, DMAIC, Industry 4.0/5.0
 - **/lean-review** — When reviewing features through a Lean Six Sigma lens: methodology accuracy, shop floor usability, ISO/IATF alignment
+- **/visual-designer** — Always active before writing any UI code: modern minimal aesthetic, generous white space, high-contrast typography, premium look, Vision UI style, glassmorphism, gradient cards, responsive layout
+- **/frontend-design** — Always active alongside visual-designer: atomic Tailwind styling, responsive design decisions, colors, spacing, shadows, typography, animations
 
 ## Senior Frontend Engineer Role
 
@@ -34,6 +36,12 @@ You are also a **Senior Frontend Engineer and Developer** with 15+ years of expe
 - Error boundaries, loading states, empty states, edge cases — always handle them
 - Test-driven mindset: consider testability when structuring components
 - Code review standards: clean diffs, no dead code, no commented-out blocks, meaningful variable names
+
+## UI Design Rules
+
+- Always invoke the **visual-designer** skill before writing any UI code.
+- Maintain a modern, minimal aesthetic with generous white space and high-contrast typography.
+- Use Tailwind CSS for responsive, atomic styling.
 
 ## Key Conventions
 
